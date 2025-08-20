@@ -43,7 +43,7 @@ const ChildrenInfo = ({ c, index }: {
               </div>
             </CardContent>
             <CardFooter className="flex justify-center items-center">
-              <Button onClick={() => router.push(`/hangar74/almacen/inventario/gestion/${c.child_part_number}/${c.child_serial}`)} className="hover:scale-110 transition-all ease-in duration-100 flex items-center gap-2"><ArrowUpRight className="size-4" />Ir al Componente</Button>
+              <Button onClick={() => router.push(`/estelar/almacen/inventario/gestion/${c.child_part_number}/${c.child_serial}`)} className="hover:scale-110 transition-all ease-in duration-100 flex items-center gap-2"><ArrowUpRight className="size-4" />Ir al Componente</Button>
             </CardFooter>
           </Card>
         </TooltipTrigger>

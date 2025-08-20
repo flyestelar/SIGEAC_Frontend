@@ -74,13 +74,7 @@ const PendingDispatchRequestDropdownActions
 
     const { user } = useAuth();
 
-    const { mutate: employeeMutate, data: employees, isPending: employeesLoading, isError: employeesError } = useGetWarehousesEmployees(selectedCompany?.slug);
-
-    useEffect(() => {
-      if (selectedStation) {
-        employeeMutate({location_id: Number(selectedStation)})
-      }
-    }, [selectedStation, employeeMutate])
+    const { data: employees, isPending: employeesLoading, isError: employeesError } = useGetWarehousesEmployees();
 
     const handleAprove = async (data: z.infer<typeof formSchema>) => {
       const newQty = request.batch.article_count - Number(request.batch.articles[0].quantity);
@@ -119,7 +113,7 @@ const PendingDispatchRequestDropdownActions
             }
           ]
         }
-        createRequisition.mutateAsync({data: reqData, company: selectedCompany!.slug})
+        createRequisition.mutateAsync({ data: reqData, company: selectedCompany!.slug })
       }
       setOpen(false)
     }

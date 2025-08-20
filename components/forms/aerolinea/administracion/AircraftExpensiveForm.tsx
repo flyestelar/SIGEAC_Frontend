@@ -139,7 +139,7 @@ export function AircraftExpensiveForm({ acronym, onClose }: FormProps) {
   } = useGetEmployeesByCompany(selectedCompany?.slug);
   const { data: cashes, isLoading: isCashesLoading } = useGetCash();
   const { data: bankaccounts, isLoading: isBankAccLoading } =
-    useGetBankAccounts(selectedCompany?.slug);
+    useGetBankAccounts();
   const { data: accounts, isLoading: isAccountLoading } = useGetAccountant();
   const { data: vendors, isLoading: isVendorLoading } = useGetVendors(
     selectedCompany?.slug
@@ -176,7 +176,7 @@ export function AircraftExpensiveForm({ acronym, onClose }: FormProps) {
         ),
       })),
     };
-    await createCashMovementForAircraft.mutateAsync({acronym, data: transformedData, company: selectedCompany?.slug});
+    await createCashMovementForAircraft.mutateAsync({ acronym, data: transformedData, company: selectedCompany?.slug });
     onClose()
   }
 
@@ -544,22 +544,22 @@ export function AircraftExpensiveForm({ acronym, onClose }: FormProps) {
                               {form.watch(
                                 `movements.${movementIndex}.cash_movement_details`
                               )?.length > 1 && (
-                                <MinusCircle
-                                  className="size-4 cursor-pointer hover:scale-125 transition-all ease-in duration-100 text-red-500"
-                                  onClick={() => {
-                                    const currentExpenses = form.getValues(
-                                      `movements.${movementIndex}.cash_movement_details`
-                                    );
-                                    const newExpenses = currentExpenses.filter(
-                                      (_, i) => i !== expenseIndex
-                                    );
-                                    form.setValue(
-                                      `movements.${movementIndex}.cash_movement_details`,
-                                      newExpenses
-                                    );
-                                  }}
-                                />
-                              )}
+                                  <MinusCircle
+                                    className="size-4 cursor-pointer hover:scale-125 transition-all ease-in duration-100 text-red-500"
+                                    onClick={() => {
+                                      const currentExpenses = form.getValues(
+                                        `movements.${movementIndex}.cash_movement_details`
+                                      );
+                                      const newExpenses = currentExpenses.filter(
+                                        (_, i) => i !== expenseIndex
+                                      );
+                                      form.setValue(
+                                        `movements.${movementIndex}.cash_movement_details`,
+                                        newExpenses
+                                      );
+                                    }}
+                                  />
+                                )}
                             </div>
 
                             <div className="flex gap-2 items-center justify-center">

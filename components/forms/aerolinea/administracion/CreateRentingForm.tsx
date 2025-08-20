@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage,} from "@/components/ui/form";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger, } from "@/components/ui/popover";
@@ -97,7 +97,7 @@ interface FormProps {
 }
 
 export function CreateRentingForm({ onClose }: FormProps) {
-  const {selectedCompany} = useCompanyStore();
+  const { selectedCompany } = useCompanyStore();
   const { createRenting } = useCreateRenting();
   const {
     data: clients,
@@ -115,12 +115,10 @@ export function CreateRentingForm({ onClose }: FormProps) {
       type: "AERONAVE"
     },
   });
-  const { data: accounts, isLoading: isAccLoading } = useGetBankAccounts(
-    selectedCompany?.slug
-  );
+  const { data: accounts, isLoading: isAccLoading } = useGetBankAccounts();
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    await createRenting.mutateAsync({data: values, company: selectedCompany?.slug});
+    await createRenting.mutateAsync({ data: values, company: selectedCompany?.slug });
     onClose()
   }
 
@@ -251,9 +249,9 @@ export function CreateRentingForm({ onClose }: FormProps) {
             render={({ field }) => (
               <FormItem className="w-full">
                 <FormLabel>Tipo</FormLabel>
-                  <FormControl>
-                    <Input value={"AERONAVE"} disabled />
-                  </FormControl>
+                <FormControl>
+                  <Input value={"AERONAVE"} disabled />
+                </FormControl>
               </FormItem>
             )}
           />
@@ -403,106 +401,104 @@ export function CreateRentingForm({ onClose }: FormProps) {
             )}
           />
           {form.watch("pay_method") !== "EFECTIVO" && (
-          <>
-            <FormField
-              control={form.control}
-              name="reference_cod"
-              render={({ field }) => (
-                <FormItem className="">
-                  <FormLabel>Código de Referencia</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Código de referencia" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="bank_account_id"
-              render={({ field }) => (
-                <FormItem className="w-full flex flex-col space-y-3 col-span-2">
-                  <FormLabel>Cuenta de Banco</FormLabel>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <FormControl>
-                        <Button
-                          disabled={isAccLoading}
-                          variant="outline"
-                          role="combobox"
-                          className={cn(
-                            "justify-between",
-                            !field.value && "text-muted-foreground"
-                          )}
-                        >
-                          {isAccLoading ? (
-                            <>
-                              <Loader2 className="size-4 animate-spin mr-2" />
-                              Cargando cuentas...
-                            </>
-                          ) : field.value ? (
-                            accounts?.find(
-                              (acc) => acc.id.toString() === field.value
-                            ) ? (
-                              `${
-                                accounts.find(
+            <>
+              <FormField
+                control={form.control}
+                name="reference_cod"
+                render={({ field }) => (
+                  <FormItem className="">
+                    <FormLabel>Código de Referencia</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Código de referencia" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="bank_account_id"
+                render={({ field }) => (
+                  <FormItem className="w-full flex flex-col space-y-3 col-span-2">
+                    <FormLabel>Cuenta de Banco</FormLabel>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <FormControl>
+                          <Button
+                            disabled={isAccLoading}
+                            variant="outline"
+                            role="combobox"
+                            className={cn(
+                              "justify-between",
+                              !field.value && "text-muted-foreground"
+                            )}
+                          >
+                            {isAccLoading ? (
+                              <>
+                                <Loader2 className="size-4 animate-spin mr-2" />
+                                Cargando cuentas...
+                              </>
+                            ) : field.value ? (
+                              accounts?.find(
+                                (acc) => acc.id.toString() === field.value
+                              ) ? (
+                                `${accounts.find(
                                   (acc) => acc.id.toString() === field.value
                                 )?.name
-                              } - ${
-                                accounts.find(
+                                } - ${accounts.find(
                                   (acc) => acc.id.toString() === field.value
                                 )?.bank.name
-                              }`
+                                }`
+                              ) : (
+                                "Cuenta no encontrada"
+                              )
                             ) : (
-                              "Cuenta no encontrada"
-                            )
-                          ) : (
-                            "Seleccione una cuenta..."
-                          )}
-                          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                        </Button>
-                      </FormControl>
-                    </PopoverTrigger>
-                    <PopoverContent className="p-0 w-[var(--radix-popover-trigger-width)]">
-                      <Command>
-                        <CommandInput placeholder="Busque una cuenta bancaria..." />
-                        <CommandList>
-                          <CommandEmpty className="text-sm p-2 text-center">
-                            No se encontraron cuentas bancarias.
-                          </CommandEmpty>
-                          <CommandGroup>
-                            {accounts?.map((acc) => (
-                              <CommandItem
-                                value={`${acc.name} ${acc.bank.name}`}
-                                key={acc.id}
-                                onSelect={() => {
-                                  form.setValue(
-                                    "bank_account_id",
-                                    acc.id.toString()
-                                  );
-                                }}
-                              >
-                                <Check
-                                  className={cn(
-                                    "mr-2 h-4 w-4",
-                                    acc.id.toString() === field.value
-                                      ? "opacity-100"
-                                      : "opacity-0"
-                                  )}
-                                />
-                                {acc.name} - {acc.bank.name}
-                              </CommandItem>
-                            ))}
-                          </CommandGroup>
-                        </CommandList>
-                      </Command>
-                    </PopoverContent>
-                  </Popover>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </>
+                              "Seleccione una cuenta..."
+                            )}
+                            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                          </Button>
+                        </FormControl>
+                      </PopoverTrigger>
+                      <PopoverContent className="p-0 w-[var(--radix-popover-trigger-width)]">
+                        <Command>
+                          <CommandInput placeholder="Busque una cuenta bancaria..." />
+                          <CommandList>
+                            <CommandEmpty className="text-sm p-2 text-center">
+                              No se encontraron cuentas bancarias.
+                            </CommandEmpty>
+                            <CommandGroup>
+                              {accounts?.map((acc) => (
+                                <CommandItem
+                                  value={`${acc.name} ${acc.bank.name}`}
+                                  key={acc.id}
+                                  onSelect={() => {
+                                    form.setValue(
+                                      "bank_account_id",
+                                      acc.id.toString()
+                                    );
+                                  }}
+                                >
+                                  <Check
+                                    className={cn(
+                                      "mr-2 h-4 w-4",
+                                      acc.id.toString() === field.value
+                                        ? "opacity-100"
+                                        : "opacity-0"
+                                    )}
+                                  />
+                                  {acc.name} - {acc.bank.name}
+                                </CommandItem>
+                              ))}
+                            </CommandGroup>
+                          </CommandList>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </>
           )}
         </div>
         <FormField
@@ -528,8 +524,8 @@ export function CreateRentingForm({ onClose }: FormProps) {
                       )}
                       {field.value
                         ? clients?.find(
-                            (client) => client.id.toString() === field.value
-                          )?.name
+                          (client) => client.id.toString() === field.value
+                        )?.name
                         : "Seleccione un cliente..."}
                       <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                     </Button>

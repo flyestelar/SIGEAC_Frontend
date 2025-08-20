@@ -56,7 +56,7 @@ export const columns: ColumnDef<WorkOrder>[] = [
     ),
     cell: ({ row }) => {
       return (
-        <Link href={`/hangar74/planificacion/ordenes_trabajo/${row.original.order_number}`} className="font-medium flex justify-center hover:scale-105 hover:text-blue-600 transition-all ease-in cursor-pointer duration-150">{row.original.order_number}</Link>
+        <Link href={`/estelar/planificacion/ordenes_trabajo/${row.original.order_number}`} className="font-medium flex justify-center hover:scale-105 hover:text-blue-600 transition-all ease-in cursor-pointer duration-150">{row.original.order_number}</Link>
       )
     }
   },
@@ -67,7 +67,7 @@ export const columns: ColumnDef<WorkOrder>[] = [
     ),
     cell: ({ row }) => {
       return (
-        <Link href={`/hangar74/planificacion/aeronaves/${row.original.aircraft.acronym}`} className="font-medium flex justify-center hover:scale-105 hover:text-blue-600 transition-all ease-in cursor-pointer duration-150">{row.original.aircraft.acronym}</Link>
+        <Link href={`/estelar/planificacion/aeronaves/${row.original.aircraft.acronym}`} className="font-medium flex justify-center hover:scale-105 hover:text-blue-600 transition-all ease-in cursor-pointer duration-150">{row.original.aircraft.acronym}</Link>
       )
     }
   },

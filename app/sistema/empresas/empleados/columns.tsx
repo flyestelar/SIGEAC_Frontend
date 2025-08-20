@@ -31,26 +31,6 @@ export const columns: ColumnDef<Employee>[] = [
     enableHiding: false,
   },
   {
-    accessorKey: "first_name",
-    header: ({ column }) => (
-      <DataTableColumnHeader filter column={column} title="Nombre" />
-    ),
-    cell: ({ row }) =>
-      <>
-        <span className='flex justify-center font-bold'>{row.original.first_name}</span>
-      </>
-  },
-    {
-    accessorKey: "last_name",
-    header: ({ column }) => (
-      <DataTableColumnHeader filter column={column} title="Nombre" />
-    ),
-    cell: ({ row }) =>
-      <>
-        <span className='flex justify-center font-bold'>{row.original.last_name}</span>
-      </>
-  },
-  {
     accessorKey: "dni",
     header: ({ column }) => (
       <DataTableColumnHeader filter column={column} title="Cedula" />
@@ -59,6 +39,46 @@ export const columns: ColumnDef<Employee>[] = [
       <>
         <span className="flex justify-center font-semibold italic text-muted-foreground">{row.original.dni_type}-{row.original.dni}</span>
 
+      </>
+  },
+  {
+    accessorKey: "first_name",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Nombre" />
+    ),
+    cell: ({ row }) =>
+      <>
+        <span className='flex justify-center font-bold'>{row.original.first_name}</span>
+      </>
+  },
+  {
+    accessorKey: "last_name",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Nombre" />
+    ),
+    cell: ({ row }) =>
+      <>
+        <span className='flex justify-center font-bold'>{row.original.last_name}</span>
+      </>
+  },
+  {
+    accessorKey: "job_title",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Cargo" />
+    ),
+    cell: ({ row }) =>
+      <>
+        <span className="flex justify-center font-semibold">{row.original.job_title.name}</span>
+      </>
+  },
+  {
+    accessorKey: "department",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Departamento" />
+    ),
+    cell: ({ row }) =>
+      <>
+        <span className="flex justify-center font-semibold">{row.original.department.name}</span>
       </>
   },
 ]

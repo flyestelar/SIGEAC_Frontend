@@ -52,7 +52,7 @@ export const columns: ColumnDef<Requisition>[] = [
     cell: ({ row }) => {
       return (
         <div className="flex justify-center">
-          <Link href={`/hangar74/general/requisiciones/${row.original.order_number}`} className="text-center font-bold">{row.original.order_number}</Link>
+          <Link href={`/estelar/general/requisiciones/${row.original.order_number}`} className="text-center font-bold">{row.original.order_number}</Link>
         </div>
       )
     }

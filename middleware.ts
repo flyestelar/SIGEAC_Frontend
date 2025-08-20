@@ -2,12 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 // 1. Definición centralizada de rutas protegidas
 const PROTECTED_ROUTES = [
-  '/inicio',
-  '/transmandu',
-  '/hangar74',
-  '/ajustes',
-  '/planificacion',
-  '/administracion'
+  '/estelar',
 ];
 
 

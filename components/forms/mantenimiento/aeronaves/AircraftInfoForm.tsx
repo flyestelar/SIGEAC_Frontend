@@ -52,7 +52,7 @@ interface AircraftInfoFormProps {
 }
 
 export function AircraftInfoForm({ onNext, onBack, initialData }: AircraftInfoFormProps) {
-  const {selectedCompany} = useCompanyStore()
+  const { selectedCompany } = useCompanyStore()
   const { data: clients, isLoading: isClientsLoading, isError: isClientsError } = useGetClients(selectedCompany?.slug);
   const { data: locations, isPending: isLocationsLoading, isError: isLocationsError, mutate } = useGetLocationsByCompanyId();
   const { data: manufacturers, isLoading: isManufacturersLoading, isError: isManufacturersError } = useGetManufacturers(selectedCompany?.slug);
@@ -136,9 +136,6 @@ export function AircraftInfoForm({ onNext, onBack, initialData }: AircraftInfoFo
                     </Command>
                   </PopoverContent>
                 </Popover>
-                <FormDescription className="text-xs">
-                  Cliente propietario de la aeronave.
-                </FormDescription>
                 <FormMessage />
               </FormItem>
             )}
@@ -206,9 +203,6 @@ export function AircraftInfoForm({ onNext, onBack, initialData }: AircraftInfoFo
                     </Command>
                   </PopoverContent>
                 </Popover>
-                <FormDescription className="text-xs">
-                  Fabricante de la aeronave.
-                </FormDescription>
                 <FormMessage />
               </FormItem>
             )}
@@ -239,9 +233,6 @@ export function AircraftInfoForm({ onNext, onBack, initialData }: AircraftInfoFo
                   <FormControl>
                     <Input placeholder="Serial de la aeronave..." {...field} />
                   </FormControl>
-                  <FormDescription className="text-xs">
-                    Serial identificador de la aeronave.
-                  </FormDescription>
                   <FormMessage className="text-xs" />
                 </FormItem>
               )}
@@ -256,9 +247,6 @@ export function AircraftInfoForm({ onNext, onBack, initialData }: AircraftInfoFo
                 <FormControl>
                   <Input placeholder="YVXXXX" {...field} />
                 </FormControl>
-                <FormDescription className="text-xs">
-                  Acronimo identificador de la aeronave.
-                </FormDescription>
                 <FormMessage className="text-xs" />
               </FormItem>
             )}
@@ -309,7 +297,7 @@ export function AircraftInfoForm({ onNext, onBack, initialData }: AircraftInfoFo
               </FormItem>
             )}
           /> */}
-           <FormField
+          <FormField
             control={form.control}
             name="fabricant_date"
             render={({ field }) => (
@@ -384,9 +372,6 @@ export function AircraftInfoForm({ onNext, onBack, initialData }: AircraftInfoFo
                     }}
                   />
                 </FormControl>
-                <FormDescription className="text-xs">
-                  Horas totales de vuelo de la aeronave.
-                </FormDescription>
                 <FormMessage className="text-xs" />
               </FormItem>
             )}
@@ -412,9 +397,6 @@ export function AircraftInfoForm({ onNext, onBack, initialData }: AircraftInfoFo
                     }}
                   />
                 </FormControl>
-                <FormDescription className="text-xs">
-                  Ciclos totales de la aeronave.
-                </FormDescription>
                 <FormMessage className="text-xs" />
               </FormItem>
             )}
@@ -439,9 +421,6 @@ export function AircraftInfoForm({ onNext, onBack, initialData }: AircraftInfoFo
                     }
                   </SelectContent>
                 </Select>
-                <FormDescription>
-                  Ubicación actual de la aeronave.
-                </FormDescription>
                 <FormMessage />
               </FormItem>
             )}

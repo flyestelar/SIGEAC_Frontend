@@ -14,7 +14,7 @@ export default function NotFound() {
         <Plane className='size-[110px]' />
         <h1 className='font-bold text-7xl text-center'>¡No Encontrado!</h1>
         <p className='text-lg text-muted-foreground text-center'>Lo sentimos, pero la página que estabas buscando no pudo ser localizada. Es posible que se haya movido o ya no exista.</p>
-        <Link href={user?.companies[0].name === 'transmandu' ? '/transmandu/dashboard' : "/hangar74/dashboard"}>
+        <Link href={user?.companies[0].name === 'transmandu' ? '/transmandu/dashboard' : "/estelar/dashboard"}>
           <Button className='bg-black text-white hover:bg-transparent hover:text-black hover:border hover:border-black'>Volver</Button>
         </Link>
       </div>

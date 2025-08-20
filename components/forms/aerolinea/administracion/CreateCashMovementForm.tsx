@@ -115,7 +115,7 @@ export function CreateCashMovementForm({ onClose }: FormProps) {
     useGetEmployeesByDepartment("DAR", selectedCompany?.slug);
   const { data: cashes, isLoading: isCashesLoading } = useGetCash();
   const { data: bankaccounts, isLoading: isBankAccLoading } =
-    useGetBankAccounts(selectedCompany?.slug);
+    useGetBankAccounts();
   const { data: vendors, isLoading: isVendorLoading } = useGetVendors(
     selectedCompany?.slug
   );
@@ -291,8 +291,8 @@ export function CreateCashMovementForm({ onClose }: FormProps) {
                           )}
                           {field.value
                             ? vendors?.find(
-                                (vendor) => vendor.id.toString() === field.value
-                              )?.name
+                              (vendor) => vendor.id.toString() === field.value
+                            )?.name
                             : "Seleccione un beneficiario"}
                           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                         </Button>
@@ -362,8 +362,8 @@ export function CreateCashMovementForm({ onClose }: FormProps) {
                           )}
                           {field.value
                             ? clients?.find(
-                                (client) => client.id.toString() === field.value
-                              )?.name
+                              (client) => client.id.toString() === field.value
+                            )?.name
                             : "Seleccione un cliente"}
                           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                         </Button>
@@ -434,8 +434,8 @@ export function CreateCashMovementForm({ onClose }: FormProps) {
                         )}
                         {field.value
                           ? accounts?.find(
-                              (account) => account.id.toString() === field.value
-                            )?.name
+                            (account) => account.id.toString() === field.value
+                          )?.name
                           : "Seleccione una cuenta"}
                         <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                       </Button>
@@ -503,9 +503,9 @@ export function CreateCashMovementForm({ onClose }: FormProps) {
                         )}
                         {field.value
                           ? categories?.find(
-                              (category) =>
-                                category.id.toString() === field.value
-                            )?.name
+                            (category) =>
+                              category.id.toString() === field.value
+                          )?.name
                           : "Seleccione una cuenta"}
                         <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                       </Button>
@@ -733,14 +733,12 @@ export function CreateCashMovementForm({ onClose }: FormProps) {
                             bankaccounts?.find(
                               (acc) => acc.id.toString() === field.value
                             ) ? (
-                              `${
-                                bankaccounts.find(
-                                  (acc) => acc.id.toString() === field.value
-                                )?.name
-                              } - ${
-                                bankaccounts.find(
-                                  (acc) => acc.id.toString() === field.value
-                                )?.bank.name
+                              `${bankaccounts.find(
+                                (acc) => acc.id.toString() === field.value
+                              )?.name
+                              } - ${bankaccounts.find(
+                                (acc) => acc.id.toString() === field.value
+                              )?.bank.name
                               }`
                             ) : (
                               "Cuenta no encontrada"

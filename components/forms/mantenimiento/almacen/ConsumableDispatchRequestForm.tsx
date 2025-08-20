@@ -47,10 +47,12 @@ import { Popover, PopoverContent, PopoverTrigger } from "../../../ui/popover";
 import { Textarea } from "../../../ui/textarea";
 import { useGetDepartments } from "@/hooks/sistema/departamento/useGetDepartment";
 import { useGetWarehousesEmployees } from "@/hooks/mantenimiento/almacen/empleados/useGetWarehousesEmployees";
+import { useGetMaintenanceAircrafts } from "@/hooks/mantenimiento/planificacion/useGetMaintenanceAircrafts";
 
 const FormSchema = z.object({
   requested_by: z.string(),
   delivered_by: z.string(),
+  aircraft_id: z.string(),
   submission_date: z.date({
     message: "Debe ingresar la fecha.",
   }),
@@ -84,6 +86,8 @@ interface BatchesWithCountProp extends Batch {
 }
 
 export function ConsumableDispatchForm({ onClose }: FormProps) {
+
+
   const { user } = useAuth();
 
   const { selectedStation, selectedCompany } = useCompanyStore();
@@ -91,6 +95,8 @@ export function ConsumableDispatchForm({ onClose }: FormProps) {
   const [open, setOpen] = useState(false);
 
   const [quantity, setQuantity] = useState("");
+
+  const [selectedAircraft, setSelectedAircraft] = useState<string | null>(null);
 
   const [filteredBatches, setFilteredBatches] = useState<
     BatchesWithCountProp[]
@@ -100,8 +106,9 @@ export function ConsumableDispatchForm({ onClose }: FormProps) {
 
   const { createDispatchRequest } = useCreateDispatchRequest();
 
-  const  {data: departments, isLoading: isDepartmentsLo} = useGetDepartments(selectedCompany?.slug)
+  const { data: departments, isLoading: isDepartmentsLo } = useGetDepartments(selectedCompany?.slug)
 
+  const { data: aircrafts, isLoading: isAircraftsLoading, isError: isAircraftsError } = useGetMaintenanceAircrafts(selectedCompany?.slug);
 
   const {
     mutate,
@@ -111,7 +118,7 @@ export function ConsumableDispatchForm({ onClose }: FormProps) {
 
   const { data: employees, isLoading: employeesLoading } = useGetWorkOrderEmployees(selectedCompany?.slug);
 
-  const { mutate: employeeMutate, data: warehouseEmployees, isPending: warehouseEmployeesLoading, isError: employeesError } = useGetWarehousesEmployees(selectedCompany?.slug);
+  const { data: warehouseEmployees, isLoading: warehouseEmployeesLoading, isError: employeesError } = useGetWarehousesEmployees();
 
   const form = useForm<FormSchemaType>({
     resolver: zodResolver(FormSchema),
@@ -125,10 +132,9 @@ export function ConsumableDispatchForm({ onClose }: FormProps) {
 
   useEffect(() => {
     if (selectedStation) {
-      mutate({location_id: Number(selectedStation), company: selectedCompany!.slug})
-      employeeMutate({location_id: Number(selectedStation)})
+      mutate({ location_id: Number(selectedStation), company: selectedCompany!.slug })
     }
-  }, [selectedStation, selectedCompany, mutate, employeeMutate])
+  }, [selectedStation, selectedCompany, mutate])
 
   useEffect(() => {
     if (batches) {
@@ -175,7 +181,7 @@ export function ConsumableDispatchForm({ onClose }: FormProps) {
       delivered_by: data.delivered_by,
       user_id: Number(user!.id),
     };
-    await createDispatchRequest.mutateAsync({data: formattedData, company: selectedCompany!.slug});
+    await createDispatchRequest.mutateAsync({ data: formattedData, company: selectedCompany!.slug });
     onClose();
   };
 
@@ -214,6 +220,74 @@ export function ConsumableDispatchForm({ onClose }: FormProps) {
         onSubmit={form.handleSubmit(onSubmit)}
         className="flex flex-col space-y-3 w-full"
       >
+        <FormField
+          control={form.control}
+          name="aircraft_id"
+          render={({ field }) => (
+            <FormItem className="flex flex-col space-y-3 mt-1.5 w-full">
+              <FormLabel>Aeronave</FormLabel>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <FormControl>
+                    <Button
+                      disabled={isAircraftsLoading || isAircraftsError}
+                      variant="outline"
+                      role="combobox"
+                      className={cn(
+                        "justify-between",
+                        !field.value && "text-muted-foreground"
+                      )}
+                    >
+                      {
+                        isAircraftsLoading && <Loader2 className="size-4 animate-spin mr-2" />
+                      }
+                      {field.value
+                        ? <p>{aircrafts?.find(
+                          (aircraft) => `${aircraft.id.toString()}` === field.value
+                        )?.acronym}</p>
+                        : "Elige la aeronave..."
+                      }
+                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    </Button>
+                  </FormControl>
+                </PopoverTrigger>
+                <PopoverContent className="p-0">
+                  <Command>
+                    <CommandInput placeholder="Busque una aeronave..." />
+                    <CommandList>
+                      <CommandEmpty className="text-xs p-2 text-center">No se ha encontrado ninguna aeronave.</CommandEmpty>
+                      <CommandGroup>
+                        {aircrafts?.map((aircraft) => (
+                          <CommandItem
+                            value={`${aircraft.id}`}
+                            key={aircraft.id}
+                            onSelect={() => {
+                              form.setValue("aircraft_id", aircraft.id.toString());
+                              setSelectedAircraft(aircraft.manufacturer.id.toString());
+                            }}
+                          >
+                            <Check
+                              className={cn(
+                                "mr-2 h-4 w-4",
+                                `${aircraft.id.toString()}` === field.value
+                                  ? "opacity-100"
+                                  : "opacity-0"
+                              )}
+                            />
+                            {
+                              <p>{aircraft.acronym} - {aircraft.manufacturer.name}</p>
+                            }
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
         <div className="grid grid-cols-2 gap-2">
           <FormField
             control={form.control}
@@ -319,29 +393,29 @@ export function ConsumableDispatchForm({ onClose }: FormProps) {
             )}
           />
           <FormField
-          control={form.control}
-          name="destination_place"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Destino</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Seleccione..." />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  {
-                    departments && departments.map((department) => (
-                      <SelectItem key={department.id} value={department.id.toString()}>{department.name}</SelectItem>
-                    ))
-                  }
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+            control={form.control}
+            name="destination_place"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Destino</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Seleccione..." />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {
+                      departments && departments.map((department) => (
+                        <SelectItem key={department.id} value={department.id.toString()}>{department.name}</SelectItem>
+                      ))
+                    }
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
         </div>
         <div className="space-y-3">
           <div className="flex gap-2">
@@ -350,7 +424,7 @@ export function ConsumableDispatchForm({ onClose }: FormProps) {
               name="articles"
               render={({ field }) => (
                 <FormItem className="flex flex-col">
-                  <FormLabel>Componente a Retirar</FormLabel>
+                  <FormLabel>Consumible a Retirar</FormLabel>
                   <Popover open={open} onOpenChange={setOpen}>
                     <PopoverTrigger asChild>
                       <Button

@@ -62,7 +62,7 @@ export function DataTable<TData, TValue>({
       <div className="flex items-center py-4">
         <div className="flex gap-x-2 items-center">
           <Button variant={'outline'} className="border-dashed p-2">
-            <Link href={'/hangar74/almacen/inventario/gestion/crear'}>Ingresar Articulo</Link>
+            <Link href={'/estelar/almacen/inventario/gestion/crear'}>Ingresar Articulo</Link>
           </Button>
         </div>
         <DataTableViewOptions table={table} />

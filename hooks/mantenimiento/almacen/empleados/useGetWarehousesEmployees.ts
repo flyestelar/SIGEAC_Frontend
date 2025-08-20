@@ -1,20 +1,23 @@
 import axios from '@/lib/axios';
+import { useCompanyStore } from '@/stores/CompanyStore';
 import { Employee } from '@/types';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 
 const fetchWarehousesEmployees = async (
-  location_id: number,
+  location_id: string | null,
   company?: string
 ): Promise<Employee[]> => {
-  const { data } = await axios.post(`/${company}/employee-warehouse`, { location_id });
+  const { data } = await axios.get(`/${company}/${location_id}/employee-warehouse`);
   return data;
 };
 
-export const useGetWarehousesEmployees = (company?: string) => {
-  return useMutation<Employee[], Error, { location_id: number }>(
+export const useGetWarehousesEmployees = () => {
+  const { selectedCompany, selectedStation } = useCompanyStore();
+  return useQuery<Employee[], Error>(
     {
-      mutationKey: ['warehouses-employees', company],
-      mutationFn: ({ location_id }) => fetchWarehousesEmployees(location_id, company!),
+      queryKey: ['warehouses-employees'],
+      queryFn: () => fetchWarehousesEmployees(selectedStation, selectedCompany?.slug),
+      enabled: !!selectedCompany && !!selectedStation,
     }
   );
 };

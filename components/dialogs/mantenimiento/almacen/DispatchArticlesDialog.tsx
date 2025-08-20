@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/button"
 interface DialogProps {
   articles?: {
     serial?: string,
+    description?: string,
     quantity: string | number,
     part_number: string,
     article_id?: string | number,
@@ -43,8 +44,9 @@ const DispatchArticlesDialog = ({ articles, work_order }: DialogProps) => {
             <div className="flex flex-col items-center gap-2 p-2">
               {
                 articles && articles.map((article) => (
-                  <div key={article.article_id} className="w-[200px] group cursor-pointer" >
-                    {article.serial ?? article.part_number} - Cantidad: {article.quantity} {article.unit ? article.unit[0].unit.value : ""}
+                  <div key={article.article_id} className="w-[200px] group cursor-pointer flex flex-col items-center" >
+                    <span className="text-center font-bold">{article.description}</span>
+                    {article.part_number} - Cantidad: {article.quantity} {article.unit ? article.unit[0].unit.value : ""}
                   </div>
                 ))
               }

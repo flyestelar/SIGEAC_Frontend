@@ -1,18 +1,18 @@
 import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Client } from "@/types";
 import {
-    EditIcon,
-    EyeIcon,
-    Loader2,
-    MoreHorizontal,
-    Plus,
-    Trash2,
-    TrendingUp,
+  EditIcon,
+  EyeIcon,
+  Loader2,
+  MoreHorizontal,
+  Plus,
+  Trash2,
+  TrendingUp,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -23,18 +23,18 @@ import { Badge } from "../../ui/badge";
 import { Button } from "../../ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../../ui/card";
 import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
 } from "../../ui/dialog";
 import { useDeleteClient } from "@/actions/general/clientes/actions";
 import { useCompanyStore } from "@/stores/CompanyStore";
 
 const ClientDropdownActions = ({ client }: { client: Client }) => {
-    const {selectedCompany} = useCompanyStore();
+  const { selectedCompany } = useCompanyStore();
   const [openDelete, setOpenDelete] = useState<boolean>(false);
   const [openClient, setOpenClient] = useState<boolean>(false);
   const [openEdit, setOpenEdit] = useState<boolean>(false);
@@ -49,7 +49,7 @@ const ClientDropdownActions = ({ client }: { client: Client }) => {
   };
 
   const handleDelete = (id: string) => {
-    deleteClient.mutate({id: client.id.toString(), company: selectedCompany!.slug}, {
+    deleteClient.mutate({ id: client.id.toString(), company: selectedCompany!.slug }, {
       onSuccess: () => setOpenDelete(false), // Cierra el modal solo si la eliminación fue exitosa
     });
   };
@@ -204,9 +204,8 @@ const ClientDropdownActions = ({ client }: { client: Client }) => {
                   <div className="flex justify-between items-center">
                     <span className="font-medium">Saldo Actual</span>
                     <span
-                      className={`font-bold text-2xl ${
-                        client.balance >= 0 ? "text-green-600" : "text-red-600"
-                      }`}
+                      className={`font-bold text-2xl ${client.balance >= 0 ? "text-green-600" : "text-red-600"
+                        }`}
                     >
                       {client.balance >= 0 ? "+" : "-"} ${" "}
                       {Math.abs(client.balance).toLocaleString()}
@@ -260,7 +259,7 @@ const ClientDropdownActions = ({ client }: { client: Client }) => {
             <DialogTitle>Registrar Saldo a Favor</DialogTitle>
           </DialogHeader>
           <AddClientBalanceForm
-            dni={client.id.toString()}
+            id={client.dni.toString()}
             onClose={() => setOpenAddBalance(false)}
           />
         </DialogContent>

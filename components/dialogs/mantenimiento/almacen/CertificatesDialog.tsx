@@ -16,6 +16,7 @@ import Image from "next/image"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { toast } from "sonner"
+import { useCompanyStore } from "@/stores/CompanyStore"
 
 interface DialogProps {
   certificates?: string[],
@@ -25,7 +26,7 @@ interface DialogProps {
 const handleDownload = async (url: string) => {
   const fileUrl = url;
   try {
-    const response = await axiosInstance.get(`/hangar74/articles/certificates/${fileUrl}`, {
+    const response = await axiosInstance.get(`/estelar/articles/certificates/${fileUrl}`, {
       responseType: 'blob', // Necesario para manejar la descarga de archivos
     });
     // Crear una URL para el blob y hacer que el navegador lo descargue

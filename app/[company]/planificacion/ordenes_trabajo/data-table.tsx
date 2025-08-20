@@ -26,6 +26,7 @@ import {
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
+import { useCompanyStore } from "@/stores/CompanyStore"
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
@@ -36,7 +37,7 @@ export function DataTable<TData, TValue>({
   columns,
   data,
 }: DataTableProps<TData, TValue>) {
-
+  const { selectedCompany } = useCompanyStore()
   const [sorting, setSorting] = useState<SortingState>([])
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>(
     []
@@ -64,15 +65,11 @@ export function DataTable<TData, TValue>({
     }
   })
 
-  const router = useRouter();
-
-  const isFiltered = table.getState().columnFilters.length > 0
-
   return (
     <div>
       <div className="flex items-center py-4">
         <div className="flex gap-x-2 items-center">
-          <Link href={'/hangar74/planificacion/ordenes_trabajo/nueva_orden_trabajo'}>
+          <Link href={`/${selectedCompany?.slug}/planificacion/ordenes_trabajo/nueva_orden_trabajo`}>
             <Button variant="outline" className="flex items-center justify-center gap-2 h-8 border-dashed">Generar Orden de Trabajo</Button>
           </Link>
         </div>

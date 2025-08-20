@@ -9,7 +9,7 @@ interface CreateClientSchema {
   address?: string,
   dni: string,
   dni_type: string,
-  pay_credit_days?: string
+  pay_credit_days?: number
 }
 
 export const useCreateClient = () => {
@@ -17,23 +17,23 @@ export const useCreateClient = () => {
   const queryClient = useQueryClient()
 
   const createMutation = useMutation({
-      mutationFn: async ({company, data}: {
-        company: string | null, data: CreateClientSchema
-      }) => {
-          await axiosInstance.post(`/${company}/clients`, data)
-        },
-      onSuccess: () => {
-          queryClient.invalidateQueries({queryKey: ['clients']})
-          toast("¡Creado!", {
-              description: `¡El cliente se ha creado correctamente!`
-          })
-        },
-      onError: (error) => {
-          toast('Hey', {
-            description: `No se creo correctamente: ${error}`
-          })
-        },
-      }
+    mutationFn: async ({ company, data }: {
+      company: string | null, data: CreateClientSchema
+    }) => {
+      await axiosInstance.post(`/${company}/clients`, data)
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['clients'] })
+      toast("¡Creado!", {
+        description: `¡El cliente se ha creado correctamente!`
+      })
+    },
+    onError: (error) => {
+      toast('Hey', {
+        description: `No se creo correctamente: ${error}`
+      })
+    },
+  }
   )
 
   return {
@@ -47,22 +47,22 @@ export const useDeleteClient = () => {
   const queryClient = useQueryClient()
 
   const deleteMutation = useMutation({
-      mutationFn: async ({id, company}: {id: string, company: string}) => {
-          await axiosInstance.delete(`/${company}/clients/${id}`)
-        },
-      onSuccess: () => {
+    mutationFn: async ({ id, company }: { id: string, company: string }) => {
+      await axiosInstance.delete(`/${company}/clients/${id}`)
+    },
+    onSuccess: () => {
 
-          queryClient.invalidateQueries({queryKey: ['clients']})
-          toast.success("¡Eliminado!", {
-              description: `¡El cliente ha sido eliminado correctamente!`
-          })
-        },
-      onError: (e) => {
-          toast.error("Oops!", {
-            description: "¡Hubo un error al eliminar el cliente!"
-        })
-        },
-      }
+      queryClient.invalidateQueries({ queryKey: ['clients'] })
+      toast.success("¡Eliminado!", {
+        description: `¡El cliente ha sido eliminado correctamente!`
+      })
+    },
+    onError: (e) => {
+      toast.error("Oops!", {
+        description: "¡Hubo un error al eliminar el cliente!"
+      })
+    },
+  }
   )
 
   return {

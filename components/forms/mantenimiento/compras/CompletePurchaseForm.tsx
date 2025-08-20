@@ -67,9 +67,7 @@ export function CompletePurchaseForm({ onClose, po }: FormProps) {
 
   const { user } = useAuth();
 
-  const { data: accounts, isLoading: isAccLoading } = useGetBankAccounts(
-    selectedCompany!.slug
-  );
+  const { data: accounts, isLoading: isAccLoading } = useGetBankAccounts();
 
   const { data: cards, isLoading: isCardsLoading } = useGetCards();
 
@@ -337,36 +335,36 @@ export function CompletePurchaseForm({ onClose, po }: FormProps) {
           />
           {(form.watch("payment_method") === "transferencia_nacional" ||
             form.watch("payment_method") === "transferencia_usa") && (
-            <FormField
-              control={form.control}
-              name="bank_account_id"
-              render={({ field }) => (
-                <FormItem className="w-full">
-                  <FormLabel>Cuenta Bancaria</FormLabel>
-                  <Select
-                    disabled={isAccLoading}
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Seleccione el método..." />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {accounts &&
-                        accounts.map((acc) => (
-                          <SelectItem value={acc.id.toString()} key={acc.id}>
-                            {acc.name} ({acc.account_number}) - {acc.bank.name}
-                          </SelectItem>
-                        ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          )}
+              <FormField
+                control={form.control}
+                name="bank_account_id"
+                render={({ field }) => (
+                  <FormItem className="w-full">
+                    <FormLabel>Cuenta Bancaria</FormLabel>
+                    <Select
+                      disabled={isAccLoading}
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Seleccione el método..." />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {accounts &&
+                          accounts.map((acc) => (
+                            <SelectItem value={acc.id.toString()} key={acc.id}>
+                              {acc.name} ({acc.account_number}) - {acc.bank.name}
+                            </SelectItem>
+                          ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
           {form.watch("payment_method") === "debito_credito" && (
             <FormField
               control={form.control}

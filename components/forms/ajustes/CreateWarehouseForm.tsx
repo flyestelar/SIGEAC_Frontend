@@ -19,58 +19,45 @@ import {
 
 import { useCreateWarehouse } from "@/actions/mantenimiento/almacen/almacenes/actions"
 import { Input } from "@/components/ui/input"
-import { useGetCompaniesWithWarehouses } from "@/hooks/sistema/useGetCompaniesWithWarehouses"
+import { useGetCompanies } from "@/hooks/sistema/useGetCompanies"
 import { useGetLocationsByCompanyId } from "@/hooks/sistema/useGetLocationsByCompanyId"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Loader2 } from "lucide-react"
 import { useEffect, useState } from "react"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
+import { useGetLocationsByCompany } from "@/hooks/sistema/useGetLocationsByCompany"
+import { useCompanyStore } from "@/stores/CompanyStore"
 
 const formSchema = z.object({
   name: z.string().min(2).max(50),
-  company_id: z.string({
-    message: "Debe seleccionar una compañía."
-  }),
   location_id: z.string({
     message: "Debe seleccionar una ubicación."
   }),
+  type: z.string(),
 })
 
 
 const CreateWarehouseForm = () => {
 
-  const { data: companies, isLoading, error } = useGetCompaniesWithWarehouses();
+  const { selectedCompany } = useCompanyStore()
 
-  const { mutate: fetchLocations, data: locations, isPending } = useGetLocationsByCompanyId();
+
+  const { data: locations, isLoading } = useGetLocationsByCompany(selectedCompany?.slug);
 
   const { createWarehouse } = useCreateWarehouse()
-
-  const [companyId, setCompanyId] = useState<number>();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: "",
       location_id: "",
-      company_id: "",
     },
   })
-
-  useEffect(() => {
-    if (companyId) {
-      fetchLocations(companyId);
-    }
-  }, [companyId, fetchLocations]);
-
-  const onCompanySelect = (value: string) => {
-    setCompanyId(Number(value))
-  }
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     const formattedValues = {
       ...values,
-      company_id: Number(values.company_id),
       location_id: Number(values.location_id),
     }
     createWarehouse.mutate(formattedValues)
@@ -97,27 +84,23 @@ const CreateWarehouseForm = () => {
         />
         <FormField
           control={form.control}
-          name="company_id"
+          name="type"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Empresa</FormLabel>
-              <Select onValueChange={(e) => {
-                field.onChange(e)
-                onCompanySelect(e)
-              }}>
+              <FormLabel>Tipo</FormLabel>
+              <Select onValueChange={field.onChange}>
                 <FormControl>
                   <SelectTrigger disabled={isLoading}>
-                    <SelectValue placeholder={isLoading ? <Loader2 className="size-4 animate-spin" /> : "Seleccionar..."} />
+                    <SelectValue placeholder={isLoading ? <Loader2 className="size-4 animate-spin" /> : "Seleccione un tipo..."} />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  {
-                    companies && <SelectItem value={companies.company.id.toString()}>{companies.company.name}</SelectItem>
-                  }
+                  <SelectItem value="GENERAL">General</SelectItem>
+                  <SelectItem value="AERONAUTICO">Aeronáutico</SelectItem>
                 </SelectContent>
               </Select>
               <FormDescription>
-                Seleccione la ubicación en la cual se encuentrael almácen.
+                Seleccione el tipo del almácen.
               </FormDescription>
               <FormMessage />
             </FormItem>
@@ -131,13 +114,13 @@ const CreateWarehouseForm = () => {
               <FormLabel>Ubicación</FormLabel>
               <Select onValueChange={field.onChange}>
                 <FormControl>
-                  <SelectTrigger disabled={!companyId || isPending}>
-                    <SelectValue placeholder={isPending ? <Loader2 className="size-4 animate-spin" /> : "Seleccione una ubicacion..."} />
+                  <SelectTrigger disabled={isLoading}>
+                    <SelectValue placeholder={isLoading ? <Loader2 className="size-4 animate-spin" /> : "Seleccione una ubicacion..."} />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
                   {
-                    isPending ? <Loader2 className="size-4 animate-spin" />
+                    isLoading ? <Loader2 className="size-4 animate-spin" />
                       :
                       locations && locations.map((location) => (
                         <SelectItem key={location.cod_iata} value={location.id.toString()}>{location.cod_iata} - {location.type}</SelectItem>

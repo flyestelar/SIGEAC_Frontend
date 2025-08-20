@@ -108,11 +108,9 @@ interface FormProps {
 
 export function FlightForm({ onClose }: FormProps) {
   const { createFlight } = useCreateFlight();
-  const {selectedCompany} = useCompanyStore();
+  const { selectedCompany } = useCompanyStore();
   const { data: routes, isLoading: isRouteLoading, isError } = useGetRoute();
-  const { data: accounts, isLoading: isAccLoading } = useGetBankAccounts(
-    selectedCompany?.slug
-  );
+  const { data: accounts, isLoading: isAccLoading } = useGetBankAccounts();
   const [kg, setKg] = useState("0");
   const {
     data: clients,
@@ -142,7 +140,7 @@ export function FlightForm({ onClose }: FormProps) {
   }, [form]);
 
 
-  const {fee, type} = form.watch();
+  const { fee, type } = form.watch();
 
   useEffect(() => {
     if (type !== "CHART") {
@@ -164,7 +162,7 @@ export function FlightForm({ onClose }: FormProps) {
   async function onSubmit(values: z.infer<typeof formSchema>) {
     const formattedValues = {
       ...values,
-      fee: values.type === "CHART" ? "0": values.fee,
+      fee: values.type === "CHART" ? "0" : values.fee,
       details: values.type === "CARGA" ? `${kg} KG` : values.type === "PAX" ? `${kg} Pasajeros` : "Vuelo Charter",
     };
     createFlight.mutate(formattedValues, {
@@ -204,7 +202,7 @@ export function FlightForm({ onClose }: FormProps) {
                       <InputOTPSlot index={0} />
                       <InputOTPSlot index={1} />
                     </InputOTPGroup>
-                      <InputOTPSeparator />
+                    <InputOTPSeparator />
                     <InputOTPGroup>
                       <InputOTPSlot index={2} />
                       <InputOTPSlot index={3} />
@@ -293,8 +291,8 @@ export function FlightForm({ onClose }: FormProps) {
                         )}
                         {field.value
                           ? clients?.find(
-                              (client) => client.id.toString() === field.value
-                            )?.name
+                            (client) => client.id.toString() === field.value
+                          )?.name
                           : "Seleccione un cliente..."}
                         <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                       </Button>
@@ -339,7 +337,7 @@ export function FlightForm({ onClose }: FormProps) {
               </FormItem>
             )}
           />
-<FormField
+          <FormField
             control={form.control}
             name="aircraft_id"
             render={({ field }) => (
@@ -432,7 +430,7 @@ export function FlightForm({ onClose }: FormProps) {
           />
         </div>
         <div className="flex gap-2 items-center justify-center">
-        {form.watch("type") !== "CHART" && (
+          {form.watch("type") !== "CHART" && (
             <FormField
               control={form.control}
               name="fee"
@@ -564,92 +562,91 @@ export function FlightForm({ onClose }: FormProps) {
             )}
           />
 
-{form.watch("pay_method") && form.watch("pay_method") !== "EFECTIVO" && (
+          {form.watch("pay_method") && form.watch("pay_method") !== "EFECTIVO" && (
             <FormField
-            control={form.control}
-            name="bank_account_id"
-            render={({ field }) => (
-              <FormItem className="w-full flex flex-col space-y-3 mt-1.5">
-                <FormLabel>Cuenta de Banco</FormLabel>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <FormControl>
-                      <Button
-                        disabled={isAccLoading}
-                        variant="outline"
-                        role="combobox"
-                        className={cn(
-                          "justify-between",
-                          !field.value && "text-muted-foreground"
-                        )}
-                      >
-                        {isAccLoading ? (
-                          <>
-                            <Loader2 className="size-4 animate-spin mr-2" />
-                            Cargando cuentas...
-                          </>
-                        ) : field.value ? (
-                          accounts?.find(
-                            (acc) => acc.id.toString() === field.value
-                          ) ? (
-                            `${accounts.find(
+              control={form.control}
+              name="bank_account_id"
+              render={({ field }) => (
+                <FormItem className="w-full flex flex-col space-y-3 mt-1.5">
+                  <FormLabel>Cuenta de Banco</FormLabel>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <FormControl>
+                        <Button
+                          disabled={isAccLoading}
+                          variant="outline"
+                          role="combobox"
+                          className={cn(
+                            "justify-between",
+                            !field.value && "text-muted-foreground"
+                          )}
+                        >
+                          {isAccLoading ? (
+                            <>
+                              <Loader2 className="size-4 animate-spin mr-2" />
+                              Cargando cuentas...
+                            </>
+                          ) : field.value ? (
+                            accounts?.find(
                               (acc) => acc.id.toString() === field.value
-                            )?.name} - ${
-                              accounts.find(
+                            ) ? (
+                              `${accounts.find(
+                                (acc) => acc.id.toString() === field.value
+                              )?.name} - ${accounts.find(
                                 (acc) => acc.id.toString() === field.value
                               )?.bank.name
-                            }`
+                              }`
+                            ) : (
+                              "Cuenta no encontrada"
+                            )
                           ) : (
-                            "Cuenta no encontrada"
-                          )
-                        ) : (
-                          "Seleccione una cuenta..."
-                        )}
-                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                      </Button>
-                    </FormControl>
-                  </PopoverTrigger>
-                  <PopoverContent className="p-0 w-[var(--radix-popover-trigger-width)]">
-                    <Command>
-                      <CommandInput placeholder="Busque una cuenta bancaria..." />
-                      <CommandList>
-                        <CommandEmpty className="text-sm p-2 text-center">
-                          No se encontraron cuentas bancarias.
-                        </CommandEmpty>
-                        <CommandGroup>
-                          {accounts?.map((acc) => (
-                            <CommandItem
-                              value={`${acc.name} ${acc.bank.name}`}
-                              key={acc.id}
-                              onSelect={() => {
-                                form.setValue(
-                                  "bank_account_id",
-                                  acc.id.toString()
-                                );
-                              }}
-                            >
-                              <Check
-                                className={cn(
-                                  "mr-2 h-4 w-4",
-                                  acc.id.toString() === field.value
-                                    ? "opacity-100"
-                                    : "opacity-0"
-                                )}
-                              />
-                              {acc.name} - {acc.bank.name}
-                            </CommandItem>
-                          ))}
-                        </CommandGroup>
-                      </CommandList>
-                    </Command>
-                  </PopoverContent>
-                </Popover>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+                            "Seleccione una cuenta..."
+                          )}
+                          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        </Button>
+                      </FormControl>
+                    </PopoverTrigger>
+                    <PopoverContent className="p-0 w-[var(--radix-popover-trigger-width)]">
+                      <Command>
+                        <CommandInput placeholder="Busque una cuenta bancaria..." />
+                        <CommandList>
+                          <CommandEmpty className="text-sm p-2 text-center">
+                            No se encontraron cuentas bancarias.
+                          </CommandEmpty>
+                          <CommandGroup>
+                            {accounts?.map((acc) => (
+                              <CommandItem
+                                value={`${acc.name} ${acc.bank.name}`}
+                                key={acc.id}
+                                onSelect={() => {
+                                  form.setValue(
+                                    "bank_account_id",
+                                    acc.id.toString()
+                                  );
+                                }}
+                              >
+                                <Check
+                                  className={cn(
+                                    "mr-2 h-4 w-4",
+                                    acc.id.toString() === field.value
+                                      ? "opacity-100"
+                                      : "opacity-0"
+                                  )}
+                                />
+                                {acc.name} - {acc.bank.name}
+                              </CommandItem>
+                            ))}
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
           )}
-        {
+          {
             form.watch("pay_method") === "TRANSFERENCIA" && (
               <FormField
                 control={form.control}
@@ -665,7 +662,7 @@ export function FlightForm({ onClose }: FormProps) {
                 )}
               />
             )
-        }
+          }
         </div>
         <Button type="submit" disabled={createFlight.isPending}>
           {createFlight.isPending ? "Enviando..." : "Enviar"}

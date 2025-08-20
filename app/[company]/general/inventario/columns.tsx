@@ -8,6 +8,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { cn } from "@/lib/utils"
 import { Batch } from "@/types"
 import Link from "next/link"
+import { useCompanyStore } from "@/stores/CompanyStore"
 
 interface BatchesWithCountProp extends Batch {
   article_count: number,
@@ -43,7 +44,7 @@ export const columns: ColumnDef<BatchesWithCountProp>[] = [
     ),
     cell: ({ row }) => {
       return (
-        <Link href={`/hangar74/almacen/inventario/gestion/${row.original.slug}`} className="font-medium flex justify-center hover:scale-105 hover:text-blue-600 transition-all ease-in cursor-pointer duration-150">{row.original.name}</Link>
+        <Link href={`/estelar/almacen/inventario/gestion/${row.original.slug}`} className="font-medium flex justify-center hover:scale-105 hover:text-blue-600 transition-all ease-in cursor-pointer duration-150">{row.original.name}</Link>
       )
     }
   },
@@ -57,7 +58,7 @@ export const columns: ColumnDef<BatchesWithCountProp>[] = [
     )
   },
   {
-  accessorKey: "ata_code",
+    accessorKey: "ata_code",
     header: ({ column }) => (
       <DataTableColumnHeader filter column={column} title="Código ATA" />
     ),

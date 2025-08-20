@@ -61,7 +61,7 @@ export const columns: ColumnDef<FlightControl>[] = [
       <DataTableColumnHeader filter column={column} title="Nro. de Vuelo" />
     ),
     cell: ({ row }) => (
-      <Link href={`/hangar74/planificacion/control_vuelos/vuelos/${row.original.flight_number}`} className="flex justify-center font-bold italic">{row.original.flight_number}</Link>
+      <Link href={`/estelar/planificacion/control_vuelos/vuelos/${row.original.flight_number}`} className="flex justify-center font-bold italic">{row.original.flight_number}</Link>
     )
   },
   {

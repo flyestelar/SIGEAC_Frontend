@@ -44,7 +44,7 @@ export const columns: ColumnDef<Quote>[] = [
     cell: ({ row }) => {
       return (
         <div className="flex justify-center">
-          <Link href={`/hangar74/compras/cotizaciones/${row.original.quote_number}`} className="font-bold text-center hover:italic hover:scale-110 transition-all">{row.original.quote_number}</Link>
+          <Link href={`/estelar/compras/cotizaciones/${row.original.quote_number}`} className="font-bold text-center hover:italic hover:scale-110 transition-all">{row.original.quote_number}</Link>
         </div>
       )
     }

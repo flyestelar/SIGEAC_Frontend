@@ -16,6 +16,7 @@ import { DispachedArticles } from "@/hooks/mantenimiento/almacen/salidas_entrada
 import { format } from "date-fns"
 import { es } from "date-fns/locale"
 import Link from "next/link"
+import { useCompanyStore } from "@/stores/CompanyStore"
 
 
 export const columns: ColumnDef<DispachedArticles>[] = [
@@ -49,7 +50,7 @@ export const columns: ColumnDef<DispachedArticles>[] = [
     cell: ({ row }) => {
       return (
         <>
-          {row.original.work_order ? <Link href={`/hangar74/planificacion/ordenes_trabajo/${row.original.work_order.order_number}`} className="font-medium flex justify-center hover:scale-105 hover:text-blue-600 transition-all ease-in cursor-pointer duration-150">{row.original.work_order.order_number}</Link> : <p className="font-bold text-center">N/A</p>}
+          {row.original.work_order ? <Link href={`/estelar/planificacion/ordenes_trabajo/${row.original.work_order.order_number}`} className="font-medium flex justify-center hover:scale-105 hover:text-blue-600 transition-all ease-in cursor-pointer duration-150">{row.original.work_order.order_number}</Link> : <p className="font-bold text-center">N/A</p>}
         </>
       )
     }

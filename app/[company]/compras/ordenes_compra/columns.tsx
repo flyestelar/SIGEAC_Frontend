@@ -45,7 +45,7 @@ export const columns: ColumnDef<PurchaseOrder>[] = [
     cell: ({ row }) => {
       return (
         <div className="flex justify-center">
-          <Link href={`/hangar74/compras/ordenes_compra/${row.original.order_number}`} className="font-bold text-center hover:italic hover:scale-110 transition-all">{row.original.order_number}</Link>
+          <Link href={`/estelar/compras/ordenes_compra/${row.original.order_number}`} className="font-bold text-center hover:italic hover:scale-110 transition-all">{row.original.order_number}</Link>
         </div>
       )
     }
