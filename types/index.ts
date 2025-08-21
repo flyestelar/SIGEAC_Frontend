@@ -429,6 +429,7 @@ export interface DispatchRequest extends Request {
       serial: string;
       part_number: string;
       quantity: string;
+      dispatch_quantity: string;
       unit: Convertion[];
     }[];
   };

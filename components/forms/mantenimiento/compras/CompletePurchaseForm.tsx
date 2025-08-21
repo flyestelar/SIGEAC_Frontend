@@ -66,7 +66,7 @@ export function CompletePurchaseForm({ onClose, po }: FormProps) {
   const { selectedCompany } = useCompanyStore();
 
   const { user } = useAuth();
-
+  
   const { data: accounts, isLoading: isAccLoading } = useGetBankAccounts();
 
   const { data: cards, isLoading: isCardsLoading } = useGetCards();

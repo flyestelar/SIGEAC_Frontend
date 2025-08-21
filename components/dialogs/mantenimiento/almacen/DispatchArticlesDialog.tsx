@@ -19,6 +19,7 @@ interface DialogProps {
     serial?: string,
     description?: string,
     quantity: string | number,
+    dispatch_quantity?: string,
     part_number: string,
     article_id?: string | number,
     unit?: Convertion[],
@@ -46,7 +47,7 @@ const DispatchArticlesDialog = ({ articles, work_order }: DialogProps) => {
                 articles && articles.map((article) => (
                   <div key={article.article_id} className="w-[200px] group cursor-pointer flex flex-col items-center" >
                     <span className="text-center font-bold">{article.description}</span>
-                    {article.part_number} - Cantidad: {article.quantity} {article.unit ? article.unit[0].unit.value : ""}
+                    {article.part_number} - Cantidad: {article.dispatch_quantity} {article.unit ? article.unit[0].unit.value : ""}
                   </div>
                 ))
               }
