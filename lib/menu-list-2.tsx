@@ -34,6 +34,7 @@ import {
   Globe,
   Cat,
   CalendarFold,
+  FileBadge,
 } from "lucide-react";
 
 type Submenu = {
@@ -118,7 +119,7 @@ export function getMenuList(
             "JEFE_PLANIFICACION",
           ],
           active: pathname === `/${currentCompany?.slug}/general/cursos`,
-          icon: Cat,
+          icon: FileBadge,
           submenus: [
             {
               href: `/${currentCompany?.slug}/general/cursos`,
