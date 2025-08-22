@@ -12,9 +12,9 @@ import {
   useReactTable,
 } from "@tanstack/react-table"
 
+import { CreateBatchDialog } from "@/components/dialogs/mantenimiento/almacen/CreateBatchDialog"
 import { DataTablePagination } from "@/components/tables/DataTablePagination"
 import { DataTableViewOptions } from "@/components/tables/DataTableViewOptions"
-import { Button } from "@/components/ui/button"
 import {
   Table,
   TableBody,
@@ -23,9 +23,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { useState } from "react"
 import { useRouter } from "next/navigation"
-import Link from "next/link"
+import { useState } from "react"
+import { WarehouseReportDialog } from "@/components/dialogs/mantenimiento/almacen/WarehouseReportDialog"
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
@@ -64,13 +64,17 @@ export function DataTable<TData, TValue>({
     }
   })
 
-  const isFiltered = table.getState().columnFilters.length > 0
+  const router = useRouter();
 
-  const router = useRouter()
+  const isFiltered = table.getState().columnFilters.length > 0
 
   return (
     <div>
       <div className="flex items-center py-4">
+        <div className="flex gap-x-2 items-center">
+          <CreateBatchDialog />
+          <WarehouseReportDialog />
+        </div>
         <DataTableViewOptions table={table} />
       </div>
       <div className="rounded-md border mb-4">

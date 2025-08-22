@@ -651,20 +651,27 @@ export function getMenuList(
           roles: ["ANALISTA_ALMACEN", "JEFE_ALMACEN", "SUPERUSER"],
           submenus: [
             {
-              href: `/${currentCompany?.slug}/almacen/inventario/gestion`,
-              label: "Gestión",
+              href: `/${currentCompany?.slug}/almacen/inventario/rotables`,
+              label: "Componentes Rotables",
               active:
                 pathname ===
-                  `/${currentCompany?.slug}/almacen/inventario/gestion` ||
+                `/${currentCompany?.slug}/almacen/inventario/rotables` ||
                 pathname ===
-                  `/${currentCompany?.slug}/almacen/inventario/gestion/crear`,
+                `/${currentCompany?.slug}/almacen/inventario/rotables`,
             },
             {
-              href: `/${currentCompany?.slug}/almacen/inventario/entregado`,
-              label: "Entregado",
+              href: `/${currentCompany?.slug}/almacen/inventario/consumibles`,
+              label: "Consumibles",
               active:
                 pathname ===
-                `/${currentCompany?.slug}/almacen/inventario/entregado`,
+                `/${currentCompany?.slug}/almacen/inventario/consumibles`,
+            },
+            {
+              href: `/${currentCompany?.slug}/almacen/inventario/consumibles`,
+              label: "Herramientas",
+              active:
+                pathname ===
+                `/${currentCompany?.slug}/almacen/inventario/consumibles`,
             },
           ],
         },
@@ -684,7 +691,7 @@ export function getMenuList(
       groupLabel: "Planificación",
       moduleValue: "planification",
       menus: [
-          {
+        {
           href: `/${currentCompany?.slug}/planificacion/calendario`,
           label: "Calendario de Servicios",
           active: pathname.includes(

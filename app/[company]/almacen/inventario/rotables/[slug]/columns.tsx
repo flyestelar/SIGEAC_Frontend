@@ -102,23 +102,6 @@ export const columns: ColumnDef<ColumnI>[] = [
     enableHiding: false,
   },
   {
-    accessorKey: "part_number",
-    header: ({ column }) => (
-      <DataTableColumnHeader filter column={column} title="Nro. de Parte" />
-    ),
-    meta: { title: "Nro. Parte" },
-    cell: ({ row }) => (
-      <p className="flex justify-center font-bold">
-        {row.original.part_number}
-      </p>
-    ),
-    filterFn: (row, columnId, filterValue) => {
-      const partNumber = row.original.part_number?.toLowerCase() ?? "";
-      const filter = filterValue.toLowerCase();
-      return partNumber.includes(filter)
-    },
-  },
-  {
     accessorKey: "serial",
     header: ({ column }) => (
       <DataTableColumnHeader filter column={column} title="Serial" />
@@ -129,7 +112,7 @@ export const columns: ColumnDef<ColumnI>[] = [
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger className="w-full flex justify-center">
-              <p className="font-medium text-center">
+              <p className="font-medium italic text-center">
                 {row.original.serial ? row.original.serial : "N/A"}
               </p>
             </TooltipTrigger>
@@ -146,6 +129,23 @@ export const columns: ColumnDef<ColumnI>[] = [
     },
   },
   {
+    accessorKey: "part_number",
+    header: ({ column }) => (
+      <DataTableColumnHeader filter column={column} title="Nro. de Parte" />
+    ),
+    meta: { title: "Nro. Parte" },
+    cell: ({ row }) => (
+      <p className="flex justify-center text-muted-foreground">
+        {row.original.part_number}
+      </p>
+    ),
+    filterFn: (row, columnId, filterValue) => {
+      const partNumber = row.original.part_number?.toLowerCase() ?? "";
+      const filter = filterValue.toLowerCase();
+      return partNumber.includes(filter)
+    },
+  },
+  {
     accessorKey: "alternate_part_number",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Nro. de Parte Alterno" />
@@ -157,28 +157,28 @@ export const columns: ColumnDef<ColumnI>[] = [
             <p className="text-muted-foreground">{part_number}</p>
             <Separator orientation="vertical" className={index === row.original.alternative_part_number.length - 1 ? "hidden" : ""} />
           </div>
-        )) : "N/A"}
+        )): "N/A"}
       </div>
     ),
   },
-  // {
-  //   accessorKey: "description",
-  //   header: ({ column }) => (
-  //     <DataTableColumnHeader column={column} title="Descripción" />
-  //   ),
-  //   cell: ({ row }) => (
-  //     <p className="flex justify-center text-muted-foreground">{row.original.description}</p>
-  //   )
-  // },
-  // {
-  //   accessorKey: "condition",
-  //   header: ({ column }) => (
-  //     <DataTableColumnHeader column={column} title="Condición" />
-  //   ),
-  //   cell: ({ row }) => (
-  //     <p className="flex justify-center font-bold">{row.original.condition}</p>
-  //   )
-  // },
+  {
+    accessorKey: "description",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Descripción" />
+    ),
+    cell: ({ row }) => (
+      <p className="flex justify-center text-muted-foreground">{row.original.description}</p>
+    )
+  },
+  {
+    accessorKey: "condition",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Condición" />
+    ),
+    cell: ({ row }) => (
+      <p className="flex justify-center font-bold">{row.original.condition}</p>
+    )
+  },
   {
     accessorKey: "zone",
     header: ({ column }) => (
@@ -188,16 +188,16 @@ export const columns: ColumnDef<ColumnI>[] = [
       <p className="flex text-center justify-center">{row.original.zone}</p>
     )
   },
-  // {
-  //   accessorKey: "brand",
-  //   header: ({ column }) => (
-  //     <DataTableColumnHeader column={column} title="Marca" />
-  //   ),
-  //   cell: ({ row }) => (
-  //     <p className="flex justify-center text-muted-foreground italic">{row.original.manufacturer}</p>
+  {
+    accessorKey: "brand",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Marca" />
+    ),
+    cell: ({ row }) => (
+      <p className="flex justify-center text-muted-foreground italic">{row.original.manufacturer}</p>
 
-  //   )
-  // },
+    )
+  },
   {
     accessorKey: "quantity",
     header: ({ column }) => (
@@ -225,19 +225,19 @@ export const columns: ColumnDef<ColumnI>[] = [
       <Badge className={(row.original.status === 'InUse' || row.original.status === 'InToolBox') ? "bg-yellow-500 text-center" : "bg-green-500 text-center"}>{row.original.status === 'InUse' ? "En Uso" : row.original.status === 'InToolBox' ? "En Toolbox" : "En Almc."}</Badge>
     )
   },
-  // {
-  //   accessorKey: "certificates",
-  //   header: ({ column }) => (
-  //     <DataTableColumnHeader column={column} title="Certificado(s)" />
-  //   ),
-  //   cell: ({ row }) => (
-  //     <>
-  //       {
-  //         row.original.certificates?.length ? <CertificatesDialog serial={row.original.serial} certificates={row.original.certificates} /> : <p className="font-bold text-center">N/A</p>
-  //       }
-  //     </>
-  //   )
-  // },
+  {
+    accessorKey: "certificates",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Certificado(s)" />
+    ),
+    cell: ({ row }) => (
+      <>
+        {
+          row.original.certificates?.length ? <CertificatesDialog serial={row.original.serial} certificates={row.original.certificates} /> : <p className="font-bold text-center">N/A</p>
+        }
+      </>
+    )
+  },
   {
     id: "actions",
     cell: ({ row }) => {
