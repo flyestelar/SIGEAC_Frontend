@@ -103,7 +103,7 @@ const CreateRequisitionPage = () => {
   const { mutate, data } = useGetBatchesByLocationId();
   const { selectedCompany, selectedStation } = useCompanyStore()
   const { data: employees, isPending: employeesLoading } = useGetUserDepartamentEmployees(selectedCompany?.slug);
-  const { data: secondaryUnits, isLoading: secondaryUnitLoading } = useGetSecondaryUnits(selectedCompany?.slug);
+  const { data: secondaryUnits, isLoading: secondaryUnitLoading } = useGetSecondaryUnits();
   const { data: aircrafts, isLoading: isAircraftsLoading, isError: isAircraftsError } = useGetMaintenanceAircrafts()
   const { createRequisition } = useCreateRequisition()
   const [selectedBatches, setSelectedBatches] = useState<Batch[]>([])
@@ -130,7 +130,7 @@ const CreateRequisitionPage = () => {
 
   useEffect(() => {
     if (selectedStation) {
-      mutate({location_id: Number(selectedStation), company: selectedCompany!.slug})
+      mutate({ location_id: Number(selectedStation), company: selectedCompany!.slug })
     }
   }, [selectedStation, mutate, selectedCompany])
 
@@ -229,7 +229,7 @@ const CreateRequisitionPage = () => {
       ...data,
       type: "AERONAUTICO",
     }
-    await createRequisition.mutateAsync({data: formattedData, company: selectedCompany!.slug})
+    await createRequisition.mutateAsync({ data: formattedData, company: selectedCompany!.slug })
     router.push(`/${selectedCompany!.slug}/compras/requisiciones`)
   }
 

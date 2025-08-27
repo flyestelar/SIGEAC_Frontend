@@ -35,10 +35,10 @@ const InventarioPage = () => {
   // Consultas a la API
 
 
-  const { data: allBatches, isLoading: isLoadingBatches, isError: isBatchesError, error: batchesError } = useGetBatches({company: selectedCompany?.slug, location_id: selectedStation ?? undefined});
+  const { data: allBatches, isLoading: isLoadingBatches, isError: isBatchesError, error: batchesError } = useGetBatches();
 
   const { data: searchedBatches, isLoading: isLoadingSearch, isError: isSearchError, error: searchError } =
-    useSearchBatchesByPartNumber( selectedCompany?.slug, selectedStation ?? undefined, debouncedSearchTerm || undefined);
+    useSearchBatchesByPartNumber(selectedCompany?.slug, selectedStation ?? undefined, debouncedSearchTerm || undefined);
 
   // Memoización de batches a mostrar
   const displayedBatches = useMemo(() => {

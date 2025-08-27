@@ -6,9 +6,8 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { useCreateToolBox } from "@/actions/mantenimiento/almacen/inventario/caja_herramientas/actions"
 import { Input } from "@/components/ui/input"
 import { useAuth } from "@/contexts/AuthContext"
-import { useGetBatchesWithInWarehouseArticles } from "@/hooks/mantenimiento/almacen/renglones/useGetBatchesWithInWarehouseArticles"
 import { useGetEmployeesForBox } from "@/hooks/mantenimiento/almacen/caja_herramientas/useGetEmployeeForBox"
-import { useGetEditToolBoxTools } from "@/hooks/mantenimiento/almacen/caja_herramientas/useGetToolBoxTools"
+import { useGetBatchesWithInWarehouseArticles } from "@/hooks/mantenimiento/almacen/renglones/useGetBatchesWithInWarehouseArticles"
 import { cn } from "@/lib/utils"
 import { useCompanyStore } from "@/stores/CompanyStore"
 import { Article, Batch, ToolBox } from "@/types"
@@ -54,15 +53,13 @@ export function CreateToolBoxForm({ onClose, initialData }: FormProps) {
 
   const [openArticles, setOpenArticles] = useState(false);
 
-  const [filteredBatches, setFilteredBatches] = useState<BatchesWithCountProp[]>([]);
-
   const { selectedStation, selectedCompany } = useCompanyStore()
 
   const { createToolBox } = useCreateToolBox()
 
   const { data: employees, isLoading: employeesLoading, isError: employeesError } = useGetEmployeesForBox(selectedStation ?? null);
 
-  const { mutate, data: batches, isPending: isBatchesLoading, isError } = useGetBatchesWithInWarehouseArticles();
+  const { data: batches, isPending: isBatchesLoading, isError } = useGetBatchesWithInWarehouseArticles();
 
   const form = useForm<FormSchemaType>({
     resolver: zodResolver(FormSchema),
@@ -85,20 +82,6 @@ export function CreateToolBoxForm({ onClose, initialData }: FormProps) {
   const isToolSelected = (value: string) => selectedTools.includes(value);
 
   useEffect(() => {
-    if (selectedStation && selectedCompany) {
-      mutate({location_id: Number(selectedStation), company: selectedCompany!.slug})
-    }
-  }, [selectedStation, mutate, selectedCompany])
-
-  useEffect(() => {
-    if (batches) {
-      // Filtrar los batches por categoría
-      const filtered = batches.filter((batch) => batch.category === "herramienta");
-      setFilteredBatches(filtered);
-    }
-  }, [batches]);
-
-  useEffect(() => {
     form.setValue('tool_id', selectedTools);
   }, [selectedTools, form]);
 
@@ -108,7 +91,7 @@ export function CreateToolBoxForm({ onClose, initialData }: FormProps) {
       created_by: `${user?.first_name} ${user?.last_name}`,
       delivered_by: `${user?.first_name} ${user?.last_name}`,
     }
-    await createToolBox.mutateAsync({data: formattedData, company: selectedCompany!.slug})
+    await createToolBox.mutateAsync({ data: formattedData, company: selectedCompany!.slug })
     onClose();
   }
 
@@ -203,7 +186,7 @@ export function CreateToolBoxForm({ onClose, initialData }: FormProps) {
                     <CommandList>
                       <CommandEmpty className="text-muted-foreground text-xs p-2 text-center">No se han encontrado herramientas disponibles...</CommandEmpty>
                       {
-                        filteredBatches?.map((batch) => (
+                        batches?.map((batch) => (
                           <CommandGroup key={batch.batch_id} heading={batch.name}>
                             {
                               batch.articles.map((article) => (

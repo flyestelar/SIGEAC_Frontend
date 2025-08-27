@@ -13,9 +13,7 @@ import {
 import { useAuth } from "@/contexts/AuthContext"
 import { useGetWarehousesEmployees } from "@/hooks/mantenimiento/almacen/empleados/useGetWarehousesEmployees"
 import { useGetBatchesWithInWarehouseArticles } from "@/hooks/mantenimiento/almacen/renglones/useGetBatchesWithInWarehouseArticles"
-import { useGetWorkOrderEmployees } from "@/hooks/mantenimiento/planificacion/useGetWorkOrderEmployees"
-import { useGetWorkOrders } from "@/hooks/mantenimiento/planificacion/useGetWorkOrders"
-import { useGetDepartments } from "@/hooks/sistema/departamento/useGetDepartment"
+import { useGetEmployeesByDepartment } from "@/hooks/sistema/useGetEmployeesByDepartament"
 import { cn } from "@/lib/utils"
 import { useCompanyStore } from "@/stores/CompanyStore"
 import { Article, Batch } from "@/types"
@@ -23,19 +21,17 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { format } from "date-fns"
 import { es } from "date-fns/locale"
 import { CalendarIcon, Check, ChevronsUpDown, Loader2 } from "lucide-react"
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
 import { Calendar } from "../../../ui/calendar"
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "../../../ui/command"
 import { Popover, PopoverContent, PopoverTrigger } from "../../../ui/popover"
 import { Textarea } from "../../../ui/textarea"
-import Category from "@/app/[company]/administracion/gestion_cajas/categorias/page"
 
 const FormSchema = z.object({
   requested_by: z.string(),
   delivered_by: z.string(),
-  work_order_id: z.string(),
   aircraft_id: z.string(),
   submission_date: z.date({
     message: "Debe ingresar la fecha."
@@ -50,9 +46,7 @@ const FormSchema = z.object({
   }),
   justification: z.string({
     message: "Debe ingresar una justificación de la salida."
-  }),
-  destination_place: z.string(),
-  status: z.string(),
+  }).optional(),
 })
 
 type FormSchemaType = z.infer<typeof FormSchema>
@@ -72,39 +66,18 @@ export function ComponentDispatchForm({ onClose }: FormProps) {
 
   const [open, setOpen] = useState(false);
 
-  const [filteredBatches, setFilteredBatches] = useState<BatchesWithCountProp[]>([]);
-
   const [articleSelected, setArticleSelected] = useState<Article>();
-
-  const [selectedWorkOrder, setSelectedWorkOrder] = useState<string | null>(null);
 
   const { createDispatchRequest } = useCreateDispatchRequest();
 
   const { selectedStation, selectedCompany } = useCompanyStore();
 
-  const { mutate, data: batches, isPending: isBatchesLoading, isError } = useGetBatchesWithInWarehouseArticles();
+  const { data: batches, isLoading: isBatchesLoading, isError: isBatchesError } = useGetBatchesWithInWarehouseArticles();
 
-  const { data: employees, isLoading: employeesLoading, isError: employeesError } = useGetWorkOrderEmployees();
-
-  const { data: workOrders, isLoading: isWorkOrderLoading } = useGetWorkOrders(selectedStation ?? null);
-
-  const { data: departments, isLoading: isDepartmentsLoading } = useGetDepartments(selectedCompany?.slug)
+  const { data: employees, isLoading: employeesLoading, isError: employeesError } = useGetEmployeesByDepartment("MANP");
 
   const { data: warehouseEmployees, isLoading: warehouseEmployeesLoading, isError: warehouseEmployeesError } = useGetWarehousesEmployees();
 
-  useEffect(() => {
-    if (selectedStation) {
-      mutate({ location_id: Number(selectedStation), company: selectedCompany!.slug })
-    }
-  }, [selectedStation, selectedCompany, mutate])
-
-  useEffect(() => {
-    if (batches) {
-      // Filtrar los batches por categoría
-      const filtered = batches.filter((batch) => batch.category === "componente");
-      setFilteredBatches(filtered);
-    }
-  }, [batches]);
 
   const form = useForm<FormSchemaType>({
     resolver: zodResolver(FormSchema),
@@ -112,8 +85,6 @@ export function ComponentDispatchForm({ onClose }: FormProps) {
       articles: [],
       justification: "",
       requested_by: `${user?.first_name} ${user?.last_name}`,
-      destination_place: "",
-      status: "proceso",
     },
   });
 
@@ -148,75 +119,6 @@ export function ComponentDispatchForm({ onClose }: FormProps) {
       <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col space-y-3 w-full">
         <FormField
           control={form.control}
-          name="work_order_id"
-          render={({ field }) => (
-            <FormItem className="flex flex-col space-y-3 mt-1.5 w-full">
-              <FormLabel>Ord. de Trabajo</FormLabel>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <FormControl>
-                    <Button
-                      disabled={isWorkOrderLoading}
-                      variant="outline"
-                      role="combobox"
-                      className={cn(
-                        "justify-between",
-                        !field.value && "text-muted-foreground"
-                      )}
-                    >
-                      {
-                        isWorkOrderLoading && <Loader2 className="size-4 animate-spin mr-2" />
-                      }
-                      {field.value
-                        ? <p>{workOrders?.find(
-                          (wo) => `${wo.id.toString()}` === field.value
-                        )?.order_number}</p>
-                        : "Elige la WO..."
-                      }
-                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                    </Button>
-                  </FormControl>
-                </PopoverTrigger>
-                <PopoverContent className="p-0">
-                  <Command>
-                    <CommandInput placeholder="Busque una WO..." />
-                    <CommandList>
-                      <CommandEmpty className="text-xs p-2 text-center">No se ha encontrado ninguna orden de trabajo.</CommandEmpty>
-                      <CommandGroup>
-                        {workOrders?.map((wo) => (
-                          <CommandItem
-                            value={`${wo.order_number} - ${wo.aircraft.acronym}`}
-                            key={wo.id}
-                            onSelect={() => {
-                              form.setValue("work_order_id", wo.id.toString());
-                              form.setValue("aircraft_id", wo.aircraft.id.toString());
-                              setSelectedWorkOrder(wo.id.toString());
-                            }}
-                          >
-                            <Check
-                              className={cn(
-                                "mr-2 h-4 w-4",
-                                `${wo.id.toString()}` === field.value
-                                  ? "opacity-100"
-                                  : "opacity-0"
-                              )}
-                            />
-                            {
-                              <p>{wo.order_number} - {wo.aircraft.acronym}</p>
-                            }
-                          </CommandItem>
-                        ))}
-                      </CommandGroup>
-                    </CommandList>
-                  </Command>
-                </PopoverContent>
-              </Popover>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
           name="articles"
           render={({ field }) => (
             <FormItem className="flex flex-col mt-2.5 w-full">
@@ -224,13 +126,14 @@ export function ComponentDispatchForm({ onClose }: FormProps) {
               <Popover open={open} onOpenChange={setOpen}>
                 <PopoverTrigger asChild>
                   <Button
+                    disabled={isBatchesLoading || isBatchesError}
                     variant="outline"
                     role="combobox"
                     aria-expanded={open}
                     className="justify-between"
                   >
                     {articleSelected
-                      ? `${articleSelected.serial}`
+                      ? `${articleSelected.part_number} - ${articleSelected.serial ?? "S/N"}`
                       : "Selec. el componente"}
                     <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                   </Button>
@@ -241,15 +144,15 @@ export function ComponentDispatchForm({ onClose }: FormProps) {
                     <CommandList>
                       <CommandEmpty>No se han encontrado componentes...</CommandEmpty>
                       {
-                        filteredBatches?.map((batch) => (
+                        batches?.map((batch) => (
                           <CommandGroup key={batch.batch_id} heading={batch.name}>
                             {
                               batch.articles.map((article) => (
-                                <CommandItem key={article.id} onSelect={() => {
+                                <CommandItem value={`${batch.name} ${article.part_number} ${article.serial} ${article.id}`} key={article.id} onSelect={() => {
                                   handleArticleSelect(article.id!, article?.serial ?? null, batch.batch_id)
                                   setArticleSelected(article)
                                 }}><Check className={cn("mr-2 h-4 w-4", articleSelected?.id === article.id ? "opacity-100" : "opacity-0")} />
-                                  {article.serial}</CommandItem>
+                                  {article.serial ?? "N/A"}</CommandItem>
                               ))
                             }
                           </CommandGroup>
@@ -299,8 +202,8 @@ export function ComponentDispatchForm({ onClose }: FormProps) {
                 <FormLabel>Recibe / MTTO</FormLabel>
                 <Select onValueChange={field.onChange}>
                   <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Seleccione el responsable..." />
+                    <SelectTrigger disabled={employeesLoading || employeesError}>
+                      <SelectValue placeholder={employeesLoading ? <Loader2 className="animate-spin" /> : "Seleccione el responsable..."} />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
@@ -309,7 +212,7 @@ export function ComponentDispatchForm({ onClose }: FormProps) {
                     }
                     {
                       employees && employees.map((employee) => (
-                        <SelectItem key={employee.id} value={`${employee.first_name} ${employee.last_name}`}>{employee.first_name} {employee.last_name} - {employee.job_title.name}</SelectItem>
+                        <SelectItem key={employee.id} value={`${employee.first_name} ${employee.last_name}`}>{employee.first_name} {employee.last_name}</SelectItem>
                       ))
                     }
                   </SelectContent>
@@ -360,30 +263,6 @@ export function ComponentDispatchForm({ onClose }: FormProps) {
                     />
                   </PopoverContent>
                 </Popover>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="destination_place"
-            render={({ field }) => (
-              <FormItem className="w-full">
-                <FormLabel>Destino</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Seleccione..." />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {
-                      departments && departments.map((department) => (
-                        <SelectItem key={department.id} value={department.id.toString()}>{department.name}</SelectItem>
-                      ))
-                    }
-                  </SelectContent>
-                </Select>
                 <FormMessage />
               </FormItem>
             )}

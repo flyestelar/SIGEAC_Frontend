@@ -52,15 +52,15 @@ interface FormProps {
 export function CreateBatchForm({ onClose }: FormProps) {
 
 
-  const {selectedCompany, selectedStation} = useCompanyStore()
+  const { selectedCompany, selectedStation } = useCompanyStore()
 
-  const { data: warehouses, error, isLoading } = useGetWarehousesByLocation({company: selectedCompany?.slug, location_id: selectedStation});
+  const { data: warehouses, error, isLoading } = useGetWarehousesByLocation({ company: selectedCompany?.slug, location_id: selectedStation });
 
   const { createBatch } = useCreateBatch();
 
-  const { data: batches } = useGetBatches({company: selectedCompany?.slug, location_id: selectedStation!});
+  const { data: batches } = useGetBatches();
 
-  const {data: units, isLoading: isUnitsLoading, isError: isUnitsError} = useGetUnits()
+  const { data: units, isLoading: isUnitsLoading, isError: isUnitsError } = useGetUnits()
 
 
   const form = useForm<FormSchemaType>({
@@ -101,7 +101,7 @@ export function CreateBatchForm({ onClose }: FormProps) {
       min_quantity: Number(data.min_quantity),
       warehouse_id: Number(data.warehouse_id),
     }
-    await createBatch.mutateAsync({data: formattedData, company});
+    await createBatch.mutateAsync({ data: formattedData, company });
     onClose();
   }
 

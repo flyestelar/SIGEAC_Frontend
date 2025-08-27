@@ -113,7 +113,7 @@ export function CreateGeneralRequisitionForm({
 
   const { data: employees, isPending: employeesLoading } = useGetUserDepartamentEmployees(selectedCompany?.slug);
 
-  const { data: secondaryUnits, isLoading: secondaryUnitLoading } = useGetSecondaryUnits(selectedCompany?.slug);
+  const { data: secondaryUnits, isLoading: secondaryUnitLoading } = useGetSecondaryUnits();
 
   const { createRequisition } = useCreateRequisition();
 
@@ -146,7 +146,7 @@ export function CreateGeneralRequisitionForm({
 
   useEffect(() => {
     if (selectedStation) {
-      mutate({location_id: Number(selectedStation), company: selectedCompany?.slug});
+      mutate({ location_id: Number(selectedStation), company: selectedCompany?.slug });
     }
   }, [selectedStation, mutate, selectedCompany])
 
@@ -193,11 +193,11 @@ export function CreateGeneralRequisitionForm({
       prev.map((batch) =>
         batch.batch === batchName
           ? {
-              ...batch,
-              batch_articles: batch.batch_articles.map((article, i) =>
-                i === index ? { ...article, [field]: value } : article
-              ),
-            }
+            ...batch,
+            batch_articles: batch.batch_articles.map((article, i) =>
+              i === index ? { ...article, [field]: value } : article
+            ),
+          }
           : batch
       )
     );
@@ -209,12 +209,12 @@ export function CreateGeneralRequisitionForm({
       prev.map((batch) =>
         batch.batch === batchName
           ? {
-              ...batch,
-              batch_articles: [
-                ...batch.batch_articles,
-                { part_number: "", quantity: 0 },
-              ],
-            }
+            ...batch,
+            batch_articles: [
+              ...batch.batch_articles,
+              { part_number: "", quantity: 0 },
+            ],
+          }
           : batch
       )
     );
@@ -225,11 +225,11 @@ export function CreateGeneralRequisitionForm({
       prevBatches.map((batch) =>
         batch.batch === batchName
           ? {
-              ...batch,
-              batch_articles: batch.batch_articles.filter(
-                (_, index) => index !== articleIndex
-              ),
-            }
+            ...batch,
+            batch_articles: batch.batch_articles.filter(
+              (_, index) => index !== articleIndex
+            ),
+          }
           : batch
       )
     );
@@ -247,9 +247,9 @@ export function CreateGeneralRequisitionForm({
       type: "GENERAL",
     }
     if (isEditing) {
-      await updateRequisition.mutateAsync({id: id!, data: formattedData, company: selectedCompany!.slug})
+      await updateRequisition.mutateAsync({ id: id!, data: formattedData, company: selectedCompany!.slug })
     } else {
-      await createRequisition.mutateAsync({data: formattedData, company: selectedCompany!.slug})
+      await createRequisition.mutateAsync({ data: formattedData, company: selectedCompany!.slug })
     }
     onClose();
   };
@@ -384,56 +384,56 @@ export function CreateGeneralRequisitionForm({
               <div className="flex gap-4 items-end">
                 <FormItem className="flex flex-col w-[200px]">
                   <FormLabel>Artículos</FormLabel>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <FormControl>
-                          <Button
-                            variant="outline"
-                            disabled={isBatchesLoading}
-                            role="combobox"
-                            className={cn(
-                              "justify-between",
-                              selectedBatches.length === 0 && "text-muted-foreground"
-                            )}
-                          >
-                            {selectedBatches.length > 0
-                              ? `${selectedBatches.length} reng. seleccionados`
-                              : "Selec. un renglón..."}
-                            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                          </Button>
-                        </FormControl>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-[200px] p-0">
-                        <Command>
-                          <CommandInput placeholder="Buscar..." />
-                          <CommandList>
-                            <CommandEmpty>No existen renglones...</CommandEmpty>
-                            <CommandGroup>
-                              <div className="flex justify-center m-2"><CreateBatchDialog /></div>
-                              {data &&
-                                data.map((batch) => (
-                                  <CommandItem
-                                    key={batch.name}
-                                    value={batch.name}
-                                    onSelect={() => handleBatchSelect(batch.name, batch.id.toString(), batch.category)}
-                                  >
-                                    <Check
-                                      className={cn(
-                                        "",
-                                        selectedBatches.some((b) => b.batch === batch.id.toString())
-                                          ? "opacity-100"
-                                          : "opacity-0"
-                                      )}
-                                    />
-                                    {batch.name}
-                                  </CommandItem>
-                                ))}
-                            </CommandGroup>
-                          </CommandList>
-                        </Command>
-                      </PopoverContent>
-                    </Popover>
-                  </FormItem>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <FormControl>
+                        <Button
+                          variant="outline"
+                          disabled={isBatchesLoading}
+                          role="combobox"
+                          className={cn(
+                            "justify-between",
+                            selectedBatches.length === 0 && "text-muted-foreground"
+                          )}
+                        >
+                          {selectedBatches.length > 0
+                            ? `${selectedBatches.length} reng. seleccionados`
+                            : "Selec. un renglón..."}
+                          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        </Button>
+                      </FormControl>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-[200px] p-0">
+                      <Command>
+                        <CommandInput placeholder="Buscar..." />
+                        <CommandList>
+                          <CommandEmpty>No existen renglones...</CommandEmpty>
+                          <CommandGroup>
+                            <div className="flex justify-center m-2"><CreateBatchDialog /></div>
+                            {data &&
+                              data.map((batch) => (
+                                <CommandItem
+                                  key={batch.name}
+                                  value={batch.name}
+                                  onSelect={() => handleBatchSelect(batch.name, batch.id.toString(), batch.category)}
+                                >
+                                  <Check
+                                    className={cn(
+                                      "",
+                                      selectedBatches.some((b) => b.batch === batch.id.toString())
+                                        ? "opacity-100"
+                                        : "opacity-0"
+                                    )}
+                                  />
+                                  {batch.name}
+                                </CommandItem>
+                              ))}
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
+                </FormItem>
                 {form.watch("type") === "AVIACION" && (
                   <FormField
                     control={form.control}
@@ -458,12 +458,12 @@ export function CreateGeneralRequisitionForm({
                                 )}
                                 {field.value
                                   ? aircrafts?.find(
-                                      (aircraft) => aircraft.id.toString() === field.value
-                                    )?.acronym +
-                                    " - " +
-                                    aircrafts?.find(
-                                      (aircraft) => aircraft.id.toString() === field.value
-                                    )?.manufacturer.name
+                                    (aircraft) => aircraft.id.toString() === field.value
+                                  )?.acronym +
+                                  " - " +
+                                  aircrafts?.find(
+                                    (aircraft) => aircraft.id.toString() === field.value
+                                  )?.manufacturer.name
                                   : "Selec. la aeronave..."}
                                 <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                               </Button>
@@ -589,10 +589,10 @@ export function CreateGeneralRequisitionForm({
                             </Select>
                             {form.formState.errors.articles?.[index]
                               ?.batch_articles?.[index]?.unit && (
-                              <p className="text-red-500 text-xs">
-                                La unidad es obligatoria para consumibles.
-                              </p>
-                            )}
+                                <p className="text-red-500 text-xs">
+                                  La unidad es obligatoria para consumibles.
+                                </p>
+                              )}
                             <Input
                               type="number"
                               placeholder="Cantidad"

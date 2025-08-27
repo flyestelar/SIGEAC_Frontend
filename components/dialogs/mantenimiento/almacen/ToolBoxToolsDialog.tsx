@@ -16,13 +16,13 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 
-import { ToolArticle } from "@/types"
-import Image from "next/image"
 import { Button } from "@/components/ui/button"
+import { Tool } from "@/types"
+import Image from "next/image"
 
 interface DialogProps {
   tools?: {
-    article: ToolArticle,
+    article: Tool,
     serial: string,
   }[],
   name: string,
@@ -48,7 +48,7 @@ const ToolBoxToolsDialog = ({ tools, name }: DialogProps) => {
             {
               tools?.map((tool) => (
                 <div key={tool.serial} className="flex flex-col items-center">
-                  <h1 className="text-lg font-bold">{tool.article.batches?.name}</h1>
+                  <h1 className="text-lg font-bold">{tool.article.batch?.name}</h1>
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger asChild>

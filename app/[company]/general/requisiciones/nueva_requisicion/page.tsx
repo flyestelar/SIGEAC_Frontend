@@ -156,7 +156,7 @@ const CreateRequisitionPage = () => {
     isPending: employeesLoading,
   } = useGetUserDepartamentEmployees(selectedCompany?.slug);
   const { data: secondaryUnits, isLoading: secondaryUnitLoading } =
-    useGetSecondaryUnits(selectedCompany?.slug);
+    useGetSecondaryUnits();
   const {
     data: aircrafts,
     isLoading: isAircraftsLoading,
@@ -186,7 +186,7 @@ const CreateRequisitionPage = () => {
 
   useEffect(() => {
     if (selectedStation) {
-      mutate({location_id: Number(selectedStation), company: selectedCompany!.slug})
+      mutate({ location_id: Number(selectedStation), company: selectedCompany!.slug })
     }
   }, [selectedStation, mutate, selectedCompany])
 
@@ -235,11 +235,11 @@ const CreateRequisitionPage = () => {
       prev.map((batch) =>
         batch.batch === batchName
           ? {
-              ...batch,
-              batch_articles: batch.batch_articles.map((article, i) =>
-                i === index ? { ...article, [field]: value } : article
-              ),
-            }
+            ...batch,
+            batch_articles: batch.batch_articles.map((article, i) =>
+              i === index ? { ...article, [field]: value } : article
+            ),
+          }
           : batch
       )
     );
@@ -250,19 +250,19 @@ const CreateRequisitionPage = () => {
       prev.map((batch) =>
         batch.batch === batchName
           ? {
-              ...batch,
-              batch_articles: [
-                ...batch.batch_articles,
-                {
-                  part_number: "",
-                  alt_part_number: "",
-                  justification: "",
-                  manual: "",
-                  reference_cod: "",
-                  quantity: 0,
-                },
-              ],
-            }
+            ...batch,
+            batch_articles: [
+              ...batch.batch_articles,
+              {
+                part_number: "",
+                alt_part_number: "",
+                justification: "",
+                manual: "",
+                reference_cod: "",
+                quantity: 0,
+              },
+            ],
+          }
           : batch
       )
     );
@@ -273,11 +273,11 @@ const CreateRequisitionPage = () => {
       prevBatches.map((batch) =>
         batch.batch === batchName
           ? {
-              ...batch,
-              batch_articles: batch.batch_articles.filter(
-                (_, index) => index !== articleIndex
-              ),
-            }
+            ...batch,
+            batch_articles: batch.batch_articles.filter(
+              (_, index) => index !== articleIndex
+            ),
+          }
           : batch
       )
     );
@@ -294,7 +294,7 @@ const CreateRequisitionPage = () => {
       ...data,
       type: "GENERAL",
     }
-    await createRequisition.mutateAsync({data: formattedData, company: selectedCompany!.slug})
+    await createRequisition.mutateAsync({ data: formattedData, company: selectedCompany!.slug })
     router.push(`/${selectedCompany!.slug}/general/requisiciones`)
   }
 
@@ -337,16 +337,16 @@ const CreateRequisitionPage = () => {
                             )}
                             {field.value
                               ? employees?.find(
-                                  (employee) =>
-                                    `${employee.dni}` ===
-                                    field.value
-                                )?.first_name +
-                                " " +
-                                employees?.find(
-                                  (employee) =>
-                                    `${employee.dni}` ===
-                                    field.value
-                                )?.last_name
+                                (employee) =>
+                                  `${employee.dni}` ===
+                                  field.value
+                              )?.first_name +
+                              " " +
+                              employees?.find(
+                                (employee) =>
+                                  `${employee.dni}` ===
+                                  field.value
+                              )?.last_name
                               : "Elige al solicitante..."}
                             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                           </Button>
@@ -415,14 +415,14 @@ const CreateRequisitionPage = () => {
                             )}
                             {field.value
                               ? aircrafts?.find(
-                                  (aircraft) =>
-                                    aircraft.id.toString() === field.value
-                                )?.acronym +
-                                " - " +
-                                aircrafts?.find(
-                                  (aircraft) =>
-                                    aircraft.id.toString() === field.value
-                                )?.manufacturer.name
+                                (aircraft) =>
+                                  aircraft.id.toString() === field.value
+                              )?.acronym +
+                              " - " +
+                              aircrafts?.find(
+                                (aircraft) =>
+                                  aircraft.id.toString() === field.value
+                              )?.manufacturer.name
                               : "Selec. la aeronave..."}
                             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                           </Button>
@@ -484,7 +484,7 @@ const CreateRequisitionPage = () => {
                           className={cn(
                             "w-[200px] justify-between",
                             selectedBatches.length === 0 &&
-                              "text-muted-foreground"
+                            "text-muted-foreground"
                           )}
                         >
                           {selectedBatches.length > 0
@@ -752,10 +752,10 @@ const CreateRequisitionPage = () => {
 
                                   {form.formState.errors.articles?.[index]
                                     ?.batch_articles?.[index]?.unit && (
-                                    <p className="text-red-500 text-xs mt-2">
-                                      La unidad es obligatoria para consumibles.
-                                    </p>
-                                  )}
+                                      <p className="text-red-500 text-xs mt-2">
+                                        La unidad es obligatoria para consumibles.
+                                      </p>
+                                    )}
 
                                   <div className="flex justify-end mt-3">
                                     <Button

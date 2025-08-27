@@ -107,7 +107,7 @@ export default function AircraftExpensesPage() {
     },
   });
   const { createCashMovementForAircraft } = useCashMovementForAircraft();
-  const {data: employees, isLoading: isEmployeesLoading } = useGetEmployeesByDepartment("DAR", selectedCompany?.slug);
+  const { data: employees, isLoading: isEmployeesLoading } = useGetEmployeesByDepartment("DAR");
   const { data: cashes, isLoading: isCashesLoading } = useGetCash();
   const { data: bankaccounts, isLoading: isBankAccLoading } =
     useGetBankAccounts();
@@ -373,7 +373,7 @@ export default function AircraftExpensesPage() {
                           )}
                         />
 
-{(() => {
+                        {(() => {
                           const selectedCashId = form.watch(
                             `movements.${movementIndex}.cash_id`
                           );
@@ -384,19 +384,19 @@ export default function AircraftExpensesPage() {
 
                           return (
                             <FormField
-                          control={form.control}
-                          name={`movements.${movementIndex}.reference_cod`}
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Referencia</FormLabel>
-                              <Input
-                                placeholder="Ingrese referencia"
-                                {...field}
-                              />
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
+                              control={form.control}
+                              name={`movements.${movementIndex}.reference_cod`}
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Referencia</FormLabel>
+                                  <Input
+                                    placeholder="Ingrese referencia"
+                                    {...field}
+                                  />
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
                           );
                         })()}
 
@@ -539,29 +539,29 @@ export default function AircraftExpensesPage() {
                                   {form.watch(
                                     `movements.${movementIndex}.cash_movement_details`
                                   )?.length > 1 && (
-                                    <Button
-                                      variant="ghost"
-                                      type="button"
-                                      size="sm"
-                                      onClick={() => {
-                                        const currentExpenses = form.getValues(
-                                          `movements.${movementIndex}.cash_movement_details`
-                                        );
-                                        const newExpenses =
-                                          currentExpenses.filter(
-                                            (_, i) => i !== expenseIndex
+                                      <Button
+                                        variant="ghost"
+                                        type="button"
+                                        size="sm"
+                                        onClick={() => {
+                                          const currentExpenses = form.getValues(
+                                            `movements.${movementIndex}.cash_movement_details`
                                           );
-                                        form.setValue(
-                                          `movements.${movementIndex}.cash_movement_details`,
-                                          newExpenses
-                                        );
-                                      }}
-                                      className="text-red-500 hover:text-red-600"
-                                    >
-                                      <MinusCircle className="size-4 mr-1" />
-                                      Eliminar
-                                    </Button>
-                                  )}
+                                          const newExpenses =
+                                            currentExpenses.filter(
+                                              (_, i) => i !== expenseIndex
+                                            );
+                                          form.setValue(
+                                            `movements.${movementIndex}.cash_movement_details`,
+                                            newExpenses
+                                          );
+                                        }}
+                                        className="text-red-500 hover:text-red-600"
+                                      >
+                                        <MinusCircle className="size-4 mr-1" />
+                                        Eliminar
+                                      </Button>
+                                    )}
                                 </div>
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -650,7 +650,7 @@ export default function AircraftExpensesPage() {
                                                       : isAllCategoriesLoading
                                                         ? "Cargando..."
                                                         : filteredCategories.length ===
-                                                            0
+                                                          0
                                                           ? "No hay categorías"
                                                           : "Seleccione categoría"
                                                   }

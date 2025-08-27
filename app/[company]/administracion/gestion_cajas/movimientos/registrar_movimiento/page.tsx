@@ -118,7 +118,7 @@ export default function AircraftExpensesPage() {
   });
   const router = useRouter();
   const { createCashMovement } = useCreateCashMovement();
-  const {data: employees, isLoading: isEmployeesLoading } = useGetEmployeesByDepartment("DAR", selectedCompany?.slug);
+  const { data: employees, isLoading: isEmployeesLoading } = useGetEmployeesByDepartment("DAR");
   const { data: cashes, isLoading: isCashesLoading } = useGetCash();
   const { data: bankaccounts, isLoading: isBankAccLoading } =
     useGetBankAccounts();
@@ -471,7 +471,7 @@ export default function AircraftExpensesPage() {
                         />
                       </div>
                       {form.watch(`movements.${movementIndex}.type`) ===
-                      "OUTPUT" ? (
+                        "OUTPUT" ? (
                         <FormField
                           control={form.control}
                           name={`movements.${movementIndex}.vendor_id`}
@@ -601,29 +601,29 @@ export default function AircraftExpensesPage() {
                                   {form.watch(
                                     `movements.${movementIndex}.cash_movement_details`
                                   )?.length > 1 && (
-                                    <Button
-                                      variant="ghost"
-                                      type="button"
-                                      size="sm"
-                                      onClick={() => {
-                                        const currentExpenses = form.getValues(
-                                          `movements.${movementIndex}.cash_movement_details`
-                                        );
-                                        const newExpenses =
-                                          currentExpenses.filter(
-                                            (_, i) => i !== expenseIndex
+                                      <Button
+                                        variant="ghost"
+                                        type="button"
+                                        size="sm"
+                                        onClick={() => {
+                                          const currentExpenses = form.getValues(
+                                            `movements.${movementIndex}.cash_movement_details`
                                           );
-                                        form.setValue(
-                                          `movements.${movementIndex}.cash_movement_details`,
-                                          newExpenses
-                                        );
-                                      }}
-                                      className="text-red-500 hover:text-red-600"
-                                    >
-                                      <MinusCircle className="size-4 mr-1" />
-                                      Eliminar
-                                    </Button>
-                                  )}
+                                          const newExpenses =
+                                            currentExpenses.filter(
+                                              (_, i) => i !== expenseIndex
+                                            );
+                                          form.setValue(
+                                            `movements.${movementIndex}.cash_movement_details`,
+                                            newExpenses
+                                          );
+                                        }}
+                                        className="text-red-500 hover:text-red-600"
+                                      >
+                                        <MinusCircle className="size-4 mr-1" />
+                                        Eliminar
+                                      </Button>
+                                    )}
                                 </div>
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -712,7 +712,7 @@ export default function AircraftExpensesPage() {
                                                       : isAllCategoriesLoading
                                                         ? "Cargando..."
                                                         : filteredCategories.length ===
-                                                            0
+                                                          0
                                                           ? "No hay categorías"
                                                           : "Seleccione categoría"
                                                   }

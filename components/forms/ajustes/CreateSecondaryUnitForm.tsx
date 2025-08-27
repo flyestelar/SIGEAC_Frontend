@@ -54,9 +54,7 @@ export default function CreateSecondaryUnitForm({ onClose }: FormProps) {
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState("");
   const { createSecondaryUnit } = useCreateSecondaryUnit();
-  const { data: primaryUnits, isLoading: primaryLoading } = useGetUnits(
-    selectedCompany?.slug
-  );
+  const { data: primaryUnits, isLoading: primaryLoading } = useGetUnits();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -137,9 +135,9 @@ export default function CreateSecondaryUnitForm({ onClose }: FormProps) {
                       {primaryUnits &&
                         (value
                           ? primaryUnits.find(
-                              (primaryUnits) =>
-                                primaryUnits.id.toString() === value
-                            )?.label
+                            (primaryUnits) =>
+                              primaryUnits.id.toString() === value
+                          )?.label
                           : "Seleccione...")}
                       <ChevronsUpDown className="opacity-50" />
                     </Button>

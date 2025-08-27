@@ -93,7 +93,7 @@ export function CreateQuoteForm({
 
   const { updateStatusRequisition } = useUpdateRequisitionStatus();
 
-  const { data: secondaryUnits } = useGetSecondaryUnits(selectedCompany?.slug);
+  const { data: secondaryUnits } = useGetSecondaryUnits();
 
   const { createQuote } = useCreateQuote();
 
@@ -495,7 +495,7 @@ export function CreateQuoteForm({
                       currency: "ARS",
                     }).format(
                       (articles[index]?.quantity || 0) *
-                        (Number(articles[index]?.unit_price) || 0)
+                      (Number(articles[index]?.unit_price) || 0)
                     )}
                   </p>
                 </div>

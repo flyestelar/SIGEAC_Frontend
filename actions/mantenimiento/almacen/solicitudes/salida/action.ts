@@ -1,16 +1,14 @@
 import axiosInstance from "@/lib/axios"
-import { ComponentArticle, ConsumableArticle, DispatchRequest, Request } from "@/types"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 
 interface IDispatchRequestAction {
   aircraft_id?: string,
-  justification: string,
+  justification?: string,
   submission_date: string,
   created_by: string,
   requested_by: string,
-  destination_place: string,
   category: string,
   articles: {
     article_id: number,

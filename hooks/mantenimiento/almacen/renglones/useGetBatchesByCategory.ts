@@ -1,4 +1,5 @@
 import axiosInstance from "@/lib/axios";
+import { useCompanyStore } from "@/stores/CompanyStore";
 import { Batch } from "@/types";
 import { useQuery } from "@tanstack/react-query";
 
@@ -9,23 +10,20 @@ interface BatchesWithCountProp extends Batch {
 const searchBatchesByPartNumber = async (
   category: string,
   location_id: string | null,
-  company: string
+  company?: string
 ): Promise<BatchesWithCountProp[]> => {
-  const { data } = await axiosInstance.get(`/${company}/batches-by-category`, {
-    params: { location_id, category }
-  });
+  const { data } = await axiosInstance.get(`/${company}/${location_id}/batches-by-category/${category}`);
   return data;
 };
 
-export const useSearchBatchesByPartNumber = (
+export const useGetBatchesByCategory = (
   category: string,
-  location_id: string | null,
-  company?: string
 ) => {
+  const { selectedCompany, selectedStation } = useCompanyStore();
   return useQuery<BatchesWithCountProp[], Error>({
-    queryKey: ["search-batches", company, location_id, category],
-    queryFn: () => searchBatchesByPartNumber(category, location_id, company!),
-    enabled: !!location_id && !!category && !!company,
+    queryKey: ["search-batches", selectedCompany, selectedStation, category],
+    queryFn: () => searchBatchesByPartNumber(category, selectedStation, selectedCompany?.slug),
+    enabled: !!selectedCompany && !!category && !!selectedStation,
     staleTime: 5 * 60 * 1000, // 5 minutos de cache
   });
 };

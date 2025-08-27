@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import axiosInstance from '@/lib/axios';
 import { Article } from '@/types';
 
-interface IToolArticle extends Article {
+interface ITool extends Article {
   tool: {
     id: number,
     serial: string,
@@ -18,7 +18,7 @@ export interface ToolBoxTools {
   id: number,
   name: string,
   description: string,
-  article: IToolArticle[]
+  article: ITool[]
 }
 
 const fetchEditToolBoxTools = async (

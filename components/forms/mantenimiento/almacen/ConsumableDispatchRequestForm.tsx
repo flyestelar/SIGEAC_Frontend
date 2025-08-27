@@ -20,12 +20,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useAuth } from "@/contexts/AuthContext";
+import { useGetWarehousesEmployees } from "@/hooks/mantenimiento/almacen/empleados/useGetWarehousesEmployees";
 import { useGetBatchesWithInWarehouseArticles } from "@/hooks/mantenimiento/almacen/renglones/useGetBatchesWithInWarehouseArticles";
+import { useGetMaintenanceAircrafts } from "@/hooks/mantenimiento/planificacion/useGetMaintenanceAircrafts";
 import { useGetWorkOrderEmployees } from "@/hooks/mantenimiento/planificacion/useGetWorkOrderEmployees";
-import { useGetWorkOrders } from "@/hooks/mantenimiento/planificacion/useGetWorkOrders";
+import { useGetDepartments } from "@/hooks/sistema/departamento/useGetDepartment";
 import { cn } from "@/lib/utils";
 import { useCompanyStore } from "@/stores/CompanyStore";
-import { Article, Batch } from "@/types";
+import { Batch, Consumable } from "@/types";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
@@ -45,9 +47,6 @@ import {
 import { Label } from "../../../ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "../../../ui/popover";
 import { Textarea } from "../../../ui/textarea";
-import { useGetDepartments } from "@/hooks/sistema/departamento/useGetDepartment";
-import { useGetWarehousesEmployees } from "@/hooks/mantenimiento/almacen/empleados/useGetWarehousesEmployees";
-import { useGetMaintenanceAircrafts } from "@/hooks/mantenimiento/planificacion/useGetMaintenanceAircrafts";
 
 const FormSchema = z.object({
   requested_by: z.string(),
@@ -81,7 +80,7 @@ interface FormProps {
 }
 
 interface BatchesWithCountProp extends Batch {
-  articles: Article[];
+  articles: Consumable[];
   batch_id: number;
 }
 
@@ -102,7 +101,7 @@ export function ConsumableDispatchForm({ onClose }: FormProps) {
     BatchesWithCountProp[]
   >([]);
 
-  const [articleSelected, setArticleSelected] = useState<Article>();
+  const [articleSelected, setArticleSelected] = useState<Consumable>();
 
   const { createDispatchRequest } = useCreateDispatchRequest();
 
@@ -111,7 +110,6 @@ export function ConsumableDispatchForm({ onClose }: FormProps) {
   const { data: aircrafts, isLoading: isAircraftsLoading, isError: isAircraftsError } = useGetMaintenanceAircrafts(selectedCompany?.slug);
 
   const {
-    mutate,
     data: batches,
     isPending: isBatchesLoading,
   } = useGetBatchesWithInWarehouseArticles();
@@ -131,26 +129,10 @@ export function ConsumableDispatchForm({ onClose }: FormProps) {
   });
 
   useEffect(() => {
-    if (selectedStation) {
-      mutate({ location_id: Number(selectedStation), company: selectedCompany!.slug })
-    }
-  }, [selectedStation, selectedCompany, mutate])
-
-  useEffect(() => {
-    if (batches) {
-      // Filtrar los batches por categoría
-      const filtered = batches.filter(
-        (batch) => batch.category === "consumible"
-      );
-      setFilteredBatches(filtered);
-    }
-  }, [batches]);
-
-  useEffect(() => {
     const unit = form.watch("unit");
     const currentQuantity = parseFloat(quantity) || 0;
     const article = form.getValues("articles");
-    if (articleSelected?.unit !== "unidades") {
+    if (articleSelected?.unit.label !== "unidades") {
       const newQuantity =
         unit === "mililitros" ? currentQuantity / 1000 : currentQuantity;
 
@@ -196,7 +178,7 @@ export function ConsumableDispatchForm({ onClose }: FormProps) {
 
     if (selectedArticle) {
       // Actualizar el valor del campo "unit" en el formulario
-      if (selectedArticle.unit === "u") {
+      if (selectedArticle.unit.label === "u") {
         form.setValue("unit", undefined); // Ocultar el RadioGroup si es "unidades"
       } else {
         form.setValue("unit", "litros"); // Establecer un valor predeterminado si es "litros"
@@ -472,7 +454,7 @@ export function ConsumableDispatchForm({ onClose }: FormProps) {
                                     )}
                                   />
                                   {article.part_number} - {article.quantity}
-                                  {article.unit}{" "}
+                                  {article.unit.label}{" "}
                                   <p className="hidden">{article.id}</p>
                                 </CommandItem>
                               ))}
@@ -508,7 +490,7 @@ export function ConsumableDispatchForm({ onClose }: FormProps) {
                   placeholder="Ej: 1, 4, 6, etc..."
                 />
               </div>
-              {articleSelected && articleSelected.unit === "L" && (
+              {articleSelected && articleSelected.unit.label === "L" && (
                 <FormField
                   control={form.control}
                   name="unit"

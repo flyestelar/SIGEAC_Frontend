@@ -1,6 +1,7 @@
 import axios from '@/lib/axios';
-import { Article, Batch, DispatchRequest, WorkOrder } from '@/types';
-import { useMutation } from '@tanstack/react-query';
+import { useCompanyStore } from '@/stores/CompanyStore';
+import { WorkOrder } from '@/types';
+import { useQuery } from '@tanstack/react-query';
 
 interface IDispatch {
   id: number;
@@ -27,13 +28,15 @@ const fetchDispatchesRequests = async ({
   location_id: number;
   company?: string;
 }): Promise<IDispatch[]> => {
-  const { data } = await axios.post(`/${company}/show-dispatch`, { location_id });
+  const { data } = await axios.get(`/${company}/${location_id}/dispatch-orders`);
   return data;
 };
 
 export const useGetDispatchesByLocation = () => {
-  return useMutation<IDispatch[], Error, { company?: string; location_id: number }>({
-    mutationKey: ['dispatches-requests', 'company'],
-    mutationFn: fetchDispatchesRequests,
+  const { selectedCompany, selectedStation } = useCompanyStore();
+  return useQuery<IDispatch[], Error>({
+    queryKey: ['dispatch-orders', selectedCompany, selectedStation],
+    queryFn: () => fetchDispatchesRequests({ company: selectedCompany?.slug, location_id: Number(selectedStation) }),
+    enabled: !!selectedStation && !!selectedCompany,
   });
 };

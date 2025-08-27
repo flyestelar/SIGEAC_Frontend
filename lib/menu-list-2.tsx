@@ -650,31 +650,7 @@ export function getMenuList(
           ),
           icon: PackageOpen,
           roles: ["ANALISTA_ALMACEN", "JEFE_ALMACEN", "SUPERUSER"],
-          submenus: [
-            {
-              href: `/${currentCompany?.slug}/almacen/inventario/rotables`,
-              label: "Componentes Rotables",
-              active:
-                pathname ===
-                `/${currentCompany?.slug}/almacen/inventario/rotables` ||
-                pathname ===
-                `/${currentCompany?.slug}/almacen/inventario/rotables`,
-            },
-            {
-              href: `/${currentCompany?.slug}/almacen/inventario/consumibles`,
-              label: "Consumibles",
-              active:
-                pathname ===
-                `/${currentCompany?.slug}/almacen/inventario/consumibles`,
-            },
-            {
-              href: `/${currentCompany?.slug}/almacen/inventario/consumibles`,
-              label: "Herramientas",
-              active:
-                pathname ===
-                `/${currentCompany?.slug}/almacen/inventario/consumibles`,
-            },
-          ],
+          submenus: [],
         },
         {
           href: `/${currentCompany?.slug}/almacen/caja_herramientas`,

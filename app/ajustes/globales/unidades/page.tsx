@@ -16,12 +16,12 @@ const UnitsPage = () => {
     data: primaryUnits,
     isLoading: primaryLoading,
     isError: primaryError,
-  } = useGetUnits(selectedCompany?.slug);
+  } = useGetUnits();
   const {
     data: secondaryUnits,
     isLoading: secondaryLoading,
     isError: secondaryError,
-  } = useGetSecondaryUnits(selectedCompany?.slug);
+  } = useGetSecondaryUnits();
   if (primaryLoading || secondaryLoading) {
     return <LoadingPage />;
   }

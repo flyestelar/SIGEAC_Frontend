@@ -4,12 +4,18 @@ import { ColumnDef } from "@tanstack/react-table"
 
 import { DataTableColumnHeader } from "@/components/tables/DataTableHeader"
 
-import BatchDropdownActions from "@/components/dropdowns/mantenimiento/almacen/BatchDropdownActions"
+import { Checkbox } from "@/components/ui/checkbox"
 import { cn } from "@/lib/utils"
 import { Batch } from "@/types"
 import Link from "next/link"
+import { useCompanyStore } from "@/stores/CompanyStore"
+import BatchDropdownActions from "@/components/dropdowns/mantenimiento/almacen/BatchDropdownActions"
 
-export const columns: ColumnDef<Batch>[] = [
+interface BatchesWithCountProp extends Batch {
+  article_count: number,
+}
+
+export const columns: ColumnDef<BatchesWithCountProp>[] = [
   {
     accessorKey: "name",
     header: ({ column }) => (
@@ -36,7 +42,7 @@ export const columns: ColumnDef<Batch>[] = [
       <DataTableColumnHeader column={column} title="Cantidad Mínima" />
     ),
     cell: ({ row }) => (
-      <p className="flex text-center font-bold justify-center">{row.original.min_quantity} - {row.original.unit.label}</p>
+      <p className="flex text-center font-bold justify-center">{row.original.min_quantity} {row.original.unit.label}</p>
     )
   },
   {
@@ -49,21 +55,13 @@ export const columns: ColumnDef<Batch>[] = [
     )
   },
   {
-    accessorKey: "warehouse_name",
+    id: "select",
     header: ({ column }) => (
-      <DataTableColumnHeader filter column={column} title="Ubicacion" />
+      <DataTableColumnHeader column={column} title="Acciones" />
+
     ),
     cell: ({ row }) => (
-      <p className="flex justify-center font-medium">{row.original.warehouse_name}</p>
-    )
-  },
-  {
-    id: "actions",
-    cell: ({ row }) => {
-      const batch = row.original
-      return (
-        <BatchDropdownActions id={batch.id} />
-      )
-    },
+      <BatchDropdownActions id={row.original.id.toString()} />
+    ),
   },
 ]

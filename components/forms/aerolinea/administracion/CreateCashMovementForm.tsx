@@ -112,7 +112,7 @@ export function CreateCashMovementForm({ onClose }: FormProps) {
   const { createCashMovement } = useCreateCashMovement();
   const { selectedCompany } = useCompanyStore();
   const { data: employees, isLoading: isEmployeesLoading } =
-    useGetEmployeesByDepartment("DAR", selectedCompany?.slug);
+    useGetEmployeesByDepartment("DAR");
   const { data: cashes, isLoading: isCashesLoading } = useGetCash();
   const { data: bankaccounts, isLoading: isBankAccLoading } =
     useGetBankAccounts();

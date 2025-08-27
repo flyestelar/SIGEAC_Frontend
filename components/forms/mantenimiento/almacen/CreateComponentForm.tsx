@@ -21,7 +21,7 @@ import {
 import { useGetConditions } from "@/hooks/administracion/useGetConditions"
 import { useGetManufacturers } from "@/hooks/general/fabricantes/useGetManufacturers"
 import { useGetArticlesByCategory } from "@/hooks/mantenimiento/almacen/articulos/useGetArticlesByCategory"
-import { useGetBatchesByLocationId } from "@/hooks/mantenimiento/almacen/renglones/useGetBatchesByLocationId"
+import { useGetBatchesByCategory } from "@/hooks/mantenimiento/almacen/renglones/useGetBatchesByCategory"
 import { cn } from "@/lib/utils"
 import loadingGif from '@/public/loading2.gif'
 import { useCompanyStore } from "@/stores/CompanyStore"
@@ -35,8 +35,8 @@ import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
-import { Textarea } from "../../../ui/textarea"
 import { MultiInputField } from "../../../misc/MultiInputField"
+import { Textarea } from "../../../ui/textarea"
 
 interface EditingArticle extends Article {
   batches: Batch,
@@ -75,29 +75,19 @@ const CreateComponentForm = ({ initialData, isEditing }: {
 
   const router = useRouter();
 
-  const { mutate, data: batches, isPending: isBatchesLoading, isError } = useGetBatchesByLocationId();
+  const { data: batches, isPending: isBatchesLoading, isError } = useGetBatchesByCategory("componente");
 
   const { data: manufacturers, isLoading: isManufacturerLoading, isError: isManufacturerError } = useGetManufacturers(selectedCompany?.slug)
 
   const { data: conditions, isLoading: isConditionsLoading, error: isConditionsError } = useGetConditions();
-
-  const { mutate: verifyMutation, data: components } = useGetArticlesByCategory(Number(selectedStation), "componente", selectedCompany?.slug)
 
   const formSchema = z.object({
     article_type: z.string().optional(),
     serial: z.string().min(2, {
       message: "El serial debe contener al menos 2 carácteres.",
     }).optional(),
-    part_number: z.string().min(2, {
+    part_number: z.string({ message: "Debe seleccionar un número de parte." }).min(2, {
       message: "El número de parte debe contener al menos 2 caracteres.",
-    }).refine((value) => {
-      // Verificar si el valor del número de parte existe en los componentes
-      const existsAsAlternate = components?.some(
-        (component) => component.alternative_part_number === value
-      );
-      return !existsAsAlternate;
-    }, {
-      message: "Este número de parte ya existe como número de parte alternativo en otro componente.",
     }),
     alternative_part_number: z.array(
       z.string().min(2, {
@@ -128,7 +118,7 @@ const CreateComponentForm = ({ initialData, isEditing }: {
     condition_id: z.string({
       message: "Debe ingresar la condición del articulo.",
     }).optional(),
-    batches_id: z.string({
+    batch_id: z.string({
       message: "Debe ingresar un lote.",
     }),
     certificate_8130: z
@@ -147,23 +137,6 @@ const CreateComponentForm = ({ initialData, isEditing }: {
     ,
   })
 
-  useEffect(() => {
-    if (selectedStation) {
-      mutate({location_id: Number(selectedStation), company: selectedCompany!.slug})
-      verifyMutation()
-    }
-  }, [selectedStation, mutate, verifyMutation, selectedCompany])
-
-
-
-  useEffect(() => {
-    if (batches) {
-      // Filtrar los batches por categoría
-      const filtered = batches.filter((batch) => batch.category === "COMPONENTE");
-      setFilteredBatches(filtered);
-    }
-  }, [batches]);
-
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -171,7 +144,7 @@ const CreateComponentForm = ({ initialData, isEditing }: {
       part_number: initialData?.part_number || "",
       serial: initialData?.serial || "",
       alternative_part_number: initialData?.alternative_part_number || [],
-      batches_id: initialData?.batches.id?.toString() || "",
+      batch_id: initialData?.batches.id?.toString() || "",
       manufacturer_id: initialData?.manufacturer?.id.toString() || "",
       condition_id: initialData?.condition?.id.toString() || "",
       description: initialData?.description || "",
@@ -188,8 +161,6 @@ const CreateComponentForm = ({ initialData, isEditing }: {
       caducate_date: caducateDate && format(caducateDate, "yyyy-MM-dd"),
       fabrication_date: fabricationDate && format(fabricationDate, "yyyy-MM-dd"),
       calendar_date: calendarDate && format(calendarDate, "yyyy-MM-dd"),
-      batches_id: Number(values.batches_id),
-      cost: values.cost && parseFloat(values.cost) || initialData?.cost,
     }
     if (isEditing) {
       confirmIncoming.mutateAsync({
@@ -199,16 +170,17 @@ const CreateComponentForm = ({ initialData, isEditing }: {
           caducate_date: caducateDate && format(caducateDate, "yyyy-MM-dd"),
           fabrication_date: fabricationDate && format(fabricationDate, "yyyy-MM-dd"),
           calendar_date: calendarDate && format(calendarDate, "yyyy-MM-dd"),
-          batches_id: values.batches_id,
-          status: "Stored"
+          batch_id: values.batch_id,
         },
         company: selectedCompany!.slug
       })
       router.push(`/${selectedCompany?.slug}/almacen/ingreso/en_recepcion`)
     } else {
-      createArticle.mutate({company: selectedCompany!.slug, data: {
-        ...formattedValues
-      }});
+      createArticle.mutate({
+        company: selectedCompany!.slug, data: {
+          ...formattedValues
+        }
+      });
     }
   }
   return (
@@ -592,7 +564,7 @@ const CreateComponentForm = ({ initialData, isEditing }: {
             />
             <FormField
               control={form.control}
-              name="batches_id"
+              name="batch_id"
               render={({ field }) => (
                 <FormItem className={cn("", isEditing ? "col-span-2" : "col-span-1")}>
                   <FormLabel>Lote del Articulo</FormLabel>
@@ -604,12 +576,12 @@ const CreateComponentForm = ({ initialData, isEditing }: {
                     </FormControl>
                     <SelectContent>
                       {
-                        filteredBatches && filteredBatches.map((batch) => (
-                          <SelectItem key={batch.name} value={batch.id.toString()}>{batch.name} - {batch.warehouse_name}</SelectItem>
+                        batches && batches.map((batch) => (
+                          <SelectItem key={batch.name} value={batch.id.toString()}>{batch.name}</SelectItem>
                         ))
                       }
                       {
-                        !filteredBatches || filteredBatches?.length <= 0 && (
+                        !batches || batches?.length <= 0 && (
                           <p className="text-sm text-muted-foreground p-2 text-center">No se han encontrado lotes....</p>
                         )
                       }

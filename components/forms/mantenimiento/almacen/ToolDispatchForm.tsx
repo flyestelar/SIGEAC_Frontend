@@ -81,7 +81,7 @@ export function ToolDispatchForm({ onClose }: FormProps) {
 
   const { selectedStation, selectedCompany } = useCompanyStore();
 
-  const { mutate, data: batches, isPending: isBatchesLoading, isError } = useGetBatchesWithInWarehouseArticles();
+  const { data: batches, isPending: isBatchesLoading, isError } = useGetBatchesWithInWarehouseArticles();
 
   const { data: employees, isLoading: employeesLoading, isError: employeesError } = useGetWorkOrderEmployees();
 
@@ -90,12 +90,6 @@ export function ToolDispatchForm({ onClose }: FormProps) {
   const { data: departments, isLoading: isDepartmentsLoading } = useGetDepartments(selectedCompany?.slug)
 
   const { data: warehouseEmployees, isLoading: warehouseEmployeesLoading, isError: warehouseEmployeesError } = useGetWarehousesEmployees();
-
-  useEffect(() => {
-    if (selectedStation) {
-      mutate({ location_id: Number(selectedStation), company: selectedCompany!.slug })
-    }
-  }, [selectedStation, selectedCompany, mutate])
 
   useEffect(() => {
     if (batches) {

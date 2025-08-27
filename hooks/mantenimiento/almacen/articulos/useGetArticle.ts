@@ -1,5 +1,4 @@
 import axios from '@/lib/axios';
-import { ComponentArticle, ConsumableArticle } from '@/types';
 import { useMutation } from '@tanstack/react-query';
 
 interface IGetArticle {

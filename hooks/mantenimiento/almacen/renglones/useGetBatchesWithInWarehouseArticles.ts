@@ -1,9 +1,10 @@
 import axios from '@/lib/axios';
-import { Article, Batch } from '@/types';
-import { useMutation } from '@tanstack/react-query';
+import { useCompanyStore } from '@/stores/CompanyStore';
+import { Batch, Component, Consumable, Tool } from '@/types';
+import { useMutation, useQuery } from '@tanstack/react-query';
 
-interface BatchesWithCountProp extends Batch {
-  articles: Article[];
+interface BatchesWithArticles extends Batch {
+  articles: Tool[] | Component[] | Consumable[];
   batch_id: number;
 }
 
@@ -13,18 +14,20 @@ const fetchBatchesWithInWarehouseArticles = async ({
 }: {
   location_id: number;
   company: string;
-}): Promise<BatchesWithCountProp[]> => {
-  const { data } = await axios.post(`/${company}/items-for-dispatch`, { location_id });
+}): Promise<BatchesWithArticles[]> => {
+  const { data } = await axios.get(`/${company}/${location_id}/items-for-dispatch`);
   return data;
 };
 
 export const useGetBatchesWithInWarehouseArticles = () => {
-  return useMutation<
-    BatchesWithCountProp[],
-    Error,
-    { location_id: number; company: string }
+  const { selectedCompany, selectedStation } = useCompanyStore();
+  return useQuery<
+    BatchesWithArticles[],
+    Error
   >({
-    mutationKey: ['batches-in-warehouse'],
-    mutationFn: fetchBatchesWithInWarehouseArticles,
+    queryKey: ['batches-in-warehouse', selectedCompany, selectedStation],
+    queryFn: () => fetchBatchesWithInWarehouseArticles({
+      company: selectedCompany?.slug ?? '', location_id: Number(selectedStation)
+    }),
   });
 };

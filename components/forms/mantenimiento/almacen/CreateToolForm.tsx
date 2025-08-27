@@ -1,9 +1,9 @@
 'use client'
 
-import { useForm } from "react-hook-form"
-import { z } from "zod"
-import { zodResolver } from "@hookform/resolvers/zod"
+import { useCreateArticle } from "@/actions/mantenimiento/almacen/inventario/articulos/actions"
+import { MultiInputField } from "@/components/misc/MultiInputField"
 import { Button } from "@/components/ui/button"
+import { Checkbox } from "@/components/ui/checkbox"
 import {
   Form,
   FormControl,
@@ -14,15 +14,16 @@ import {
   FormMessage,
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Checkbox } from "@/components/ui/checkbox"
-import { MultiInputField } from "@/components/misc/MultiInputField"
+import { Textarea } from "@/components/ui/textarea"
 import { useGetConditions } from "@/hooks/administracion/useGetConditions"
-import { useState } from "react"
-import { FileUpIcon } from "lucide-react"
-import { useCreateArticle } from "@/actions/mantenimiento/almacen/inventario/articulos/actions"
+import { useGetBatchesByCategory } from "@/hooks/mantenimiento/almacen/renglones/useGetBatchesByCategory"
 import { useCompanyStore } from "@/stores/CompanyStore"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { FileUpIcon, Loader2 } from "lucide-react"
+import { useState } from "react"
+import { useForm } from "react-hook-form"
+import { z } from "zod"
 
 // ✅ esquema de validación
 const MAX_FILE_SIZE = 100 * 1024 // 100 KB
@@ -40,6 +41,7 @@ const formSchema = z
       .optional(),
     serial: z.string().min(2, "El serial debe tener al menos 2 caracteres."),
     description: z.string().min(2, "La descripción es requerida."),
+    batch_id: z.string({ message: "Debe seleccionar un lote." }),
     condition_id: z.string({ required_error: "Debe seleccionar una condición." }),
     zone: z.string().min(1, "Debe ingresar la zona."),
     needs_calibration: z.boolean().default(false),
@@ -64,11 +66,13 @@ const formSchema = z
   )
 
 export function CreateToolForm() {
-  const {selectedCompany} = useCompanyStore()
+  const { selectedCompany } = useCompanyStore()
 
   const { data: conditions, isLoading: isConditionsLoading } = useGetConditions()
 
-  const {createArticle} = useCreateArticle()
+  const { data: batches, isPending: isBatchesLoading, isError } = useGetBatchesByCategory("herramienta");
+
+  const { createArticle } = useCreateArticle()
 
   const [needsCalibration, setNeedsCalibration] = useState(false)
 
@@ -89,7 +93,7 @@ export function CreateToolForm() {
 
   const onSubmit = (values: z.infer<typeof formSchema>) => {
     console.log("Form data:", values)
-    createArticle.mutateAsync({company: selectedCompany!.slug, data: values})
+    createArticle.mutateAsync({ company: selectedCompany!.slug, data: values })
   }
 
   return (
@@ -97,7 +101,7 @@ export function CreateToolForm() {
       <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-4 max-w-7xl mx-auto">
         {/* Numero de parte + alternos */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <FormField
+          <FormField
             control={form.control}
             name="serial"
             render={({ field }) => (
@@ -193,6 +197,43 @@ export function CreateToolForm() {
                 <FormControl>
                   <Input placeholder="Ej: Pasillo A-3" {...field} />
                 </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="batch_id"
+            render={({ field }) => (
+              <FormItem className={"col-span-1"}>
+                <FormLabel>Lote del Articulo</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder={isBatchesLoading ? <Loader2 className="size-4 animate-spin" /> : "Seleccione lote..."} />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {
+                      batches && batches.map((batch) => (
+                        <SelectItem key={batch.name} value={batch.id.toString()}>{batch.name} - {batch.warehouse_name}</SelectItem>
+                      ))
+                    }
+                    {
+                      !batches || batches?.length <= 0 && (
+                        <p className="text-sm text-muted-foreground p-2 text-center">No se han encontrado lotes....</p>
+                      )
+                    }
+                    {
+                      isError && (
+                        <p className="text-sm text-muted-foreground p-2 text-center">Ha ocurrido un error al cargar los lotes...</p>
+                      )
+                    }
+                  </SelectContent>
+                </Select>
+                <FormDescription>
+                  Lote a asignar el articulo.
+                </FormDescription>
                 <FormMessage />
               </FormItem>
             )}

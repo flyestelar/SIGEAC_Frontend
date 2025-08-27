@@ -9,7 +9,7 @@ export const columns: ColumnDef<Condition>[] = [
   {
     accessorKey: "name",
     header: ({ column }) => (
-      <DataTableColumnHeader filter column={column} title="Nombre" />
+      <DataTableColumnHeader column={column} title="Nombre" />
     ),
     meta: { title: "Nombre" },
     cell: ({ row }) => (
@@ -19,7 +19,7 @@ export const columns: ColumnDef<Condition>[] = [
   {
     accessorKey: "description",
     header: ({ column }) => (
-      <DataTableColumnHeader filter column={column} title="Descripción" />
+      <DataTableColumnHeader column={column} title="Descripción" />
     ),
     meta: { title: "Descripción" },
     cell: ({ row }) => (

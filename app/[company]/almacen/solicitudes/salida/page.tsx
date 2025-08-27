@@ -16,12 +16,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 const DispatchRequestPage = () => {
   const { selectedStation, selectedCompany } = useCompanyStore();
-  const { mutate, data: dispatches, isPending: isDispatchesLoading, isError } = useGetDispatchesByLocation()
-  useEffect(() => {
-    if (selectedStation) {
-      mutate({location_id: Number(selectedStation), company: selectedCompany?.slug})
-    }
-  }, [selectedStation, selectedCompany, mutate])
+  const { data: dispatches, isLoading: isDispatchesLoading, isError } = useGetDispatchesByLocation()
 
   return (
     <ContentLayout title='Salida'>

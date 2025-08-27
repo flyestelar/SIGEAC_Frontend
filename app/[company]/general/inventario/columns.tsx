@@ -8,7 +8,6 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { cn } from "@/lib/utils"
 import { Batch } from "@/types"
 import Link from "next/link"
-import { useCompanyStore } from "@/stores/CompanyStore"
 
 interface BatchesWithCountProp extends Batch {
   article_count: number,
@@ -63,7 +62,7 @@ export const columns: ColumnDef<BatchesWithCountProp>[] = [
       <DataTableColumnHeader column={column} title="Cantidad Mínima" />
     ),
     cell: ({ row }) => (
-      <p className="flex text-center font-bold justify-center">{row.original.min_quantity} {row.original.medition_unit}</p>
+      <p className="flex text-center font-bold justify-center">{row.original.min_quantity} {row.original.unit.label}</p>
     )
   },
   {
@@ -73,15 +72,6 @@ export const columns: ColumnDef<BatchesWithCountProp>[] = [
     ),
     cell: ({ row }) => (
       <p className={cn("flex justify-center rounded-lg", Number(row.original.min_quantity) > Number(row.original.article_count) ? "bg-red-300 text-white" : "bg-green-200")}>{row.original.article_count}</p>
-    )
-  },
-  {
-    accessorKey: "warehouse_name",
-    header: ({ column }) => (
-      <DataTableColumnHeader filter column={column} title="Ubicacion" />
-    ),
-    cell: ({ row }) => (
-      <p className="flex justify-center font-medium">{row.original.warehouse_name}</p>
     )
   },
 ]

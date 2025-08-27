@@ -112,6 +112,7 @@ export type Batch = {
   slug: string;
   description: string;
   category: string;
+  status: string, 
   ata_code: string;
   brand: string;
   is_hazarous: boolean;
