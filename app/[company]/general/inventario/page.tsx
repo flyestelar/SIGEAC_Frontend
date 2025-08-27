@@ -10,8 +10,8 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { useDebounce } from '@/hooks/helpers/useDebounce';
+import { useGetBatches } from '@/hooks/mantenimiento/almacen/renglones/useGetBatches';
 import { useSearchBatchesByPartNumber } from '@/hooks/mantenimiento/almacen/renglones/useGetBatchesByArticlePartNumber';
-import { useGetBatchesWithArticlesCount } from '@/hooks/mantenimiento/almacen/renglones/useGetBatchesWithArticleCount';
 import { useCompanyStore } from '@/stores/CompanyStore';
 import { Loader2 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
@@ -33,8 +33,9 @@ const InventarioPage = () => {
   }, [debouncedSearchTerm]);
 
   // Consultas a la API
-  const { data: allBatches, isLoading: isLoadingBatches, isError: isBatchesError, error: batchesError } =
-    useGetBatchesWithArticlesCount({company: selectedCompany?.slug, location_id: selectedStation ?? undefined});
+
+
+  const { data: allBatches, isLoading: isLoadingBatches, isError: isBatchesError, error: batchesError } = useGetBatches({company: selectedCompany?.slug, location_id: selectedStation ?? undefined});
 
   const { data: searchedBatches, isLoading: isLoadingSearch, isError: isSearchError, error: searchError } =
     useSearchBatchesByPartNumber( selectedCompany?.slug, selectedStation ?? undefined, debouncedSearchTerm || undefined);

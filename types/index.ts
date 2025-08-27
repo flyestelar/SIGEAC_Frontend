@@ -46,29 +46,82 @@ export type AdministrationArticle = {
 };
 
 export type Article = {
-  id?: number;
-  article_type?: string;
+  id: number;
+  serial?: string;
   part_number: string;
   alternative_part_number?: string[];
   status?: string;
-  serial?: string;
   description?: string;
   zone?: string;
   manufacturer?: Manufacturer;
   condition?: Condition;
-  condition_id?: string;
-  weight?: number;
-  cost?: number;
-  unit?: string;
-  quantity?: number;
-  batches?: Batch;
-  batch_id?: number;
-  vendor_id?: string;
-  certifcate_8130?: File | string;
-  certifcate_vendor?: File | string;
-  certifcate_fabricant?: File | string;
+  batch?: Batch;
+  certificate_8130?: File | string;
+  certificate_vendor?: File | string;
+  certificate_fabricant?: File | string;
   image?: File | string;
 };
+
+export interface Tool extends Article {
+  needs_calibration?: boolean;
+  last_calibration_date?: string;
+  calibration_interval_days?: number;
+}
+
+export interface Consumable extends Article {
+  is_managed?: boolean;
+  quantity?: number;
+  unit: Unit;
+  caducate_date?: string;
+  fabrication_date?: string;
+}
+
+export interface Component extends Article {
+  caducate_date?: string;
+  fabrication_date?: string;
+  hour_date?: number;
+  cycle_date?: number;
+  calendar_date?: string;
+  component_id?: number;
+}
+
+
+export type Condition = {
+  id: number;
+  name: string;
+  description: string;
+  registered_by: string;
+  updated_by: string;
+};
+
+export type Convertion = {
+  id: number;
+  secondary_unit: string;
+  convertion_rate: number;
+  unit: Unit;
+  quantity_unit: number;
+  updated_by: string;
+  registered_by: string;
+  created_at: Date;
+  updated_at: Date;
+};
+
+export type Batch = {
+  id: number;
+  name: string;
+  slug: string;
+  description: string;
+  category: string;
+  ata_code: string;
+  brand: string;
+  is_hazarous: boolean;
+  unit: Unit;
+  min_quantity: number;
+  zone: string;
+  article_count: number;
+  warehouse_name: string;
+};
+
 
 export type Bank = {
   id: number;
@@ -90,23 +143,6 @@ export type BankAccount = {
   created_by: string;
   updated_by: string;
 };
-
-export type Batch = {
-  id: number;
-  name: string;
-  slug: string;
-  description: string;
-  category: string;
-  ata_code: string;
-  brand: string;
-  is_hazarous: boolean;
-  medition_unit: string;
-  min_quantity: number;
-  zone: string;
-  warehouse_id: number;
-  warehouse_name: string;
-};
-
 export type Card = {
   id: number;
   name: string;
@@ -168,34 +204,6 @@ export type Client = {
   balance: number;
   pay_credit_days: number;
 };
-
-export type Condition = {
-  id: number;
-  name: string;
-  description: string;
-  registered_by: string;
-  updated_by: string;
-};
-
-export interface ConsumableArticle extends Article {
-  is_managed?: boolean;
-  quantity?: number;
-  caducate_date?: string;
-  fabrication_date?: string;
-}
-
-export type Convertion = {
-  id: number;
-  secondary_unit: string;
-  convertion_rate: number;
-  unit: Unit;
-  quantity_unit: number;
-  updated_by: string;
-  registered_by: string;
-  created_at: Date;
-  updated_at: Date;
-};
-
 export type Company = {
   id: number;
   name: string;
@@ -219,15 +227,6 @@ export type Module = {
   value: string;
   registered_by: string;
 };
-
-export interface ComponentArticle extends Article {
-  caducate_date?: string;
-  fabrication_date?: string;
-  hour_date?: number;
-  cycle_date?: number;
-  calendar_date?: string;
-  component_id?: number;
-}
 
 export type Credit = {
   id: number;
@@ -698,10 +697,6 @@ export type Sell = {
   reference_pic: string;
 };
 
-export interface ToolArticle extends Article {
-  is_special: boolean;
-}
-
 export type ToolBox = {
   id: number;
   name: string;
@@ -710,7 +705,7 @@ export type ToolBox = {
   employee: Employee;
   tool: {
     serial: string;
-    article: ToolArticle;
+    article: Tool;
   }[];
 };
 
@@ -720,7 +715,6 @@ export type Unit = {
   label: string;
   updated_by: string;
   registered_by: string;
-
   created_at: Date;
   updated_at: Date;
 };

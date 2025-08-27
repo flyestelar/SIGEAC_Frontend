@@ -1,7 +1,29 @@
 import axiosInstance from "@/lib/axios"
-import { ComponentArticle, ConsumableArticle, ToolArticle } from "@/types"
+import { Component, Consumable, Tool } from "@/types"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
+
+interface ArticleData {
+  serial?: string,
+  part_number: string,
+  alternative_part_number?: string[],
+  description?: string,
+  zone: string,
+  last_calibration_date?: string,
+  calibration_interval_days?: string,
+  manufacturer_id?: number | string,
+  condition_id?: number | string,
+  batch_id: string,
+  is_special?: boolean,
+  caducate_date?: string,
+  quantity?: string | number,
+  fabrication_date?:string,
+  calendar_date?: string,
+  certificate_8130?: File | string,
+  certificate_fabricant?: File | string,
+  certificate_vendor?: File | string,
+  image?: File | string,
+}
 
 
 export const useCreateArticle = () => {
@@ -10,7 +32,7 @@ export const useCreateArticle = () => {
 
     const createMutation = useMutation({
         mutationKey: ["articles"],
-        mutationFn: async ({data, company}: {company: string, data: ConsumableArticle | ComponentArticle | ToolArticle}) => {
+        mutationFn: async ({data, company}: {company: string, data: ArticleData}) => {
             await axiosInstance.post(`/${company}/article`, data,
               {
               headers: {
@@ -43,7 +65,7 @@ export const useCreateDirectArticle = () => {
 
   const createMutation = useMutation({
       mutationKey: ["articles"],
-      mutationFn: async ({data, company}: {company: string, data: ConsumableArticle | ComponentArticle | ToolArticle}) => {
+      mutationFn: async ({data, company}: {company: string, data: Consumable | Component | Tool}) => {
           await axiosInstance.post(`/${company}/article`, data,
             {
             headers: {
@@ -146,9 +168,8 @@ export const useConfirmIncomingArticle = () => {
           zone: string,
           manufacturer_id?: number | string,
           condition_id?: number | string,
-          batches_id: string,
+          batch_id: string,
           is_special?: boolean,
-          status: string,
           caducate_date?: string,
           quantity?: string | number,
           fabrication_date?:string,
@@ -161,7 +182,8 @@ export const useConfirmIncomingArticle = () => {
         company: string
       }) => {
           await axiosInstance.post(`/${company}/update-article-warehouse/${values.id}`, {
-            ...values
+            ...values,
+            status: "InWarehouse"
           },
           {
             headers: {

@@ -16,7 +16,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useGetBatchesWithArticlesCount } from '@/hooks/mantenimiento/almacen/renglones/useGetBatchesWithArticleCount';
+import { useGetBatches } from '@/hooks/mantenimiento/almacen/renglones/useGetBatches';
 import { useCompanyStore } from '@/stores/CompanyStore';
 import { Loader2 } from 'lucide-react';
 import { columns } from './columns';
@@ -26,7 +26,7 @@ const InventarioPage = () => {
 
   const { selectedCompany, selectedStation } = useCompanyStore();
 
-  const { data: batches, isLoading: isBatchesLoading, isError } = useGetBatchesWithArticlesCount({company: selectedCompany?.slug, location_id: selectedStation ?? undefined});
+  const { data: batches, isLoading: isBatchesLoading, isError } = useGetBatches({company: selectedCompany?.slug, location_id: selectedStation ?? undefined});
 
   return (
     <ContentLayout title='Gestion de Inventario'>

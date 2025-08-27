@@ -15,7 +15,7 @@ const fetchBatchesByLocationId = async ({
 
 export const useGetBatchesByLocationId = () => {
   return useMutation<Batch[], Error, { location_id: number; company?: string }>({
-    mutationKey: ["batches", "company"],
+    mutationKey: ["batches"],
     mutationFn: fetchBatchesByLocationId,
   });
 };

@@ -12,7 +12,8 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { useGetWarehousesByLocation } from "@/hooks/administracion/useGetWarehousesByUser"
-import { useGetBatchesWithArticlesCount } from "@/hooks/mantenimiento/almacen/renglones/useGetBatchesWithArticleCount"
+import { useGetUnits } from "@/hooks/general/unidades/useGetPrimaryUnits"
+import { useGetBatches } from "@/hooks/mantenimiento/almacen/renglones/useGetBatches"
 import { batches_categories } from "@/lib/batches_categories"
 import { generateSlug } from "@/lib/utils"
 import { useCompanyStore } from "@/stores/CompanyStore"
@@ -37,7 +38,7 @@ const FormSchema = z.object({
   alternative_part_number: z.string().optional(),
   ata_code: z.string().optional(),
   is_hazarous: z.boolean().optional(),
-  medition_unit: z.string().optional(),
+  unit_id: z.string(),
   min_quantity: z.string().optional(),
   warehouse_id: z.string(),
 })
@@ -57,7 +58,9 @@ export function CreateBatchForm({ onClose }: FormProps) {
 
   const { createBatch } = useCreateBatch();
 
-  const { data: batches } = useGetBatchesWithArticlesCount({company: selectedCompany?.slug, location_id: selectedStation!});
+  const { data: batches } = useGetBatches({company: selectedCompany?.slug, location_id: selectedStation!});
+
+  const {data: units, isLoading: isUnitsLoading, isError: isUnitsError} = useGetUnits()
 
 
   const form = useForm<FormSchemaType>({
@@ -76,7 +79,7 @@ export function CreateBatchForm({ onClose }: FormProps) {
     if (existingBatch) {
       setError("name", {
         type: "manual",
-        message: "El numero de parte ya existe."
+        message: "El renglón ya existe."
       });
     } else {
       clearErrors("name");
@@ -161,13 +164,24 @@ export function CreateBatchForm({ onClose }: FormProps) {
           <div className="flex flex-col gap-2 w-full">
             <FormField
               control={form.control}
-              name="medition_unit"
+              name="unit_id"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Unidad de medición</FormLabel>
-                  <FormControl>
-                    <Input placeholder="EJ: Unidades" {...field} />
-                  </FormControl>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger disabled={isUnitsLoading || isUnitsError}>
+                        <SelectValue placeholder={isUnitsLoading ? <Loader2 className="animate-spin" /> : "Seleccione..."} />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {
+                        units && units.map((unit) => (
+                          <SelectItem key={unit.id} value={unit.id.toString()}>{unit.label}</SelectItem>
+                        ))
+                      }
+                    </SelectContent>
+                  </Select>
                   <FormDescription>Unidad para medir el lote.</FormDescription>
                   <FormMessage />
                 </FormItem>

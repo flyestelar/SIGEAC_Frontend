@@ -1,512 +1,331 @@
 'use client'
 
-import { useConfirmIncomingArticle, useCreateArticle } from "@/actions/mantenimiento/almacen/inventario/articulos/actions"
-import { Button } from "@/components/ui/button"
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
-import { Input } from "@/components/ui/input"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
-import { useGetConditions } from "@/hooks/administracion/useGetConditions"
-import { useGetManufacturers } from "@/hooks/general/fabricantes/useGetManufacturers"
-import { useGetBatchesByLocationId } from "@/hooks/mantenimiento/almacen/renglones/useGetBatchesByLocationId"
-import loadingGif from '@/public/loading2.gif'
-import { useCompanyStore } from "@/stores/CompanyStore"
-import { Article, Batch } from "@/types"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { FileUpIcon, Loader2 } from "lucide-react"
-import Image from "next/image"
-import { useRouter } from "next/navigation"
-import { useEffect, useState } from "react"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
-import { MultiInputField } from "../../../misc/MultiInputField"
-import { Checkbox } from "../../../ui/checkbox"
-import { Textarea } from "../../../ui/textarea"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { Button } from "@/components/ui/button"
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form"
+import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Checkbox } from "@/components/ui/checkbox"
+import { MultiInputField } from "@/components/misc/MultiInputField"
+import { useGetConditions } from "@/hooks/administracion/useGetConditions"
+import { useState } from "react"
+import { FileUpIcon } from "lucide-react"
+import { useCreateArticle } from "@/actions/mantenimiento/almacen/inventario/articulos/actions"
+import { useCompanyStore } from "@/stores/CompanyStore"
 
-const formSchema = z.object({
-  article_type: z.string(),
-  serial: z.string().min(2, {
-    message: "El serial debe contener al menos 2 carácteres.",
-  }),
-  part_number: z.string().min(2, {
-    message: "El serial debe contener al menos 2 carácteres.",
-  }),
-  alternative_part_number: z.array(
-    z.string().min(2, {
-      message: "Cada número de parte alterno debe contener al menos 2 carácteres.",
-    })
-  ).optional(),
-  description: z.string({
-    message: "Debe ingresar la descripción del articulo."
-  }).min(2, {
-    message: "La descripción debe contener al menos 2 carácteres.",
-  }),
-  zone: z.string({
-    message: "Debe ingresar la ubicación del articulo.",
-  }),
-  manufacturer_id: z.string({
-    message: "Debe ingresar un fabricante.",
-  }),
-  condition_id: z.string(),
-  cost: z.string(),
-  batches_id: z.string({
-    message: "Debe ingresar un lote.",
-  }),
-  is_special: z.boolean(),
-  certificate_8130: z
-    .instanceof(File, { message: 'Please upload a file.' })
-    .refine((f) => f.size < 1000000_000, 'Max 100Kb upload size.').optional(),
-  certificate_fabricant: z
-    .instanceof(File, { message: 'Please upload a file.' })
-    .refine((f) => f.size < 1000000_000, 'Max 100Kb upload size.').optional(),
+// ✅ esquema de validación
+const MAX_FILE_SIZE = 100 * 1024 // 100 KB
 
-  certificate_vendor: z
-    .instanceof(File, { message: 'Please upload a file.' })
-    .refine((f) => f.size < 1000000_000, 'Max 100Kb upload size.').optional(),
-  image: z
-    .instanceof(File, { message: 'Please upload a file.' })
-    .refine((f) => f.size < 1000000_000, 'Max 100Kb upload size.').optional(),
-})
+const fileSchema = z
+  .instanceof(File, { message: "Debe subir un archivo válido." })
+  .refine((f) => f.size <= MAX_FILE_SIZE, "El archivo no debe superar los 100Kb.")
+  .optional()
 
-
-interface EditingArticle extends Article {
-  batches: Batch,
-  tool?: {
-    id: number,
-    serial: string,
-    isSpecial: boolean,
-    article_id: number,
-  }
-}
-
-
-const CreateToolForm = ({ initialData, isEditing }: {
-  initialData?: EditingArticle,
-  isEditing?: boolean,
-}) => {
-
-  const [filteredBatches, setFilteredBatches] = useState<Batch[]>()
-
-  const { createArticle } = useCreateArticle();
-
-  const { confirmIncoming } = useConfirmIncomingArticle();
-
-  const { selectedStation, selectedCompany } = useCompanyStore();
-
-  const router = useRouter()
-
-  const { mutate, data: batches, isPending: isBatchesLoading, isError } = useGetBatchesByLocationId();
-
-  const { data: conditions, isLoading: isConditionsLoading, error: isConditionsError } = useGetConditions();
-
-  const { data: manufacturers, isLoading: isManufacturerLoading, isError: isManufacturerError } = useGetManufacturers(selectedCompany?.slug)
-
-  useEffect(() => {
-    if (selectedStation && selectedCompany) {
-      mutate({location_id: Number(selectedStation), company: selectedCompany!.slug})
+const formSchema = z
+  .object({
+    part_number: z.string().min(2, "El número de parte debe tener al menos 2 caracteres."),
+    alternative_part_number: z
+      .array(z.string().min(2, "Cada número alterno debe tener al menos 2 caracteres."))
+      .optional(),
+    serial: z.string().min(2, "El serial debe tener al menos 2 caracteres."),
+    description: z.string().min(2, "La descripción es requerida."),
+    condition_id: z.string({ required_error: "Debe seleccionar una condición." }),
+    zone: z.string().min(1, "Debe ingresar la zona."),
+    needs_calibration: z.boolean().default(false),
+    last_calibration_date: z.string().optional(),
+    calibration_interval_days: z.string().optional(),
+    image: fileSchema,
+    certificate_8130: fileSchema,
+    certificate_fabricant: fileSchema,
+    certificate_vendor: fileSchema,
+  })
+  .refine(
+    (data) => {
+      if (data.needs_calibration) {
+        return data.last_calibration_date && data.calibration_interval_days
+      }
+      return true
+    },
+    {
+      message: "Debe ingresar fecha e intervalo de calibración.",
+      path: ["last_calibration_date"],
     }
-  }, [selectedStation, mutate, selectedCompany])
+  )
 
-  useEffect(() => {
-    if (batches) {
-      // Filtrar los batches por categoría
-      const filtered = batches.filter((batch) => batch.category === "HERRAMIENTA");
-      setFilteredBatches(filtered);
-    }
-  }, [batches]);
+export function CreateToolForm() {
+  const {selectedCompany} = useCompanyStore()
+
+  const { data: conditions, isLoading: isConditionsLoading } = useGetConditions()
+
+  const {createArticle} = useCreateArticle()
+
+  const [needsCalibration, setNeedsCalibration] = useState(false)
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      serial: initialData?.serial || "",
-      part_number: initialData?.part_number || "",
-      alternative_part_number: initialData?.alternative_part_number || [],
-      batches_id: initialData?.batches.id?.toString() || "",
-      manufacturer_id: initialData?.manufacturer?.id.toString() || "",
-      condition_id: initialData?.condition?.id.toString() || "",
-      description: initialData?.description || "",
-      is_special: initialData?.tool?.isSpecial || false,
-      zone: initialData?.zone || "",
-      cost: initialData && initialData?.cost?.toString() || "",
-    }
+      part_number: "",
+      alternative_part_number: [],
+      serial: "",
+      description: "",
+      condition_id: "",
+      zone: "",
+      needs_calibration: false,
+      last_calibration_date: "",
+      calibration_interval_days: "",
+    },
   })
-  form.setValue("article_type", "herramienta");
 
   const onSubmit = (values: z.infer<typeof formSchema>) => {
-    const formattedValues = {
-      ...values,
-      batches_id: Number(values.batches_id),
-      cost: 0,
-      status: "Stored",
-    }
-    if (isEditing) {
-      confirmIncoming.mutate({
-        values: {
-          ...values,
-          id: initialData?.id,
-          certificate_8130: values.certificate_8130 || initialData?.certifcate_8130,
-          certificate_fabricant: values.certificate_fabricant || initialData?.certifcate_fabricant,
-          certificate_vendor: values.certificate_vendor || initialData?.certifcate_vendor,
-          status: "Stored"
-        },
-        company: selectedCompany!.slug
-      })
-      router.push(`/${selectedCompany?.slug}/almacen/ingreso/en_recepcion`)
-    } else {
-      createArticle.mutate({company: selectedCompany!.slug, data: {
-        ...formattedValues
-      }});
-    }
+    console.log("Form data:", values)
+    createArticle.mutateAsync({company: selectedCompany!.slug, data: values})
   }
 
   return (
     <Form {...form}>
-      <form encType="multipart/form-data" className="flex flex-col gap-4 max-w-6xl mx-auto" onSubmit={form.handleSubmit(onSubmit)}>
-        <div className="max-w-7xl grid grid-cols-2 gap-4">
-          <div className="col-span-2 flex flex-col xl:flex-row gap-4">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-4 max-w-7xl mx-auto">
+        {/* Numero de parte + alternos */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <FormField
-              control={form.control}
-              name="part_number"
-              render={({ field }) => (
-                <FormItem className="w-full xl:w-1/3 min-w-0">
-                  <FormLabel>Numero de Parte</FormLabel>
-                  <FormControl>
-                    <Input placeholder="EJ: 234ABAC" {...field} />
-                  </FormControl>
-                  <FormDescription>
-                    Identificador único del articulo.
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="alternative_part_number"
-              render={({ field }) => (
-                <FormItem className="w-full xl:w-2/3 min-w-0">
-                  <FormLabel>Nro. de Parte Alternos</FormLabel>
-                  <FormControl>
-                    <MultiInputField
-                      values={field.value || []}
-                      onChange={field.onChange}
-                      placeholder="EJ: 234ABAC"
-                    />
-                  </FormControl>
-                  <FormDescription>
-                    Identificadores alternativos del artículo.
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-          <FormField
             control={form.control}
             name="serial"
             render={({ field }) => (
-              <FormItem className="w-full">
+              <FormItem>
                 <FormLabel>Serial</FormLabel>
                 <FormControl>
-                  <Input placeholder="EJ: 234ABAC" {...field} />
+                  <Input placeholder="Ej: SN-98765" {...field} />
                 </FormControl>
-                <FormDescription>
-                  Identificador único del articulo.
-                </FormDescription>
                 <FormMessage />
               </FormItem>
             )}
           />
           <FormField
             control={form.control}
-            name="manufacturer_id"
+            name="part_number"
             render={({ field }) => (
-              <FormItem className="w-full">
-                <FormLabel>Fabricante</FormLabel>
-                <Select disabled={isManufacturerLoading} onValueChange={field.onChange} value={field.value}>
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecccione..." />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {
-                      manufacturers && manufacturers.map((manufacturer) => (
-                        <SelectItem key={manufacturer.id} value={manufacturer.id.toString()}>{manufacturer.name}</SelectItem>
-                      ))
-                    }
-                  </SelectContent>
-                </Select>
-                <FormDescription>
-                  Marca específica del articulo.
-                </FormDescription>
+              <FormItem>
+                <FormLabel>Número de Parte</FormLabel>
+                <FormControl>
+                  <Input placeholder="Ej: 123ABC" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="alternative_part_number"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Nros. de Parte Alternos</FormLabel>
+                <FormControl>
+                  <MultiInputField
+                    values={field.value || []}
+                    onChange={field.onChange}
+                    placeholder="Ej: ALT-456"
+                  />
+                </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
         </div>
-        <div className="flex flex-row gap-10 justify-between max-w-6xl">
-          <div className="flex flex-col w-full">
-            <FormField
-              control={form.control}
-              name="batches_id"
-              render={({ field }) => (
-                <FormItem className="w-full">
-                  <FormLabel>Renglón del Articulo</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder={isBatchesLoading ? <Loader2 className="size-4 animate-spin" /> : "Seleccione lote..."} />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {
-                        filteredBatches && filteredBatches.map((batch) => (
-                          <SelectItem key={batch.name} value={batch.id.toString()}>{batch.name} - {batch.warehouse_name}</SelectItem>
-                        ))
-                      }
-                      {
-                        !filteredBatches || filteredBatches?.length <= 0 && (
-                          <p className="text-sm text-muted-foreground p-2 text-center">No se han encontrado lotes....</p>
-                        )
-                      }
-                      {
-                        isError && (
-                          <p className="text-sm text-muted-foreground p-2 text-center">Ha ocurrido un error al cargar los lotes...</p>
-                        )
-                      }
 
-                    </SelectContent>
-                  </Select>
-                  <FormDescription>
-                    Lote a asignar el articulo.
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="condition_id"
-              render={({ field }) => (
-                <FormItem className="w-full">
-                  <FormLabel>Condición</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                      <SelectTrigger disabled={isConditionsLoading}>
-                        <SelectValue placeholder="Seleccione..." />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {
-                        conditions && conditions.map((condition) => (
-                          <SelectItem key={condition.id} value={condition.id.toString()}>{condition.name}</SelectItem>
-                        ))
-                      }
-                    </SelectContent>
-                  </Select>
-                  <FormDescription>
-                    Estado físico del articulo.
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            {/* {
-              !isEditing && (
-                <FormField
-                  control={form.control}
-                  name="cost"
-                  render={({ field }) => (
-                    <FormItem className="w-full">
-                      <FormLabel>Costo Total</FormLabel>
-                      <FormControl>
-                        <AmountInput placeholder="0.00" {...field} />
-                      </FormControl>
-                      <FormDescription>
-                        El costo final que tuvo el articulo.
-                      </FormDescription>
-                    </FormItem>
-                  )}
+
+        {/* Descripción */}
+        <FormField
+          control={form.control}
+          name="description"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Descripción</FormLabel>
+              <FormControl>
+                <Textarea rows={3} placeholder="Ej: Torquímetro digital 1/2 pulgada..." {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        {/* Condición + Zona */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <FormField
+            control={form.control}
+            name="condition_id"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Condición</FormLabel>
+                <Select disabled={isConditionsLoading} onValueChange={field.onChange} value={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder={isConditionsLoading ? "Cargando..." : "Seleccione..."} />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {conditions?.map((c) => (
+                      <SelectItem key={c.id} value={c.id.toString()}>
+                        {c.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="zone"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Zona</FormLabel>
+                <FormControl>
+                  <Input placeholder="Ej: Pasillo A-3" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
+        {/* Checkbox calibración */}
+        <FormField
+          control={form.control}
+          name="needs_calibration"
+          render={({ field }) => (
+            <FormItem className="flex flex-row items-start space-x-3 rounded-md border p-4">
+              <FormControl>
+                <Checkbox
+                  checked={field.value}
+                  onCheckedChange={(checked) => {
+                    field.onChange(!!checked)
+                    setNeedsCalibration(!!checked)
+                  }}
                 />
-              )
-            } */}
-            {/* {
-              isEditing && (
-                <FormField
-                  control={form.control}
-                  name="zone"
-                  render={({ field }) => (
-                    <FormItem className="w-full">
-                      <FormLabel>Zona de Ubicacion</FormLabel>
-                      <FormControl>
-                        <Input placeholder="EJ: Pasillo 4, etc..." {...field} />
-                      </FormControl>
-                      <FormDescription>
-                        Identificador único del articulo.
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              )
-            } */}
+              </FormControl>
+              <div className="space-y-1 leading-none">
+                <FormLabel>¿Requiere calibración?</FormLabel>
+                <FormDescription>Si se activa, deberá ingresar fecha e intervalo.</FormDescription>
+              </div>
+            </FormItem>
+          )}
+        />
+
+        {/* Campos condicionales de calibración */}
+        {needsCalibration && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <FormField
               control={form.control}
-              name="zone"
-              render={({ field }) => (
-                <FormItem className="w-full">
-                  <FormLabel>Zona de Ubicacion</FormLabel>
-                  <FormControl>
-                    <Input placeholder="EJ: Pasillo 4, etc..." {...field} />
-                  </FormControl>
-                  <FormDescription>
-                    Identificador único del articulo.
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="is_special"
-              render={({ field }) => (
-                <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md p-4">
-                  <FormControl>
-                    <Checkbox
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                    />
-                  </FormControl>
-                  <div className="space-y-1 leading-none">
-                    <FormLabel>
-                      ¿Es especial?
-                    </FormLabel>
-                    <FormDescription>
-                      El articulo tiene un uso especial o único.
-                    </FormDescription>
-                  </div>
-                </FormItem>
-              )}
-            />
-          </div>
-          <div className="flex flex-col max-w-7xl space-y-3 w-full">
-            <FormField
-              control={form.control}
-              name="description"
-              render={({ field }) => (
-                <FormItem >
-                  <FormLabel>Descripción del Articulo</FormLabel>
-                  <FormControl>
-                    <Textarea rows={5} placeholder="EJ: Motor V8 de..." {...field} />
-                  </FormControl>
-                  <FormDescription>
-                    Breve descricion del articulo.
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="image"
+              name="last_calibration_date"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Imágen del Articulo</FormLabel>
-                  {
-                    initialData && <Image src={`data:image/png;base64,${initialData.image!.toString()}`} width={100} height={100} alt="Imagen defecto" />
-                  }
+                  <FormLabel>Última Fecha de Calibración</FormLabel>
                   <FormControl>
-                    <div className="relative h-10 w-full ">
-                      <FileUpIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 z-10" />
-                      <Input
-                        type="file"
-                        onChange={(e) => form.setValue("image", e.target.files![0])}
-                        className="pl-10 pr-3 py-2 text-md w-full border border-gray-300 rounded shadow-sm focus:outline-none focus:ring-2 focus:ring-[#6E23DD] focus:border-transparent cursor-pointer" // Add additional styling as needed
-                      />
-                    </div>
+                    <Input type="date" {...field} />
                   </FormControl>
-                  <FormDescription>
-                    Imágen descriptiva del articulo
-                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
             />
-            <div className="flex flex-col gap-2 items-center">
-              <FormField
-                control={form.control}
-                name="certificate_8130"
-                render={({ field }) => (
-                  <FormItem className="w-full flex flex-col">
-                    <FormLabel>Certificado #<span className="text-primary font-bold">8130</span></FormLabel>
-                    <FormControl>
-                      <input
-                        type="file"
-                        onChange={(e) => form.setValue("certificate_8130", e.target.files![0])}
-                      />
-                    </FormControl>
-                    <FormDescription>
-                      Documento legal del archivo.
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="certificate_fabricant"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Certificado del <span className="text-primary">Fabricante</span></FormLabel>
-                    <FormControl>
-                      <input
-                        type="file"
-                        onChange={(e) => form.setValue("certificate_fabricant", e.target.files![0])}
-                      />
-                    </FormControl>
-                    <FormDescription>
-                      Documentos legal del articulo.
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="certificate_vendor"
-                render={({ field }) => (
-                  <FormItem className="col-span-2">
-                    <FormLabel>Certificado del <span className="text-primary">Vendedor</span></FormLabel>
-                    <FormControl>
-                      <input
-                        type="file"
-                        onChange={(e) => form.setValue("certificate_vendor", e.target.files![0])}
-                      />
-                    </FormControl>
-                    <FormDescription>
-                      Documentos legal del articulo.
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
+            <FormField
+              control={form.control}
+              name="calibration_interval_days"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Intervalo (días)</FormLabel>
+                  <FormControl>
+                    <Input type="number" placeholder="Ej: 180" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
           </div>
+        )}
+
+        {/* Imagen */}
+        <FormField
+          control={form.control}
+          name="image"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Imagen del Artículo</FormLabel>
+              <FormControl>
+                <div className="relative h-10 w-full">
+                  <FileUpIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500" />
+                  <Input
+                    type="file"
+                    onChange={(e) => form.setValue("image", e.target.files?.[0])}
+                    className="pl-10"
+                  />
+                </div>
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        {/* Certificados */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <FormField
+            control={form.control}
+            name="certificate_8130"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Certificado 8130</FormLabel>
+                <FormControl>
+                  <Input type="file" onChange={(e) => form.setValue("certificate_8130", e.target.files?.[0])} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="certificate_fabricant"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Certificado Fabricante</FormLabel>
+                <FormControl>
+                  <Input type="file" onChange={(e) => form.setValue("certificate_fabricant", e.target.files?.[0])} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="certificate_vendor"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Certificado Vendedor</FormLabel>
+                <FormControl>
+                  <Input type="file" onChange={(e) => form.setValue("certificate_vendor", e.target.files?.[0])} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
         </div>
-        <div className="flex justify-end w-full">
-          <Button className="bg-primary text-white hover:bg-blue-900 disabled:bg-slate-50 disabled:border-dashed disabled:border-black" disabled={createArticle?.isPending || confirmIncoming.isPending} type="submit">
-            {createArticle?.isPending || confirmIncoming.isPending ? <Image className="text-black" src={loadingGif} width={170} height={170} alt="Loading..." /> : <p>{isEditing ? "Confirmar Ingreso" : "Crear Articulo"}</p>}
+
+        {/* Botón submit */}
+        <div className="flex justify-end">
+          <Button type="submit" className="bg-primary text-white">
+            Guardar
           </Button>
         </div>
       </form>
     </Form>
   )
 }
-
-export default CreateToolForm
