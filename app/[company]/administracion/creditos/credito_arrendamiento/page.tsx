@@ -13,7 +13,7 @@ const CreditPage = () => {
     return <LoadingPage />;
   }
   return (
-    <ContentLayout title="Créditos">
+    <ContentLayout title="Crédito">
       {" "}
       <h1 className="text-5xl font-bold text-center mt-2">
         Control de Pagos de un Arrendamiento
