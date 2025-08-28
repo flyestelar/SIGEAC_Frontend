@@ -3,88 +3,84 @@
 import { ContentLayout } from '@/components/layout/ContentLayout';
 import {
   Breadcrumb,
-  BreadcrumbEllipsis,
   BreadcrumbItem,
   BreadcrumbLink,
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useDebounce } from '@/hooks/helpers/useDebounce';
-import { useInventory } from '@/hooks/mantenimiento/almacen/renglones/useGetInventory';
+import { useGetBatches } from '@/hooks/mantenimiento/almacen/renglones/useGetBatches';
+import { useSearchBatchesByPartNumber } from '@/hooks/mantenimiento/almacen/renglones/useGetBatchesByArticlePartNumber';
 import { useCompanyStore } from '@/stores/CompanyStore';
 import { Loader2 } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import SearchSection from '../../general/inventario/_components/SearchSection';
 import { columns } from './columns';
 import { DataTable } from './data-table';
 
 const InventarioPage = () => {
-  const { selectedCompany, selectedStation } = useCompanyStore();
+  const { selectedStation, selectedCompany } = useCompanyStore();
   const [searchTerm, setSearchTerm] = useState('');
   const debouncedSearchTerm = useDebounce(searchTerm, 500);
+  // Loading de transición de 500ms cuando cambia el término de búsqueda
+  const [transitionLoading, setTransitionLoading] = useState(false);
+  useEffect(() => {
+    setTransitionLoading(true);
+    const timeout = setTimeout(() => setTransitionLoading(false), 500);
+    return () => clearTimeout(timeout);
+  }, [debouncedSearchTerm]);
 
-  const {
-    displayedBatches,
-    isLoading,
-    isBatchesError,
-    batchesError,
-    showNoResults,
-  } = useInventory(selectedStation, selectedCompany?.slug, debouncedSearchTerm);
+  // Consultas a la API
 
-  // 🔹 Helpers para filtrar según categoría
-  const filterByCategory = (category: string) =>
-    displayedBatches.filter(b => b.status === category);
+
+  const { data: allBatches, isLoading: isLoadingBatches, isError: isBatchesError, error: batchesError } = useGetBatches();
+
+  const { data: searchedBatches, isLoading: isLoadingSearch, isError: isSearchError, error: searchError } =
+    useSearchBatchesByPartNumber(selectedCompany?.slug, selectedStation ?? undefined, debouncedSearchTerm || undefined);
+
+  // Memoización de batches a mostrar
+  const displayedBatches = useMemo(() => {
+    if (!allBatches) return [];
+
+    // Si el input (debounced) está vacío, mostrar todos los batches
+    if (!debouncedSearchTerm || debouncedSearchTerm.trim() === "") {
+      return allBatches;
+    }
+
+    // Si hay término de búsqueda y hay resultados, filtrar
+    if (searchedBatches && searchedBatches.length > 0) {
+      const searchedBatchIds = new Set(searchedBatches.map(b => b.id));
+      return allBatches.filter(batch => searchedBatchIds.has(batch.id));
+    }
+
+    // Si hay término de búsqueda pero no hay resultados, retornar array vacío
+    return [];
+  }, [allBatches, searchedBatches, debouncedSearchTerm]);
+
+  // Estados derivados
+  const isLoading = isLoadingBatches || !!(debouncedSearchTerm && isLoadingSearch);
+  const isEmptyState = !isLoading && displayedBatches?.length === 0;
+  const showNoResults = !isLoading && !!debouncedSearchTerm && isEmptyState;
 
   return (
-    <ContentLayout title='Gestión de Inventario'>
+    <ContentLayout title='Inventario'>
       <div className='flex flex-col gap-y-2'>
-        {/* 🔹 Breadcrumb */}
         <Breadcrumb>
           <BreadcrumbList>
             <BreadcrumbItem>
               <BreadcrumbLink href={`/${selectedCompany?.slug}/dashboard`}>Inicio</BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator />
-            <BreadcrumbItem>Almacén</BreadcrumbItem>
-            <BreadcrumbSeparator />
             <BreadcrumbItem>
-              <DropdownMenu>
-                <DropdownMenuTrigger className="flex items-center gap-1">
-                  <BreadcrumbEllipsis className="h-4 w-4" />
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="start">
-                  <DropdownMenuItem>
-                    <BreadcrumbLink href={`/${selectedCompany?.slug}/almacen/inventario/gestion`}>Gestión</BreadcrumbLink>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem>
-                    <BreadcrumbLink href={`/${selectedCompany?.slug}/almacen/inventario/entregado`}>Entregados</BreadcrumbLink>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator />
-            <BreadcrumbItem>
-              <BreadcrumbPage>Gestión</BreadcrumbPage>
+              <BreadcrumbPage>Inventario General</BreadcrumbPage>
             </BreadcrumbItem>
           </BreadcrumbList>
         </Breadcrumb>
-
-        {/* 🔹 Header */}
-        <h1 className='text-4xl font-bold text-center'>Inventario de Almacén</h1>
-        <p className='text-sm text-muted-foreground text-center italic'>
-          Aquí puede observar todos los lotes de los diferentes almacenes. <br />
-          Filtre y/o busque si desea un renglón en específico.
+        <h1 className='text-4xl font-bold text-center'>Inventario General</h1>
+        <p className='text-sm text-muted-foreground text-center  italic'>
+          Aquí puede observar todos los renglones de los diferentes almacenes. <br />Filtre y/o busque sí desea un renglón en específico.
         </p>
-
-        {/* 🔹 Buscador (opcional) */}
         <SearchSection
           searchTerm={searchTerm}
           onSearchChange={setSearchTerm}
@@ -92,48 +88,37 @@ const InventarioPage = () => {
           showNoResults={showNoResults}
         />
 
-        {/* 🔹 Loading */}
-        {isLoading && (
+        {isLoading ? (
           <div className='flex w-full h-full justify-center items-center min-h-[300px]'>
             <Loader2 className='size-24 animate-spin' />
           </div>
-        )}
+        ) : (
+          <>
+            {allBatches && (
+              <DataTable
+                columns={columns}
+                initialData={displayedBatches}
+                isSearching={!!debouncedSearchTerm && debouncedSearchTerm.trim() !== ""}
+                searchTerm={debouncedSearchTerm && debouncedSearchTerm.trim() !== "" ? debouncedSearchTerm : ""}
+              />
+            )}
 
-        {/* 🔹 Tabs con DataTable */}
-        {!isLoading && displayedBatches.length > 0 && (
-          <Tabs defaultValue="serviciable">
-            <TabsList>
-              <TabsTrigger value="serviciable">Serviciables</TabsTrigger>
-              <TabsTrigger value="removed">Removidos</TabsTrigger>
-              <TabsTrigger value="consumable">Consumibles</TabsTrigger>
-            </TabsList>
+            {isBatchesError && (
+              <div className="text-red-500 text-center text-sm italic text-muted-foreground">
+                Error cargando batches: {batchesError.message}
+              </div>
+            )}
 
-            <TabsContent value="serviciable">
-              <DataTable columns={columns} data={filterByCategory('serviciable')} />
-            </TabsContent>
-            <TabsContent value="removed">
-              <DataTable columns={columns} data={filterByCategory('removed')} />
-            </TabsContent>
-            <TabsContent value="consumable">
-              <DataTable columns={columns} data={filterByCategory('consumable')} />
-            </TabsContent>
-          </Tabs>
-        )}
-
-        {/* 🔹 Errores */}
-        {isBatchesError && (
-          <span>Ha ocurrido un error al cargar los renglones...</span>
-        )}
-
-        {/* 🔹 Estado vacío */}
-        {!isLoading && displayedBatches.length === 0 && !showNoResults && (
-          <p className="text-center text-muted-foreground italic mt-6">
-            No hay lotes registrados en este almacén todavía.
-          </p>
+            {isSearchError && (
+              <div className="text-red-500 text-center text-sm italic text-muted-foreground">
+                Error en búsqueda: {searchError.message}
+              </div>
+            )}
+          </>
         )}
       </div>
     </ContentLayout>
-  );
-};
+  )
+}
 
-export default InventarioPage;
+export default InventarioPage

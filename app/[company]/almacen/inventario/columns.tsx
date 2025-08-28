@@ -8,7 +8,6 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { cn } from "@/lib/utils"
 import { Batch } from "@/types"
 import Link from "next/link"
-import { useCompanyStore } from "@/stores/CompanyStore"
 import BatchDropdownActions from "@/components/dropdowns/mantenimiento/almacen/BatchDropdownActions"
 
 interface BatchesWithCountProp extends Batch {
@@ -16,6 +15,28 @@ interface BatchesWithCountProp extends Batch {
 }
 
 export const columns: ColumnDef<BatchesWithCountProp>[] = [
+  {
+    id: "select",
+    header: ({ table }) => (
+      <Checkbox
+        checked={
+          table.getIsAllPageRowsSelected() ||
+          (table.getIsSomePageRowsSelected() && "indeterminate")
+        }
+        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+        aria-label="Seleccionar todos"
+      />
+    ),
+    cell: ({ row }) => (
+      <Checkbox
+        checked={row.getIsSelected()}
+        onCheckedChange={(value) => row.toggleSelected(!!value)}
+        aria-label="Seleccionar fila"
+      />
+    ),
+    enableSorting: false,
+    enableHiding: false,
+  },
   {
     accessorKey: "name",
     header: ({ column }) => (
@@ -55,13 +76,13 @@ export const columns: ColumnDef<BatchesWithCountProp>[] = [
     )
   },
   {
-    id: "select",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Acciones" />
-
-    ),
-    cell: ({ row }) => (
-      <BatchDropdownActions id={row.original.id.toString()} />
-    ),
-  },
+    id: "actions",
+    header: ({ column }) => <DataTableColumnHeader column={column} title="Acciones" />
+    ,
+    cell: ({ row }) => {
+      return (
+        <BatchDropdownActions id={row.original.id.toString()} />
+      )
+    },
+  }
 ]

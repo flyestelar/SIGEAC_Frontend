@@ -23,7 +23,6 @@ import {
 } from "@/components/ui/table"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
-import { CreateMaintenanceAircraftDialog } from "@/components/dialogs/mantenimiento/aeronaves/CreateMaintenanceAircraftDialog"
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
@@ -62,7 +61,6 @@ export function DataTable<TData, TValue>({
   return (
     <div>
       <div className="flex items-center py-4">
-        <CreateMaintenanceAircraftDialog />
         <DataTableViewOptions table={table} />
       </div>
       <div className="rounded-md border mb-4">

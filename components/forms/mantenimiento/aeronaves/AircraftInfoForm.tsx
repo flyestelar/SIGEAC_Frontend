@@ -24,7 +24,6 @@ import { Textarea } from "../../../ui/textarea"
 // Esquema de validación para el Paso 1 (Información de la aeronave)
 const AircraftInfoSchema = z.object({
   manufacturer_id: z.string().min(1, "Debe seleccionar un fabricante"),
-  client_id: z.string().min(1, "Debe seleccionar un cliente"),
   serial: z.string().min(1, "El serial es obligatorio"),
   model: z.string().min(1, "El modelo es obligatorio"),
   acronym: z.string().min(1, "El acrónimo es obligatorio"),
@@ -72,154 +71,98 @@ export function AircraftInfoForm({ onNext, onBack, initialData }: AircraftInfoFo
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col space-y-3">
-        <div className='grid grid-cols-2 w-full gap-4'>
-          <FormField
-            control={form.control}
-            name="client_id"
-            render={({ field }) => (
-              <FormItem className="flex flex-col space-y-3 mt-1.5">
-                <FormLabel>Cliente</FormLabel>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <FormControl>
-                      <Button
-                        disabled={isClientsLoading || isClientsError}
-                        variant="outline"
-                        role="combobox"
-                        className={cn(
-                          "justify-between",
-                          !field.value && "text-muted-foreground"
-                        )}
-                      >
-                        {
-                          isClientsLoading && <Loader2 className="size-4 animate-spin mr-2" />
-                        }
-                        {field.value
-                          ? <p>{clients?.find(
-                            (client) => `${client.id.toString()}` === field.value
-                          )?.name}</p>
-                          : "Elige al cliente..."
-                        }
-                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                      </Button>
-                    </FormControl>
-                  </PopoverTrigger>
-                  <PopoverContent className="p-0">
-                    <Command>
-                      <CommandInput placeholder="Busque un cliente..." />
-                      <CommandList>
-                        <CommandEmpty className="text-sm p-2 text-center">No se ha encontrado ningún cliente.</CommandEmpty>
-                        <CommandGroup>
-                          {clients?.map((client) => (
-                            <CommandItem
-                              value={`${client.id}`}
-                              key={client.id}
-                              onSelect={() => {
-                                form.setValue("client_id", client.id.toString())
-                              }}
-                            >
-                              <Check
-                                className={cn(
-                                  "mr-2 h-4 w-4",
-                                  `${client.id.toString()}` === field.value
-                                    ? "opacity-100"
-                                    : "opacity-0"
-                                )}
-                              />
-                              {
-                                <p>{client.name}</p>
-                              }
-                            </CommandItem>
-                          ))}
-                        </CommandGroup>
-                      </CommandList>
-                    </Command>
-                  </PopoverContent>
-                </Popover>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="manufacturer_id"
-            render={({ field }) => (
-              <FormItem className="flex flex-col space-y-3 mt-1.5">
-                <FormLabel>Fabricante</FormLabel>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <FormControl>
-                      <Button
-                        disabled={isManufacturersLoading || isManufacturersError}
-                        variant="outline"
-                        role="combobox"
-                        className={cn(
-                          "justify-between",
-                          !field.value && "text-muted-foreground"
-                        )}
-                      >
-                        {
-                          isClientsLoading && <Loader2 className="size-4 animate-spin mr-2" />
-                        }
-                        {field.value
-                          ? <p>{manufacturers?.find(
-                            (manufacturer) => `${manufacturer.id.toString()}` === field.value
-                          )?.name}</p>
-                          : "Elige al fabricante..."
-                        }
-                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                      </Button>
-                    </FormControl>
-                  </PopoverTrigger>
-                  <PopoverContent className="p-0">
-                    <Command>
-                      <CommandInput placeholder="Busque un fabricante..." />
-                      <CommandList>
-                        <CommandEmpty className="text-sm p-2 text-center">No se ha encontrado ningún fabricante.</CommandEmpty>
-                        <CommandGroup>
-                          {manufacturers?.filter((m) => m.type === 'AIRCRAFT').map((manufacturer) => (
-                            <CommandItem
-                              value={`${manufacturer.id}`}
-                              key={manufacturer.id}
-                              onSelect={() => {
-                                form.setValue("manufacturer_id", manufacturer.id.toString())
-                              }}
-                            >
-                              <Check
-                                className={cn(
-                                  "mr-2 h-4 w-4",
-                                  `${manufacturer.id.toString()}` === field.value
-                                    ? "opacity-100"
-                                    : "opacity-0"
-                                )}
-                              />
-                              {
-                                <p>{manufacturer.name}</p>
-                              }
-                            </CommandItem>
-                          ))}
-                        </CommandGroup>
-                      </CommandList>
-                    </Command>
-                  </PopoverContent>
-                </Popover>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+        <div className='grid grid-cols-1 md:grid-cols-2 w-full gap-4'>
           <div className="flex gap-2">
+            <FormField
+              control={form.control}
+              name="manufacturer_id"
+              render={({ field }) => (
+                <FormItem className="flex flex-col space-y-3 mt-1.5 w-full">
+                  <FormLabel>Fabricante</FormLabel>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <FormControl>
+                        <Button
+                          disabled={isManufacturersLoading || isManufacturersError}
+                          variant="outline"
+                          role="combobox"
+                          className={cn(
+                            "justify-between",
+                            !field.value && "text-muted-foreground"
+                          )}
+                        >
+                          {
+                            isClientsLoading && <Loader2 className="size-4 animate-spin mr-2" />
+                          }
+                          {field.value
+                            ? <p>{manufacturers?.find(
+                              (manufacturer) => `${manufacturer.id.toString()}` === field.value
+                            )?.name}</p>
+                            : "Elige al fabricante..."
+                          }
+                          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        </Button>
+                      </FormControl>
+                    </PopoverTrigger>
+                    <PopoverContent className="p-0">
+                      <Command>
+                        <CommandInput placeholder="Busque un fabricante..." />
+                        <CommandList>
+                          <CommandEmpty className="text-sm p-2 text-center">No se ha encontrado ningún fabricante.</CommandEmpty>
+                          <CommandGroup>
+                            {manufacturers?.filter((m) => m.type === 'AIRCRAFT').map((manufacturer) => (
+                              <CommandItem
+                                value={`${manufacturer.id}`}
+                                key={manufacturer.id}
+                                onSelect={() => {
+                                  form.setValue("manufacturer_id", manufacturer.id.toString())
+                                }}
+                              >
+                                <Check
+                                  className={cn(
+                                    "mr-2 h-4 w-4",
+                                    `${manufacturer.id.toString()}` === field.value
+                                      ? "opacity-100"
+                                      : "opacity-0"
+                                  )}
+                                />
+                                {
+                                  <p>{manufacturer.name}</p>
+                                }
+                              </CommandItem>
+                            ))}
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
             <FormField
               control={form.control}
               name="model"
               render={({ field }) => (
-                <FormItem>
+                <FormItem className="w-full">
                   <FormLabel>Modelo</FormLabel>
                   <FormControl>
                     <Input placeholder="Modelo de la aeronave..." {...field} />
                   </FormControl>
-                  <FormDescription className="text-xs">
-                    Serial identificador de la aeronave.
-                  </FormDescription>
+                  <FormMessage className="text-xs" />
+                </FormItem>
+              )}
+            /></div>
+          <div className="flex gap-2">
+            <FormField
+              control={form.control}
+              name="acronym"
+              render={({ field }) => (
+                <FormItem className="w-full">
+                  <FormLabel>Acronimo</FormLabel>
+                  <FormControl>
+                    <Input placeholder="YVXXXX" {...field} />
+                  </FormControl>
                   <FormMessage className="text-xs" />
                 </FormItem>
               )}
@@ -228,7 +171,7 @@ export function AircraftInfoForm({ onNext, onBack, initialData }: AircraftInfoFo
               control={form.control}
               name="serial"
               render={({ field }) => (
-                <FormItem>
+                <FormItem className="w-full">
                   <FormLabel>Serial</FormLabel>
                   <FormControl>
                     <Input placeholder="Serial de la aeronave..." {...field} />
@@ -238,22 +181,9 @@ export function AircraftInfoForm({ onNext, onBack, initialData }: AircraftInfoFo
               )}
             />
           </div>
-          <FormField
-            control={form.control}
-            name="acronym"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Acronimo</FormLabel>
-                <FormControl>
-                  <Input placeholder="YVXXXX" {...field} />
-                </FormControl>
-                <FormMessage className="text-xs" />
-              </FormItem>
-            )}
-          />
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
-          {/* <FormField
+          <FormField
             control={form.control}
             name="fabricant_date"
             render={({ field }) => (
@@ -290,114 +220,7 @@ export function AircraftInfoForm({ onNext, onBack, initialData }: AircraftInfoFo
                     />
                   </PopoverContent>
                 </Popover>
-                <FormDescription className="text-xs">
-                  Fecha de fabricación de la aeronave.
-                </FormDescription>
                 <FormMessage />
-              </FormItem>
-            )}
-          /> */}
-          <FormField
-            control={form.control}
-            name="fabricant_date"
-            render={({ field }) => (
-              <FormItem className="flex flex-col mt-2.5 w-full">
-                <FormLabel>Fecha de Fabricación</FormLabel>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <FormControl>
-                      <Button
-                        variant={"outline"}
-                        className={cn(
-                          "w-full pl-3 text-left font-normal",
-                          !field.value && "text-muted-foreground"
-                        )}
-                      >
-                        {field.value ? (
-                          format(field.value, "PPP", {
-                            locale: es,
-                          })
-                        ) : (
-                          <span>Seleccione una fecha</span>
-                        )}
-                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                      </Button>
-                    </FormControl>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={field.value}
-                      onSelect={field.onChange}
-                      disabled={(date) => date > new Date()}
-                      initialFocus
-                      fromYear={1980}
-                      toYear={new Date().getFullYear()}
-                      captionLayout="dropdown-buttons"
-                      components={{
-                        Dropdown: (props) => (
-                          <select
-                            {...props}
-                            className="bg-popover text-popover-foreground"
-                          >
-                            {props.children}
-                          </select>
-                        ),
-                      }}
-                    />
-                  </PopoverContent>
-                </Popover>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="flight_hours"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Horas de Vuelo</FormLabel>
-                <FormControl>
-                  <Input
-                    type="number"
-                    min="0"
-                    step="1"
-                    placeholder="Ej: 15000"
-                    {...field}
-                    onKeyDown={(e) => {
-                      // Prevenir números negativos y decimales
-                      if (e.key === '-' || e.key === '.' || e.key === ',') {
-                        e.preventDefault();
-                      }
-                    }}
-                  />
-                </FormControl>
-                <FormMessage className="text-xs" />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="flight_cycles"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Ciclos</FormLabel>
-                <FormControl>
-                  <Input
-                    type="number"
-                    min="0"
-                    step="1"
-                    placeholder="Ej: 500"
-                    {...field}
-                    onKeyDown={(e) => {
-                      // Prevenir números negativos y decimales
-                      if (e.key === '-' || e.key === '.' || e.key === ',') {
-                        e.preventDefault();
-                      }
-                    }}
-                  />
-                </FormControl>
-                <FormMessage className="text-xs" />
               </FormItem>
             )}
           />
@@ -426,22 +249,76 @@ export function AircraftInfoForm({ onNext, onBack, initialData }: AircraftInfoFo
             )}
           />
         </div>
-        <FormField
-          control={form.control}
-          name="comments"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Comentarios</FormLabel>
-              <FormControl>
-                <Textarea placeholder="Aeronave de - " {...field} />
-              </FormControl>
-              <FormDescription className="text-xs">
-                Comentarios adicionales.
-              </FormDescription>
-              <FormMessage className="text-xs" />
-            </FormItem>
-          )}
-        />
+        <div className="flex flex-col md:flex-row w-full gap-2">
+          <div className="flex md:flex-col gap-2 w-full md:w-1/3">
+            <FormField
+              control={form.control}
+              name="flight_hours"
+              render={({ field }) => (
+                <FormItem className="w-full">
+                  <FormLabel>Horas de Vuelo</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="number"
+                      min="0"
+                      step="1"
+                      placeholder="Ej: 15000"
+                      {...field}
+                      onKeyDown={(e) => {
+                        // Prevenir números negativos y decimales
+                        if (e.key === '-' || e.key === '.' || e.key === ',') {
+                          e.preventDefault();
+                        }
+                      }}
+                    />
+                  </FormControl>
+                  <FormMessage className="text-xs" />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="flight_cycles"
+              render={({ field }) => (
+                <FormItem className="w-full">
+                  <FormLabel>Ciclos</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="number"
+                      min="0"
+                      step="1"
+                      placeholder="Ej: 500"
+                      {...field}
+                      onKeyDown={(e) => {
+                        // Prevenir números negativos y decimales
+                        if (e.key === '-' || e.key === '.' || e.key === ',') {
+                          e.preventDefault();
+                        }
+                      }}
+                    />
+                  </FormControl>
+                  <FormMessage className="text-xs" />
+                </FormItem>
+              )}
+            />
+          </div>
+          <FormField
+            control={form.control}
+            name="comments"
+            render={({ field }) => (
+              <FormItem className="w-full">
+                <FormLabel>Comentarios</FormLabel>
+                <FormControl>
+                  <Textarea className="resize-none" rows={5} placeholder="Aeronave de - " {...field} />
+                </FormControl>
+                <FormDescription className="text-xs">
+                  Comentarios adicionales.
+                </FormDescription>
+                <FormMessage className="text-xs" />
+              </FormItem>
+            )}
+          />
+        </div>
         <div className="flex justify-between items-center gap-x-4">
           {onBack && (
             <Button type="button" variant="outline" onClick={onBack}>

@@ -23,7 +23,6 @@ const InventarioPage = () => {
   const { selectedStation, selectedCompany } = useCompanyStore();
   const [searchTerm, setSearchTerm] = useState('');
   const debouncedSearchTerm = useDebounce(searchTerm, 500);
-
   // Loading de transición de 500ms cuando cambia el término de búsqueda
   const [transitionLoading, setTransitionLoading] = useState(false);
   useEffect(() => {
