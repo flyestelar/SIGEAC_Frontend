@@ -148,7 +148,7 @@ export const columns: ColumnDef<ColumnI>[] = [
   {
     accessorKey: "alternate_part_number",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Nro. de Parte Alterno" />
+      <DataTableColumnHeader filter column={column} title="Nro. de Parte Alterno" />
     ),
     cell: ({ row }) => (
       <div className="flex gap-2 text-center justify-center">
@@ -157,7 +157,7 @@ export const columns: ColumnDef<ColumnI>[] = [
             <p className="text-muted-foreground">{part_number}</p>
             <Separator orientation="vertical" className={index === row.original.alternative_part_number.length - 1 ? "hidden" : ""} />
           </div>
-        )): "N/A"}
+        )) : "N/A"}
       </div>
     ),
   },
