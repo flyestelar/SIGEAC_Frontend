@@ -146,20 +146,34 @@ export const columns: ColumnDef<ColumnI>[] = [
     },
   },
   {
-    accessorKey: "alternate_part_number",
+    accessorKey: "alternative_part_number", // 👀 ojo, aquí debe coincidir el nombre real de tu campo
     header: ({ column }) => (
       <DataTableColumnHeader filter column={column} title="Nro. de Parte Alterno" />
     ),
     cell: ({ row }) => (
       <div className="flex gap-2 text-center justify-center">
-        {row.original.alternative_part_number ? row.original.alternative_part_number.map((part_number, index) => (
-          <div className="flex gap-2" key={index}>
-            <p className="text-muted-foreground">{part_number}</p>
-            <Separator orientation="vertical" className={index === row.original.alternative_part_number.length - 1 ? "hidden" : ""} />
-          </div>
-        )) : "N/A"}
+        {row.original.alternative_part_number?.length > 0 ? (
+          row.original.alternative_part_number.map((part_number, index) => (
+            <div className="flex gap-2" key={index}>
+              <p className="text-muted-foreground">{part_number}</p>
+              <Separator
+                orientation="vertical"
+                className={index === row.original.alternative_part_number.length - 1 ? "hidden" : ""}
+              />
+            </div>
+          ))
+        ) : (
+          "N/A"
+        )}
       </div>
     ),
+    filterFn: (row, columnId, filterValue) => {
+      const values = row.getValue<string[]>(columnId) || []
+      if (!Array.isArray(values)) return false
+      return values.some((val) =>
+        val?.toLowerCase().includes((filterValue as string).toLowerCase())
+      )
+    },
   },
   {
     accessorKey: "description",
