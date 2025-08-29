@@ -127,9 +127,7 @@ export function CreateEmployeeForm({ onSuccess }: { onSuccess?: () => void }) {
   const [openRoles, setOpenRoles] = useState(false);
 
   // Obtener datos necesarios
-  const { data: locations, isLoading: isLocLoading } = useGetLocationsByCompany(
-    selectedCompany?.slug
-  );
+  const { data: locations, isLoading: isLocLoading } = useGetLocationsByCompany();
   const { data: departments, isLoading: isDepartmentsLoading } =
     useGetDepartments(selectedCompany?.slug);
   const { data: jobTitles, isLoading: isJobTitlesLoading } = useGetJobTitles(
@@ -205,15 +203,15 @@ export function CreateEmployeeForm({ onSuccess }: { onSuccess?: () => void }) {
       // Solo incluir datos de usuario si createUser es true
       const userData = data.createUser
         ? {
-            isActive: true,
-            first_name: data.first_name,
-            companies_locations: data.companies_locations,
-            last_name: data.last_name,
-            username: data.username!,
-            password: data.password,
-            email: data.email!,
-            roles: data.roles?.map(Number) || [],
-          }
+          isActive: true,
+          first_name: data.first_name,
+          companies_locations: data.companies_locations,
+          last_name: data.last_name,
+          username: data.username!,
+          password: data.password,
+          email: data.email!,
+          roles: data.roles?.map(Number) || [],
+        }
         : null;
       if (data.createUser && userData) {
         const userResponse = await createUser.mutateAsync(userData);
@@ -226,7 +224,7 @@ export function CreateEmployeeForm({ onSuccess }: { onSuccess?: () => void }) {
         // Si no se va a crear usuario, solo creamos el empleado
         await createEmployee.mutateAsync(employeeData);
       }
-       onSuccess?.();
+      onSuccess?.();
     } catch (error) {
       console.error("Error creating employee:", error);
     }
@@ -642,118 +640,118 @@ export function CreateEmployeeForm({ onSuccess }: { onSuccess?: () => void }) {
             {
               companies && (
                 <FormField
-              control={form.control}
-              name="companies_locations"
-              render={({ field }) => {
-                const handleLocationChange = (
-                  companyID: number,
-                  locationID: number,
-                  isSelected: boolean | string
-                ) => {
-                  // Parse the current value or initialize it
-                  const currentValue = field.value || [];
+                  control={form.control}
+                  name="companies_locations"
+                  render={({ field }) => {
+                    const handleLocationChange = (
+                      companyID: number,
+                      locationID: number,
+                      isSelected: boolean | string
+                    ) => {
+                      // Parse the current value or initialize it
+                      const currentValue = field.value || [];
 
-                  // Find the company entry in the array
-                  const companyIndex = currentValue.findIndex(
-                    (item) => item.companyID === companyID
-                  );
-
-                  if (companyIndex === -1 && isSelected) {
-                    // Add a new company with the location if it doesn't exist
-                    currentValue.push({
-                      companyID,
-                      locationID: [locationID],
-                    });
-                  } else if (companyIndex !== -1) {
-                    const company = currentValue[companyIndex];
-                    if (isSelected) {
-                      // Add the locationID if it's not already included
-                      if (!company.locationID.includes(locationID)) {
-                        company.locationID.push(locationID);
-                      }
-                    } else {
-                      // Remove the locationID if deselected
-                      company.locationID = company.locationID.filter(
-                        (id) => id !== locationID
+                      // Find the company entry in the array
+                      const companyIndex = currentValue.findIndex(
+                        (item) => item.companyID === companyID
                       );
 
-                      // Remove the company entry if no locations are left
-                      if (company.locationID.length === 0) {
-                        currentValue.splice(companyIndex, 1);
+                      if (companyIndex === -1 && isSelected) {
+                        // Add a new company with the location if it doesn't exist
+                        currentValue.push({
+                          companyID,
+                          locationID: [locationID],
+                        });
+                      } else if (companyIndex !== -1) {
+                        const company = currentValue[companyIndex];
+                        if (isSelected) {
+                          // Add the locationID if it's not already included
+                          if (!company.locationID.includes(locationID)) {
+                            company.locationID.push(locationID);
+                          }
+                        } else {
+                          // Remove the locationID if deselected
+                          company.locationID = company.locationID.filter(
+                            (id) => id !== locationID
+                          );
+
+                          // Remove the company entry if no locations are left
+                          if (company.locationID.length === 0) {
+                            currentValue.splice(companyIndex, 1);
+                          }
+                        }
                       }
-                    }
-                  }
 
-                  // Update the form state
-                  field.onChange([...currentValue]);
-                };
+                      // Update the form state
+                      field.onChange([...currentValue]);
+                    };
 
-                return (
-                  <FormItem className="flex flex-col items-start rounded-md space-y-2 py-2 px-6">
-                    <FormLabel>Ubicaciones</FormLabel>
-                    <ScrollArea className={cn("h-auto w-full", companies!.length > 4 && "h-[250px]" )}>
-                      <Accordion className="w-full" type="single" collapsible>
-                      {companies &&
-                        companies_locations &&
-                        companies.map((company) => (
-                          <AccordionItem key={company.id} value={company.name}>
-                            <AccordionTrigger>{company.name}</AccordionTrigger>
-                            <AccordionContent>
-                              {companies_locations &&
-                                companies_locations
-                                  .filter(
-                                    (location) =>
-                                      location.company_id === company.id
-                                  )
-                                  .map((location) => (
-                                    <div
-                                      className="flex flex-col gap-2"
-                                      key={location.company_id}
-                                    >
-                                      {location.locations.map((loc) => (
-                                        <div
-                                          className="flex items-center space-x-2"
-                                          key={loc.id}
-                                        >
-                                          <Checkbox
-                                            checked={Boolean(
-                                              field.value?.find(
-                                                (item) =>
-                                                  item.companyID ===
-                                                    company.id &&
-                                                  item.locationID.includes(
-                                                    loc.id
-                                                  )
-                                              )
-                                            )}
-                                            onCheckedChange={(isSelected) =>
-                                              handleLocationChange(
-                                                company.id,
-                                                loc.id,
-                                                isSelected
-                                              )
-                                            }
-                                          />
-                                          <Label>{loc.address}</Label>
-                                        </div>
-                                      ))}
-                                    </div>
-                                  ))}
-                            </AccordionContent>
-                          </AccordionItem>
-                        ))}
-                      {(companiesError || companies_locationsError) && (
-                        <p>
-                          Ha ocurrido un error cargando las empresas y/o
-                          ubicaciones...
-                        </p>
-                      )}
-                      </Accordion>
-                    </ScrollArea>
-                  </FormItem>
-                );
-              }}
-            />
+                    return (
+                      <FormItem className="flex flex-col items-start rounded-md space-y-2 py-2 px-6">
+                        <FormLabel>Ubicaciones</FormLabel>
+                        <ScrollArea className={cn("h-auto w-full", companies!.length > 4 && "h-[250px]")}>
+                          <Accordion className="w-full" type="single" collapsible>
+                            {companies &&
+                              companies_locations &&
+                              companies.map((company) => (
+                                <AccordionItem key={company.id} value={company.name}>
+                                  <AccordionTrigger>{company.name}</AccordionTrigger>
+                                  <AccordionContent>
+                                    {companies_locations &&
+                                      companies_locations
+                                        .filter(
+                                          (location) =>
+                                            location.company_id === company.id
+                                        )
+                                        .map((location) => (
+                                          <div
+                                            className="flex flex-col gap-2"
+                                            key={location.company_id}
+                                          >
+                                            {location.locations.map((loc) => (
+                                              <div
+                                                className="flex items-center space-x-2"
+                                                key={loc.id}
+                                              >
+                                                <Checkbox
+                                                  checked={Boolean(
+                                                    field.value?.find(
+                                                      (item) =>
+                                                        item.companyID ===
+                                                        company.id &&
+                                                        item.locationID.includes(
+                                                          loc.id
+                                                        )
+                                                    )
+                                                  )}
+                                                  onCheckedChange={(isSelected) =>
+                                                    handleLocationChange(
+                                                      company.id,
+                                                      loc.id,
+                                                      isSelected
+                                                    )
+                                                  }
+                                                />
+                                                <Label>{loc.address}</Label>
+                                              </div>
+                                            ))}
+                                          </div>
+                                        ))}
+                                  </AccordionContent>
+                                </AccordionItem>
+                              ))}
+                            {(companiesError || companies_locationsError) && (
+                              <p>
+                                Ha ocurrido un error cargando las empresas y/o
+                                ubicaciones...
+                              </p>
+                            )}
+                          </Accordion>
+                        </ScrollArea>
+                      </FormItem>
+                    );
+                  }}
+                />
               )
             }
 

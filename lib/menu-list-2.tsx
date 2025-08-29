@@ -618,31 +618,6 @@ export function getMenuList(
       moduleValue: "warehouse",
       menus: [
         {
-          href: "",
-          label: "Solicitudes",
-          active: pathname.includes(
-            `/${currentCompany?.slug}/almacen/solicitudes`
-          ),
-          icon: ClipboardCopy,
-          roles: ["ANALISTA_ALMACEN", "JEFE_ALMACEN", "SUPERUSER"],
-          submenus: [
-            {
-              href: `/${currentCompany?.slug}/almacen/solicitudes/salida`,
-              label: "Salida",
-              active:
-                pathname ===
-                `/${currentCompany?.slug}/almacen/solicitudes/salida`,
-            },
-            {
-              href: `/${currentCompany?.slug}/almacen/solicitudes/pendiente`,
-              label: "Pendiente",
-              active:
-                pathname ===
-                `/${currentCompany?.slug}/almacen/solicitudes/pendiente`,
-            },
-          ],
-        },
-        {
           href: `/${currentCompany?.slug}/almacen/inventario`,
           label: "Inventario",
           active: pathname.includes(
@@ -651,6 +626,31 @@ export function getMenuList(
           icon: PackageOpen,
           roles: ["ANALISTA_ALMACEN", "JEFE_ALMACEN", "SUPERUSER"],
           submenus: [],
+        },
+        {
+          href: "",
+          label: "Despachos",
+          active: pathname.includes(
+            `/${currentCompany?.slug}/almacen/solicitudes`
+          ),
+          icon: ClipboardCopy,
+          roles: ["ANALISTA_ALMACEN", "JEFE_ALMACEN", "SUPERUSER"],
+          submenus: [
+            {
+              href: `/${currentCompany?.slug}/almacen/solicitudes/salida`,
+              label: "Salidas",
+              active:
+                pathname ===
+                `/${currentCompany?.slug}/almacen/solicitudes/salida`,
+            },
+            {
+              href: `/${currentCompany?.slug}/almacen/solicitudes/despachados`,
+              label: "Despachados",
+              active:
+                pathname ===
+                `/${currentCompany?.slug}/almacen/solicitudes/despachados`,
+            },
+          ],
         },
         {
           href: `/${currentCompany?.slug}/almacen/caja_herramientas`,
@@ -912,6 +912,16 @@ export function getMenuList(
               active: pathname === "/sistema/empresas/empresas",
             },
             {
+              href: "/sistema/empresas/almacenes",
+              label: "Administrar Almacenes",
+              active: pathname === "/sistema/empresas/almacenes",
+            },
+            {
+              href: "/sistema/empresas/talleres",
+              label: "Administrar Talleres",
+              active: pathname === "/sistema/empresas/talleres",
+            },
+            {
               href: "/sistema/empresas/ubicaciones",
               label: "Administrar Ubicaciones",
               active: pathname === "/sistema/empresas/ubicaciones",
@@ -930,11 +940,6 @@ export function getMenuList(
               href: "/sistema/empresas/departamentos",
               label: "Administrar Departamentos",
               active: pathname === "/sistema/empresas/departamentos",
-            },
-            {
-              href: "/sistema/empresas/almacenes",
-              label: "Administrar Almacenes",
-              active: pathname === "/sistema/empresas/almacenes",
             },
           ],
         },

@@ -7,11 +7,14 @@ import { DataTableColumnHeader } from "@/components/tables/DataTableHeader"
 import DispatchArticlesDialog from "@/components/dialogs/mantenimiento/almacen/DispatchArticlesDialog"
 import PendingDispatchRequestDropdownActions from "@/components/dropdowns/mantenimiento/almacen/PendingDispatchRequestDropdownActions"
 import { Checkbox } from "@/components/ui/checkbox"
-import { DispatchRequest } from "@/types"
-import { format } from "date-fns"
+import { DispachedArticles } from "@/hooks/mantenimiento/almacen/salidas_entradas/useGetDispatchedArticles"
+import { format, formatDate } from "date-fns"
 import { es } from "date-fns/locale"
+import DispatchedArticlesDropdownActions from "@/components/dropdowns/mantenimiento/almacen/DispatchedArticlesDropdownActions"
 
-export const columns: ColumnDef<DispatchRequest>[] = [
+
+
+export const columns: ColumnDef<DispachedArticles>[] = [
   {
     id: "select",
     header: ({ table }) => (
@@ -35,68 +38,49 @@ export const columns: ColumnDef<DispatchRequest>[] = [
     enableHiding: false,
   },
   {
-    accessorKey: "created_by",
+    accessorKey: "batch_name",
     header: ({ column }) => (
-      <DataTableColumnHeader filter column={column} title="Empleado Responsable" />
+      <DataTableColumnHeader filter column={column} title="Nombre" />
     ),
     cell: ({ row }) => {
       return (
-        <p className="font-medium text-center">{row.original.created_by}</p>
+        <p className="font-medium text-center">{row.original.batch_name}</p>
       )
     }
   },
   {
-    accessorKey: "justification",
+    accessorKey: "articles",
     header: ({ column }) => (
-      <DataTableColumnHeader filter column={column} title="Justificación" />
+      <DataTableColumnHeader filter column={column} title="Componente" />
     ),
     cell: ({ row }) => {
       return (
-        <p className="font-medium text-center">{row.original.justification}</p>
-      )
-    }
-  },
-  {
-    accessorKey: "destination_place",
-    header: ({ column }) => (
-      <DataTableColumnHeader filter column={column} title="Destino" />
-    ),
-    cell: ({ row }) => {
-      return (
-        <p className="font-medium text-center">{row.original.destination_place}</p>
+        <p className="font-medium text-center">{row.original.articles.map((article) => (
+          <span key={article.id}>{article.part_number} - {article.serial} ({article.quantity})</span>
+        ))}</p>
       )
     }
   },
   {
     accessorKey: "date",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Fecha" />
+      <DataTableColumnHeader filter column={column} title="Destino" />
     ),
-    cell: ({ row }) => (
-      <p className="flex justify-center text-muted-foreground italic">{format(row.original.submission_date, "PPP", {
-        locale: es
-      })}</p>
-    )
-  },
-  {
-    accessorKey: "articles",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Articulos" />
-    ),
-    cell: ({ row }) => (
-      <div className="flex justify-center">
-        <DispatchArticlesDialog articles={row.original.batch.articles} work_order={row.original.work_order?.order_number!} />
-      </div>
-    )
+    cell: ({ row }) => {
+      return (
+        <p className="font-medium text-center">{format(row.original.date, "PPP", { locale: es })}</p>
+      )
+    }
   },
   {
     id: "actions",
+    header: ({ column }) => (
+      <DataTableColumnHeader filter column={column} title="Destino" />
+    ),
     cell: ({ row }) => {
-      const request = row.original
-
       return (
-        <PendingDispatchRequestDropdownActions request={request} />
+        <DispatchedArticlesDropdownActions id={row.original.articles[0].id} />
       )
-    },
-  },
+    }
+  }
 ]

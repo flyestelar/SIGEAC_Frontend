@@ -9,34 +9,13 @@ import { cn } from "@/lib/utils"
 import { Batch } from "@/types"
 import Link from "next/link"
 import BatchDropdownActions from "@/components/dropdowns/mantenimiento/almacen/BatchDropdownActions"
+import { Badge } from "@/components/ui/badge"
 
 interface BatchesWithCountProp extends Batch {
   article_count: number,
 }
 
 export const columns: ColumnDef<BatchesWithCountProp>[] = [
-  {
-    id: "select",
-    header: ({ table }) => (
-      <Checkbox
-        checked={
-          table.getIsAllPageRowsSelected() ||
-          (table.getIsSomePageRowsSelected() && "indeterminate")
-        }
-        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-        aria-label="Seleccionar todos"
-      />
-    ),
-    cell: ({ row }) => (
-      <Checkbox
-        checked={row.getIsSelected()}
-        onCheckedChange={(value) => row.toggleSelected(!!value)}
-        aria-label="Seleccionar fila"
-      />
-    ),
-    enableSorting: false,
-    enableHiding: false,
-  },
   {
     accessorKey: "name",
     header: ({ column }) => (
@@ -73,6 +52,17 @@ export const columns: ColumnDef<BatchesWithCountProp>[] = [
     ),
     cell: ({ row }) => (
       <p className={cn("flex justify-center rounded-lg", Number(row.original.min_quantity) > Number(row.original.article_count) ? "bg-red-300 text-white" : "bg-green-200")}>{row.original.article_count}</p>
+    )
+  },
+  {
+    accessorKey: "category",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Categoría" />
+    ),
+    cell: ({ row }) => (
+      <div className="flex justify-center">
+        <Badge>{row.original.category.toUpperCase()}</Badge>
+      </div>
     )
   },
   {

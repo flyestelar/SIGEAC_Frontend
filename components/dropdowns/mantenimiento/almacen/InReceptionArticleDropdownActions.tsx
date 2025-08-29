@@ -27,7 +27,6 @@ const InReceptionDropdownActions = ({ id }: { id: number }) => {
     await updateArticleStatus.mutateAsync({
       id,
       status,
-      company: selectedCompany!.slug,
     });
     setOpen(false);
   }

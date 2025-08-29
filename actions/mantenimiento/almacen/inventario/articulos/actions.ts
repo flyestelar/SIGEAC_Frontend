@@ -1,4 +1,5 @@
 import axiosInstance from "@/lib/axios"
+import { useCompanyStore } from "@/stores/CompanyStore"
 import { Component, Consumable, Tool } from "@/types"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
@@ -121,20 +122,24 @@ export const useDeleteArticle = () => {
 
 export const useUpdateArticleStatus = () => {
 
+  const { selectedCompany } = useCompanyStore()
+
   const queryClient = useQueryClient()
 
   const updateArticleStatusMutation = useMutation({
     mutationKey: ["articles"],
-    mutationFn: async ({ id, status, company }: {
-      id: number, status: string, company: string
+    mutationFn: async ({ id, status }: {
+      id: number, status: string
     }) => {
-      await axiosInstance.put(`/${company}/update-article-status/${id}`, {
+      await axiosInstance.put(`/${selectedCompany?.slug}/update-status-items/${id}`, {
         status: status
       })
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['in-transit-articles'] })
       queryClient.invalidateQueries({ queryKey: ['in-reception-articles'] })
+      queryClient.invalidateQueries({ queryKey: ['dispatched-articles'] })
+      queryClient.invalidateQueries({ queryKey: ['dispatch-orders'] })
       toast.success("¡Actualizado!", {
         description: `El articulo ha sido actualizado correctamente.`
       })

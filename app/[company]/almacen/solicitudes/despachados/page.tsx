@@ -1,11 +1,6 @@
 'use client'
 
 import { ContentLayout } from '@/components/layout/ContentLayout'
-import { useGetPendingDispatches } from '@/hooks/mantenimiento/almacen/solicitudes/useGetPendingDispatchRequests'
-import { useCompanyStore } from '@/stores/CompanyStore'
-import { Loader2 } from 'lucide-react'
-import { columns } from './columns'
-import { DataTable } from './data-table'
 import { Breadcrumb, BreadcrumbEllipsis, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb"
 import {
   DropdownMenu,
@@ -13,9 +8,14 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { useGetDispatchedArticles } from '@/hooks/mantenimiento/almacen/salidas_entradas/useGetDispatchedArticles'
+import { useCompanyStore } from '@/stores/CompanyStore'
+import { Loader2 } from 'lucide-react'
+import { columns } from './columns'
+import { DataTable } from './data-table'
 const DispatchRequestPage = () => {
-  const { selectedStation, selectedCompany } = useCompanyStore();
-  const { data: dispatches, isPending: isDispatchesLoading, isError } = useGetPendingDispatches({location_id: selectedStation ?? undefined, company: selectedCompany?.slug})
+  const { selectedCompany } = useCompanyStore();
+  const { data: articles, isPending: isArticlesLoading, isError } = useGetDispatchedArticles()
   return (
     <ContentLayout title='Salida'>
       <div className='flex flex-col gap-y-2'>
@@ -49,15 +49,15 @@ const DispatchRequestPage = () => {
           </BreadcrumbList>
         </Breadcrumb>
         {
-          isDispatchesLoading && (
+          isArticlesLoading && (
             <div className='flex w-full h-full justify-center items-center'>
               <Loader2 className='size-24 animate-spin mt-48' />
             </div>
           )
         }
         {
-          dispatches && (
-            <DataTable columns={columns} data={dispatches} />
+          articles && (
+            <DataTable columns={columns} data={articles} />
 
           )
         }

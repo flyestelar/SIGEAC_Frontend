@@ -26,6 +26,7 @@ import {
 import { useDebounce } from "@/hooks/helpers/useDebounce"
 import { useEffect, useState } from "react"
 import { Input } from "@/components/ui/input"
+import { DataTableToolbar } from "@/components/tables/DataTableToolbar"
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
@@ -68,9 +69,6 @@ export function DataTable<TData, TValue>({
 
   return (
     <div>
-      <div className="flex items-center py-4">
-        <DataTableViewOptions table={table} />
-      </div>
       <div className="rounded-md border mb-4">
         <Table>
           <TableHeader>

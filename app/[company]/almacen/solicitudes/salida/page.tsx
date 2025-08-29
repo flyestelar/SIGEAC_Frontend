@@ -1,22 +1,42 @@
 'use client'
 
 import { ContentLayout } from '@/components/layout/ContentLayout'
-import React, { useEffect } from 'react'
+import React, { useState, useMemo } from 'react'
 import { columns } from '@/app/[company]/almacen/solicitudes/salida/columns'
 import { DataTable } from './data-table'
 import { useGetDispatchesByLocation } from '@/hooks/mantenimiento/almacen/solicitudes/useGetDispatchesRequests'
 import { useCompanyStore } from '@/stores/CompanyStore'
 import { Loader2 } from 'lucide-react'
-import { Breadcrumb, BreadcrumbEllipsis, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb"
+import {
+  Breadcrumb,
+  BreadcrumbEllipsis,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator
+} from "@/components/ui/breadcrumb"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+
 const DispatchRequestPage = () => {
-  const { selectedStation, selectedCompany } = useCompanyStore();
+  const { selectedCompany } = useCompanyStore()
   const { data: dispatches, isLoading: isDispatchesLoading, isError } = useGetDispatchesByLocation()
+
+  const [activeCategory, setActiveCategory] = useState("Todos")
+
+  const filteredDispatches = useMemo(() => {
+    if (!dispatches) return []
+
+    if (activeCategory === "Todos") return dispatches
+
+    return dispatches.filter(d => d.status === activeCategory)
+  }, [dispatches, activeCategory])
 
   return (
     <ContentLayout title='Salida'>
@@ -36,10 +56,14 @@ const DispatchRequestPage = () => {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="start">
                   <DropdownMenuItem>
-                    <BreadcrumbLink href={`/${selectedCompany?.slug}/almacen/solicitudes/pendiente`}>Pendientes</BreadcrumbLink>
+                    <BreadcrumbLink href={`/${selectedCompany?.slug}/almacen/solicitudes/pendiente`}>
+                      Pendientes
+                    </BreadcrumbLink>
                   </DropdownMenuItem>
                   <DropdownMenuItem>
-                    <BreadcrumbLink href={`/${selectedCompany?.slug}/almacen/solicitudes/salida`}>Salida</BreadcrumbLink>
+                    <BreadcrumbLink href={`/${selectedCompany?.slug}/almacen/solicitudes/salida`}>
+                      Salida
+                    </BreadcrumbLink>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -50,22 +74,36 @@ const DispatchRequestPage = () => {
             </BreadcrumbItem>
           </BreadcrumbList>
         </Breadcrumb>
-        {
-          isDispatchesLoading && (
-            <div className='flex w-full h-full justify-center items-center'>
-              <Loader2 className='size-24 animate-spin mt-48' />
-            </div>
-          )
-        }
-        {
-          dispatches && (
-            <DataTable columns={columns} data={dispatches} />
 
-          )
-        }
-        {
-          isError && <p className='text-sm text-muted-foreground'>Ha ocurrido un error al cargar las solicitudes...</p>
-        }
+        <h1 className="text-5xl font-bold text-center">Registro de Salidas</h1>
+        <p className="text-sm italic text-muted-foreground text-center">Aquí puede ver el registro de movimientos de los articulos, así como también solicitar la salida de uno.</p>
+
+
+        {isDispatchesLoading && (
+          <div className='flex w-full h-full justify-center items-center'>
+            <Loader2 className='size-24 animate-spin mt-48' />
+          </div>
+        )}
+
+        {dispatches && (
+          <Tabs value={activeCategory} onValueChange={setActiveCategory}>
+            <TabsList className="flex justify-center mb-4">
+              <TabsTrigger value="Todos">Todos</TabsTrigger>
+              <TabsTrigger value="APROBADA">Aprobados</TabsTrigger>
+              <TabsTrigger value="CERRADO">Cerrados</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value={activeCategory}>
+              <DataTable columns={columns} data={filteredDispatches} />
+            </TabsContent>
+          </Tabs>
+        )}
+
+        {isError && (
+          <p className='text-sm text-muted-foreground'>
+            Ha ocurrido un error al cargar las solicitudes...
+          </p>
+        )}
       </div>
     </ContentLayout>
   )

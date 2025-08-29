@@ -12,9 +12,10 @@ import {
   useReactTable,
 } from "@tanstack/react-table"
 
-import { RegisterDispatchRequestDialog } from "@/components/dialogs/mantenimiento/almacen/RegisterDispatchRequestDialog"
+import { CreateWorkshopDialog } from "@/components/dialogs/ajustes/CreateWorkshopDialog"
 import { DataTablePagination } from "@/components/tables/DataTablePagination"
 import { DataTableViewOptions } from "@/components/tables/DataTableViewOptions"
+import { Button } from "@/components/ui/button"
 import {
   Table,
   TableBody,
@@ -23,34 +24,24 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { useDebounce } from "@/hooks/helpers/useDebounce"
-import { useEffect, useState } from "react"
-import { Input } from "@/components/ui/input"
+import { ListRestart } from "lucide-react"
+import { useState } from "react"
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
-  initialData: TData[],
-  isSearching?: boolean,
-  searchTerm?: string,
+  data: TData[]
 }
 
 export function DataTable<TData, TValue>({
   columns,
-  initialData,
-  isSearching = false,
-  searchTerm = '',
+  data,
 }: DataTableProps<TData, TValue>) {
-  const [data, setData] = useState<TData[]>(initialData)
-  const [partNumberFilter, setPartNumberFilter] = useState("")
 
-  // Sincronizar datos cuando cambie el initialData
-  useEffect(() => {
-    setData(initialData)
-  }, [initialData])
   const [sorting, setSorting] = useState<SortingState>([])
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>(
     []
   )
+
   const table = useReactTable({
     data,
     columns,
@@ -66,8 +57,26 @@ export function DataTable<TData, TValue>({
     }
   })
 
+  const isFiltered = table.getState().columnFilters.length > 0
+
   return (
     <div>
+      <div className="flex items-center py-4">
+        <div className="flex gap-x-2 items-center">
+          {isFiltered && (
+            <Button
+              variant="ghost"
+              onClick={() => table.resetColumnFilters()}
+              className="h-8 px-2 lg:px-3"
+            >
+              Reiniciar
+              <ListRestart className="ml-2 h-4 w-4" />
+            </Button>
+          )}
+          <CreateWorkshopDialog />
+        </div>
+        <DataTableViewOptions table={table} />
+      </div>
       <div className="rounded-md border mb-4">
         <Table>
           <TableHeader>

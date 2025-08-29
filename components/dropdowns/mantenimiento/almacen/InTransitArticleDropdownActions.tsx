@@ -24,7 +24,6 @@ const InTransitArticleDropdownActions = ({ id }: { id: number }) => {
     await updateArticleStatus.mutateAsync({
       id: id,
       status: status,
-      company: selectedCompany!.slug,
     });
     setOpen(false);
   }

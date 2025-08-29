@@ -112,7 +112,7 @@ export type Batch = {
   slug: string;
   description: string;
   category: string;
-  status: string, 
+  status: string,
   ata_code: string;
   brand: string;
   is_hazarous: boolean;
@@ -500,6 +500,12 @@ export type Location = {
   cod_iata: string;
   companies: Company[];
 };
+
+export type Workshop = {
+  id: number,
+  name: string
+  location: Location;
+}
 
 export type Manufacturer = {
   id: number;

@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import { ContentLayout } from '@/components/layout/ContentLayout';
 import {
@@ -9,13 +9,14 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useDebounce } from '@/hooks/helpers/useDebounce';
 import { useGetBatches } from '@/hooks/mantenimiento/almacen/renglones/useGetBatches';
 import { useSearchBatchesByPartNumber } from '@/hooks/mantenimiento/almacen/renglones/useGetBatchesByArticlePartNumber';
 import { useCompanyStore } from '@/stores/CompanyStore';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Package2, PaintBucket, Wrench } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
-import SearchSection from './_components/SearchSection';
+import SearchSection from '../../../../components/misc/SearchSection';
 import { columns } from './columns';
 import { DataTable } from './data-table';
 
@@ -23,7 +24,8 @@ const InventarioPage = () => {
   const { selectedStation, selectedCompany } = useCompanyStore();
   const [searchTerm, setSearchTerm] = useState('');
   const debouncedSearchTerm = useDebounce(searchTerm, 500);
-  // Loading de transición de 500ms cuando cambia el término de búsqueda
+
+  // loading de transición de 500ms cuando cambia el término de búsqueda
   const [transitionLoading, setTransitionLoading] = useState(false);
   useEffect(() => {
     setTransitionLoading(true);
@@ -31,34 +33,36 @@ const InventarioPage = () => {
     return () => clearTimeout(timeout);
   }, [debouncedSearchTerm]);
 
+  // Estado de categoría activa
+  const [activeCategory, setActiveCategory] = useState("all");
+
   // Consultas a la API
-
-
   const { data: allBatches, isLoading: isLoadingBatches, isError: isBatchesError, error: batchesError } = useGetBatches();
-
   const { data: searchedBatches, isLoading: isLoadingSearch, isError: isSearchError, error: searchError } =
     useSearchBatchesByPartNumber(selectedCompany?.slug, selectedStation ?? undefined, debouncedSearchTerm || undefined);
 
-  // Memoización de batches a mostrar
+  // Memoización de batches filtrados
   const displayedBatches = useMemo(() => {
     if (!allBatches) return [];
 
-    // Si el input (debounced) está vacío, mostrar todos los batches
-    if (!debouncedSearchTerm || debouncedSearchTerm.trim() === "") {
-      return allBatches;
+    let baseData = allBatches;
+
+    // Si hay búsqueda -> filtrar por resultados de búsqueda
+    if (debouncedSearchTerm && searchedBatches) {
+      const searchedIds = new Set(searchedBatches.map(b => b.id));
+      baseData = baseData.filter(b => searchedIds.has(b.id));
+    } else if (debouncedSearchTerm && searchedBatches?.length === 0) {
+      return [];
     }
 
-    // Si hay término de búsqueda y hay resultados, filtrar
-    if (searchedBatches && searchedBatches.length > 0) {
-      const searchedBatchIds = new Set(searchedBatches.map(b => b.id));
-      return allBatches.filter(batch => searchedBatchIds.has(batch.id));
+    // Filtrar por categoría (asumiendo que cada batch tiene un campo category)
+    if (activeCategory !== "all") {
+      baseData = baseData.filter(b => b.category === activeCategory);
     }
 
-    // Si hay término de búsqueda pero no hay resultados, retornar array vacío
-    return [];
-  }, [allBatches, searchedBatches, debouncedSearchTerm]);
+    return baseData;
+  }, [allBatches, searchedBatches, debouncedSearchTerm, activeCategory]);
 
-  // Estados derivados
   const isLoading = isLoadingBatches || !!(debouncedSearchTerm && isLoadingSearch);
   const isEmptyState = !isLoading && displayedBatches?.length === 0;
   const showNoResults = !isLoading && !!debouncedSearchTerm && isEmptyState;
@@ -78,9 +82,11 @@ const InventarioPage = () => {
           </BreadcrumbList>
         </Breadcrumb>
         <h1 className='text-4xl font-bold text-center'>Inventario General</h1>
-        <p className='text-sm text-muted-foreground text-center  italic'>
-          Aquí puede observar todos los renglones de los diferentes almacenes. <br />Filtre y/o busque sí desea un renglón en específico.
+        <p className='text-sm text-muted-foreground text-center italic'>
+          Aquí puede observar all los renglones de los diferentes almacenes. <br />Filtre y/o busque si desea un renglón en específico.
         </p>
+
+        {/* Buscador */}
         <SearchSection
           searchTerm={searchTerm}
           onSearchChange={setSearchTerm}
@@ -95,22 +101,32 @@ const InventarioPage = () => {
         ) : (
           <>
             {allBatches && (
-              <DataTable
-                columns={columns}
-                initialData={displayedBatches}
-                isSearching={!!debouncedSearchTerm && debouncedSearchTerm.trim() !== ""}
-                searchTerm={debouncedSearchTerm && debouncedSearchTerm.trim() !== "" ? debouncedSearchTerm : ""}
-              />
+              <Tabs value={activeCategory} onValueChange={setActiveCategory}>
+                <TabsList className="flex justify-center mb-4 space-x-3">
+                  <TabsTrigger value="all">Todos</TabsTrigger>
+                  <TabsTrigger className='flex gap-2' value="COMPONENTE"><Package2 className='size-5' /> Componente</TabsTrigger>
+                  <TabsTrigger className='flex gap-2' value="CONSUMIBLE"><PaintBucket className='size-5' />Consumibles</TabsTrigger>
+                  <TabsTrigger className='flex gap-2' value="HERRAMIENTA"><Wrench className='size-5' /> Herramientas</TabsTrigger>
+                </TabsList>
+
+                <TabsContent value={activeCategory}>
+                  <DataTable
+                    columns={columns}
+                    initialData={displayedBatches}
+                    isSearching={!!debouncedSearchTerm && debouncedSearchTerm.trim() !== ""}
+                    searchTerm={debouncedSearchTerm?.trim() || ""}
+                  />
+                </TabsContent>
+              </Tabs>
             )}
 
             {isBatchesError && (
-              <div className="text-red-500 text-center text-sm italic text-muted-foreground">
+              <div className="text-red-500 text-center text-sm italic">
                 Error cargando batches: {batchesError.message}
               </div>
             )}
-
             {isSearchError && (
-              <div className="text-red-500 text-center text-sm italic text-muted-foreground">
+              <div className="text-red-500 text-center text-sm italic">
                 Error en búsqueda: {searchError.message}
               </div>
             )}
@@ -118,7 +134,7 @@ const InventarioPage = () => {
         )}
       </div>
     </ContentLayout>
-  )
-}
+  );
+};
 
-export default InventarioPage
+export default InventarioPage;

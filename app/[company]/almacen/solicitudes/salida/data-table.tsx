@@ -62,14 +62,10 @@ export function DataTable<TData, TValue>({
 
   return (
     <>
-      <div className="flex flex-col gap-2 mb-4">
-        <h1 className="text-5xl font-bold text-center">Registro de Salidas</h1>
-        <p className="text-sm italic text-muted-foreground text-center">Aquí puede ver el registro de movimientos de los articulos, así como también solicitar la salida de uno.</p>
-      </div>
       <div className="flex items-center py-4">
         <div className="flex gap-x-2 items-center">
           <RegisterDispatchRequestDialog />
-          <DispatchReportDialog/>
+          <DispatchReportDialog />
         </div>
         <DataTableViewOptions table={table} />
       </div>

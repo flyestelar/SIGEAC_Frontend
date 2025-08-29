@@ -13,6 +13,8 @@ import {
 import { useAuth } from "@/contexts/AuthContext"
 import { useGetWarehousesEmployees } from "@/hooks/mantenimiento/almacen/empleados/useGetWarehousesEmployees"
 import { useGetBatchesWithInWarehouseArticles } from "@/hooks/mantenimiento/almacen/renglones/useGetBatchesWithInWarehouseArticles"
+import { useGetMaintenanceAircrafts } from "@/hooks/mantenimiento/planificacion/useGetMaintenanceAircrafts"
+import { useGetWorkshopsByLocation } from "@/hooks/sistema/empresas/talleres/useGetWorkshopsByLocation"
 import { useGetEmployeesByDepartment } from "@/hooks/sistema/useGetEmployeesByDepartament"
 import { cn } from "@/lib/utils"
 import { useCompanyStore } from "@/stores/CompanyStore"
@@ -30,9 +32,13 @@ import { Popover, PopoverContent, PopoverTrigger } from "../../../ui/popover"
 import { Textarea } from "../../../ui/textarea"
 
 const FormSchema = z.object({
+  dispatch_type: z.enum(["aircraft", "workshop"], {
+    message: "Debe seleccionar si el despacho es para una Aeronave o un Taller.",
+  }),
   requested_by: z.string(),
   delivered_by: z.string(),
-  aircraft_id: z.string(),
+  aircraft_id: z.string().optional(),
+  workshop_id: z.string().optional(),
   submission_date: z.date({
     message: "Debe ingresar la fecha."
   }),
@@ -47,7 +53,16 @@ const FormSchema = z.object({
   justification: z.string({
     message: "Debe ingresar una justificación de la salida."
   }).optional(),
-})
+}).refine(
+  (data) =>
+    (data.dispatch_type === "aircraft" && !!data.aircraft_id) ||
+    (data.dispatch_type === "workshop" && !!data.workshop_id),
+  {
+    message: "Debe seleccionar una Aeronave o un Taller según corresponda.",
+    path: ["dispatch_type"],
+  }
+)
+
 
 type FormSchemaType = z.infer<typeof FormSchema>
 
@@ -70,7 +85,12 @@ export function ComponentDispatchForm({ onClose }: FormProps) {
 
   const { createDispatchRequest } = useCreateDispatchRequest();
 
-  const { selectedStation, selectedCompany } = useCompanyStore();
+  const { selectedCompany } = useCompanyStore();
+
+  const [selectedAircraft, setSelectedAircraft] = useState<string>("");
+
+  const [selectedWorkshop, setSelectedWorkshop] = useState<string>("");
+
 
   const { data: batches, isLoading: isBatchesLoading, isError: isBatchesError } = useGetBatchesWithInWarehouseArticles();
 
@@ -78,6 +98,9 @@ export function ComponentDispatchForm({ onClose }: FormProps) {
 
   const { data: warehouseEmployees, isLoading: warehouseEmployeesLoading, isError: warehouseEmployeesError } = useGetWarehousesEmployees();
 
+  const { data: aircrafts, isLoading: isAircraftsLoading, isError: isAircraftsError } = useGetMaintenanceAircrafts(selectedCompany?.slug);
+
+  const { data: workshops, isLoading: isWorkshopsLoading, isError: isWorkshopsError } = useGetWorkshopsByLocation();
 
   const form = useForm<FormSchemaType>({
     resolver: zodResolver(FormSchema),
@@ -117,6 +140,181 @@ export function ComponentDispatchForm({ onClose }: FormProps) {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col space-y-3 w-full">
+        <FormField
+          control={form.control}
+          name="dispatch_type"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Tipo de Despacho</FormLabel>
+              <FormControl>
+                <div className="flex gap-4">
+                  <label className="flex items-center space-x-2">
+                    <input
+                      type="radio"
+                      value="aircraft"
+                      checked={field.value === "aircraft"}
+                      onChange={() => field.onChange("aircraft")}
+                    />
+                    <span>Aeronave</span>
+                  </label>
+                  <label className="flex items-center space-x-2">
+                    <input
+                      type="radio"
+                      value="workshop"
+                      checked={field.value === "workshop"}
+                      onChange={() => field.onChange("workshop")}
+                    />
+                    <span>Taller</span>
+                  </label>
+                </div>
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        {
+          form.watch("dispatch_type") === "aircraft" && (
+            <FormField
+              control={form.control}
+              name="aircraft_id"
+              render={({ field }) => (
+                <FormItem className="flex flex-col space-y-3 mt-1.5 w-full">
+                  <FormLabel>Aeronave</FormLabel>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <FormControl>
+                        <Button
+                          disabled={isAircraftsLoading || isAircraftsError}
+                          variant="outline"
+                          role="combobox"
+                          className={cn(
+                            "justify-between",
+                            !field.value && "text-muted-foreground"
+                          )}
+                        >
+                          {
+                            isAircraftsLoading && <Loader2 className="size-4 animate-spin mr-2" />
+                          }
+                          {field.value
+                            ? <p>{aircrafts?.find(
+                              (aircraft) => `${aircraft.id.toString()}` === field.value
+                            )?.acronym}</p>
+                            : "Elige la aeronave..."
+                          }
+                          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        </Button>
+                      </FormControl>
+                    </PopoverTrigger>
+                    <PopoverContent className="p-0">
+                      <Command>
+                        <CommandInput placeholder="Busque una aeronave..." />
+                        <CommandList>
+                          <CommandEmpty className="text-xs p-2 text-center">No se ha encontrado ninguna aeronave.</CommandEmpty>
+                          <CommandGroup>
+                            {aircrafts?.map((aircraft) => (
+                              <CommandItem
+                                value={`${aircraft.id}`}
+                                key={aircraft.id}
+                                onSelect={() => {
+                                  form.setValue("aircraft_id", aircraft.id.toString());
+                                  setSelectedAircraft(aircraft.manufacturer.id.toString());
+                                }}
+                              >
+                                <Check
+                                  className={cn(
+                                    "mr-2 h-4 w-4",
+                                    `${aircraft.id.toString()}` === field.value
+                                      ? "opacity-100"
+                                      : "opacity-0"
+                                  )}
+                                />
+                                {
+                                  <p>{aircraft.acronym} - {aircraft.manufacturer.name}</p>
+                                }
+                              </CommandItem>
+                            ))}
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          )
+        }
+        {
+          form.watch("dispatch_type") === "workshop" && (
+            <FormField
+              control={form.control}
+              name="workshop_id"
+              render={({ field }) => (
+                <FormItem className="flex flex-col space-y-3 mt-1.5 w-full">
+                  <FormLabel>Taller</FormLabel>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <FormControl>
+                        <Button
+                          disabled={isWorkshopsLoading || isWorkshopsError}
+                          variant="outline"
+                          role="combobox"
+                          className={cn(
+                            "justify-between",
+                            !field.value && "text-muted-foreground"
+                          )}
+                        >
+                          {
+                            isWorkshopsLoading && <Loader2 className="size-4 animate-spin mr-2" />
+                          }
+                          {field.value
+                            ? <p>{workshops?.find(
+                              (ws) => `${ws.id.toString()}` === field.value
+                            )?.name}</p>
+                            : "Elige el taller..."
+                          }
+                          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        </Button>
+                      </FormControl>
+                    </PopoverTrigger>
+                    <PopoverContent className="p-0">
+                      <Command>
+                        <CommandInput placeholder="Busque un taller..." />
+                        <CommandList>
+                          <CommandEmpty className="text-xs p-2 text-center">No se ha encontrado ningun taller .</CommandEmpty>
+                          <CommandGroup>
+                            {workshops?.map((workshop) => (
+                              <CommandItem
+                                value={`${workshop.id}`}
+                                key={workshop.id}
+                                onSelect={() => {
+                                  form.setValue("workshop_id", workshop.id.toString());
+                                }}
+                              >
+                                <Check
+                                  className={cn(
+                                    "mr-2 h-4 w-4",
+                                    `${workshop.id.toString()}` === field.value
+                                      ? "opacity-100"
+                                      : "opacity-0"
+                                  )}
+                                />
+                                {
+                                  <p>{workshop.name}</p>
+                                }
+                              </CommandItem>
+                            ))}
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          )
+        }
         <FormField
           control={form.control}
           name="articles"
@@ -212,7 +410,7 @@ export function ComponentDispatchForm({ onClose }: FormProps) {
                     }
                     {
                       employees && employees.map((employee) => (
-                        <SelectItem key={employee.id} value={`${employee.first_name} ${employee.last_name}`}>{employee.first_name} {employee.last_name}</SelectItem>
+                        <SelectItem key={employee.id} value={`${employee.dni}`}>{employee.first_name} {employee.last_name}</SelectItem>
                       ))
                     }
                   </SelectContent>

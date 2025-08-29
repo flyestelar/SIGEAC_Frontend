@@ -43,7 +43,7 @@ const CreateWarehouseForm = () => {
   const { selectedCompany } = useCompanyStore()
 
 
-  const { data: locations, isLoading } = useGetLocationsByCompany(selectedCompany?.slug);
+  const { data: locations, isLoading } = useGetLocationsByCompany();
 
   const { createWarehouse } = useCreateWarehouse()
 

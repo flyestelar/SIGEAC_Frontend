@@ -27,15 +27,11 @@ export const useCreateDispatchRequest = () => {
   const createMutation = useMutation({
     mutationKey: ["dispatch-request"],
     mutationFn: async ({ data, company }: { data: IDispatchRequestAction, company: string }) => {
-      await axiosInstance.post(`/${company}/dispatch-order`, data,
-        {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-          }
-        })
+      await axiosInstance.post(`/${company}/dispatch-order`, data)
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['dispatch-request'] })
+      queryClient.invalidateQueries({ queryKey: ["dispatched-articles"] })
+      queryClient.invalidateQueries({ queryKey: ["dispatch-orders"] })
       toast.success("¡Creado!", {
         description: `La solicitud ha sido creado correctamente.`
       }),

@@ -82,13 +82,13 @@ export const columns: ColumnDef<IDispatch>[] = [
     )
   },
   {
-    accessorKey: "created_by",
+    accessorKey: "requested_by",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Empleado Responsable" />
     ),
     cell: ({ row }) => {
       return (
-        <p className="font-medium text-center">{row.original.created_by}</p>
+        <p className="font-medium text-center">{row.original.requested_by}</p>
       )
     }
   },
