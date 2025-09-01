@@ -2,11 +2,10 @@
 
 import { ContentLayout } from '@/components/layout/ContentLayout'
 import LoadingPage from '@/components/misc/LoadingPage'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useGetMaintenanceAircrafts } from '@/hooks/mantenimiento/planificacion/useGetMaintenanceAircrafts'
-import React from 'react'
-import { DataTable } from './data-table'
-import { columns } from './columns'
 import { useCompanyStore } from '@/stores/CompanyStore'
+import PlanificationAircraftTab from './_components/PlanificationAircraftTab'
 
 const AircraftsPage = () => {
 
@@ -24,7 +23,24 @@ const AircraftsPage = () => {
         <p className='text-muted-foreground italic text-sm'>Aquí puede llevar un registro de todas las aeronaves registradas en el sistema. <br />Puede crear o editar las aeronaves de ser necesarios.</p>
       </div>
       {
-        aircrafts && <DataTable columns={columns} data={aircrafts} />
+        aircrafts && (
+          <Tabs>
+            <TabsList>
+              {
+                aircrafts.map((aircraft) => (
+                  <TabsTrigger key={aircraft.id} value={aircraft.acronym}>{aircraft.acronym}</TabsTrigger>
+                ))
+              }
+            </TabsList>
+            {
+              aircrafts.map((aircraft) => (
+                <TabsContent key={aircraft.id} value={aircraft.acronym}>
+                  <PlanificationAircraftTab aircraft={aircraft} />
+                </TabsContent>
+              ))
+            }
+          </Tabs>
+        )
       }
       {
         isError && <p className='text-muted-foreground italic text-center'>Ha ocurrido un error al cargar los datos...</p>

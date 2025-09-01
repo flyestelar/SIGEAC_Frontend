@@ -20,7 +20,7 @@ import SearchSection from '../../../../components/misc/SearchSection';
 import { columns } from './columns';
 import { DataTable } from './data-table';
 
-const InventarioPage = () => {
+const AircraftsPage = () => {
   const { selectedStation, selectedCompany } = useCompanyStore();
   const [searchTerm, setSearchTerm] = useState('');
   const debouncedSearchTerm = useDebounce(searchTerm, 500);
@@ -137,4 +137,4 @@ const InventarioPage = () => {
   );
 };
 
-export default InventarioPage;
+export default AircraftsPage;
