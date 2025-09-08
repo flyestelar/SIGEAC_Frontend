@@ -7,9 +7,9 @@ import { useCreateRequisition } from "@/actions/mantenimiento/compras/requisicio
 import { Input } from "@/components/ui/input"
 import { useAuth } from "@/contexts/AuthContext"
 import { useGetBatchesByLocationId } from "@/hooks/mantenimiento/almacen/renglones/useGetBatchesByLocationId"
-import { useGetMaintenanceAircrafts } from "@/hooks/mantenimiento/planificacion/useGetMaintenanceAircrafts"
-import { useGetWorkOrderEmployees } from "@/hooks/mantenimiento/planificacion/useGetWorkOrderEmployees"
-import { useGetWorkOrders } from "@/hooks/mantenimiento/planificacion/useGetWorkOrders"
+import { useGetMaintenanceAircrafts } from "@/hooks/planificacion/useGetMaintenanceAircrafts"
+import { useGetWorkOrderEmployees } from "@/hooks/planificacion/useGetWorkOrderEmployees"
+import { useGetWorkOrders } from "@/hooks/planificacion/useGetWorkOrders"
 import { cn } from "@/lib/utils"
 import { useCompanyStore } from "@/stores/CompanyStore"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -429,7 +429,7 @@ export function CreateRequisitionForm({ onClose }: FormProps) {
             </FormItem>
           )}
         />
-        
+
         <FormField
           control={form.control}
           name="justification"

@@ -1,7 +1,7 @@
 "use client";
 import { ContentLayout } from "@/components/layout/ContentLayout";
 import LoadingPage from "@/components/misc/LoadingPage";
-import { useGetPlanificationEvents } from "@/hooks/mantenimiento/planificacion/useGetPlanificationEvents";
+import { useGetPlanificationEvents } from "@/hooks/planificacion/useGetPlanificationEvents";
 import { useTheme } from "next-themes";
 import { Calendar } from "./_components/calendar";
 import { useEffect } from "react";

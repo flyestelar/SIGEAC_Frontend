@@ -1,21 +1,8 @@
-import { BankAccount } from "@/types";
-import {
-  Banknote,
-  CreditCard,
-  Loader2,
-  User,
-  UserCircleIcon,
-  Wallet,
-} from "lucide-react";
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+import { BankAccount } from '@/types';
+import { Banknote, CreditCard, Loader2, User, UserCircleIcon, Wallet } from 'lucide-react';
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTrigger } from '@/components/ui/dialog';
 
 const BankAccountResumeDialog = ({ bank_acc }: { bank_acc: BankAccount }) => {
   const [openBankAcc, setOpenBankAcc] = useState(false);
@@ -34,9 +21,7 @@ const BankAccountResumeDialog = ({ bank_acc }: { bank_acc: BankAccount }) => {
           <div className="flex flex-col items-center space-y-2">
             <Banknote className="w-8 h-8 text-primary" />
             <h2 className="text-xl font-bold">Detalles de tu cuenta</h2>
-            <p className="text-sm text-muted-foreground">
-              Información de la cuenta bancaria
-            </p>
+            <p className="text-sm text-muted-foreground">Información de la cuenta bancaria</p>
           </div>
         </DialogHeader>
 
@@ -53,9 +38,7 @@ const BankAccountResumeDialog = ({ bank_acc }: { bank_acc: BankAccount }) => {
             <CreditCard className="mt-1 h-5 w-5 text-muted-foreground" />
             <div>
               <p className="text-sm text-muted-foreground">Número de cuenta</p>
-              <p className="font-mono font-medium">
-                {bank_acc?.account_number}
-              </p>
+              <p className="font-mono font-medium">{bank_acc?.account_number}</p>
             </div>
           </div>
 

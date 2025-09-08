@@ -46,8 +46,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useAutoScheduleGenerator } from "@/hooks/mantenimiento/planificacion/useGenerateSchedule";
-import { useGetWorkOrderEmployees } from "@/hooks/mantenimiento/planificacion/useGetWorkOrderEmployees";
+import { useAutoScheduleGenerator } from "@/hooks/planificacion/useGenerateSchedule";
+import { useGetWorkOrderEmployees } from "@/hooks/planificacion/useGetWorkOrderEmployees";
 import { useCompanyStore } from "@/stores/CompanyStore";
 import { WorkOrder } from "@/types";
 import { zodResolver } from "@hookform/resolvers/zod";

@@ -35,8 +35,8 @@ import { Label } from '@/components/ui/label';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Textarea } from '@/components/ui/textarea';
-import { useGetMaintenanceAircrafts } from '@/hooks/mantenimiento/planificacion/useGetMaintenanceAircrafts';
-import { useGetServicesByManufacturer } from '@/hooks/mantenimiento/planificacion/useGetServicesByManufacturer';
+import { useGetMaintenanceAircrafts } from '@/hooks/planificacion/useGetMaintenanceAircrafts';
+import { useGetServicesByManufacturer } from '@/hooks/planificacion/useGetServicesByManufacturer';
 import { cn } from '@/lib/utils';
 import { useCompanyStore } from '@/stores/CompanyStore';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -47,7 +47,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
-import { useCheckWorkOrderArticles } from '@/hooks/mantenimiento/planificacion/useCheckWorkOrderArticles';
+import { useCheckWorkOrderArticles } from '@/hooks/planificacion/useCheckWorkOrderArticles';
 import { toast } from 'sonner';
 // Esquema de validación con Zod
 interface TaskItem {

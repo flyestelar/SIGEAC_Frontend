@@ -3,12 +3,13 @@
 import { ContentLayout } from '@/components/layout/ContentLayout'
 import LoadingPage from '@/components/misc/LoadingPage'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { useGetMaintenanceAircrafts } from '@/hooks/mantenimiento/planificacion/useGetMaintenanceAircrafts'
+import { useGetMaintenanceAircrafts } from '@/hooks/planificacion/useGetMaintenanceAircrafts'
 import { useCompanyStore } from '@/stores/CompanyStore'
-import PlanificationAircraftTab from './_components/PlanificationAircraftTab'
+import { PlusCircle } from 'lucide-react'
+import Link from 'next/link'
+import { PlanificationAircraftTab } from './_components/PlanificationAircraftTab'
 
 const AircraftsPage = () => {
-
   const { selectedCompany } = useCompanyStore();
   const { data: aircrafts, isLoading, isError } = useGetMaintenanceAircrafts(selectedCompany?.slug)
 
@@ -24,13 +25,19 @@ const AircraftsPage = () => {
       </div>
       {
         aircrafts && (
-          <Tabs>
-            <TabsList>
+          <Tabs defaultValue={aircrafts[0].acronym}>
+            <TabsList className='flex justify-center w-full'>
               {
                 aircrafts.map((aircraft) => (
                   <TabsTrigger key={aircraft.id} value={aircraft.acronym}>{aircraft.acronym}</TabsTrigger>
                 ))
               }
+              <Link
+                href={`/${selectedCompany?.slug}/planificacion/aeronaves/ingreso_aeronave`}
+                className="inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm gap-1"
+              >
+        <PlusCircle className="size-4" /> Registrar
+      </Link>
             </TabsList>
             {
               aircrafts.map((aircraft) => (

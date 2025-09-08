@@ -281,19 +281,28 @@ export type MaintenanceAircraft = {
   flight_hours: number;
   flight_cycles: number;
   fabricant_date: string;
-  aircraft_parts: MaintenanceAircraftPart[];
+  aircraft_assignments: AircraftAssigment[];
   location: Location;
   comments: string;
 };
+
+export type AircraftAssigment = {
+  id: number,
+  hours_at_installation: string,
+  cycles_at_installation: string,
+  removed_date: string | null,
+  assigned_date: string,
+  aircraft_part: MaintenanceAircraftPart
+}
 
 export type MaintenanceAircraftPart = {
   part_number: string;
   part_name: string;
   condition_type: string;
-  part_hours: number;
-  part_cycles: number;
+  total_flight_hours: number;
+  total_flight_cycles: number;
   sub_parts: MaintenanceAircraftPart[];
-  aircraft: MaintenanceAircraft;
+  parent_part_id: string | null;
 };
 
 export type PlanificationEvent = {
@@ -1051,4 +1060,39 @@ export type CourseStats = {
   pending_courses: number;
   completed_courses: number;
   total_courses: number;
+};
+
+
+export type TaskMaster = {
+  id: number;
+  source_type: 'MPD' | 'AD' | 'SB' | 'EO';
+  source_ref: string;
+  revision: string;
+  effective_date?: string | null;
+  title: string;
+  description?: string | null;
+  applicability?: any | null;
+  task_type?: string | null;
+  criticality: 'MANDATORY' | 'RECOMMENDED' | 'OPTIONAL';
+  interval_value_hrs?: number | null;
+  interval_value_cyc?: number | null;
+  interval_value_days?: number | null;
+  thresh_value_hrs?: number | null;
+  thresh_value_cyc?: number | null;
+  thresh_value_days?: number | null;
+  repeat_value_hrs?: number | null;
+  repeat_value_cyc?: number | null;
+  repeat_value_days?: number | null;
+  window_pct?: number | null;
+  window_hrs?: number | null;
+  window_cyc?: number | null;
+  window_days?: number | null;
+  std_man_hours?: number | null;
+  required_skills?: string[] | null;
+  required_tools?: string[] | null;
+  required_materials?: { pn: string; qty: number }[] | null;
+  access_panels?: string[] | null;
+  status: 'ACTIVE' | 'SUPERSEDED' | 'DELETED';
+  created_at?: string;
+  updated_at?: string;
 };

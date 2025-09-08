@@ -1,7 +1,6 @@
 "use client";
 
 import { useCreateMaintenanceAircraft } from "@/actions/mantenimiento/planificacion/aeronaves/actions";
-import { AircraftInfoForm } from "@/components/forms/mantenimiento/aeronaves/AircraftInfoForm";
 import { AircraftPartsInfoForm } from "@/components/forms/mantenimiento/aeronaves/AircraftPartsForm";
 import { ContentLayout } from "@/components/layout/ContentLayout";
 import { Button } from "@/components/ui/button";
@@ -25,6 +24,8 @@ import {
 import { useState } from "react";
 import { InfoItem } from "./_components/InfoItem";
 import { PartSummaryCard } from "./_components/PartSummaryCard";
+import AircraftInfoForm from "@/components/forms/mantenimiento/aeronaves/AircraftInfoForm";
+import { useRouter } from "next/navigation";
 
 interface AircraftPart {
     part_name: string;
@@ -55,35 +56,26 @@ export default function NewAircraftPage() {
     const [partsData, setPartsData] = useState<PartsData>({ parts: [] });
     const { createMaintenanceAircraft } = useCreateMaintenanceAircraft();
     const { selectedCompany } = useCompanyStore();
+    const router = useRouter()
     const handleSubmit = async () => {
         if (aircraftData && partsData) {
-            // try {
-            //     await createMaintenanceAircraft.mutateAsync({
-            //         data: {
-            //             aircraft: {
-            //                 ...aircraftData,
-            //                 flight_hours: Number(aircraftData.flight_hours),
-            //                 flight_cycles: Number(aircraftData.flight_cycles),
-            //             },
-            //             parts: partsData.parts,
-            //         },
-            //         company: selectedCompany!.slug,
-            //     });
-            //     // redirección opcional
-            //     // router.push("/mantenimiento/aeronaves");
-            // } catch (error) {
-            //     console.error(error);
-            // }
-            console.log("Submitting data:", {
-                data: {
-                    aircraft: {
-                        ...aircraftData,
-                        flight_hours: Number(aircraftData.flight_hours),
-                        flight_cycles: Number(aircraftData.flight_cycles),
+            try {
+                await createMaintenanceAircraft.mutateAsync({
+                    data: {
+                        aircraft: {
+                            ...aircraftData,
+                            flight_hours: Number(aircraftData.flight_hours),
+                            flight_cycles: Number(aircraftData.flight_cycles),
+                        },
+                        parts: partsData.parts,
                     },
-                    parts: partsData.parts,
-                },
-            });
+                    company: selectedCompany!.slug,
+                });
+                // redirección opcional
+                router.push(`/${selectedCompany?.slug}/planificacion/aeronaves`);
+            } catch (error) {
+                console.error(error);
+            }
         }
     };
 
