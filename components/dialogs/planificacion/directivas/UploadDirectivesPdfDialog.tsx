@@ -13,7 +13,7 @@ const UploadDirectivePdfsDialog = () => {
           <DialogTitle>Subir AD(s) en PDF</DialogTitle>
           <DialogDescription>Suba los archivos PDF de las AD(s) que desea cargar en el sistema.</DialogDescription>
         </DialogHeader>
-        <UploadDirectivePdfsForm onClose={() => setOpen(false)} />
+        <UploadDirectivePdfsForm />
       </DialogContent>
     </Dialog>
   );

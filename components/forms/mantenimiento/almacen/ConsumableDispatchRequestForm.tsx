@@ -32,10 +32,10 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { CalendarIcon, Check, ChevronsUpDown, Loader2 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { Calendar } from "../../../ui/calendar";
+import { Calendar } from "@/components/ui/calendar";
 import {
   Command,
   CommandEmpty,
@@ -43,34 +43,28 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from "../../../ui/command";
-import { Label } from "../../../ui/label";
-import { Popover, PopoverContent, PopoverTrigger } from "../../../ui/popover";
-import { Textarea } from "../../../ui/textarea";
+} from "@/components/ui/command";
+import { Label } from "@/components/ui/label";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Textarea } from "@/components/ui/textarea";
 
 const FormSchema = z.object({
   requested_by: z.string(),
   delivered_by: z.string(),
   aircraft_id: z.string(),
-  submission_date: z.date({
-    message: "Debe ingresar la fecha.",
-  }),
+  submission_date: z.date({ message: "Debe ingresar la fecha." }),
   articles: z.object({
     article_id: z.coerce.number(),
     serial: z.string().nullable(),
     quantity: z.number(),
     batch_id: z.number(),
   }),
-  justification: z.string({
-    message: "Debe ingresar una justificación de la salida.",
-  }),
+  justification: z.string({ message: "Debe ingresar una justificación de la salida." }),
   destination_place: z.string(),
   status: z.string(),
   unit: z
-    .enum(["litros", "mililitros"], {
-      message: "Debe seleccionar una unidad.",
-    })
-    .optional(), // Nuevo campo
+    .enum(["litros", "mililitros"], { message: "Debe seleccionar una unidad." })
+    .optional(),
 });
 
 type FormSchemaType = z.infer<typeof FormSchema>;
@@ -79,129 +73,124 @@ interface FormProps {
   onClose: () => void;
 }
 
-interface BatchesWithCountProp extends Batch {
-  articles: Consumable[];
-  batch_id: number;
-}
-
 export function ConsumableDispatchForm({ onClose }: FormProps) {
-
-
   const { user } = useAuth();
-
-  const { selectedStation, selectedCompany } = useCompanyStore();
+  const { selectedCompany } = useCompanyStore();
 
   const [open, setOpen] = useState(false);
-
   const [quantity, setQuantity] = useState("");
-
-  const [selectedAircraft, setSelectedAircraft] = useState<string | null>(null);
-
-  const [filteredBatches, setFilteredBatches] = useState<
-    BatchesWithCountProp[]
-  >([]);
-
-  const [articleSelected, setArticleSelected] = useState<Consumable>();
+  const [articleSelected, setArticleSelected] = useState<Consumable | undefined>(undefined);
+  const [selectedBatch, setSelectedBatch] = useState<Batch | null>(null); // ✅ unidad viene del batch
 
   const { createDispatchRequest } = useCreateDispatchRequest();
 
-  const { data: departments, isLoading: isDepartmentsLo } = useGetDepartments(selectedCompany?.slug)
+  const { data: departments, isLoading: isDepartmentsLoading } = useGetDepartments(selectedCompany?.slug);
+  const { data: aircrafts, isLoading: isAircraftsLoading, isError: isAircraftsError } = useGetMaintenanceAircrafts(
+    selectedCompany?.slug
+  );
 
-  const { data: aircrafts, isLoading: isAircraftsLoading, isError: isAircraftsError } = useGetMaintenanceAircrafts(selectedCompany?.slug);
-
-  const {
-    data: batches,
-    isPending: isBatchesLoading,
-  } = useGetBatchesWithInWarehouseArticles();
-
+  const { data: batches, isPending: isBatchesLoading } = useGetBatchesWithInWarehouseArticles();
   const { data: employees, isLoading: employeesLoading } = useGetWorkOrderEmployees(selectedCompany?.slug);
+  const {
+    data: warehouseEmployees,
+    isLoading: warehouseEmployeesLoading,
+    isError: warehouseEmployeesError,
+  } = useGetWarehousesEmployees();
 
-  const { data: warehouseEmployees, isLoading: warehouseEmployeesLoading, isError: employeesError } = useGetWarehousesEmployees();
+  // Sólo consumibles
+  const consumableBatches = useMemo(
+    () => (batches ?? []).filter((b) => b.category === "CONSUMIBLE" || !b.category),
+    [batches]
+  );
 
   const form = useForm<FormSchemaType>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
       justification: "",
-      requested_by: `${user?.employee[0].dni}`,
+      requested_by: `${user?.employee?.[0]?.dni ?? ""}`,
       destination_place: "",
       status: "proceso",
     },
   });
 
+  const { setValue, getValues, watch, clearErrors, setError } = form;
+
+  // 🔁 Normaliza cantidad según unidad del BATCH (no del artículo)
   useEffect(() => {
-    const unit = form.watch("unit");
-    const currentQuantity = parseFloat(quantity) || 0;
-    const article = form.getValues("articles");
-    if (articleSelected?.unit.label !== "unidades") {
-      const newQuantity =
-        unit === "mililitros" ? currentQuantity / 1000 : currentQuantity;
+    const currentQuantity = parseFloat(quantity.replace(",", ".")) || 0;
+    const article = getValues("articles");
+    const unitChoice = getValues("unit"); // 'litros' | 'mililitros' | undefined
+    const batchUnit = selectedBatch?.unit?.value?.toUpperCase(); // 'U' | 'L' | etc.
 
-      form.setValue("articles", {
-        ...article,
-        quantity: newQuantity,
-      });
-    } else {
-      // Si es "unidades", no se realiza conversión
-      form.setValue("articles", {
-        ...article,
-        quantity: currentQuantity,
-      });
+    // sin artículo aún
+    if (!article) return;
+
+    if (batchUnit === "U") {
+      // Unitario: sin conversión
+      setValue("articles", { ...article, quantity: currentQuantity });
+      return;
     }
-  }, [quantity, articleSelected, form]);
 
-  const { setValue } = form;
+    if (batchUnit === "L") {
+      // Volumétrico: guardamos en L
+      const asLiters = unitChoice === "mililitros" ? currentQuantity / 1000 : currentQuantity;
+      setValue("articles", { ...article, quantity: asLiters });
+      return;
+    }
+
+    // Fallback: sin conversión
+    setValue("articles", { ...article, quantity: currentQuantity });
+  }, [quantity, selectedBatch, getValues, setValue]);
 
   const onSubmit = async (data: FormSchemaType) => {
-    const formattedData = {
+    const payload = {
       ...data,
       articles: [{ ...data.articles }],
       created_by: user!.username,
       submission_date: format(data.submission_date, "yyyy-MM-dd"),
       category: "consumible",
       status: "APROBADO",
-      approved_by: user?.employee[0].dni,
+      approved_by: user?.employee?.[0]?.dni,
       delivered_by: data.delivered_by,
       user_id: Number(user!.id),
     };
-    await createDispatchRequest.mutateAsync({ data: formattedData, company: selectedCompany!.slug });
+
+    await createDispatchRequest.mutateAsync({ data: payload, company: selectedCompany!.slug });
     onClose();
   };
 
-  const handleArticleSelect = (
-    id: number,
-    serial: string | null,
-    batch_id: number
-  ) => {
-    const selectedArticle = filteredBatches
-      .flatMap((batch) => batch.articles)
-      .find((article) => article.id === id);
+  const handleArticleSelect = (id: number, serial: string | null, batch_id: number) => {
+    const selectedArticle = consumableBatches.flatMap((batch) => batch.articles).find((a) => a.id === id);
+    const batch = consumableBatches.find((b) => b.batch_id === batch_id) || null; // ✅ batch con unidad
 
-    if (selectedArticle) {
-      // Actualizar el valor del campo "unit" en el formulario
-      if (selectedArticle.unit.label === "u") {
-        form.setValue("unit", undefined); // Ocultar el RadioGroup si es "unidades"
-      } else {
-        form.setValue("unit", "litros"); // Establecer un valor predeterminado si es "litros"
-      }
+    if (!selectedArticle || !batch) return;
 
-      // Actualizar el estado del artículo seleccionado
-      setValue("articles", {
-        article_id: Number(id),
-        serial: serial ? serial : null,
-        quantity: 0,
-        batch_id: Number(batch_id),
-      });
+    // Set form values
+    setValue("articles", {
+      article_id: Number(id),
+      serial: serial ?? null,
+      quantity: 0,
+      batch_id: Number(batch_id),
+    });
 
-      setArticleSelected(selectedArticle);
+    setArticleSelected(selectedArticle as Consumable);
+    setSelectedBatch(batch);
+
+    // Ajusta selector de unidad visible/valor por defecto
+    const v = batch.unit?.value?.toUpperCase();
+    if (v === "U") {
+      setValue("unit", undefined); // no mostrar RadioGroup
+    } else if (v === "L") {
+      setValue("unit", "litros"); // default
+    } else {
+      setValue("unit", undefined);
     }
   };
 
   return (
     <Form {...form}>
-      <form
-        onSubmit={form.handleSubmit(onSubmit)}
-        className="flex flex-col space-y-3 w-full"
-      >
+      <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col space-y-3 w-full">
+        {/* Aeronave */}
         <FormField
           control={form.control}
           name="aircraft_id"
@@ -215,20 +204,16 @@ export function ConsumableDispatchForm({ onClose }: FormProps) {
                       disabled={isAircraftsLoading || isAircraftsError}
                       variant="outline"
                       role="combobox"
-                      className={cn(
-                        "justify-between",
-                        !field.value && "text-muted-foreground"
-                      )}
+                      className={cn("justify-between", !field.value && "text-muted-foreground")}
                     >
-                      {
-                        isAircraftsLoading && <Loader2 className="size-4 animate-spin mr-2" />
-                      }
-                      {field.value
-                        ? <p>{aircrafts?.find(
-                          (aircraft) => `${aircraft.id.toString()}` === field.value
-                        )?.acronym}</p>
-                        : "Elige la aeronave..."
-                      }
+                      {isAircraftsLoading && <Loader2 className="size-4 animate-spin mr-2" />}
+                      {field.value ? (
+                        <p>
+                          {aircrafts?.find((a) => `${a.id}` === field.value)?.acronym}
+                        </p>
+                      ) : (
+                        "Elige la aeronave..."
+                      )}
                       <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                     </Button>
                   </FormControl>
@@ -239,26 +224,21 @@ export function ConsumableDispatchForm({ onClose }: FormProps) {
                     <CommandList>
                       <CommandEmpty className="text-xs p-2 text-center">No se ha encontrado ninguna aeronave.</CommandEmpty>
                       <CommandGroup>
-                        {aircrafts?.map((aircraft) => (
+                        {aircrafts?.map((a) => (
                           <CommandItem
-                            value={`${aircraft.id}`}
-                            key={aircraft.id}
-                            onSelect={() => {
-                              form.setValue("aircraft_id", aircraft.id.toString());
-                              setSelectedAircraft(aircraft.manufacturer.id.toString());
-                            }}
+                            value={`${a.id}`}
+                            key={a.id}
+                            onSelect={() => form.setValue("aircraft_id", a.id.toString())}
                           >
                             <Check
                               className={cn(
                                 "mr-2 h-4 w-4",
-                                `${aircraft.id.toString()}` === field.value
-                                  ? "opacity-100"
-                                  : "opacity-0"
+                                `${a.id}` === field.value ? "opacity-100" : "opacity-0"
                               )}
                             />
-                            {
-                              <p>{aircraft.acronym} - {aircraft.manufacturer.name}</p>
-                            }
+                            <p>
+                              {a.acronym} - {a.manufacturer?.name ?? a.manufacturer}
+                            </p>
                           </CommandItem>
                         ))}
                       </CommandGroup>
@@ -270,6 +250,8 @@ export function ConsumableDispatchForm({ onClose }: FormProps) {
             </FormItem>
           )}
         />
+
+        {/* Entregado / Recibe */}
         <div className="grid grid-cols-2 gap-2">
           <FormField
             control={form.control}
@@ -277,59 +259,53 @@ export function ConsumableDispatchForm({ onClose }: FormProps) {
             render={({ field }) => (
               <FormItem className="w-full">
                 <FormLabel>Entregado por:</FormLabel>
-                <Select onValueChange={field.onChange}>
+                <Select onValueChange={field.onChange} value={field.value}>
                   <FormControl>
                     <SelectTrigger>
                       <SelectValue placeholder="Seleccione el responsable..." />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    {
-                      warehouseEmployeesLoading && <Loader2 className="size-4 animate-spin" />
-                    }
-                    {
-                      warehouseEmployees && warehouseEmployees.map((employee) => (
-                        <SelectItem key={employee.dni} value={`${employee.dni}`}>{employee.first_name} {employee.last_name}</SelectItem>
-                      ))
-                    }
+                    {warehouseEmployeesLoading && <Loader2 className="size-4 animate-spin" />}
+                    {warehouseEmployees?.map((e) => (
+                      <SelectItem key={e.dni} value={`${e.dni}`}>
+                        {e.first_name} {e.last_name}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
                 <FormMessage />
               </FormItem>
             )}
           />
+
           <FormField
             control={form.control}
             name="requested_by"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Recibe / MTTO</FormLabel>
-                <Select onValueChange={field.onChange}>
+                <Select onValueChange={field.onChange} value={field.value}>
                   <FormControl>
                     <SelectTrigger>
                       <SelectValue placeholder="Seleccione el responsable..." />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    {employeesLoading && (
-                      <Loader2 className="size-4 animate-spin" />
-                    )}
-                    {employees &&
-                      employees.map((employee) => (
-                        <SelectItem
-                          key={employee.id}
-                          value={`${employee.dni}`}
-                        >
-                          {employee.first_name} {employee.last_name} -{" "}
-                          {employee.job_title.name}
-                        </SelectItem>
-                      ))}
+                    {employeesLoading && <Loader2 className="size-4 animate-spin" />}
+                    {employees?.map((e) => (
+                      <SelectItem key={e.id} value={`${e.dni}`}>
+                        {e.first_name} {e.last_name} - {e.job_title.name}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
                 <FormMessage />
               </FormItem>
             )}
           />
+
+          {/* Fecha */}
           <FormField
             control={form.control}
             name="submission_date"
@@ -341,15 +317,10 @@ export function ConsumableDispatchForm({ onClose }: FormProps) {
                     <FormControl>
                       <Button
                         variant={"outline"}
-                        className={cn(
-                          "w-[240px] pl-3 text-left font-normal",
-                          !field.value && "text-muted-foreground"
-                        )}
+                        className={cn("w-[240px] pl-3 text-left font-normal", !field.value && "text-muted-foreground")}
                       >
                         {field.value ? (
-                          format(field.value, "PPP", {
-                            locale: es,
-                          })
+                          format(field.value, "PPP", { locale: es })
                         ) : (
                           <span>Seleccione una fecha...</span>
                         )}
@@ -362,9 +333,7 @@ export function ConsumableDispatchForm({ onClose }: FormProps) {
                       mode="single"
                       selected={field.value}
                       onSelect={field.onChange}
-                      disabled={(date) =>
-                        date > new Date() || date < new Date("1900-01-01")
-                      }
+                      disabled={(date) => date > new Date() || date < new Date("1900-01-01")}
                       initialFocus
                       locale={es}
                     />
@@ -374,24 +343,27 @@ export function ConsumableDispatchForm({ onClose }: FormProps) {
               </FormItem>
             )}
           />
+
+          {/* Destino */}
           <FormField
             control={form.control}
             name="destination_place"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Destino</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <Select onValueChange={field.onChange} value={field.value}>
                   <FormControl>
                     <SelectTrigger>
                       <SelectValue placeholder="Seleccione..." />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    {
-                      departments && departments.map((department) => (
-                        <SelectItem key={department.id} value={department.id.toString()}>{department.name}</SelectItem>
-                      ))
-                    }
+                    {isDepartmentsLoading && <Loader2 className="size-4 animate-spin" />}
+                    {departments?.map((d) => (
+                      <SelectItem key={d.id} value={`${d.id}`}>
+                        {d.name}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
                 <FormMessage />
@@ -399,63 +371,51 @@ export function ConsumableDispatchForm({ onClose }: FormProps) {
             )}
           />
         </div>
+
+        {/* Consumible / Cantidad / Unidad (desde BATCH) */}
         <div className="space-y-3">
           <div className="flex gap-2">
             <FormField
               control={form.control}
               name="articles"
-              render={({ field }) => (
+              render={() => (
                 <FormItem className="flex flex-col">
                   <FormLabel>Consumible a Retirar</FormLabel>
                   <Popover open={open} onOpenChange={setOpen}>
                     <PopoverTrigger asChild>
-                      <Button
-                        variant="outline"
-                        role="combobox"
-                        aria-expanded={open}
-                        className="w-[200px] justify-between"
-                      >
-                        {articleSelected
-                          ? `${articleSelected.part_number}`
-                          : "Selec. el consumible"}
+                      <Button variant="outline" role="combobox" aria-expanded={open} className="w-[240px] justify-between">
+                        {articleSelected ? `${articleSelected.part_number}` : "Selec. el consumible"}
                         <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                       </Button>
                     </PopoverTrigger>
-                    <PopoverContent className="w-[200px] p-0">
+                    <PopoverContent className="w-[360px] p-0">
                       <Command>
-                        <CommandInput placeholder="Buscar un consu..." />
+                        <CommandInput placeholder="Buscar consumible..." />
                         <CommandList>
-                          <CommandEmpty>
-                            No se han encontrado consumibles...
-                          </CommandEmpty>
-                          {filteredBatches?.map((batch) => (
-                            <CommandGroup
-                              key={batch.batch_id}
-                              heading={batch.name}
-                            >
+                          <CommandEmpty>No se han encontrado consumibles...</CommandEmpty>
+                          {consumableBatches?.map((batch) => (
+                            <CommandGroup key={batch.batch_id} heading={`${batch.name} · ${batch.unit?.label ?? ""}`}>
                               {batch.articles.map((article) => (
                                 <CommandItem
                                   key={article.id}
                                   onSelect={() => {
-                                    handleArticleSelect(
-                                      article.id!,
-                                      article.serial ? article.serial : null,
-                                      batch.batch_id
-                                    );
-                                    setArticleSelected(article);
+                                    handleArticleSelect(article.id!, article.serial ?? null, batch.batch_id);
+                                    setArticleSelected(article as Consumable);
+                                    setOpen(false);
                                   }}
                                 >
                                   <Check
                                     className={cn(
                                       "mr-2 h-4 w-4",
-                                      articleSelected?.id === article.id
-                                        ? "opacity-100"
-                                        : "opacity-0"
+                                      articleSelected?.id === article.id ? "opacity-100" : "opacity-0"
                                     )}
                                   />
-                                  {article.part_number} - {article.quantity}
-                                  {article.unit.label}{" "}
-                                  <p className="hidden">{article.id}</p>
+                                  <div className="flex flex-col">
+                                    <span className="text-sm font-medium">{article.part_number}</span>
+                                    <span className="text-xs text-muted-foreground">
+                                      Serial: {article.serial ?? "N/A"} • Unidad: {batch.unit?.label ?? "—"}
+                                    </span>
+                                  </div>
                                 </CommandItem>
                               ))}
                             </CommandGroup>
@@ -468,6 +428,8 @@ export function ConsumableDispatchForm({ onClose }: FormProps) {
                 </FormItem>
               )}
             />
+
+            {/* Cantidad */}
             <div className="flex items-center justify-center gap-2">
               <div className="flex flex-col space-y-2">
                 <Label>Cantidad</Label>
@@ -475,22 +437,31 @@ export function ConsumableDispatchForm({ onClose }: FormProps) {
                   disabled={!articleSelected}
                   value={quantity}
                   onChange={(e) => {
-                    const value = parseFloat(e.target.value) || 0;
-                    if (articleSelected && value <= 0) {
-                      setQuantity(articleSelected.quantity!.toString());
-                      form.setError("articles.quantity", {
-                        type: "manual",
-                        message: `La cantidad no puede ser menor a 0`,
-                      });
-                    } else {
+                    const raw = e.target.value.replace(",", ".");
+                    const value = parseFloat(raw);
+
+                    if (Number.isNaN(value) || value <= 0) {
                       setQuantity(e.target.value);
-                      form.clearErrors("articles.quantity");
+                      setError("articles.quantity", { type: "manual", message: "La cantidad debe ser mayor a 0" });
+                      return;
                     }
+
+                    const batchUnit = selectedBatch?.unit?.value?.toUpperCase();
+
+                    if (batchUnit === "U" && !Number.isInteger(value)) {
+                      setError("articles.quantity", { type: "manual", message: "Para unidades, la cantidad debe ser entera" });
+                    } else {
+                      clearErrors("articles.quantity");
+                    }
+
+                    setQuantity(e.target.value);
                   }}
-                  placeholder="Ej: 1, 4, 6, etc..."
+                  placeholder={selectedBatch?.unit?.value?.toUpperCase() === "U" ? "Ej: 1, 2, 3..." : "Ej: 0.5, 1, 2..."}
                 />
               </div>
-              {articleSelected && articleSelected.unit.label === "L" && (
+
+              {/* Unidad (sólo si el batch es volumétrico L) */}
+              {selectedBatch?.unit?.value?.toUpperCase() === "L" && (
                 <FormField
                   control={form.control}
                   name="unit"
@@ -498,20 +469,13 @@ export function ConsumableDispatchForm({ onClose }: FormProps) {
                     <FormItem>
                       <FormLabel>Unidad</FormLabel>
                       <FormControl>
-                        <RadioGroup
-                          onValueChange={field.onChange}
-                          defaultValue={field.value}
-                          className="flex gap-4"
-                        >
+                        <RadioGroup onValueChange={field.onChange} value={field.value} className="flex gap-4">
                           <div className="flex items-center space-x-2">
                             <RadioGroupItem value="litros" id="litros" />
                             <Label htmlFor="litros">Litros</Label>
                           </div>
                           <div className="flex items-center space-x-2">
-                            <RadioGroupItem
-                              value="mililitros"
-                              id="mililitros"
-                            />
+                            <RadioGroupItem value="mililitros" id="mililitros" />
                             <Label htmlFor="mililitros">Mililitros</Label>
                           </div>
                         </RadioGroup>
@@ -523,35 +487,26 @@ export function ConsumableDispatchForm({ onClose }: FormProps) {
               )}
             </div>
           </div>
+
+          {/* Justificación */}
           <FormField
             control={form.control}
             name="justification"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Justificacion</FormLabel>
+                <FormLabel>Justificación</FormLabel>
                 <FormControl>
-                  <Textarea
-                    rows={5}
-                    className="w-full"
-                    placeholder="EJ: Se necesita para la limpieza de..."
-                    {...field}
-                  />
+                  <Textarea rows={5} className="w-full" placeholder="EJ: Se necesita para la limpieza de..." {...field} />
                 </FormControl>
+                <FormMessage />
               </FormItem>
             )}
           />
         </div>
 
-        <Button
-          className="bg-primary mt-2 text-white hover:bg-blue-900 disabled:bg-primary/70"
-          disabled={createDispatchRequest?.isPending}
-          type="submit"
-        >
-          {createDispatchRequest?.isPending ? (
-            <Loader2 className="size-4 animate-spin" />
-          ) : (
-            <p>Crear</p>
-          )}
+        {/* Submit */}
+        <Button className="bg-primary mt-2 text-white hover:bg-blue-900 disabled:bg-primary/70" disabled={createDispatchRequest?.isPending} type="submit">
+          {createDispatchRequest?.isPending ? <Loader2 className="size-4 animate-spin" /> : <p>Crear</p>}
         </Button>
       </form>
     </Form>

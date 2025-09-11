@@ -8,7 +8,6 @@ import {
   Award,
   Blocks,
   BookCheck,
-  BookOpenCheck,
   BookUser,
   Building2,
   CalendarFold,
@@ -18,6 +17,7 @@ import {
   CreditCardIcon,
   Drill,
   FileBadge,
+  FileUp,
   Globe,
   HandCoins,
   Landmark,
@@ -34,7 +34,7 @@ import {
   SquarePen,
   User2,
   UserRoundCog,
-  Wrench,
+  Wrench
 } from 'lucide-react';
 
 type Submenu = {
@@ -543,29 +543,6 @@ export function getMenuList(pathname: string, currentCompany: Company | null, us
           submenus: [],
         },
         {
-          href: `/${currentCompany?.slug}/planificacion/directivas`,
-          label: 'Directivas',
-          active: pathname.includes(`/${currentCompany?.slug}/planificacion/tareas`),
-          icon: BookOpenCheck,
-          roles: ['ANALISTA_ADMINISTRACION', 'JEFE_PLANIFICACION', 'SUPERUSER'],
-          submenus: [
-            {
-              href: `/${currentCompany?.slug}/planificacion/directivas/carga_directivas`,
-              label: 'Carga de Directivas',
-              active: pathname === `/${currentCompany?.slug}/planificacion/directivas/carga_directivas`,
-              roles: ['ANALISTA_ADMINISTRACION', 'JEFE_PLANIFICACION', 'SUPERUSER'],
-            },
-          ],
-        },
-        {
-          href: `/${currentCompany?.slug}/planificacion/calendario`,
-          label: 'Calendario de Servicios',
-          active: pathname.includes(`/${currentCompany?.slug}/planificacion/calendario`),
-          icon: CalendarFold,
-          roles: ['ANALISTA_ADMINISTRACION', 'JEFE_PLANIFICACION', 'SUPERUSER'],
-          submenus: [],
-        },
-        {
           href: `/${currentCompany?.slug}/planificacion/aeronaves`,
           label: 'Aeronaves',
           active: pathname.includes(`/${currentCompany?.slug}/planificacion/reportes`),
@@ -577,11 +554,11 @@ export function getMenuList(pathname: string, currentCompany: Company | null, us
               label: 'Gestión de Aeronaves',
               active: pathname === `/${currentCompany?.slug}/planificacion/aeronaves`,
             },
-            {
-              href: `/${currentCompany?.slug}/planificacion/aeronaves/partes`,
-              label: 'Gestión de Partes',
-              active: pathname === `/${currentCompany?.slug}/planificacion/aeronaves/partes`,
-            },
+            // {
+            //   href: `/${currentCompany?.slug}/planificacion/aeronaves/partes`,
+            //   label: 'Gestión de Partes',
+            //   active: pathname === `/${currentCompany?.slug}/planificacion/aeronaves/partes`,
+            // },
           ],
         },
         {
@@ -600,6 +577,35 @@ export function getMenuList(pathname: string, currentCompany: Company | null, us
               href: `/${currentCompany?.slug}/planificacion/control_vuelos/reportes`,
               label: 'Reportes',
               active: pathname === `/${currentCompany?.slug}/planificacion/control_vuelos/reportes`,
+            },
+          ],
+        },
+        // {
+        //   href: `/${currentCompany?.slug}/planificacion/calendario`,
+        //   label: 'Calendario de Servicios',
+        //   active: pathname.includes(`/${currentCompany?.slug}/planificacion/calendario`),
+        //   icon: CalendarFold,
+        //   roles: ['ANALISTA_ADMINISTRACION', 'JEFE_PLANIFICACION', 'SUPERUSER'],
+        //   submenus: [],
+        // },
+        {
+          href: `/${currentCompany?.slug}/planificacion/carga_documentos`,
+          label: 'Carga de Task/Directivas',
+          active: pathname.includes(`/${currentCompany?.slug}/planificacion/tareas`),
+          icon: FileUp,
+          roles: ['ANALISTA_ADMINISTRACION', 'JEFE_PLANIFICACION', 'SUPERUSER'],
+          submenus: [
+            {
+              href: `/${currentCompany?.slug}/planificacion/carga_documentos/cargar_directivas`,
+              label: 'Carga de Directivas',
+              active: pathname === `/${currentCompany?.slug}/planificacion/carga_documentos/carga_directivas`,
+              roles: ['ANALISTA_ADMINISTRACION', 'JEFE_PLANIFICACION', 'SUPERUSER'],
+            },
+            {
+              href: `/${currentCompany?.slug}/planificacion/carga_documentos/cargar_tareas`,
+              label: 'Carga de Tareas',
+              active: pathname === `/${currentCompany?.slug}/planificacion/carga_documentos/carga_tareas`,
+              roles: ['ANALISTA_ADMINISTRACION', 'JEFE_PLANIFICACION', 'SUPERUSER'],
             },
           ],
         },

@@ -31,8 +31,8 @@ const WarehouseInventoryPage = () => {
   const isComponentTab = activeCategory === "COMPONENTE";
   const hasQuery = debouncedSearchTerm.trim().length > 0;
   const hasSpecificCondition = isComponentTab && componentCondition !== "all";
-  const {data: conditions, isLoading: isConditionsLoading, isError: isConditionsError} = useGetConditions()
-  const {data: conditionedBatches, isLoading: isLoadingCondition, isError: isConditionError, error: conditionError} = useGetBatchesByArticleCondition(hasSpecificCondition ? conditions?.find((c) => c.name === componentCondition)?.id.toString() : undefined)
+  const { data: conditions, isLoading: isConditionsLoading, isError: isConditionsError } = useGetConditions()
+  const { data: conditionedBatches, isLoading: isLoadingCondition, isError: isConditionError, error: conditionError } = useGetBatchesByArticleCondition(hasSpecificCondition ? conditions?.find((c) => c.name === componentCondition)?.id.toString() : undefined)
 
   const {
     data: allBatches = [],
@@ -61,45 +61,45 @@ const WarehouseInventoryPage = () => {
     return new Set(searchedBatches.map(b => b.id));
   }, [hasQuery, searchedBatches]);
 
-    const displayedBatches = useMemo(() => {
-      // 1) Base según pestaña/condición:
-      // - Si estás en COMPONENTE con condición específica -> usa lo que venga del endpoint
-      // - Si estás en COMPONENTE con "all" -> filtra los allBatches por categoría COMPONENTE
-      // - Si estás en otras categorías -> filtra por esa categoría desde allBatches
-      let base =
-        hasSpecificCondition
-          ? (conditionedBatches ?? [])
-          : (allBatches ?? []);
+  const displayedBatches = useMemo(() => {
+    // 1) Base según pestaña/condición:
+    // - Si estás en COMPONENTE con condición específica -> usa lo que venga del endpoint
+    // - Si estás en COMPONENTE con "all" -> filtra los allBatches por categoría COMPONENTE
+    // - Si estás en otras categorías -> filtra por esa categoría desde allBatches
+    let base =
+      hasSpecificCondition
+        ? (conditionedBatches ?? [])
+        : (allBatches ?? []);
 
-      if (!hasSpecificCondition) {
-        if (activeCategory !== "all") {
-          base = base.filter(b => b.category === activeCategory);
-        }
-      } else {
-        // Opcional: si quieres blindarte por si el endpoint devuelve algo fuera de COMPONENTE
-        base = base.filter(b => b.category === "COMPONENTE");
+    if (!hasSpecificCondition) {
+      if (activeCategory !== "all") {
+        base = base.filter(b => b.category === activeCategory);
       }
+    } else {
+      // Opcional: si quieres blindarte por si el endpoint devuelve algo fuera de COMPONENTE
+      base = base.filter(b => b.category === "COMPONENTE");
+    }
 
-      // 2) Intersección con búsqueda (si hay query)
-      if (hasQuery) {
-        if (!searchedBatches) {
-          // Aún cargando la búsqueda: conserva base (no parpadea la UI)
-          return base;
-        }
-        if (searchedBatches.length === 0) return [];
-        base = base.filter(b => searchedIdSet?.has(b.id));
+    // 2) Intersección con búsqueda (si hay query)
+    if (hasQuery) {
+      if (!searchedBatches) {
+        // Aún cargando la búsqueda: conserva base (no parpadea la UI)
+        return base;
       }
+      if (searchedBatches.length === 0) return [];
+      base = base.filter(b => searchedIdSet?.has(b.id));
+    }
 
-      return base;
-    }, [
-      allBatches,
-      conditionedBatches,
-      activeCategory,
-      hasSpecificCondition,
-      hasQuery,
-      searchedBatches,
-      searchedIdSet
-    ]);
+    return base;
+  }, [
+    allBatches,
+    conditionedBatches,
+    activeCategory,
+    hasSpecificCondition,
+    hasQuery,
+    searchedBatches,
+    searchedIdSet
+  ]);
 
   const isLoading = isLoadingBatches || (hasQuery && isLoadingSearch);
   const isEmpty = !isLoading && displayedBatches.length === 0;
@@ -158,19 +158,15 @@ const WarehouseInventoryPage = () => {
                     <TabsList className="flex justify-center mb-4 space-x-3" aria-label="Condición de componente">
                       <TabsTrigger value="all">Todos</TabsTrigger>
                       <TabsTrigger value="SERVICIABLE">Serviciables</TabsTrigger>
-                      <TabsTrigger value="REMOVIDO">Removidos</TabsTrigger>
-                      <TabsTrigger value="NO_SERVICIABLE">No Serviciables</TabsTrigger>
-                      <TabsTrigger value="CUSTODIA">En custodia</TabsTrigger>
+                      <TabsTrigger value="REMOVIDO - NO SERVICIABLE">Removidos - No Serviciables</TabsTrigger>
+                      <TabsTrigger value="REMOVIDO - CUSTODIA">Removidos - En custodia</TabsTrigger>
                     </TabsList>
                   </Tabs>
                 )}
 
-                {isEmpty ? (
+                {isConditionsLoading ? (
                   <div className="text-center text-sm text-muted-foreground italic py-10">
-                    <DataTable
-                      columns={columns}
-                      initialData={[]}
-                    />
+                    CARGAS
                   </div>
                 ) : (
                   <DataTable
@@ -182,7 +178,7 @@ const WarehouseInventoryPage = () => {
                 )}
               </TabsContent>
             </Tabs>
-
+                
             {isBatchesError && (
               <div className="text-red-500 text-center text-sm italic">
                 Error cargando batches: {String(batchesError)}

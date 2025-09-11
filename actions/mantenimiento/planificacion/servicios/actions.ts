@@ -17,7 +17,7 @@ interface CreateServiceData {
   };
   tasks: {
     description: string;
-    tools: Tool[];
+    tools?: Tool[];
   }[];
 }
 
@@ -26,22 +26,22 @@ export const useCreateMaintenanceService = () => {
   const queryClient = useQueryClient()
 
   const createMutation = useMutation({
-      mutationFn: async ({data, company}: {data: CreateServiceData, company: string}) => {
-          await axiosInstance.post(`/${company}/service-task`, data)
-        },
-      onSuccess: () => {
-          queryClient.invalidateQueries({queryKey: ['maintenance-services']})
-          toast.success("¡Creado!", {
-              description: `El servicio ha sido registrado correctamente.`
-          })
-        },
-      onError: (error) => {
-          toast.error('Oops!', {
-            description: 'No se pudo registrar el servicio...'
-          })
-          console.log(error)
-        },
-      }
+    mutationFn: async ({ data, company }: { data: CreateServiceData, company: string }) => {
+      await axiosInstance.post(`/${company}/service-task`, data)
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['maintenance-services'] })
+      toast.success("¡Creado!", {
+        description: `El servicio ha sido registrado correctamente.`
+      })
+    },
+    onError: (error) => {
+      toast.error('Oops!', {
+        description: 'No se pudo registrar el servicio...'
+      })
+      console.log(error)
+    },
+  }
   )
   return {
     createService: createMutation,
@@ -54,21 +54,21 @@ export const useDeleteService = () => {
   const queryClient = useQueryClient()
 
   const deleteMutation = useMutation({
-      mutationFn: async ({id, company}: {id: string, company: string}) => {
-          await axiosInstance.delete(`/${company}/service-task/${id}`)
-        },
-      onSuccess: () => {
-          queryClient.invalidateQueries({queryKey: ['maintenance-services']})
-          toast.success("¡Eliminado!", {
-              description: `¡El servicio ha sido eliminado correctamente!`
-          })
-        },
-      onError: (e) => {
-          toast.error("Oops!", {
-            description: "¡Hubo un error al eliminar el servicio!"
-        })
-        },
-      }
+    mutationFn: async ({ id, company }: { id: string, company: string }) => {
+      await axiosInstance.delete(`/${company}/service-task/${id}`)
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['maintenance-services'] })
+      toast.success("¡Eliminado!", {
+        description: `¡El servicio ha sido eliminado correctamente!`
+      })
+    },
+    onError: (e) => {
+      toast.error("Oops!", {
+        description: "¡Hubo un error al eliminar el servicio!"
+      })
+    },
+  }
   )
 
   return {

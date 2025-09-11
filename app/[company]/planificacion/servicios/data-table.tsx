@@ -3,6 +3,7 @@
 import { CreateMaintenanceServiceDialog } from "@/components/dialogs/mantenimiento/ordenes_trabajo/CreateMaintenanceServiceDialog"
 import { DataTablePagination } from "@/components/tables/DataTablePagination"
 import { DataTableViewOptions } from "@/components/tables/DataTableViewOptions"
+import { Button } from "@/components/ui/button"
 import {
   Table,
   TableBody,
@@ -11,6 +12,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
+import { useCompanyStore } from "@/stores/CompanyStore"
 import {
   ColumnDef,
   ColumnFiltersState,
@@ -22,6 +24,7 @@ import {
   SortingState,
   useReactTable,
 } from "@tanstack/react-table"
+import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
 
@@ -34,7 +37,7 @@ export function DataTable<TData, TValue>({
   columns,
   data,
 }: DataTableProps<TData, TValue>) {
-
+  const { selectedCompany } = useCompanyStore()
   const [sorting, setSorting] = useState<SortingState>([])
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>(
     []
@@ -55,14 +58,12 @@ export function DataTable<TData, TValue>({
     }
   })
 
-  const router = useRouter();
-
-  const isFiltered = table.getState().columnFilters.length > 0
-
   return (
     <div>
       <div className="flex items-center py-4">
-        <CreateMaintenanceServiceDialog />
+        <Link href={`/${selectedCompany?.slug}/planificacion/servicios/crear_servicio`}>
+          <Button variant={"ghost"} className=" bg-transparent border border-dashed">Crear Servicio</Button>
+        </Link>
         <DataTableViewOptions table={table} />
       </div>
       <div className="rounded-md border mb-4">

@@ -7,8 +7,25 @@ export type ExtractionRow = {
   source_ref: string | null;
   effective_date: string | null; // 'YYYY-MM-DD'
   parser: string; // 'FAA_AD_V1'
-  status: 'PENDING' | 'REVIEW' | 'APPROVED' | 'REJECTED';
-  groups_count: number; // puedes calcularlo server-side
+  payload: {
+    text: string,
+    source_ref: string,
+    effective_date: string,
+    ata: string,
+    applicability: {
+      aircraft: {
+        manufacturer: string;
+        model: string,
+        series: string[];
+      };
+    }
+    groups: {
+      label: string;
+      body: string;
+      drivers: { type: 'thresh' | 'repeat'; unit: 'HRS' | 'CYC' | 'DAYS'; value: number }[];
+    }[],
+  }
+  status: 'PENDING' | 'REVIEW'  | 'APPROVED' | 'REJECTED';
   confidence?: { global?: number } | null;
   created_at: string; // opcional, para ordenar por fecha de carga
 };

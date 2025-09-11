@@ -1,7 +1,6 @@
 "use client";
 import { useUpdatePlanificationEvent } from "@/actions/mantenimiento/planificacion/eventos/actions";
-import CreatePlanificationEventDialog from "@/components/dialogs/mantenimiento/planificacion/calendario/CreatePlanificationEventDialog";
-import { Button } from "@/components/ui/button";
+import CreatePlanificationEventDialog from "@/components/dialogs/planificacion/calendario/CreatePlanificationEventDialog";
 import { useCompanyStore } from "@/stores/CompanyStore";
 import { PlanificationEvent, WorkOrderTaskEvent } from "@/types";
 import {
@@ -15,8 +14,7 @@ import { ScheduleXCalendar, useNextCalendarApp } from "@schedule-x/react";
 import "@schedule-x/theme-default/dist/index.css";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
-import { ClockIcon, Hammer, NotebookIcon, PencilLine } from "lucide-react";
-import Link from "next/link";
+import { ClockIcon, NotebookIcon, PencilLine } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 type CalendarProps = {

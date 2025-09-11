@@ -2,7 +2,7 @@
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMemo } from 'react';
-import { useFieldArray, useForm } from 'react-hook-form';
+import { FieldArrayPath, useFieldArray, useForm } from 'react-hook-form';
 import { z } from 'zod';
 
 // shadcn/ui
@@ -144,8 +144,16 @@ export default function CreateTaskMasterTaskForm({ onSubmit }: { onSubmit?: (pay
     reset,
   } = form;
 
-  const tools = useFieldArray({ control, name: 'required_tools' });
-  const panels = useFieldArray({ control, name: 'access_panels' });
+
+  const tools = useFieldArray<TaskMasterFormInput, FieldArrayPath<TaskMasterFormInput>>({
+    control,
+    name: 'required_tools' as FieldArrayPath<TaskMasterFormInput>,
+  });
+
+  const panels = useFieldArray<TaskMasterFormInput, FieldArrayPath<TaskMasterFormInput>>({
+    control,
+    name: 'access_panels' as FieldArrayPath<TaskMasterFormInput>,
+  });
 
   const isRepetitive = watch('is_repetitive');
 

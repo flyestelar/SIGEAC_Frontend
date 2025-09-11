@@ -1,6 +1,7 @@
 'use client'
 
-import { Button } from "@/components/ui/button"
+import CreateMaintenanceServiceForm from "@/components/forms/mantenimiento/ordenes_trabajo/CreateMaintenanceServiceForm";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -8,9 +9,8 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger
-} from "@/components/ui/dialog"
-import { useState } from "react"
-import { CreateMaintenanceServiceForm } from "@/components/forms/mantenimiento/ordenes_trabajo/CreateMaintenanceServiceForm"
+} from "@/components/ui/dialog";
+import { useState } from "react";
 
 export function CreateMaintenanceServiceDialog() {
   const [open, setOpen] = useState(false);
@@ -26,7 +26,7 @@ export function CreateMaintenanceServiceDialog() {
             Cree un rellenando la información necesaria.
           </DialogDescription>
         </DialogHeader>
-        <CreateMaintenanceServiceForm onClose={() => setOpen(false)} />
+        <CreateMaintenanceServiceForm />
       </DialogContent>
     </Dialog>
   )

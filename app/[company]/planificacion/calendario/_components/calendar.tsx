@@ -1,6 +1,6 @@
 "use client";
 import { useUpdatePlanificationEvent } from "@/actions/mantenimiento/planificacion/eventos/actions";
-import CreatePlanificationEventDialog from "@/components/dialogs/mantenimiento/planificacion/calendario/CreatePlanificationEventDialog";
+import CreatePlanificationEventDialog from "@/components/dialogs/planificacion/calendario/CreatePlanificationEventDialog";
 import { Button } from "@/components/ui/button";
 import { useCompanyStore } from "@/stores/CompanyStore";
 import { PlanificationEvent } from "@/types";
@@ -19,7 +19,7 @@ import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { ClockIcon, Hammer, NotebookIcon, PencilLine } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useRef, useState, useMemo } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 type CalendarProps = {
   events: PlanificationEvent[];

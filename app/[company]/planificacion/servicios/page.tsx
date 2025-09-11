@@ -9,8 +9,8 @@ import { useCompanyStore } from '@/stores/CompanyStore'
 
 const AircraftsPage = () => {
   const { selectedCompany } = useCompanyStore();
-  const { data: services, isLoading } = useGetMaintenanceServices(selectedCompany?.slug)
-  if (isLoading) return <LoadingPage />
+  // const { data: services, isLoading } = useGetMaintenanceServices(selectedCompany?.slug)
+  // if (isLoading) return <LoadingPage />
   return (
     <ContentLayout title='Aeronaves'>
       <div className='flex flex-col text-center justify-center gap-2'>
@@ -19,7 +19,7 @@ const AircraftsPage = () => {
       </div>
 
       {
-        services && <DataTable columns={columns} data={services} />
+        <DataTable columns={columns} data={[]} />
       }
 
     </ContentLayout>

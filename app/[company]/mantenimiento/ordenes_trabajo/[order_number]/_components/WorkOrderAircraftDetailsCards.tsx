@@ -126,14 +126,14 @@ const WorkOrderAircraftDetailsCards = ({ work_order }: { work_order: WorkOrder }
                   <p className="text-sm text-gray-600 flex justify-center items-center gap-1">Ubicación <MapPin className='size-4' /></p>
                   <p className="font-medium">Puerto Ordaz</p>
                 </div>
-                {
-                  work_order.aircraft.aircraft_parts.map((part) => (
-                    <div className='flex flex-col justify-center text-center' key={part.part_number}>
+                {/* {
+                  work_order.aircraft.aircraft_assignments.map((part) => (
+                    <div className='flex flex-col justify-center text-center' key={part.aircraft_part}>
                       <p className="text-sm text-gray-600">{part.part_name}</p>
                       <p className="font-medium">{part.part_hours} hrs. - {part.part_cycles} cyc.</p>
                     </div>
                   ))
-                }
+                } */}
               </div>
             )
           }

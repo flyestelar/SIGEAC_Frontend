@@ -122,7 +122,7 @@ export default function UploadDirectivePdfsForm({
         if (x.id === id && x.status === 'uploading' && x.abort) {
           try {
             x.abort.abort();
-          } catch {}
+          } catch { }
           return { ...x, status: 'canceled', abort: undefined };
         }
         return x;
@@ -152,11 +152,11 @@ export default function UploadDirectivePdfsForm({
         prev.map((x) =>
           x.id === it.id
             ? {
-                ...x,
-                status: wasAbort ? 'canceled' : 'error',
-                abort: undefined,
-                error: wasAbort ? null : err?.response?.data || err?.message || 'Error',
-              }
+              ...x,
+              status: wasAbort ? 'canceled' : 'error',
+              abort: undefined,
+              error: wasAbort ? null : err?.response?.data || err?.message || 'Error',
+            }
             : x,
         ),
       );
@@ -205,7 +205,9 @@ export default function UploadDirectivePdfsForm({
           <div className="flex flex-col gap-2">
             <div className="flex items-center gap-2">
               <Input
-                ref={(r) => ((inputRef as any).current = r)}
+                ref={(r) => {
+                  inputRef.current = r;
+                }}
                 type="file"
                 accept="application/pdf"
                 multiple
@@ -287,10 +289,10 @@ export default function UploadDirectivePdfsForm({
                 it.status === 'done' ||
                 it.status === 'error' ||
                 it.status === 'canceled') && (
-                <Button size="sm" variant="ghost" onClick={() => removeItem(it.id)}>
-                  <X className="h-4 w-4" />
-                </Button>
-              )}
+                  <Button size="sm" variant="ghost" onClick={() => removeItem(it.id)}>
+                    <X className="h-4 w-4" />
+                  </Button>
+                )}
             </div>
           </div>
         ))}

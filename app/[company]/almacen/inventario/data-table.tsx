@@ -27,6 +27,7 @@ import { useDebounce } from "@/hooks/helpers/useDebounce"
 import { useEffect, useState } from "react"
 import { Input } from "@/components/ui/input"
 import { DataTableToolbar } from "@/components/tables/DataTableToolbar"
+import { Loader2 } from "lucide-react"
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]

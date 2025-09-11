@@ -21,7 +21,7 @@ import { useCompanyStore } from '@/stores/CompanyStore';
 import { Calendar } from "./_components/calendar";
 
 const WorkOrderPage = () => {
-  const { order_number } = useParams<{order_number: string }>();
+  const { order_number } = useParams<{ order_number: string }>();
   const { selectedCompany } = useCompanyStore();
   const { data: work_order, isLoading: isWorkOrderLoading, isError: isWorkOrderError } = useGetWorkOrderByOrderNumber(order_number, selectedCompany?.slug);
 
@@ -57,7 +57,7 @@ const WorkOrderPage = () => {
                 </>
               )
             }
-        </div>
+          </div>
         </TabsContent>
         <TabsContent value="calendar" className="space-y-4">
           {work_order && (
