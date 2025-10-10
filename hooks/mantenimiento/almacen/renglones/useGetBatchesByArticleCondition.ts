@@ -25,11 +25,10 @@ export const useGetBatchesByArticleCondition = (condition_id?: string) => {
 
   return useQuery<Batch[], Error>({
     queryKey: ['batches-by-article-condition', company, location_id, condition_id],
-    queryFn: () =>
-      fetchBatches({ company, location_id, condition_id: condition_id ? condition_id : undefined }),
-    enabled: hasBasics,                       // habilita siempre que haya empresa/estación
-    staleTime: 30_000,                        // cachea 30s
-    placeholderData: [],                      // evita undefined
+    queryFn: () => fetchBatches({ company, location_id, condition_id: condition_id ? condition_id : undefined }),
+    enabled: hasBasics, // habilita siempre que haya empresa/estación
+    staleTime: 30_000, // cachea 30s
+    placeholderData: [], // evita undefined
     retry: 1,
   });
 };

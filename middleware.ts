@@ -1,19 +1,13 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse } from 'next/server';
 
 // 1. Definición centralizada de rutas protegidas
-const PROTECTED_ROUTES = [
-  '/estelar',
-];
-
+const PROTECTED_ROUTES = ['/estelar'];
 
 export default async function middleware(req: NextRequest) {
   const currentPath = req.nextUrl.pathname;
 
   // 3. Verificación más eficiente de rutas
-  const isProtectedRoute = PROTECTED_ROUTES.some(route =>
-    currentPath.startsWith(route)
-  );
-
+  const isProtectedRoute = PROTECTED_ROUTES.some((route) => currentPath.startsWith(route));
 
   // 4. Redirección si está en ruta protegida sin autenticación
   if (isProtectedRoute) {

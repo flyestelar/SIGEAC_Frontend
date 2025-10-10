@@ -1,34 +1,13 @@
 'use client';
 import { useCreateWorkOrder } from '@/actions/mantenimiento/planificacion/ordenes_trabajo/actions';
-import { Badge } from "@/components/ui/badge";
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
-import { Checkbox } from "@/components/ui/checkbox";
+import { Checkbox } from '@/components/ui/checkbox';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -96,10 +75,14 @@ const workOrderSchema = z.object({
   location_id: z.string().min(1, 'La ubicación es obligatoria'),
   aircraft_id: z.string().min(1, 'La aeronave es obligatoria'),
   date: z.date(),
-  work_order_task: z.array(z.object({
-    task_id: z.number().min(1, 'ID de tarea inválido'),
-    ata: z.string().min(1, 'El código ATA es obligatorio')
-  })).min(1, 'Debe seleccionar al menos una tarea'),
+  work_order_task: z
+    .array(
+      z.object({
+        task_id: z.number().min(1, 'ID de tarea inválido'),
+        ata: z.string().min(1, 'El código ATA es obligatorio'),
+      }),
+    )
+    .min(1, 'Debe seleccionar al menos una tarea'),
 });
 
 type WorkOrderFormValues = z.infer<typeof workOrderSchema>;
@@ -108,14 +91,18 @@ const ServiceWorkOrderForm = () => {
   const [selectedAircraft, setSelectedAircraft] = useState<string | null>(null);
   const [selectedTasks, setSelectedTasks] = useState<SelectedTask[]>([]);
   const [isTaskModalOpen, setIsTaskModalOpen] = useState<boolean>(false);
-  const [searchTerm, setSearchTerm] = useState<string>("");
+  const [searchTerm, setSearchTerm] = useState<string>('');
   const [selectedService, setSelectedService] = useState<number | null>(null);
   const [articleAvailability, setArticleAvailability] = useState<ArticleAvailability[]>([]);
   const { selectedStation, selectedCompany } = useCompanyStore();
   const { createWorkOrder } = useCreateWorkOrder();
   const { data: aircrafts, isLoading: isAircraftsLoading } = useGetMaintenanceAircrafts(selectedCompany?.slug);
   const { data: services, isLoading: isServicesLoading } = useGetServicesByManufacturer(selectedAircraft);
-  const { data, mutateAsync: check_mutate, isPending: isCheckLoading } = useCheckWorkOrderArticles(selectedCompany?.slug)
+  const {
+    data,
+    mutateAsync: check_mutate,
+    isPending: isCheckLoading,
+  } = useCheckWorkOrderArticles(selectedCompany?.slug);
   const router = useRouter();
 
   const form = useForm<WorkOrderFormValues>({
@@ -123,7 +110,7 @@ const ServiceWorkOrderForm = () => {
     defaultValues: {
       elaborated_by: 'Ing. Francisco Montilla',
       reviewed_by: 'José Flores',
-      approved_by: "Fátima Dos Ramos",
+      approved_by: 'Fátima Dos Ramos',
       description: '',
       aircraft_id: '',
     },
@@ -136,39 +123,39 @@ const ServiceWorkOrderForm = () => {
       // Manejar el caso donde selectedStation es undefined
       form.setError('location_id', {
         type: 'manual',
-        message: 'Debe seleccionar una ubicación'
+        message: 'Debe seleccionar una ubicación',
       });
     }
   }, [selectedStation, form]);
 
   const handleCheckTaskItems = async () => {
     if (!selectedCompany?.slug) {
-      toast.error("No hay una compañía seleccionada");
+      toast.error('No hay una compañía seleccionada');
       return;
     }
 
     try {
-      const taskIds = selectedTasks.map(task => task.task_id);
+      const taskIds = selectedTasks.map((task) => task.task_id);
       const result = await check_mutate(taskIds);
       setArticleAvailability(result);
       // Mostrar notificación o alerta con los resultados
-      const availableCount = result.filter(item => item.available).length;
+      const availableCount = result.filter((item) => item.available).length;
       if (availableCount > 0) {
         toast.success(`${availableCount} artículo(s) disponibles en almacén.`);
       } else {
-        toast.warning("Ningún artículo disponible en almacén");
+        toast.warning('Ningún artículo disponible en almacén');
       }
     } catch (error) {
-      toast.error("Error al verificar artículos");
+      toast.error('Error al verificar artículos');
     }
   };
 
   const handleTaskSelect = (task: Task, service: Service) => {
-    setSelectedTasks(prev => {
-      const exists = prev.some(t => t.task_id === task.id);
+    setSelectedTasks((prev) => {
+      const exists = prev.some((t) => t.task_id === task.id);
 
       if (exists) {
-        return prev.filter(t => t.task_id !== task.id);
+        return prev.filter((t) => t.task_id !== task.id);
       }
 
       return [
@@ -178,9 +165,9 @@ const ServiceWorkOrderForm = () => {
           description: task.description,
           service_id: service.id,
           service_name: service.name,
-          ata: "",
-          task_items: task.task_items
-        }
+          ata: '',
+          task_items: task.task_items,
+        },
       ];
     });
   };
@@ -188,98 +175,88 @@ const ServiceWorkOrderForm = () => {
   const handleServiceSelect = (serviceId: number) => {
     if (!services) return;
 
-    const service = services.find(s => s.id === serviceId);
+    const service = services.find((s) => s.id === serviceId);
     if (!service) return;
 
-    const allServiceTasksSelected = service.tasks.every(task =>
-      selectedTasks.some(t => t.task_id === task.id)
-    );
+    const allServiceTasksSelected = service.tasks.every((task) => selectedTasks.some((t) => t.task_id === task.id));
 
     if (allServiceTasksSelected) {
       // Deseleccionar todas
-      setSelectedTasks(prev =>
-        prev.filter(task =>
-          !service.tasks.some(t => t.id === task.task_id)
-        )
-      );
+      setSelectedTasks((prev) => prev.filter((task) => !service.tasks.some((t) => t.id === task.task_id)));
     } else {
       // Seleccionar todas
       const newTasks = service.tasks
-        .filter(task => !selectedTasks.some(t => t.task_id === task.id))
-        .map(task => ({
+        .filter((task) => !selectedTasks.some((t) => t.task_id === task.id))
+        .map((task) => ({
           task_id: task.id,
           description: task.description,
           service_id: service.id,
           service_name: service.name,
-          ata: "",
-          task_items: task.task_items
+          ata: '',
+          task_items: task.task_items,
         }));
 
-      setSelectedTasks(prev => [...prev, ...newTasks]);
+      setSelectedTasks((prev) => [...prev, ...newTasks]);
     }
   };
 
   const handleAtaChange = (taskId: number, value: string) => {
-    setSelectedTasks(prev =>
-      prev.map(task =>
-        task.task_id === taskId ? { ...task, ata: value } : task
-      )
-    );
+    setSelectedTasks((prev) => prev.map((task) => (task.task_id === taskId ? { ...task, ata: value } : task)));
   };
 
   const removeTask = (taskId: number) => {
-    setSelectedTasks(prev => prev.filter(task => task.task_id !== taskId));
+    setSelectedTasks((prev) => prev.filter((task) => task.task_id !== taskId));
   };
 
   useEffect(() => {
-    form.setValue("work_order_task", selectedTasks.map(task => ({
-      task_id: task.task_id,
-      ata: task.ata
-    })));
+    form.setValue(
+      'work_order_task',
+      selectedTasks.map((task) => ({
+        task_id: task.task_id,
+        ata: task.ata,
+      })),
+    );
   }, [selectedTasks, form]);
 
   const onSubmit = async (data: WorkOrderFormValues) => {
     const formattedData = {
       ...data,
-      date: format(data.date, "yyyy-MM-dd"),
-      work_order_task: selectedTasks.map(task => ({
+      date: format(data.date, 'yyyy-MM-dd'),
+      work_order_task: selectedTasks.map((task) => ({
         description_task: task.description,
         ata: task.ata,
         task_number: task.task_id.toString(),
         origin_manual: task.service_name,
-        task_items: task.task_items.map(item => ({
+        task_items: task.task_items.map((item) => ({
           part_number: item.article_part_number,
           alternate_part_number: item.article_alt_part_number,
-          serial: item.article_serial
-        }))
+          serial: item.article_serial,
+        })),
       })),
     };
-    await createWorkOrder.mutateAsync({data: formattedData, company: selectedCompany!.slug});
+    await createWorkOrder.mutateAsync({ data: formattedData, company: selectedCompany!.slug });
     form.reset();
     router.push(`/${selectedCompany!.slug}/planificacion/ordenes_trabajo`);
   };
 
   // Agrupar por servicio para el panel izquierdo
-  const servicesWithCount = services?.map(service => {
-    const selectedCount = service.tasks.filter(task =>
-      selectedTasks.some(t => t.task_id === task.id)
-    ).length;
+  const servicesWithCount = services?.map((service) => {
+    const selectedCount = service.tasks.filter((task) => selectedTasks.some((t) => t.task_id === task.id)).length;
     return {
       ...service,
       selectedCount,
       allSelected: service.tasks.length > 0 && selectedCount === service.tasks.length,
-      someSelected: selectedCount > 0 && selectedCount < service.tasks.length
+      someSelected: selectedCount > 0 && selectedCount < service.tasks.length,
     };
   });
-
 
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-bold">Crear Orden de Trabajo</h1>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-          <div className='flex gap-6 items-center justify-center w-full'>
-            <div className='w-full grid grid-cols-1 md:grid-cols-2 gap-2'>
+          <div className="flex gap-6 items-center justify-center w-full">
+            <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-2">
               <FormField
                 control={form.control}
                 name="aircraft_id"
@@ -293,20 +270,16 @@ const ServiceWorkOrderForm = () => {
                             disabled={isAircraftsLoading}
                             variant="outline"
                             role="combobox"
-                            className={cn(
-                              "justify-between",
-                              !field.value && "text-muted-foreground"
-                            )}
+                            className={cn('justify-between', !field.value && 'text-muted-foreground')}
                           >
-                            {
-                              isAircraftsLoading && <Loader2 className="size-4 animate-spin mr-2" />
-                            }
-                            {field.value
-                              ? <p>{aircrafts?.find(
-                                (aircraft) => `${aircraft.id.toString()}` === field.value
-                              )?.acronym}</p>
-                              : "Elige la aeronave..."
-                            }
+                            {isAircraftsLoading && <Loader2 className="size-4 animate-spin mr-2" />}
+                            {field.value ? (
+                              <p>
+                                {aircrafts?.find((aircraft) => `${aircraft.id.toString()}` === field.value)?.acronym}
+                              </p>
+                            ) : (
+                              'Elige la aeronave...'
+                            )}
                             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                           </Button>
                         </FormControl>
@@ -315,27 +288,29 @@ const ServiceWorkOrderForm = () => {
                         <Command>
                           <CommandInput placeholder="Busque una aeronave..." />
                           <CommandList>
-                            <CommandEmpty className="text-xs p-2 text-center">No se ha encontrado ninguna aeronave.</CommandEmpty>
+                            <CommandEmpty className="text-xs p-2 text-center">
+                              No se ha encontrado ninguna aeronave.
+                            </CommandEmpty>
                             <CommandGroup>
                               {aircrafts?.map((aircraft) => (
                                 <CommandItem
                                   value={`${aircraft.id}`}
                                   key={aircraft.id}
                                   onSelect={() => {
-                                    form.setValue("aircraft_id", aircraft.id.toString());
+                                    form.setValue('aircraft_id', aircraft.id.toString());
                                     setSelectedAircraft(aircraft.manufacturer.id.toString());
                                   }}
                                 >
                                   <Check
                                     className={cn(
-                                      "mr-2 h-4 w-4",
-                                      `${aircraft.id.toString()}` === field.value
-                                        ? "opacity-100"
-                                        : "opacity-0"
+                                      'mr-2 h-4 w-4',
+                                      `${aircraft.id.toString()}` === field.value ? 'opacity-100' : 'opacity-0',
                                     )}
                                   />
                                   {
-                                    <p>{aircraft.acronym} - {aircraft.manufacturer.name}</p>
+                                    <p>
+                                      {aircraft.acronym} - {aircraft.manufacturer.name}
+                                    </p>
                                   }
                                 </CommandItem>
                               ))}
@@ -344,9 +319,7 @@ const ServiceWorkOrderForm = () => {
                         </Command>
                       </PopoverContent>
                     </Popover>
-                    <FormDescription className="text-xs">
-                      Aeronave que recibirá el servicio.
-                    </FormDescription>
+                    <FormDescription className="text-xs">Aeronave que recibirá el servicio.</FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -361,14 +334,11 @@ const ServiceWorkOrderForm = () => {
                       <PopoverTrigger asChild>
                         <FormControl>
                           <Button
-                            variant={"outline"}
-                            className={cn(
-                              "pl-3 text-left font-normal",
-                              !field.value && "text-muted-foreground"
-                            )}
+                            variant={'outline'}
+                            className={cn('pl-3 text-left font-normal', !field.value && 'text-muted-foreground')}
                           >
                             {field.value ? (
-                              format(field.value, "PPP", { locale: es })
+                              format(field.value, 'PPP', { locale: es })
                             ) : (
                               <span>Seleccione una fecha...</span>
                             )}
@@ -382,16 +352,12 @@ const ServiceWorkOrderForm = () => {
                           mode="single"
                           selected={field.value}
                           onSelect={field.onChange}
-                          disabled={(date) =>
-                            date > new Date() || date < new Date("1900-01-01")
-                          }
+                          disabled={(date) => date > new Date() || date < new Date('1900-01-01')}
                           initialFocus
                         />
                       </PopoverContent>
                     </Popover>
-                    <FormDescription>
-                      Fecha de la orden de trabajo.
-                    </FormDescription>
+                    <FormDescription>Fecha de la orden de trabajo.</FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -400,7 +366,7 @@ const ServiceWorkOrderForm = () => {
                 control={form.control}
                 name="description"
                 render={({ field }) => (
-                  <FormItem className='w-full col-span-2'>
+                  <FormItem className="w-full col-span-2">
                     <FormLabel>Descripción</FormLabel>
                     <FormControl>
                       <Textarea rows={3} {...field} placeholder="Describa la orden de trabajo..." />
@@ -410,7 +376,7 @@ const ServiceWorkOrderForm = () => {
                 )}
               />
             </div>
-            <div className='w-full grid grid-cols-1 md:grid-cols-2 gap-4'>
+            <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField
                 control={form.control}
                 name="elaborated_by"
@@ -418,11 +384,14 @@ const ServiceWorkOrderForm = () => {
                   <FormItem>
                     <FormLabel>Elaborado Por:</FormLabel>
                     <FormControl>
-                      <Input {...field} disabled defaultValue={"Ing. Francisco Montilla"} className='disabled:opacity-65' />
+                      <Input
+                        {...field}
+                        disabled
+                        defaultValue={'Ing. Francisco Montilla'}
+                        className="disabled:opacity-65"
+                      />
                     </FormControl>
-                    <FormDescription>
-                      Quien elabora la orden de trabajo.
-                    </FormDescription>
+                    <FormDescription>Quien elabora la orden de trabajo.</FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -434,21 +403,21 @@ const ServiceWorkOrderForm = () => {
                   <FormItem>
                     <FormLabel>Revisado Por:</FormLabel>
                     <FormControl>
-                      <Input {...field} disabled defaultValue={"José Flores"} className='disabled:opacity-65' />
+                      <Input {...field} disabled defaultValue={'José Flores'} className="disabled:opacity-65" />
                     </FormControl>
-                    <FormDescription>
-                      Quien revisa la orden de trabajo.
-                    </FormDescription>
+                    <FormDescription>Quien revisa la orden de trabajo.</FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-              <div className='flex flex-col gap-2 mt-2.5 col-span-2'>
+              <div className="flex flex-col gap-2 mt-2.5 col-span-2">
                 <Label>Dependencia Responsable:</Label>
-                <Input disabled defaultValue={"Dir. de Mantenimiento y Planificación"} className='disabled:opacity-65' />
-                <p className='text-xs text-muted-foreground'>
-                  Quien revisa la orden de trabajo.
-                </p>
+                <Input
+                  disabled
+                  defaultValue={'Dir. de Mantenimiento y Planificación'}
+                  className="disabled:opacity-65"
+                />
+                <p className="text-xs text-muted-foreground">Quien revisa la orden de trabajo.</p>
               </div>
             </div>
           </div>
@@ -458,8 +427,8 @@ const ServiceWorkOrderForm = () => {
             <h2 className="text-3xl font-semibold text-center">Seleccionar Tareas</h2>
 
             {!selectedAircraft ? (
-              <div className='flex justify-center'>
-                <h1 className='text-xl text-muted-foreground italic'>¡Seleccione una aeronave para ver sus tareas!</h1>
+              <div className="flex justify-center">
+                <h1 className="text-xl text-muted-foreground italic">¡Seleccione una aeronave para ver sus tareas!</h1>
               </div>
             ) : (
               <>
@@ -471,15 +440,11 @@ const ServiceWorkOrderForm = () => {
                       <FormLabel>Tareas a Realizar</FormLabel>
                       <Dialog open={isTaskModalOpen} onOpenChange={setIsTaskModalOpen}>
                         <DialogTrigger asChild>
-                          <Button
-                            variant="outline"
-                            className="justify-between"
-                            disabled={isServicesLoading}
-                          >
+                          <Button variant="outline" className="justify-between" disabled={isServicesLoading}>
                             <span>
                               {selectedTasks.length > 0
                                 ? `${selectedTasks.length} tarea(s) seleccionada(s)`
-                                : "Seleccionar tareas..."}
+                                : 'Seleccionar tareas...'}
                             </span>
                             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                           </Button>
@@ -503,7 +468,7 @@ const ServiceWorkOrderForm = () => {
                             <div className="border-r pr-4 overflow-y-auto col-span-1">
                               <h3 className="font-bold mb-2">Servicios</h3>
                               <div className="space-y-1">
-                                {servicesWithCount?.map(service => (
+                                {servicesWithCount?.map((service) => (
                                   <div
                                     key={service.id}
                                     className={`p - 2 rounded cursor - pointer flex justify - between items - center ${selectedService === service.id ? 'bg-blue-50' : ''} `}
@@ -529,10 +494,8 @@ const ServiceWorkOrderForm = () => {
                               ) : (
                                 <div className="space-y-4">
                                   {services
-                                    ?.filter(service =>
-                                      !selectedService || service.id === selectedService
-                                    )
-                                    .map(service => (
+                                    ?.filter((service) => !selectedService || service.id === selectedService)
+                                    .map((service) => (
                                       <div key={service.id} className="space-y-2">
                                         <div className="flex items-center justify-between">
                                           <h3 className="font-medium text-lg">
@@ -547,13 +510,13 @@ const ServiceWorkOrderForm = () => {
                                           </Button>
                                         </div>
                                         <div className="space-y-2 pl-2">
-                                          {service.tasks.map(task => (
+                                          {service.tasks.map((task) => (
                                             <div
                                               key={task.id}
                                               className="flex items-center space-x-2 p-2 hover:bg-gray-50 rounded"
                                             >
                                               <Checkbox
-                                                checked={selectedTasks.some(t => t.task_id === task.id)}
+                                                checked={selectedTasks.some((t) => t.task_id === task.id)}
                                                 onCheckedChange={() => handleTaskSelect(task, service)}
                                               />
                                               <Label className="flex-grow">{task.description}</Label>
@@ -572,7 +535,8 @@ const ServiceWorkOrderForm = () => {
                                       <Check className="h-5 w-5 text-green-500" />
                                       Disponibilidad de Artículos
                                       <Badge variant="outline" className="ml-auto">
-                                        {articleAvailability.filter(item => item.available).length}/{articleAvailability.length} disponibles
+                                        {articleAvailability.filter((item) => item.available).length}/
+                                        {articleAvailability.length} disponibles
                                       </Badge>
                                     </CardTitle>
                                   </CardHeader>
@@ -590,13 +554,14 @@ const ServiceWorkOrderForm = () => {
                                         </TableHeader>
                                         <TableBody>
                                           {articleAvailability.map((item, index) => (
-                                            <TableRow key={index} className={cn(
-                                              !item.available && "opacity-70 bg-gray-50 dark:bg-gray-900"
-                                            )}>
+                                            <TableRow
+                                              key={index}
+                                              className={cn(
+                                                !item.available && 'opacity-70 bg-gray-50 dark:bg-gray-900',
+                                              )}
+                                            >
                                               <TableCell>{index + 1}</TableCell>
-                                              <TableCell className="font-mono font-medium">
-                                                {item.article}
-                                              </TableCell>
+                                              <TableCell className="font-mono font-medium">{item.article}</TableCell>
                                               <TableCell>
                                                 {item.warehouse || (
                                                   <span className="text-muted-foreground text-center">N/A</span>
@@ -614,7 +579,7 @@ const ServiceWorkOrderForm = () => {
                                                     Disponible
                                                   </Badge>
                                                 ) : (
-                                                  <Badge variant="destructive" className='cursor-pointer'>
+                                                  <Badge variant="destructive" className="cursor-pointer">
                                                     <MinusCircle className="h-3 w-3 mr-1" />
                                                     No disponible
                                                   </Badge>
@@ -628,10 +593,11 @@ const ServiceWorkOrderForm = () => {
                                   </CardContent>
                                   <CardFooter className="text-xs text-muted-foreground flex justify-between">
                                     <div>
-                                      {articleAvailability.filter(item => item.available).length > 0 ? (
+                                      {articleAvailability.filter((item) => item.available).length > 0 ? (
                                         <span className="text-green-600 flex items-center gap-1">
                                           <CheckCircle className="h-3 w-3" />
-                                          {articleAvailability.filter(item => item.available).length} artículos disponibles en almacén.
+                                          {articleAvailability.filter((item) => item.available).length} artículos
+                                          disponibles en almacén.
                                         </span>
                                       ) : (
                                         <span className="text-yellow-600 flex items-center gap-1">
@@ -640,9 +606,7 @@ const ServiceWorkOrderForm = () => {
                                         </span>
                                       )}
                                     </div>
-                                    <div>
-                                      Última verificación: {new Date().toLocaleTimeString()}
-                                    </div>
+                                    <div>Última verificación: {new Date().toLocaleTimeString()}</div>
                                   </CardFooter>
                                 </Card>
                               )}
@@ -650,11 +614,7 @@ const ServiceWorkOrderForm = () => {
                           </div>
 
                           <DialogFooter className="flex justify-between">
-                            <Button
-                              type="button"
-                              variant="outline"
-                              onClick={() => setIsTaskModalOpen(false)}
-                            >
+                            <Button type="button" variant="outline" onClick={() => setIsTaskModalOpen(false)}>
                               Cancelar
                             </Button>
 
@@ -665,16 +625,11 @@ const ServiceWorkOrderForm = () => {
                                 onClick={handleCheckTaskItems}
                                 disabled={isCheckLoading}
                               >
-                                {isCheckLoading ? (
-                                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                ) : null}
+                                {isCheckLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
                                 Verificar Artículos
                               </Button>
 
-                              <Button
-                                type="button"
-                                onClick={() => setIsTaskModalOpen(false)}
-                              >
+                              <Button type="button" onClick={() => setIsTaskModalOpen(false)}>
                                 Confirmar selección
                               </Button>
                             </div>
@@ -696,75 +651,71 @@ const ServiceWorkOrderForm = () => {
                       <p className="text-muted-foreground">No hay tareas seleccionadas</p>
                     </div>
                   ) : (
-                    <ScrollArea className={cn("flex", selectedTasks.length > 1 ? "h-[600px]" : "")}>
-                      <div className='space-y-4 flex gap-2 items-center'>
-                        {selectedTasks.sort((a, b) => b.task_items.length - a.task_items.length).map((task) => (
-                          <Card key={task.task_id} className="p-4 w-[350px]">
-                            <CardHeader className="p-0 pb-4">
-                              <div className="flex justify-between items-center">
-                                <CardTitle className="text-lg">
-                                  {task.description}
-                                </CardTitle>
-                                <Button
-                                  variant="ghost"
-                                  type="button"
-                                  size="icon"
-                                  onClick={() => removeTask(task.task_id)}
-                                  className="hover:text-red-500"
-                                >
-                                  <MinusCircle className="size-4" />
-                                </Button>
-                              </div>
-                              <div className="text-sm text-muted-foreground">
-                                Servicio: {task.service_name}
-                              </div>
-                            </CardHeader>
-
-                            <CardContent className="p-0 space-y-4 flex flex-col justify-center">
-                              {/* Campo ATA */}
-                              <div className="w-full max-w-xs">
-                                <Label>Código ATA</Label>
-                                <Input
-                                  required
-                                  value={task.ata}
-                                  onChange={(e) =>
-                                    handleAtaChange(task.task_id, e.target.value)
-                                  }
-                                  placeholder="Ej: 25-10-00"
-                                />
-                              </div>
-
-                              {/* Materiales/Partes */}
-                              {task.task_items.length > 0 && (
-                                <div className="space-y-2">
-                                  <Label className="block">Materiales/Partes requeridas</Label>
-                                  <div className="rounded-md border">
-                                    <ScrollArea className={cn("", task.task_items.length > 3 ? "h-[200px]" : "")}>
-                                      <Table>
-                                        <TableHeader className="sticky top-0 bg-background">
-                                          <TableRow>
-                                            <TableHead>N° Parte</TableHead>
-                                            <TableHead>Alterno</TableHead>
-                                            <TableHead>Serial</TableHead>
-                                          </TableRow>
-                                        </TableHeader>
-                                        <TableBody>
-                                          {task.task_items.map((item) => (
-                                            <TableRow key={item.id}>
-                                              <TableCell>{item.article_part_number}</TableCell>
-                                              <TableCell>{item.article_alt_part_number || '-'}</TableCell>
-                                              <TableCell>{item.article_serial}</TableCell>
-                                            </TableRow>
-                                          ))}
-                                        </TableBody>
-                                      </Table>
-                                    </ScrollArea>
-                                  </div>
+                    <ScrollArea className={cn('flex', selectedTasks.length > 1 ? 'h-[600px]' : '')}>
+                      <div className="space-y-4 flex gap-2 items-center">
+                        {selectedTasks
+                          .sort((a, b) => b.task_items.length - a.task_items.length)
+                          .map((task) => (
+                            <Card key={task.task_id} className="p-4 w-[350px]">
+                              <CardHeader className="p-0 pb-4">
+                                <div className="flex justify-between items-center">
+                                  <CardTitle className="text-lg">{task.description}</CardTitle>
+                                  <Button
+                                    variant="ghost"
+                                    type="button"
+                                    size="icon"
+                                    onClick={() => removeTask(task.task_id)}
+                                    className="hover:text-red-500"
+                                  >
+                                    <MinusCircle className="size-4" />
+                                  </Button>
                                 </div>
-                              )}
-                            </CardContent>
-                          </Card>
-                        ))}
+                                <div className="text-sm text-muted-foreground">Servicio: {task.service_name}</div>
+                              </CardHeader>
+
+                              <CardContent className="p-0 space-y-4 flex flex-col justify-center">
+                                {/* Campo ATA */}
+                                <div className="w-full max-w-xs">
+                                  <Label>Código ATA</Label>
+                                  <Input
+                                    required
+                                    value={task.ata}
+                                    onChange={(e) => handleAtaChange(task.task_id, e.target.value)}
+                                    placeholder="Ej: 25-10-00"
+                                  />
+                                </div>
+
+                                {/* Materiales/Partes */}
+                                {task.task_items.length > 0 && (
+                                  <div className="space-y-2">
+                                    <Label className="block">Materiales/Partes requeridas</Label>
+                                    <div className="rounded-md border">
+                                      <ScrollArea className={cn('', task.task_items.length > 3 ? 'h-[200px]' : '')}>
+                                        <Table>
+                                          <TableHeader className="sticky top-0 bg-background">
+                                            <TableRow>
+                                              <TableHead>N° Parte</TableHead>
+                                              <TableHead>Alterno</TableHead>
+                                              <TableHead>Serial</TableHead>
+                                            </TableRow>
+                                          </TableHeader>
+                                          <TableBody>
+                                            {task.task_items.map((item) => (
+                                              <TableRow key={item.id}>
+                                                <TableCell>{item.article_part_number}</TableCell>
+                                                <TableCell>{item.article_alt_part_number || '-'}</TableCell>
+                                                <TableCell>{item.article_serial}</TableCell>
+                                              </TableRow>
+                                            ))}
+                                          </TableBody>
+                                        </Table>
+                                      </ScrollArea>
+                                    </div>
+                                  </div>
+                                )}
+                              </CardContent>
+                            </Card>
+                          ))}
                       </div>
                     </ScrollArea>
                   )}
@@ -782,19 +733,14 @@ const ServiceWorkOrderForm = () => {
             >
               Cancelar
             </Button>
-            <Button
-              type="submit"
-              disabled={createWorkOrder.isPending || selectedTasks.length === 0}
-            >
-              {createWorkOrder.isPending ? (
-                <Loader2 className='animate-spin size-4' />
-              ) : "Crear Orden de Trabajo"}
+            <Button type="submit" disabled={createWorkOrder.isPending || selectedTasks.length === 0}>
+              {createWorkOrder.isPending ? <Loader2 className="animate-spin size-4" /> : 'Crear Orden de Trabajo'}
             </Button>
           </div>
         </form>
       </Form>
     </div>
-  )
-}
+  );
+};
 
-export default ServiceWorkOrderForm
+export default ServiceWorkOrderForm;
