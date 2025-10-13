@@ -22,7 +22,7 @@ export const useImportInventory = () => {
         Object.entries(extra).forEach(([k, v]) => form.append(k, String(v)));
       }
 
-      const url = path ?? `/${company}/batch-import`;
+      const url = path ?? `/${company}/articles-component-import`;
 
       await axiosInstance.post(url, form, {
         headers: { 'Content-Type': 'multipart/form-data' },
