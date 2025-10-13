@@ -1,63 +1,54 @@
-"use client"
+'use client';
 
-import { ColumnDef } from "@tanstack/react-table"
-import { ClipboardCheck, MoreHorizontal, SquarePen, Trash2 } from "lucide-react"
+import { ColumnDef } from '@tanstack/react-table';
+import { ClipboardCheck, MoreHorizontal, SquarePen, Trash2 } from 'lucide-react';
 
-import { DataTableColumnHeader } from "@/components/tables/DataTableHeader"
-import { Button } from "@/components/ui/button"
+import { DataTableColumnHeader } from '@/components/tables/DataTableHeader';
+import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
-  DropdownMenuTrigger
-} from "@/components/ui/dropdown-menu"
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
-import { Checkbox } from "@/components/ui/checkbox"
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip"
-import { DispatchRequest, WorkOrder, Convertion } from "@/types"
-import DispatchArticlesDialog from "@/components/dialogs/mantenimiento/almacen/DispatchArticlesDialog"
-import { format } from "date-fns"
-import { es } from "date-fns/locale"
-import { Badge } from "@/components/ui/badge"
-import { cn } from "@/lib/utils"
+import { Checkbox } from '@/components/ui/checkbox';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { DispatchRequest, WorkOrder, Convertion, MaintenanceAircraft } from '@/types';
+import DispatchArticlesDialog from '@/components/dialogs/mantenimiento/almacen/DispatchArticlesDialog';
+import { format } from 'date-fns';
+import { es } from 'date-fns/locale';
+import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
 
 interface IDispatch {
-  id: number,
-  requested_by: string,
-  created_by: string,
-  justification: string,
-  destination_place: string,
-  submission_date: string,
-  work_order?: WorkOrder,
-  status: "PROCESO" | "APROBADO" | "RECHAZADO",
-  articles:
-  {
-    id: number,
-    part_number: string,
-    serial: string,
-    description: string,
-    unit?: Convertion[],
-    quantity: string,
-    dispatched_quantity?: string,
-  }[],
+  id: number;
+  requested_by: string;
+  created_by: string;
+  justification: string;
+  destination_place: string;
+  submission_date: string;
+  work_order?: WorkOrder;
+  aircraft?: MaintenanceAircraft;
+  status: 'PROCESO' | 'APROBADO' | 'RECHAZADO';
+  articles: {
+    id: number;
+    part_number: string;
+    serial: string;
+    description: string;
+    unit?: Convertion[];
+    quantity: string;
+    dispatched_quantity?: string;
+  }[];
 }
-
 
 export const columns: ColumnDef<IDispatch>[] = [
   {
-    id: "select",
+    id: 'select',
     header: ({ table }) => (
       <Checkbox
-        checked={
-          table.getIsAllPageRowsSelected() ||
-          (table.getIsSomePageRowsSelected() && "indeterminate")
-        }
+        checked={table.getIsAllPageRowsSelected() || (table.getIsSomePageRowsSelected() && 'indeterminate')}
         onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
         aria-label="Seleccionar todos"
       />
@@ -73,73 +64,50 @@ export const columns: ColumnDef<IDispatch>[] = [
     enableHiding: false,
   },
   {
-    accessorKey: "work_order",
-    header: ({ column }) => (
-      <DataTableColumnHeader filter column={column} title="Orden de Trabajo" />
-    ),
+    accessorKey: 'aircraft',
+    header: ({ column }) => <DataTableColumnHeader filter column={column} title="Aeronave" />,
     cell: ({ row }) => (
-      <p className="flex justify-center font-bold">{row.original.work_order?.order_number ? row.original.work_order?.order_number : "N/A"}</p>
-    )
+      <p className="flex justify-center font-bold">
+        {row.original.aircraft?.acronym ? row.original.aircraft?.acronym : 'N/A'}
+      </p>
+    ),
   },
   {
-    accessorKey: "requested_by",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Empleado Responsable" />
-    ),
+    accessorKey: 'requested_by',
+    header: ({ column }) => <DataTableColumnHeader column={column} title="Empleado Responsable" />,
     cell: ({ row }) => {
-      return (
-        <p className="font-medium text-center">{row.original.requested_by}</p>
-      )
-    }
+      return <p className="font-medium text-center">{row.original.requested_by}</p>;
+    },
   },
   {
-    accessorKey: "justification",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Justificación" />
-    ),
+    accessorKey: 'justification',
+    header: ({ column }) => <DataTableColumnHeader column={column} title="Justificación" />,
     cell: ({ row }) => {
-      return (
-        <p className="font-medium text-center">{row.original.justification}</p>
-      )
-    }
+      return <p className="font-medium text-center">{row.original.justification ?? 'N/A'}</p>;
+    },
   },
   {
-    accessorKey: "date",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Fecha" />
-    ),
+    accessorKey: 'date',
+    header: ({ column }) => <DataTableColumnHeader column={column} title="Fecha" />,
     cell: ({ row }) => (
-      <p className="flex justify-center text-muted-foreground italic">{format(row.original.submission_date, "PPP", {
-        locale: es
-      })}</p>
-    )
+      <p className="flex justify-center text-muted-foreground italic">
+        {format(row.original.submission_date, 'PPP', {
+          locale: es,
+        })}
+      </p>
+    ),
   },
   {
-    accessorKey: "articles",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Articulos" />
-    ),
+    accessorKey: 'articles',
+    header: ({ column }) => <DataTableColumnHeader column={column} title="Articulos" />,
     cell: ({ row }) => (
       <div className="flex justify-center">
         <DispatchArticlesDialog articles={row.original.articles} work_order={row.original.work_order?.order_number!} />
       </div>
-    )
-  },
-  {
-    accessorKey: "status",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Status" />
     ),
-    cell: ({ row }) => {
-      const approved = row.original.status === "APROBADO"
-      const process = row.original.status === "PROCESO"
-      return (
-        <p className="font-medium text-center">{row.original.status ? <Badge className={cn("", approved ? "bg-green-500 hover:bg-green-600" : process ? "bg-yellow-500 hover:bg-yellow-600" : "bg-red-500 hover:bg-red-600")}>{row.original.status}</Badge> : "N/A"}</p>
-      )
-    }
   },
   {
-    id: "actions",
+    id: 'actions',
     cell: ({ row }) => {
       return (
         <TooltipProvider>
@@ -155,7 +123,7 @@ export const columns: ColumnDef<IDispatch>[] = [
               <DropdownMenuItem>
                 <Tooltip>
                   <TooltipTrigger>
-                    <Trash2 className='size-5 text-red-500' />
+                    <Trash2 className="size-5 text-red-500" />
                   </TooltipTrigger>
                   <TooltipContent>
                     <p>Eliminar</p>
@@ -167,15 +135,13 @@ export const columns: ColumnDef<IDispatch>[] = [
                   <TooltipTrigger>
                     <SquarePen className="size-5" />
                   </TooltipTrigger>
-                  <TooltipContent>
-                    Editar
-                  </TooltipContent>
+                  <TooltipContent>Editar</TooltipContent>
                 </Tooltip>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </TooltipProvider>
-      )
+      );
     },
   },
-]
+];

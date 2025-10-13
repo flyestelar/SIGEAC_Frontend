@@ -29,11 +29,16 @@ const WarehouseInventoryPage = () => {
   const [componentCondition, setComponentCondition] = useState<
     'all' | 'SERVICIABLE' | 'REMOVIDO - NO SERVICIABLE' | 'REMOVIDO - CUSTODIA'
   >('all');
+
+  // Nuevo: filtro de consumibles
+  const [consumableFilter, setConsumableFilter] = useState<'all' | 'QUIMICOS'>('all');
+
   const debouncedSearchTerm = useDebounce(searchTerm, 500);
   const isComponentTab = activeCategory === 'COMPONENTE';
   const hasQuery = debouncedSearchTerm.trim().length > 0;
   const hasSpecificCondition = isComponentTab && componentCondition !== 'all';
-  const { data: conditions, isLoading: isConditionsLoading, isError: isConditionsError } = useGetConditions();
+
+  const { data: conditions, isLoading: isConditionsLoading } = useGetConditions();
   const { data: conditionedBatches, isLoading: isLoadingCondition } = useGetBatchesByArticleCondition(
     hasSpecificCondition ? conditions?.find((c) => c.name === componentCondition)?.id.toString() : undefined,
   );
@@ -56,43 +61,52 @@ const WarehouseInventoryPage = () => {
     hasQuery ? debouncedSearchTerm : undefined,
   );
 
+  // Reset de subtabs al cambiar de categoría
   useEffect(() => {
     if (activeCategory !== 'COMPONENTE') setComponentCondition('all');
+    if (activeCategory !== 'CONSUMIBLE') setConsumableFilter('all');
   }, [activeCategory]);
 
   const searchedIdSet = useMemo(() => {
     if (!hasQuery || !searchedBatches) return null;
-    return new Set(searchedBatches.map((b) => b.id));
+    return new Set(searchedBatches.map((b: any) => b.id));
   }, [hasQuery, searchedBatches]);
 
   const displayedBatches = useMemo(() => {
-    // 1) Base según pestaña/condición:
-    // - Si estás en COMPONENTE con condición específica -> usa lo que venga del endpoint
-    // - Si estás en COMPONENTE con "all" -> filtra los allBatches por categoría COMPONENTE
-    // - Si estás en otras categorías -> filtra por esa categoría desde allBatches
-    let base = hasSpecificCondition ? (conditionedBatches ?? []) : (allBatches ?? []);
+    // 1) Base por pestaña/condición
+    let base: any[] = hasSpecificCondition ? (conditionedBatches ?? []) : (allBatches ?? []);
 
     if (!hasSpecificCondition) {
       if (activeCategory !== 'all') {
         base = base.filter((b) => b.category === activeCategory);
       }
     } else {
-      // Opcional: si quieres blindarte por si el endpoint devuelve algo fuera de COMPONENTE
       base = base.filter((b) => b.category === 'COMPONENTE');
     }
 
-    // 2) Intersección con búsqueda (si hay query)
+    // 2) Filtro extra para consumibles -> químicos
+    if (activeCategory === 'CONSUMIBLE' && consumableFilter === 'QUIMICOS') {
+      base = base.filter((b) => b?.article?.consumable?.is_hazarous === true);
+    }
+
+    // 3) Intersección con búsqueda
     if (hasQuery) {
-      if (!searchedBatches) {
-        // Aún cargando la búsqueda: conserva base (no parpadea la UI)
-        return base;
-      }
+      if (!searchedBatches) return base;
       if (searchedBatches.length === 0) return [];
       base = base.filter((b) => searchedIdSet?.has(b.id));
     }
 
     return base;
-  }, [allBatches, conditionedBatches, activeCategory, hasSpecificCondition, hasQuery, searchedBatches, searchedIdSet]);
+  }, [
+    allBatches,
+    conditionedBatches,
+    activeCategory,
+    hasSpecificCondition,
+    hasQuery,
+    searchedBatches,
+    searchedIdSet,
+    consumableFilter, // dependencia nueva
+  ]);
 
   const isLoading =
     isLoadingBatches ||
@@ -153,6 +167,7 @@ const WarehouseInventoryPage = () => {
               </TabsList>
 
               <TabsContent value={activeCategory}>
+                {/* Sub-tabs COMPONENTE */}
                 {activeCategory === 'COMPONENTE' && (
                   <Tabs
                     value={componentCondition}
@@ -168,16 +183,26 @@ const WarehouseInventoryPage = () => {
                   </Tabs>
                 )}
 
-                {isConditionsLoading ? (
-                  <div className="text-center text-sm text-muted-foreground italic py-10">CARGAS</div>
-                ) : (
-                  <DataTable
-                    columns={columns}
-                    initialData={displayedBatches}
-                    isSearching={hasQuery && isLoadingSearch}
-                    searchTerm={hasQuery ? debouncedSearchTerm.trim() : ''}
-                  />
+                {/* Sub-tabs CONSUMIBLE */}
+                {activeCategory === 'CONSUMIBLE' && (
+                  <Tabs
+                    value={consumableFilter}
+                    onValueChange={(v) => setConsumableFilter(v as typeof consumableFilter)}
+                    className="mb-4"
+                  >
+                    <TabsList className="flex justify-center mb-4 space-x-3" aria-label="Filtro de consumibles">
+                      <TabsTrigger value="all">Todos</TabsTrigger>
+                      <TabsTrigger value="QUIMICOS">Químicos</TabsTrigger>
+                    </TabsList>
+                  </Tabs>
                 )}
+
+                <DataTable
+                  columns={columns}
+                  initialData={displayedBatches}
+                  isSearching={hasQuery && isLoadingSearch}
+                  searchTerm={hasQuery ? debouncedSearchTerm.trim() : ''}
+                />
               </TabsContent>
             </Tabs>
 

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner'; // o "@/components/ui/use-toast"
-import { axiosInstance } from '@/lib/axios'; // ajusta la ruta
+import axiosInstance from '@/lib/axios';
 
 type ImportPayload = {
   file: File;
@@ -22,11 +22,11 @@ export const useImportInventory = () => {
         Object.entries(extra).forEach(([k, v]) => form.append(k, String(v)));
       }
 
-      const url = path ?? `/${company}/inventory/import`;
+      const url = path ?? `/${company}/batch-import`;
 
       await axiosInstance.post(url, form, {
         headers: { 'Content-Type': 'multipart/form-data' },
-        onUploadProgress: (e) => {
+        onUploadProgress: (e: any) => {
           if (e.total) setProgress(Math.round((e.loaded * 100) / e.total));
         },
       });
