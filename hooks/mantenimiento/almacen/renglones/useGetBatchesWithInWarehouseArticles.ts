@@ -11,23 +11,28 @@ interface BatchesWithArticles extends Batch {
 const fetchBatchesWithInWarehouseArticles = async ({
   location_id,
   company,
+  category,
 }: {
   location_id: number;
   company: string;
+  category: string;
 }): Promise<BatchesWithArticles[]> => {
-  const { data } = await axios.get(`/${company}/${location_id}/items-for-dispatch`);
+  const { data } = await axios.get(`/${company}/${location_id}/items-for-dispatch`, {
+    params: { category },
+  });
   return data;
 };
 
-export const useGetBatchesWithInWarehouseArticles = () => {
+export const useGetBatchesWithInWarehouseArticles = (category: string) => {
   const { selectedCompany, selectedStation } = useCompanyStore();
-  return useQuery<
-    BatchesWithArticles[],
-    Error
-  >({
+  return useQuery<BatchesWithArticles[], Error>({
     queryKey: ['batches-in-warehouse', selectedCompany, selectedStation],
-    queryFn: () => fetchBatchesWithInWarehouseArticles({
-      company: selectedCompany?.slug ?? '', location_id: Number(selectedStation)
-    }),
+    queryFn: () =>
+      fetchBatchesWithInWarehouseArticles({
+        company: selectedCompany?.slug ?? '',
+        location_id: Number(selectedStation),
+        category,
+      }),
+    enabled: !!selectedStation && !!selectedCompany && !!category,
   });
 };

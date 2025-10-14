@@ -1,154 +1,166 @@
-"use client"
+'use client';
 
-import { useCreateDispatchRequest } from "@/actions/mantenimiento/almacen/solicitudes/salida/action"
-import { Button } from "@/components/ui/button"
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
-import { Input } from "@/components/ui/input"
-import { Badge } from "@/components/ui/badge"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { useAuth } from "@/contexts/AuthContext"
-import { useGetWarehousesEmployees } from "@/hooks/mantenimiento/almacen/empleados/useGetWarehousesEmployees"
-import { useGetBatchesWithInWarehouseArticles } from "@/hooks/mantenimiento/almacen/renglones/useGetBatchesWithInWarehouseArticles"
-import { useGetMaintenanceAircrafts } from "@/hooks/planificacion/useGetMaintenanceAircrafts"
-import { useGetWorkshopsByLocation } from "@/hooks/sistema/empresas/talleres/useGetWorkshopsByLocation"
-import { useGetEmployeesByDepartment } from "@/hooks/sistema/useGetEmployeesByDepartament"
-import { cn } from "@/lib/utils"
-import { useCompanyStore } from "@/stores/CompanyStore"
-import { Employee } from "@/types"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { format } from "date-fns"
-import { es } from "date-fns/locale"
-import { CalendarIcon, Check, ChevronsUpDown, Loader2, Trash2 } from "lucide-react"
-import { useEffect, useMemo, useState } from "react"
-import { useForm } from "react-hook-form"
-import { z } from "zod"
-import { Calendar } from "../../../ui/calendar"
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "../../../ui/command"
-import { Popover, PopoverContent, PopoverTrigger } from "../../../ui/popover"
-import { Textarea } from "../../../ui/textarea"
+import { useCreateDispatchRequest } from '@/actions/mantenimiento/almacen/solicitudes/salida/action';
+import { Button } from '@/components/ui/button';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { useAuth } from '@/contexts/AuthContext';
+import { useGetWarehousesEmployees } from '@/hooks/mantenimiento/almacen/empleados/useGetWarehousesEmployees';
+import { useGetBatchesWithInWarehouseArticles } from '@/hooks/mantenimiento/almacen/renglones/useGetBatchesWithInWarehouseArticles';
+import { useGetMaintenanceAircrafts } from '@/hooks/planificacion/useGetMaintenanceAircrafts';
+import { useGetWorkshopsByLocation } from '@/hooks/sistema/empresas/talleres/useGetWorkshopsByLocation';
+import { useGetEmployeesByDepartment } from '@/hooks/sistema/useGetEmployeesByDepartament';
+import { cn } from '@/lib/utils';
+import { useCompanyStore } from '@/stores/CompanyStore';
+import { Employee } from '@/types';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { format } from 'date-fns';
+import { es } from 'date-fns/locale';
+import { CalendarIcon, Check, ChevronsUpDown, Loader2, Trash2 } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
+import { Calendar } from '../../../ui/calendar';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '../../../ui/command';
+import { Popover, PopoverContent, PopoverTrigger } from '../../../ui/popover';
+import { Textarea } from '../../../ui/textarea';
 
-const FormSchema = z.object({
-  dispatch_type: z.enum(["aircraft", "workshop"], {
-    message: "Debe seleccionar si el despacho es para una Aeronave o un Taller.",
-  }),
-  requested_by: z.string().min(1, "Debe seleccionar el técnico responsable."),
-  delivered_by: z.string().min(1, "Debe seleccionar el responsable de almacén."),
-  aircraft_id: z.string().optional(),
-  workshop_id: z.string().optional(),
-  submission_date: z.date({ message: "Debe ingresar la fecha." }),
-  articles: z.array(z.object({
-    article_id: z.coerce.number(),
-    serial: z.string().nullable(),
-    quantity: z.number().int().positive(),
-    batch: z.string(),
-    batch_id: z.number(),
-  }), { message: "Debe seleccionar la(s) herramienta(s) que se van a despachar." })
-    .min(1, "Debe seleccionar al menos una herramienta."),
-  justification: z.string().optional(),
-}).refine(
-  (data) =>
-    (data.dispatch_type === "aircraft" && !!data.aircraft_id) ||
-    (data.dispatch_type === "workshop" && !!data.workshop_id),
-  {
-    message: "Debe seleccionar una Aeronave o un Taller según corresponda.",
-    path: ["dispatch_type"],
-  }
-)
+const FormSchema = z
+  .object({
+    dispatch_type: z.enum(['aircraft', 'workshop'], {
+      message: 'Debe seleccionar si el despacho es para una Aeronave o un Taller.',
+    }),
+    requested_by: z.string().min(1, 'Debe seleccionar el técnico responsable.'),
+    delivered_by: z.string().min(1, 'Debe seleccionar el responsable de almacén.'),
+    aircraft_id: z.string().optional(),
+    workshop_id: z.string().optional(),
+    submission_date: z.date({ message: 'Debe ingresar la fecha.' }),
+    articles: z
+      .array(
+        z.object({
+          article_id: z.coerce.number(),
+          serial: z.string().nullable(),
+          quantity: z.number().int().positive(),
+          batch: z.string(),
+          batch_id: z.number(),
+        }),
+        { message: 'Debe seleccionar la(s) herramienta(s) que se van a despachar.' },
+      )
+      .min(1, 'Debe seleccionar al menos una herramienta.'),
+    justification: z.string().optional(),
+  })
+  .refine(
+    (data) =>
+      (data.dispatch_type === 'aircraft' && !!data.aircraft_id) ||
+      (data.dispatch_type === 'workshop' && !!data.workshop_id),
+    {
+      message: 'Debe seleccionar una Aeronave o un Taller según corresponda.',
+      path: ['dispatch_type'],
+    },
+  );
 
-type FormSchemaType = z.infer<typeof FormSchema>
+type FormSchemaType = z.infer<typeof FormSchema>;
 
 interface ToolPick {
-  id: number
-  serial: string | null
-  part_number: string
-  batch_id: number
-  batch: string
-  is_serialized: boolean
-  quantity: number
+  id: number;
+  serial: string | null;
+  part_number: string;
+  batch_id: number;
+  batch: string;
+  is_serialized: boolean;
+  quantity: number;
 }
 
 interface FormProps {
-  onClose: () => void
+  onClose: () => void;
 }
 
 export function ToolDispatchForm({ onClose }: FormProps) {
-  const { user } = useAuth()
-  const { selectedCompany } = useCompanyStore()
+  const { user } = useAuth();
+  const { selectedCompany } = useCompanyStore();
 
   // UI states
-  const [openTools, setOpenTools] = useState(false)
-  const [openRequestedBy, setOpenRequestedBy] = useState(false)
-  const [requestBy, setRequestedBy] = useState<Employee>()
-  const [selectedAircraft, setSelectedAircraft] = useState<string>("")
+  const [openTools, setOpenTools] = useState(false);
+  const [openRequestedBy, setOpenRequestedBy] = useState(false);
+  const [requestBy, setRequestedBy] = useState<Employee>();
+  const [selectedAircraft, setSelectedAircraft] = useState<string>('');
 
   // Remote data
-  const { data: batches, isLoading: isBatchesLoading, isError: isBatchesError } = useGetBatchesWithInWarehouseArticles()
-  const { data: employees, isLoading: employeesLoading, isError: employeesError } = useGetEmployeesByDepartment("MANP")
-  const { data: warehouseEmployees, isLoading: warehouseEmployeesLoading, isError: warehouseEmployeesError } = useGetWarehousesEmployees()
-  const { data: aircrafts, isLoading: isAircraftsLoading, isError: isAircraftsError } = useGetMaintenanceAircrafts(selectedCompany?.slug)
-  const { data: workshops, isLoading: isWorkshopsLoading, isError: isWorkshopsError } = useGetWorkshopsByLocation()
-  const { createDispatchRequest } = useCreateDispatchRequest()
+  const {
+    data: batches,
+    isLoading: isBatchesLoading,
+    isError: isBatchesError,
+  } = useGetBatchesWithInWarehouseArticles('HERRAMIENTA');
+  const { data: employees, isLoading: employeesLoading, isError: employeesError } = useGetEmployeesByDepartment('MANP');
+  const {
+    data: warehouseEmployees,
+    isLoading: warehouseEmployeesLoading,
+    isError: warehouseEmployeesError,
+  } = useGetWarehousesEmployees();
+  const {
+    data: aircrafts,
+    isLoading: isAircraftsLoading,
+    isError: isAircraftsError,
+  } = useGetMaintenanceAircrafts(selectedCompany?.slug);
+  const { data: workshops, isLoading: isWorkshopsLoading, isError: isWorkshopsError } = useGetWorkshopsByLocation();
+  const { createDispatchRequest } = useCreateDispatchRequest();
   // Filtrar SOLO herramientas
-  const toolBatches = useMemo(() => (batches ?? []).filter(b => b.category === "HERRAMIENTA"), [batches])
+  const toolBatches = useMemo(() => (batches ?? []).filter((b) => b.category === 'HERRAMIENTA'), [batches]);
 
   // RHF
   const form = useForm<FormSchemaType>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
       articles: [],
-      justification: "",
-      requested_by: user?.employee?.[0]?.dni ? String(user.employee[0].dni) : "",
+      justification: '',
+      requested_by: user?.employee?.[0]?.dni ? String(user.employee[0].dni) : '',
     },
-  })
+  });
 
   // Selecciones múltiples en UI, sincronizadas con RHF
-  const [selectedTools, setSelectedTools] = useState<ToolPick[]>([])
+  const [selectedTools, setSelectedTools] = useState<ToolPick[]>([]);
 
   useEffect(() => {
     // Sync selectedTools -> form.articles
     form.setValue(
-      "articles",
-      selectedTools.map(t => ({
+      'articles',
+      selectedTools.map((t) => ({
         article_id: t.id,
         serial: t.serial,
         quantity: t.is_serialized ? 1 : t.quantity,
         batch_id: t.batch_id,
         batch: t.batch,
       })),
-      { shouldValidate: true }
-    )
-  }, [selectedTools])
+      { shouldValidate: true },
+    );
+  }, [selectedTools]);
 
   // Resolver nombre en el botón si hay DNI por default
   useEffect(() => {
-    if (!requestBy && employees && form.getValues("requested_by")) {
-      const found = employees.find(e => String(e.dni) === form.getValues("requested_by"))
-      if (found) setRequestedBy(found)
+    if (!requestBy && employees && form.getValues('requested_by')) {
+      const found = employees.find((e) => String(e.dni) === form.getValues('requested_by'));
+      if (found) setRequestedBy(found);
     }
-  }, [employees])
+  }, [employees]);
 
   const addOrRemoveTool = (tool: {
-    id: number
-    serial: string | null
-    part_number: string
-    batch_id: number
-    batch: string
+    id: number;
+    serial: string | null;
+    part_number: string;
+    batch_id: number;
+    batch: string;
   }) => {
-    setSelectedTools(prev => {
-      const exists = prev.find(t => t.id === tool.id)
+    setSelectedTools((prev) => {
+      const exists = prev.find((t) => t.id === tool.id);
       if (exists) {
         // quitar si ya está
-        return prev.filter(t => t.id !== tool.id)
+        return prev.filter((t) => t.id !== tool.id);
       }
       // agregar
-      const is_serialized = !!tool.serial
+      const is_serialized = !!tool.serial;
       return [
         ...prev,
         {
@@ -159,38 +171,38 @@ export function ToolDispatchForm({ onClose }: FormProps) {
           batch: tool.batch,
           is_serialized,
           quantity: 1,
-        }
-      ]
-    })
-  }
+        },
+      ];
+    });
+  };
 
   const updateQuantity = (id: number, qty: number) => {
-    setSelectedTools(prev =>
-      prev.map(t => t.id === id ? { ...t, quantity: Math.max(1, Math.floor(qty || 1)) } : t)
-    )
-  }
+    setSelectedTools((prev) =>
+      prev.map((t) => (t.id === id ? { ...t, quantity: Math.max(1, Math.floor(qty || 1)) } : t)),
+    );
+  };
 
   const removeTool = (id: number) => {
-    setSelectedTools(prev => prev.filter(t => t.id !== id))
-  }
+    setSelectedTools((prev) => prev.filter((t) => t.id !== id));
+  };
 
   const onSubmit = async (data: FormSchemaType) => {
     const formattedData = {
       ...data,
       created_by: `${user?.first_name} ${user?.last_name}`,
-      submission_date: format(data.submission_date, "yyyy-MM-dd"),
-      status: "APROBADO",
-      category: "herramienta",
+      submission_date: format(data.submission_date, 'yyyy-MM-dd'),
+      status: 'APROBADO',
+      category: 'herramienta',
       approved_by: user?.employee?.[0]?.dni,
       delivered_by: data.delivered_by,
       user_id: Number(user!.id),
-    }
+    };
     await createDispatchRequest.mutateAsync({
       data: formattedData,
-      company: selectedCompany!.slug
-    })
-    onClose()
-  }
+      company: selectedCompany!.slug,
+    });
+    onClose();
+  };
 
   return (
     <Form {...form}>
@@ -208,8 +220,8 @@ export function ToolDispatchForm({ onClose }: FormProps) {
                     <input
                       type="radio"
                       value="aircraft"
-                      checked={field.value === "aircraft"}
-                      onChange={() => field.onChange("aircraft")}
+                      checked={field.value === 'aircraft'}
+                      onChange={() => field.onChange('aircraft')}
                     />
                     <span>Aeronave</span>
                   </label>
@@ -217,8 +229,8 @@ export function ToolDispatchForm({ onClose }: FormProps) {
                     <input
                       type="radio"
                       value="workshop"
-                      checked={field.value === "workshop"}
-                      onChange={() => field.onChange("workshop")}
+                      checked={field.value === 'workshop'}
+                      onChange={() => field.onChange('workshop')}
                     />
                     <span>Taller</span>
                   </label>
@@ -230,7 +242,7 @@ export function ToolDispatchForm({ onClose }: FormProps) {
         />
 
         {/* Aeronave */}
-        {form.watch("dispatch_type") === "aircraft" && (
+        {form.watch('dispatch_type') === 'aircraft' && (
           <FormField
             control={form.control}
             name="aircraft_id"
@@ -244,12 +256,14 @@ export function ToolDispatchForm({ onClose }: FormProps) {
                         disabled={isAircraftsLoading || isAircraftsError}
                         variant="outline"
                         role="combobox"
-                        className={cn("justify-between", !field.value && "text-muted-foreground")}
+                        className={cn('justify-between', !field.value && 'text-muted-foreground')}
                       >
                         {isAircraftsLoading && <Loader2 className="size-4 animate-spin mr-2" />}
-                        {field.value
-                          ? <p>{aircrafts?.find(a => `${a.id}` === field.value)?.acronym}</p>
-                          : "Elige la aeronave..."}
+                        {field.value ? (
+                          <p>{aircrafts?.find((a) => `${a.id}` === field.value)?.acronym}</p>
+                        ) : (
+                          'Elige la aeronave...'
+                        )}
                         <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                       </Button>
                     </FormControl>
@@ -258,24 +272,28 @@ export function ToolDispatchForm({ onClose }: FormProps) {
                     <Command>
                       <CommandInput placeholder="Busque una aeronave..." />
                       <CommandList>
-                        <CommandEmpty className="text-xs p-2 text-center">No se ha encontrado ninguna aeronave.</CommandEmpty>
+                        <CommandEmpty className="text-xs p-2 text-center">
+                          No se ha encontrado ninguna aeronave.
+                        </CommandEmpty>
                         <CommandGroup>
-                          {aircrafts?.map(aircraft => (
+                          {aircrafts?.map((aircraft) => (
                             <CommandItem
                               value={`${aircraft.acronym} ${aircraft.manufacturer.name}`}
                               key={aircraft.id}
                               onSelect={() => {
-                                form.setValue("aircraft_id", aircraft.id.toString(), { shouldValidate: true })
-                                setSelectedAircraft(aircraft.manufacturer.id.toString())
+                                form.setValue('aircraft_id', aircraft.id.toString(), { shouldValidate: true });
+                                setSelectedAircraft(aircraft.manufacturer.id.toString());
                               }}
                             >
                               <Check
                                 className={cn(
-                                  "mr-2 h-4 w-4",
-                                  `${aircraft.id}` === field.value ? "opacity-100" : "opacity-0"
+                                  'mr-2 h-4 w-4',
+                                  `${aircraft.id}` === field.value ? 'opacity-100' : 'opacity-0',
                                 )}
                               />
-                              <p>{aircraft.acronym} - {aircraft.manufacturer.name}</p>
+                              <p>
+                                {aircraft.acronym} - {aircraft.manufacturer.name}
+                              </p>
                             </CommandItem>
                           ))}
                         </CommandGroup>
@@ -290,7 +308,7 @@ export function ToolDispatchForm({ onClose }: FormProps) {
         )}
 
         {/* Taller */}
-        {form.watch("dispatch_type") === "workshop" && (
+        {form.watch('dispatch_type') === 'workshop' && (
           <FormField
             control={form.control}
             name="workshop_id"
@@ -304,12 +322,14 @@ export function ToolDispatchForm({ onClose }: FormProps) {
                         disabled={isWorkshopsLoading || isWorkshopsError}
                         variant="outline"
                         role="combobox"
-                        className={cn("justify-between", !field.value && "text-muted-foreground")}
+                        className={cn('justify-between', !field.value && 'text-muted-foreground')}
                       >
                         {isWorkshopsLoading && <Loader2 className="size-4 animate-spin mr-2" />}
-                        {field.value
-                          ? <p>{workshops?.find(ws => `${ws.id}` === field.value)?.name}</p>
-                          : "Elige el taller..."}
+                        {field.value ? (
+                          <p>{workshops?.find((ws) => `${ws.id}` === field.value)?.name}</p>
+                        ) : (
+                          'Elige el taller...'
+                        )}
                         <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                       </Button>
                     </FormControl>
@@ -318,20 +338,22 @@ export function ToolDispatchForm({ onClose }: FormProps) {
                     <Command>
                       <CommandInput placeholder="Busque un taller..." />
                       <CommandList>
-                        <CommandEmpty className="text-xs p-2 text-center">No se ha encontrado ningun taller.</CommandEmpty>
+                        <CommandEmpty className="text-xs p-2 text-center">
+                          No se ha encontrado ningun taller.
+                        </CommandEmpty>
                         <CommandGroup>
-                          {workshops?.map(workshop => (
+                          {workshops?.map((workshop) => (
                             <CommandItem
                               value={`${workshop.id}`}
                               key={workshop.id}
                               onSelect={() => {
-                                form.setValue("workshop_id", workshop.id.toString(), { shouldValidate: true })
+                                form.setValue('workshop_id', workshop.id.toString(), { shouldValidate: true });
                               }}
                             >
                               <Check
                                 className={cn(
-                                  "mr-2 h-4 w-4",
-                                  `${workshop.id}` === field.value ? "opacity-100" : "opacity-0"
+                                  'mr-2 h-4 w-4',
+                                  `${workshop.id}` === field.value ? 'opacity-100' : 'opacity-0',
                                 )}
                               />
                               <p>{workshop.name}</p>
@@ -364,7 +386,7 @@ export function ToolDispatchForm({ onClose }: FormProps) {
               >
                 {selectedTools.length > 0
                   ? `${selectedTools.length} herramienta(s) seleccionada(s)`
-                  : "Selec. las herramientas"}
+                  : 'Selec. las herramientas'}
                 <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
               </Button>
             </PopoverTrigger>
@@ -373,13 +395,13 @@ export function ToolDispatchForm({ onClose }: FormProps) {
                 <CommandInput placeholder="Buscar herramienta..." />
                 <CommandList>
                   <CommandEmpty>No se han encontrado herramientas...</CommandEmpty>
-                  {toolBatches.map(batch => (
+                  {toolBatches.map((batch) => (
                     <CommandGroup key={batch.batch_id} heading={batch.name}>
-                      {batch.articles.map(article => {
-                        const picked = selectedTools.find(t => t.id === article.id)
+                      {batch.articles.map((article) => {
+                        const picked = selectedTools.find((t) => t.id === article.id);
                         return (
                           <CommandItem
-                            value={`${batch.name} ${article.part_number} ${article.serial ?? ""} ${article.id}`}
+                            value={`${batch.name} ${article.part_number} ${article.serial ?? ''} ${article.id}`}
                             key={article.id}
                             onSelect={() => {
                               addOrRemoveTool({
@@ -388,15 +410,13 @@ export function ToolDispatchForm({ onClose }: FormProps) {
                                 part_number: article.part_number,
                                 batch_id: batch.batch_id,
                                 batch: batch.name,
-                              })
+                              });
                             }}
                           >
-                            <Check className={cn("mr-2 h-4 w-4", picked ? "opacity-100" : "opacity-0")} />
-                            <span className="truncate">
-                              {article.serial ?? article.part_number}
-                            </span>
+                            <Check className={cn('mr-2 h-4 w-4', picked ? 'opacity-100' : 'opacity-0')} />
+                            <span className="truncate">{article.serial ?? article.part_number}</span>
                           </CommandItem>
-                        )
+                        );
                       })}
                     </CommandGroup>
                   ))}
@@ -412,16 +432,18 @@ export function ToolDispatchForm({ onClose }: FormProps) {
             ) : (
               <ScrollArea className="max-h-56 pr-2">
                 <div className="space-y-2">
-                  {selectedTools.map(t => (
+                  {selectedTools.map((t) => (
                     <div key={t.id} className="flex items-center gap-3 rounded-md border p-2">
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
                           <Badge variant="secondary">{t.batch}</Badge>
                           <span className="font-medium truncate">
-                            {t.part_number} / {t.serial ?? "S/N"}
+                            {t.part_number} / {t.serial ?? 'S/N'}
                           </span>
                         </div>
-                        <div className="text-xs text-muted-foreground">ID: {t.id} · BatchID: {t.batch_id}</div>
+                        <div className="text-xs text-muted-foreground">
+                          ID: {t.id} · BatchID: {t.batch_id}
+                        </div>
                       </div>
 
                       {/* Cantidad */}
@@ -441,13 +463,7 @@ export function ToolDispatchForm({ onClose }: FormProps) {
                       )}
 
                       {/* Quitar */}
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => removeTool(t.id)}
-                        title="Quitar"
-                      >
+                      <Button type="button" variant="ghost" size="icon" onClick={() => removeTool(t.id)} title="Quitar">
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
@@ -474,8 +490,10 @@ export function ToolDispatchForm({ onClose }: FormProps) {
                   </FormControl>
                   <SelectContent>
                     {warehouseEmployeesLoading && <Loader2 className="size-4 animate-spin mx-2 my-1" />}
-                    {warehouseEmployeesError && <div className="px-2 py-1 text-destructive text-sm">Error cargando personal de almacén</div>}
-                    {warehouseEmployees?.map(employee => (
+                    {warehouseEmployeesError && (
+                      <div className="px-2 py-1 text-destructive text-sm">Error cargando personal de almacén</div>
+                    )}
+                    {warehouseEmployees?.map((employee) => (
                       <SelectItem key={employee.dni} value={`${employee.dni}`}>
                         {employee.first_name} {employee.last_name}
                       </SelectItem>
@@ -505,11 +523,10 @@ export function ToolDispatchForm({ onClose }: FormProps) {
                       {requestBy
                         ? `${requestBy.first_name} ${requestBy.last_name}`
                         : (() => {
-                          const dni = form.getValues("requested_by")
-                          const found = employees?.find(e => String(e.dni) === String(dni))
-                          return found ? `${found.first_name} ${found.last_name}` : "Selec. el técnico"
-                        })()
-                      }
+                            const dni = form.getValues('requested_by');
+                            const found = employees?.find((e) => String(e.dni) === String(dni));
+                            return found ? `${found.first_name} ${found.last_name}` : 'Selec. el técnico';
+                          })()}
                       <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                     </Button>
                   </PopoverTrigger>
@@ -518,22 +535,22 @@ export function ToolDispatchForm({ onClose }: FormProps) {
                       <CommandInput placeholder="Selec. el técnico..." />
                       <CommandList>
                         <CommandEmpty>No se han encontrado técnicos...</CommandEmpty>
-                        {employees?.map(e => (
+                        {employees?.map((e) => (
                           <CommandItem
                             value={`${e.first_name} ${e.last_name} ${e.dni}`}
                             key={e.id}
                             onSelect={() => {
-                              setRequestedBy(e)
-                              form.setValue("requested_by", String(e.dni), { shouldValidate: true, shouldDirty: true })
-                              setOpenRequestedBy(false)
+                              setRequestedBy(e);
+                              form.setValue('requested_by', String(e.dni), { shouldValidate: true, shouldDirty: true });
+                              setOpenRequestedBy(false);
                             }}
                           >
                             <Check
                               className={cn(
-                                "mr-2 h-4 w-4",
-                                String(requestBy?.dni ?? form.getValues("requested_by")) === String(e.dni)
-                                  ? "opacity-100"
-                                  : "opacity-0"
+                                'mr-2 h-4 w-4',
+                                String(requestBy?.dni ?? form.getValues('requested_by')) === String(e.dni)
+                                  ? 'opacity-100'
+                                  : 'opacity-0',
                               )}
                             />
                             {`${e.first_name} ${e.last_name}`}
@@ -560,14 +577,10 @@ export function ToolDispatchForm({ onClose }: FormProps) {
                 <PopoverTrigger asChild>
                   <FormControl>
                     <Button
-                      variant={"outline"}
-                      className={cn("pl-3 text-left font-normal", !field.value && "text-muted-foreground")}
+                      variant={'outline'}
+                      className={cn('pl-3 text-left font-normal', !field.value && 'text-muted-foreground')}
                     >
-                      {field.value ? (
-                        format(field.value, "PPP", { locale: es })
-                      ) : (
-                        <span>Seleccione una fecha...</span>
-                      )}
+                      {field.value ? format(field.value, 'PPP', { locale: es }) : <span>Seleccione una fecha...</span>}
                       <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                     </Button>
                   </FormControl>
@@ -577,7 +590,7 @@ export function ToolDispatchForm({ onClose }: FormProps) {
                     mode="single"
                     selected={field.value}
                     onSelect={field.onChange}
-                    disabled={(date) => date > new Date() || date < new Date("1900-01-01")}
+                    disabled={(date) => date > new Date() || date < new Date('1900-01-01')}
                     initialFocus
                     locale={es}
                   />
@@ -603,10 +616,18 @@ export function ToolDispatchForm({ onClose }: FormProps) {
         />
 
         {/* Submit */}
-        <Button className="bg-primary mt-2 text-white hover:bg-blue-900 disabled:bg-primary/70" disabled={useCreateDispatchRequest().createDispatchRequest?.isPending} type="submit">
-          {useCreateDispatchRequest().createDispatchRequest?.isPending ? <Loader2 className="size-4 animate-spin" /> : <p>Crear</p>}
+        <Button
+          className="bg-primary mt-2 text-white hover:bg-blue-900 disabled:bg-primary/70"
+          disabled={useCreateDispatchRequest().createDispatchRequest?.isPending}
+          type="submit"
+        >
+          {useCreateDispatchRequest().createDispatchRequest?.isPending ? (
+            <Loader2 className="size-4 animate-spin" />
+          ) : (
+            <p>Crear</p>
+          )}
         </Button>
       </form>
     </Form>
-  )
+  );
 }

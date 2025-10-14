@@ -55,7 +55,7 @@ export default function InventoryUploadPage() {
     if (!file) return;
     setProgress(5);
     importInventory.mutate(
-      { file, company: "estelar", extra: {} },
+      { file, company: 'estelar', extra: {} },
       {
         onSuccess: () => {
           setFile(null);

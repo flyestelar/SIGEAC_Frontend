@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import { ContentLayout } from '@/components/layout/ContentLayout';
 import {
@@ -8,68 +8,80 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useDebounce } from '@/hooks/helpers/useDebounce';
-import { useGetBatches } from '@/hooks/mantenimiento/almacen/renglones/useGetBatches';
-import { useSearchBatchesByPartNumber } from '@/hooks/mantenimiento/almacen/renglones/useGetBatchesByArticlePartNumber';
+} from '@/components/ui/breadcrumb';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useGetWarehouseArticlesByCategory } from '@/hooks/mantenimiento/almacen/renglones/useGetArticlesByCategory';
 import { useCompanyStore } from '@/stores/CompanyStore';
-import { Loader2, Package2, PaintBucket, Wrench } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
-import SearchSection from '../../../../components/misc/SearchSection';
-import { columns } from './columns';
+import { Loader2, Package2, PaintBucket, Wrench, X } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { flattenArticles, getColumnsByCategory, IArticleSimple } from './columns';
 import { DataTable } from './data-table';
 
-const InventarioPage = () => {
-  const { selectedStation, selectedCompany } = useCompanyStore();
-  const [searchTerm, setSearchTerm] = useState('');
-  const debouncedSearchTerm = useDebounce(searchTerm, 500);
+const InventarioArticulosPage = () => {
+  const { selectedCompany } = useCompanyStore();
+  const [activeCategory, setActiveCategory] = useState<'COMPONENTE' | 'CONSUMIBLE' | 'HERRAMIENTA'>('COMPONENTE');
+  const [componentCondition, setComponentCondition] = useState<
+    'all' | 'SERVICIABLE' | 'REMOVIDO - NO SERVICIABLE' | 'REMOVIDO - CUSTODIA'
+  >('all');
+  const [consumableFilter, setConsumableFilter] = useState<'all' | 'QUIMICOS'>('all');
+  const [partNumberSearch, setPartNumberSearch] = useState('');
+  const cols = getColumnsByCategory(activeCategory);
 
-  // loading de transición de 500ms cuando cambia el término de búsqueda
-  const [transitionLoading, setTransitionLoading] = useState(false);
+  const { data: articles, isLoading: isLoadingArticles } = useGetWarehouseArticlesByCategory(
+    1,
+    1000,
+    activeCategory,
+    true,
+  );
+
   useEffect(() => {
-    setTransitionLoading(true);
-    const timeout = setTimeout(() => setTransitionLoading(false), 500);
-    return () => clearTimeout(timeout);
-  }, [debouncedSearchTerm]);
+    if (activeCategory !== 'COMPONENTE') setComponentCondition('all');
+    if (activeCategory !== 'CONSUMIBLE') setConsumableFilter('all');
+  }, [activeCategory]);
 
-  // Estado de categoría activa
-  const [activeCategory, setActiveCategory] = useState("all");
+  const getCurrentData = (): IArticleSimple[] => {
+    const list = flattenArticles(articles) ?? [];
 
-  // Consultas a la API
-  const { data: allBatches, isLoading: isLoadingBatches, isError: isBatchesError, error: batchesError } = useGetBatches();
-  const { data: searchedBatches, isLoading: isLoadingSearch, isError: isSearchError, error: searchError } =
-    useSearchBatchesByPartNumber(selectedCompany?.slug, selectedStation ?? undefined, debouncedSearchTerm || undefined);
+    // 1) Búsqueda por N/P
+    const q = partNumberSearch.trim().toLowerCase();
+    const bySearch = q ? list.filter((a) => a.part_number?.toLowerCase().includes(q)) : list;
 
-  // Memoización de batches filtrados
-  const displayedBatches = useMemo(() => {
-    if (!allBatches) return [];
+    // 2) Subfiltros por pestaña
+    if (activeCategory === 'COMPONENTE' && componentCondition && componentCondition !== 'all') {
+      const cond = componentCondition.toUpperCase();
 
-    let baseData = allBatches;
-
-    // Si hay búsqueda -> filtrar por resultados de búsqueda
-    if (debouncedSearchTerm && searchedBatches) {
-      const searchedIds = new Set(searchedBatches.map(b => b.id));
-      baseData = baseData.filter(b => searchedIds.has(b.id));
-    } else if (debouncedSearchTerm && searchedBatches?.length === 0) {
-      return [];
+      return bySearch.filter((a) => {
+        if (cond === 'SERVICIABLE') {
+          return a.condition === 'SERVICIABLE';
+        }
+        if (cond === 'REMOVIDO - NO SERVICIABLE') {
+          return a.condition === 'REMOVIDO - NO SERVICIABLE';
+        }
+        if (cond === 'REMOVIDO - CUSTODIA') {
+          return a.condition === 'REMOVIDO - CUSTODIA';
+        }
+        return true; // fallback
+      });
     }
 
-    // Filtrar por categoría (asumiendo que cada batch tiene un campo category)
-    if (activeCategory !== "all") {
-      baseData = baseData.filter(b => b.category === activeCategory);
+    if (activeCategory === 'CONSUMIBLE' && consumableFilter === 'QUIMICOS') {
+      // Si agregaste is_hazardous al flatten, úsalo. Si no, ajusta al campo real.
+      return bySearch.filter((a: any) => a.is_hazardous === true);
     }
 
-    return baseData;
-  }, [allBatches, searchedBatches, debouncedSearchTerm, activeCategory]);
+    return bySearch;
+  };
 
-  const isLoading = isLoadingBatches || !!(debouncedSearchTerm && isLoadingSearch);
-  const isEmptyState = !isLoading && displayedBatches?.length === 0;
-  const showNoResults = !isLoading && !!debouncedSearchTerm && isEmptyState;
+  const handleClearSearch = () => {
+    setPartNumberSearch('');
+  };
 
   return (
-    <ContentLayout title='Inventario'>
-      <div className='flex flex-col gap-y-2'>
+    <ContentLayout title="Inventario">
+      <div className="flex flex-col gap-y-4">
+        {/* Breadcrumbs */}
         <Breadcrumb>
           <BreadcrumbList>
             <BreadcrumbItem>
@@ -81,60 +93,99 @@ const InventarioPage = () => {
             </BreadcrumbItem>
           </BreadcrumbList>
         </Breadcrumb>
-        <h1 className='text-4xl font-bold text-center'>Inventario General</h1>
-        <p className='text-sm text-muted-foreground text-center italic'>
-          Aquí puede observar all los renglones de los diferentes almacenes. <br />Filtre y/o busque si desea un renglón en específico.
-        </p>
 
-        {/* Buscador */}
-        <SearchSection
-          searchTerm={searchTerm}
-          onSearchChange={setSearchTerm}
-          debouncedSearchTerm={debouncedSearchTerm}
-          showNoResults={showNoResults}
-        />
+        {/* Header */}
+        <div className="text-center space-y-2">
+          <h1 className="text-4xl font-bold">Inventario General</h1>
+          <p className="text-sm text-muted-foreground italic">
+            Visualiza todos los artículos del inventario organizados por tipo
+          </p>
+        </div>
 
-        {isLoading ? (
-          <div className='flex w-full h-full justify-center items-center min-h-[300px]'>
-            <Loader2 className='size-24 animate-spin' />
+        {/* Búsqueda General */}
+        <div className="space-y-2">
+          <div className="relative max-w-xl mx-auto">
+            <Input
+              placeholder="Búsqueda General - Nro. de Parte (Ej: 65-50587-4, TORNILLO, ALT-123...)"
+              value={partNumberSearch}
+              onChange={(e) => setPartNumberSearch(e.target.value)}
+              className="pr-8 h-11"
+            />
+            {partNumberSearch && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 p-0"
+                onClick={handleClearSearch}
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            )}
           </div>
-        ) : (
-          <>
-            {allBatches && (
-              <Tabs value={activeCategory} onValueChange={setActiveCategory}>
-                <TabsList className="flex justify-center mb-4 space-x-3">
-                  <TabsTrigger value="all">Todos</TabsTrigger>
-                  <TabsTrigger className='flex gap-2' value="COMPONENTE"><Package2 className='size-5' /> Componente</TabsTrigger>
-                  <TabsTrigger className='flex gap-2' value="CONSUMIBLE"><PaintBucket className='size-5' />Consumibles</TabsTrigger>
-                  <TabsTrigger className='flex gap-2' value="HERRAMIENTA"><Wrench className='size-5' /> Herramientas</TabsTrigger>
-                </TabsList>
+          {partNumberSearch && (
+            <p className="text-xs text-muted-foreground text-center">
+              Filtrando por: <span className="font-medium text-foreground">{partNumberSearch}</span> •{' '}
+              {getCurrentData().length} resultado(s)
+            </p>
+          )}
+        </div>
 
-                <TabsContent value={activeCategory}>
-                  <DataTable
-                    columns={columns}
-                    initialData={displayedBatches}
-                    isSearching={!!debouncedSearchTerm && debouncedSearchTerm.trim() !== ""}
-                    searchTerm={debouncedSearchTerm?.trim() || ""}
-                  />
-                </TabsContent>
+        {/* Tabs */}
+        <Tabs value={activeCategory} onValueChange={(v) => setActiveCategory(v as typeof activeCategory)}>
+          <TabsList className="flex justify-center mb-4 space-x-3" aria-label="Categorías">
+            <TabsTrigger className="flex gap-2" value="COMPONENTE">
+              <Package2 className="size-5" /> Componente
+            </TabsTrigger>
+            <TabsTrigger className="flex gap-2" value="CONSUMIBLE">
+              <PaintBucket className="size-5" /> Consumibles
+            </TabsTrigger>
+            <TabsTrigger className="flex gap-2" value="HERRAMIENTA">
+              <Wrench className="size-5" /> Herramientas
+            </TabsTrigger>
+          </TabsList>
+
+          {/* Tab Content */}
+          <TabsContent value={activeCategory} className="mt-6">
+            {activeCategory === 'COMPONENTE' && (
+              <Tabs
+                value={componentCondition}
+                onValueChange={(v) => setComponentCondition(v as typeof componentCondition)}
+                className="mb-4"
+              >
+                <TabsList className="flex justify-center mb-4 space-x-3" aria-label="Condición de componente">
+                  <TabsTrigger value="all">Todos</TabsTrigger>
+                  <TabsTrigger value="SERVICIABLE">Serviciables</TabsTrigger>
+                  <TabsTrigger value="REMOVIDO - NO SERVICIABLE">Removidos - No Serviciables</TabsTrigger>
+                  <TabsTrigger value="REMOVIDO - CUSTODIA">Removidos - En custodia</TabsTrigger>
+                </TabsList>
               </Tabs>
             )}
 
-            {isBatchesError && (
-              <div className="text-red-500 text-center text-sm italic">
-                Error cargando batches: {batchesError.message}
-              </div>
+            {/* Sub-tabs CONSUMIBLE */}
+            {activeCategory === 'CONSUMIBLE' && (
+              <Tabs
+                value={consumableFilter}
+                onValueChange={(v) => setConsumableFilter(v as typeof consumableFilter)}
+                className="mb-4"
+              >
+                <TabsList className="flex justify-center mb-4 space-x-3" aria-label="Filtro de consumibles">
+                  <TabsTrigger value="all">Todos</TabsTrigger>
+                  <TabsTrigger value="QUIMICOS">Químicos</TabsTrigger>
+                </TabsList>
+              </Tabs>
             )}
-            {isSearchError && (
-              <div className="text-red-500 text-center text-sm italic">
-                Error en búsqueda: {searchError.message}
+            {isLoadingArticles ? (
+              <div className="flex w-full h-full justify-center items-center min-h-[300px]">
+                <Loader2 className="size-24 animate-spin" />
               </div>
+            ) : (
+              <DataTable columns={cols} data={getCurrentData()} />
             )}
-          </>
-        )}
+          </TabsContent>
+        </Tabs>
       </div>
     </ContentLayout>
   );
 };
 
-export default InventarioPage;
+export default InventarioArticulosPage;

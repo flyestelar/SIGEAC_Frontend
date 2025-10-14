@@ -1,85 +1,92 @@
-import axiosInstance from "@/lib/axios"
-import { useMutation, useQueryClient } from "@tanstack/react-query"
-import { useRouter } from "next/navigation"
-import { toast } from "sonner"
+import axiosInstance from '@/lib/axios';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 
 interface IDispatchRequestAction {
-  aircraft_id?: string,
-  justification?: string,
-  submission_date: string,
-  created_by: string,
-  requested_by: string,
-  category: string,
+  aircraft_id?: string;
+  justification?: string;
+  submission_date: string;
+  created_by: string;
+  requested_by: string;
+  category: string;
   articles: {
-    article_id: number,
-    quantity?: number,
-    serial?: string | null,
-  }[],
-  user_id: number,
+    article_id: number;
+    quantity?: number;
+    serial?: string | null;
+  }[];
+  user_id: number;
 }
 
 export const useCreateDispatchRequest = () => {
-
-  const queryClient = useQueryClient()
+  const queryClient = useQueryClient();
 
   const router = useRouter();
 
   const createMutation = useMutation({
-    mutationKey: ["dispatch-request"],
-    mutationFn: async ({ data, company }: { data: IDispatchRequestAction, company: string }) => {
-      await axiosInstance.post(`/${company}/dispatch-order`, data)
+    mutationKey: ['dispatch-request'],
+    mutationFn: async ({ data, company }: { data: IDispatchRequestAction; company: string }) => {
+      await axiosInstance.post(`/${company}/dispatch-order`, data);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["dispatched-articles"] })
-      queryClient.invalidateQueries({ queryKey: ["dispatch-orders"] })
-      toast.success("¡Creado!", {
-        description: `La solicitud ha sido creado correctamente.`
+      queryClient.invalidateQueries({ queryKey: ['warehouse-articles'] });
+      queryClient.invalidateQueries({ queryKey: ['dispatched-articles'] });
+      queryClient.invalidateQueries({ queryKey: ['dispatch-orders'] });
+      (toast.success('¡Creado!', {
+        description: `La solicitud ha sido creado correctamente.`,
       }),
-        router.refresh()
+        router.refresh());
     },
     onError: (error) => {
       toast.error('Oops!', {
-        description: 'No se pudo crear la solicitud...'
-      })
-      console.log(error)
+        description: 'No se pudo crear la solicitud...',
+      });
+      console.log(error);
     },
-  }
-  )
+  });
   return {
     createDispatchRequest: createMutation,
-  }
-}
-
+  };
+};
 
 export const useUpdateStatusDispatchRequest = () => {
-  const queryClient = useQueryClient()
+  const queryClient = useQueryClient();
   const updateStatusMutation = useMutation({
-    mutationKey: ["dispatch-request-approve"],
-    mutationFn: async ({ id, status, approved_by, delivered_by, company }: {
-      id: string | number,
-      status: string,
-      approved_by: string,
-      delivered_by: string,
-      company: string,
+    mutationKey: ['dispatch-request-approve'],
+    mutationFn: async ({
+      id,
+      status,
+      approved_by,
+      delivered_by,
+      company,
+    }: {
+      id: string | number;
+      status: string;
+      approved_by: string;
+      delivered_by: string;
+      company: string;
     }) => {
-      await axiosInstance.put(`/${company}/update-status-dispatch/${id}`, { status: status, approved_by: approved_by, delivered_by: delivered_by })
+      await axiosInstance.put(`/${company}/update-status-dispatch/${id}`, {
+        status: status,
+        approved_by: approved_by,
+        delivered_by: delivered_by,
+      });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['dispatches-requests-in-process'] }),
+      (queryClient.invalidateQueries({ queryKey: ['dispatches-requests-in-process'] }),
         queryClient.invalidateQueries({ queryKey: ['dispatched-articles'] }),
         toast.success('¡Actualizado!', {
-          description: '¡La solicitud ha sido actualizada!'
-        })
+          description: '¡La solicitud ha sido actualizada!',
+        }));
     },
     onError: (error) => {
       toast.error('Oops!', {
-        description: 'No se pudo crear la solicitud...'
-      })
-      console.log(error)
+        description: 'No se pudo crear la solicitud...',
+      });
+      console.log(error);
     },
-  }
-  )
+  });
   return {
     updateDispatchStatus: updateStatusMutation,
-  }
-}
+  };
+};
