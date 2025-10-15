@@ -1,67 +1,128 @@
-'use client'
+'use client';
+
 import {
   Dialog,
-  DialogClose,
+  DialogTrigger,
   DialogContent,
-  DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
+  DialogDescription,
+  DialogFooter,
+  DialogClose,
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Package, Hash, Layers, Boxes } from 'lucide-react';
+import { Fragment, useMemo } from 'react';
 
-import { Convertion } from "@/types"
-import Image from "next/image"
-import { Button } from "@/components/ui/button"
-
-interface DialogProps {
-  articles?: {
-    serial?: string,
-    description?: string,
-    quantity: string | number,
-    dispatch_quantity?: string,
-    part_number: string,
-    article_id?: string | number,
-    unit?: Convertion[],
-  }[],
-  work_order: string,
+// Types that match your endpoint payload
+export interface DispatchArticle {
+  id: number;
+  part_number: string;
+  serial: string | null;
+  description: string | null;
+  category?: string | null;
+  batch: string;
+  dispatch_quantity: string | number;
 }
-const DispatchArticlesDialog = ({ articles, work_order }: DialogProps) => {
+
+interface Props {
+  articles?: DispatchArticle[];
+  triggerLabel?: string;
+}
+
+/**
+ * Minimal dialog to display key article info from a dispatch record.
+ * Removes work_order and any imagery.
+ */
+export default function DispatchArticlesDialogMinimal({ articles, triggerLabel = 'Ver artículos' }: Props) {
+  const items = useMemo(() => articles ?? [], [articles]);
+
   return (
     <Dialog>
-      <DialogTrigger className="text-center">
-        <Button variant='ghost'>Ver Articulos</Button>
+      <DialogTrigger asChild>
+        <Button variant="ghost" className="px-3">
+          {triggerLabel}
+        </Button>
       </DialogTrigger>
-      <DialogContent>
-        <div className="mx-auto w-full max-w-md">
-          <DialogHeader className="flex flex-row justify-between items-center">
-            <div className="flex flex-col gap-1">
-              <DialogTitle>Articulos para WO: {work_order ? work_order : "N/A"}</DialogTitle>
-              <DialogDescription>Aquí puede ver los articulos despachados.</DialogDescription>
-            </div>
-            <Image src={'/LOGO_TRD.png'} className="w-[70px] h-[70px]" width={70} height={70} alt="logo" />
-          </DialogHeader>
-          <div className="p-4 pb-0">
-            <div className="flex flex-col items-center gap-2 p-2">
-              {
-                articles && articles.map((article) => (
-                  <div key={article.article_id} className="w-[200px] group cursor-pointer flex flex-col items-center" >
-                    <span className="text-center font-bold">{article.description}</span>
-                    {article.serial} - Cantidad: {article.dispatch_quantity} {article.unit ? article.unit[0].unit.value : ""}
+
+      <DialogContent className="sm:max-w-lg">
+        <DialogHeader>
+          <DialogTitle>Artículos despachados</DialogTitle>
+          <DialogDescription>Resumen compacto por ítem.</DialogDescription>
+        </DialogHeader>
+
+        <div className="mt-2">
+          {items.length === 0 ? (
+            <EmptyState />
+          ) : (
+            <ul className="divide-y rounded-xl border">
+              {items.map((a) => (
+                <li key={a.id} className="p-3 sm:p-4 grid gap-2">
+                  <div className="flex items-center justify-between">
+                    <div className="min-w-0">
+                      <p className="font-medium truncate">{a.batch}</p>
+                      <p className="text-sm text-muted-foreground truncate">
+                        <Inline icon={<Hash className="h-3.5 w-3.5" />}>{a.part_number}</Inline>
+                      </p>
+                    </div>
+                    <Badge variant="secondary" className="whitespace-nowrap">
+                      {qtyLabel(a.dispatch_quantity)}
+                    </Badge>
                   </div>
-                ))
-              }
-            </div>
-          </div>
-          <DialogFooter>
-            <DialogClose>
-              <Button variant="outline">Cerrar</Button>
-            </DialogClose>
-          </DialogFooter>
+
+                  <div className="flex flex-wrap gap-2 text-sm text-muted-foreground">
+                    {a.serial ? (
+                      <Chip icon={<Package className="h-3.5 w-3.5" />}>SN {a.serial}</Chip>
+                    ) : (
+                      <span>SIN SERIAL</span>
+                    )}
+                    <Chip icon={<Layers className="h-3.5 w-3.5" />}>{a.category || 'SIN CATEGORÍA'}</Chip>
+                    <Chip icon={<Boxes className="h-3.5 w-3.5" />}>{a.description || 'SIN DESCRIPCIÓN'}</Chip>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
+
+        <DialogFooter>
+          <DialogClose asChild>
+            <Button variant="outline">Cerrar</Button>
+          </DialogClose>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
-  )
+  );
 }
 
-export default DispatchArticlesDialog;
+function qtyLabel(q: string | number) {
+  const n = typeof q === 'string' ? Number(q) : q;
+  return Number.isFinite(n) ? `Cant. ${n}` : `Cant. ${q}`;
+}
+
+function Inline({ icon, children }: { icon: React.ReactNode; children: React.ReactNode }) {
+  return (
+    <span className="inline-flex items-center gap-1.5 align-middle">
+      {icon}
+      <span className="truncate">{children}</span>
+    </span>
+  );
+}
+
+function Chip({ icon, children }: { icon: React.ReactNode; children: React.ReactNode }) {
+  return (
+    <span className="inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5">
+      {icon}
+      <span className="truncate">{children}</span>
+    </span>
+  );
+}
+
+function EmptyState() {
+  return (
+    <div className="flex flex-col items-center justify-center gap-2 rounded-xl border p-8 text-center">
+      <p className="text-sm text-muted-foreground">Sin artículos para mostrar.</p>
+    </div>
+  );
+}

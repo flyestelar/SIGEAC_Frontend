@@ -46,7 +46,14 @@ const InventarioArticulosPage = () => {
 
     // 1) Búsqueda por N/P
     const q = partNumberSearch.trim().toLowerCase();
-    const bySearch = q ? list.filter((a) => a.part_number?.toLowerCase().includes(q)) : list;
+    const bySearch = q
+      ? list.filter(
+          (a) =>
+            a.part_number?.toLowerCase().includes(q) ||
+            (Array.isArray(a.alternative_part_number) &&
+              a.alternative_part_number.some((alt) => alt?.toLowerCase().includes(q))),
+        )
+      : list;
 
     // 2) Subfiltros por pestaña
     if (activeCategory === 'COMPONENTE' && componentCondition && componentCondition !== 'all') {
