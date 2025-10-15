@@ -36,6 +36,7 @@ const formSchema = z.object({
   part_number: z.string().min(2, {
     message: 'El serial debe contener al menos 2 carácteres.',
   }),
+  lot_number: z.string().optional(),
   alternative_part_number: z
     .array(
       z.string().min(2, {
@@ -103,6 +104,7 @@ interface EditingArticle extends Article {
   batches: Batch;
   consumable?: {
     article_id: number;
+    lot_number?: string;
     is_managed: boolean;
     convertions: Convertion[];
     quantity: number;
@@ -162,6 +164,18 @@ const CreateConsumableForm = ({ initialData, isEditing }: { initialData?: Editin
       description: initialData?.description || '',
       zone: initialData?.zone || undefined,
       is_managed: initialData?.consumable?.is_managed || false,
+      quantity: initialData?.consumable?.quantity || 1,
+      lot_number: initialData?.consumable?.lot_number || undefined,
+      caducate_date: initialData?.consumable?.shell_time.caducate_date
+        ? format(new Date(initialData?.consumable?.shell_time.caducate_date), 'yyyy-MM-dd')
+        : undefined,
+      fabrication_date: initialData?.consumable?.shell_time.fabrication_date
+        ? format(new Date(initialData?.consumable?.shell_time.fabrication_date), 'yyyy-MM-dd')
+        : undefined,
+      certificate_8130: undefined,
+      certificate_fabricant: undefined,
+      certificate_vendor: undefined,
+      image: undefined,
     },
   });
   form.setValue('article_type', 'consumible');
@@ -216,6 +230,20 @@ const CreateConsumableForm = ({ initialData, isEditing }: { initialData?: Editin
                   <Input placeholder="EJ: 234ABAC" {...field} />
                 </FormControl>
                 <FormDescription>Identificador único del articulo.</FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="lot_number"
+            render={({ field }) => (
+              <FormItem className="w-full xl:w-1/3 min-w-0">
+                <FormLabel>Nro. de Lote</FormLabel>
+                <FormControl>
+                  <Input placeholder="EJ: LOTE123" {...field} />
+                </FormControl>
+                <FormDescription>Lote indentificador del consumible.</FormDescription>
                 <FormMessage />
               </FormItem>
             )}
@@ -500,7 +528,7 @@ const CreateConsumableForm = ({ initialData, isEditing }: { initialData?: Editin
               name="batch_id"
               render={({ field }) => (
                 <FormItem className="w-full">
-                  <FormLabel>Lote del Articulo</FormLabel>
+                  <FormLabel>Categoría del Articulo</FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger>
