@@ -510,7 +510,7 @@ export function getMenuList(pathname: string, currentCompany: Company | null, us
         },
         {
           href: `/${currentCompany?.slug}/almacen/despachados`,
-          label: 'Despachados',
+          label: 'Articulos Despachados',
           active: pathname.includes(`/${currentCompany?.slug}/almacen/despachados`),
           icon: PackageOpen,
           roles: ['ANALISTA_ALMACEN', 'JEFE_ALMACEN', 'SUPERUSER'],

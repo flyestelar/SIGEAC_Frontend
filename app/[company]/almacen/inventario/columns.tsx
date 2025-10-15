@@ -103,6 +103,11 @@ const baseCols: ColumnDef<IArticleSimple>[] = [
     cell: ({ row }) => <div className="font-bold text-center text-base">{row.original.part_number}</div>,
   },
   {
+    accessorKey: 'part_number',
+    header: ({ column }) => <DataTableColumnHeader filter column={column} title="Part Number" />,
+    cell: ({ row }) => <div className="font-bold text-center text-base">{row.original.part_number}</div>,
+  },
+  {
     accessorKey: 'serial',
     header: ({ column }) => <DataTableColumnHeader filter column={column} title="Serial / Lote" />,
     cell: ({ row }) => (
