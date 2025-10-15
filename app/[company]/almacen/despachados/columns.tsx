@@ -4,11 +4,8 @@ import { ColumnDef } from '@tanstack/react-table';
 
 import { DataTableColumnHeader } from '@/components/tables/DataTableHeader';
 
-import DispatchedArticlesDropdownActions from '@/components/dropdowns/mantenimiento/almacen/DispatchedArticlesDropdownActions';
 import { Checkbox } from '@/components/ui/checkbox';
 import { DispachedArticles } from '@/hooks/mantenimiento/almacen/salidas_entradas/useGetDispatchedArticles';
-import { format } from 'date-fns';
-import { es } from 'date-fns/locale';
 
 export const columns: ColumnDef<DispachedArticles>[] = [
   {
@@ -31,39 +28,54 @@ export const columns: ColumnDef<DispachedArticles>[] = [
     enableHiding: false,
   },
   {
-    accessorKey: 'batch_name',
+    accessorKey: 'batch',
     header: ({ column }) => <DataTableColumnHeader filter column={column} title="Descripción" />,
     cell: ({ row }) => {
-      return <p className="font-bold text-center">{row.original.batch_name}</p>;
+      return <p className="font-bold text-center">{row.original.batch}</p>;
     },
   },
   {
-    accessorKey: 'articles',
+    accessorKey: 'part_number',
     header: ({ column }) => <DataTableColumnHeader filter column={column} title="PN" />,
+    cell: ({ row }) => {
+      return <p className="font-medium text-center">{row.original.part_number}</p>;
+    },
+  },
+  {
+    accessorKey: 'alternative_part_number',
+    header: ({ column }) => <DataTableColumnHeader filter column={column} title="PN Alternativo" />,
     cell: ({ row }) => {
       return (
         <p className="font-medium text-center">
-          {row.original.articles.map((article) => (
-            <span key={article.id}>
-              {article.part_number} - {article.serial} ({article.quantity})
-            </span>
-          ))}
+          {row.original.alternative_part_number ? row.original.alternative_part_number.join(', ') : '-'}
         </p>
       );
     },
   },
   {
-    accessorKey: 'date',
-    header: ({ column }) => <DataTableColumnHeader filter column={column} title="Destino" />,
+    accessorKey: 'serial',
+    header: ({ column }) => <DataTableColumnHeader filter column={column} title="Serial / Lote" />,
     cell: ({ row }) => {
-      return <p className="font-medium text-center">{format(row.original.date, 'PPP', { locale: es })}</p>;
+      return (
+        <p className="font-medium text-center">
+          {row.original.serial ? row.original.serial : row.original.lot_number ? row.original.lot_number : '-'}
+        </p>
+      );
     },
   },
   {
-    id: 'actions',
-    header: ({ column }) => <DataTableColumnHeader filter column={column} title="Destino" />,
+    accessorKey: 'aircraft',
+    header: ({ column }) => <DataTableColumnHeader filter column={column} title="Aeronave / Taller" />,
     cell: ({ row }) => {
-      return <DispatchedArticlesDropdownActions id={row.original.articles[0].id} />;
+      return (
+        <p className="font-medium text-center">
+          {row.original.aircraft
+            ? row.original.aircraft.acronym
+            : row.original.workshop
+              ? row.original.workshop.name
+              : '-'}
+        </p>
+      );
     },
   },
 ];

@@ -1,23 +1,17 @@
 import axios from '@/lib/axios';
 import { useCompanyStore } from '@/stores/CompanyStore';
-import { WorkOrder } from '@/types';
+import { MaintenanceAircraft, Workshop } from '@/types';
 import { useQuery } from '@tanstack/react-query';
 
 export interface DispachedArticles {
   id: number;
-  batch_name: string;
-  serial: string;
-  justification: string;
-  category: string;
-  date: string;
-  work_order: WorkOrder;
-  articles: {
-    part_number: string;
-    id: number;
-    serial: string;
-    description: string;
-    quantity: number,
-  }[];
+  part_number: string;
+  serial?: string;
+  lot_number?: string;
+  alternative_part_number?: string[];
+  batch?: string;
+  aircraft?: MaintenanceAircraft;
+  workshop: Workshop;
 }
 
 const fetchDispatchedArticles = async ({
@@ -32,11 +26,10 @@ const fetchDispatchedArticles = async ({
 };
 
 export const useGetDispatchedArticles = () => {
-  const { selectedCompany, selectedStation } = useCompanyStore()
+  const { selectedCompany, selectedStation } = useCompanyStore();
   return useQuery({
     queryKey: ['dispatched-articles'],
-    queryFn: () =>
-      fetchDispatchedArticles({ company: selectedCompany?.slug, location_id: selectedStation }),
+    queryFn: () => fetchDispatchedArticles({ company: selectedCompany?.slug, location_id: selectedStation }),
     staleTime: 1000 * 60 * 5, // 5 minutos
     enabled: !!selectedCompany && !!selectedStation,
   });
