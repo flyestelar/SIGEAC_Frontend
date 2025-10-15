@@ -157,8 +157,18 @@ const CreateComponentForm = ({ initialData, isEditing }: { initialData?: Editing
       condition_id: initialData?.condition?.id.toString() || '',
       description: initialData?.description || '',
       zone: initialData?.zone || '',
-      hour_date: (initialData?.component && Number(initialData.component.hard_time.hour_date)) || 0,
-      cycle_date: (initialData?.component && Number(initialData.component.hard_time.cycle_date)) || 0,
+      hour_date: initialData?.component?.hard_time.hour_date
+        ? parseInt(initialData.component.hard_time.hour_date)
+        : undefined,
+      cycle_date: initialData?.component?.hard_time.cycle_date
+        ? parseInt(initialData.component.hard_time.cycle_date)
+        : undefined,
+      caducate_date: initialData?.component?.shell_time.caducate_date
+        ? new Date(initialData.component.shell_time.caducate_date)
+        : undefined,
+      fabrication_date: initialData?.component?.shell_time.fabrication_date
+        ? new Date(initialData.component.shell_time.fabrication_date)
+        : undefined,
     },
   });
   form.setValue('article_type', 'componente');

@@ -108,11 +108,9 @@ interface EditingArticle extends Article {
     is_managed: boolean;
     convertions: Convertion[];
     quantity: number;
-    shell_time: {
-      caducate_date: Date;
-      fabrication_date: string;
-      consumable_id: string;
-    };
+    caducate_date: Date;
+    fabrication_date: string;
+    consumable_id: string;
   };
 }
 
@@ -166,11 +164,11 @@ const CreateConsumableForm = ({ initialData, isEditing }: { initialData?: Editin
       is_managed: initialData?.consumable?.is_managed || false,
       quantity: initialData?.consumable?.quantity || 1,
       lot_number: initialData?.consumable?.lot_number || undefined,
-      caducate_date: initialData?.consumable?.shell_time.caducate_date
-        ? format(new Date(initialData?.consumable?.shell_time.caducate_date), 'yyyy-MM-dd')
+      caducate_date: initialData?.consumable?.caducate_date
+        ? format(new Date(initialData?.consumable?.caducate_date), 'yyyy-MM-dd')
         : undefined,
-      fabrication_date: initialData?.consumable?.shell_time.fabrication_date
-        ? format(new Date(initialData?.consumable?.shell_time.fabrication_date), 'yyyy-MM-dd')
+      fabrication_date: initialData?.consumable?.fabrication_date
+        ? format(new Date(initialData?.consumable?.fabrication_date), 'yyyy-MM-dd')
         : undefined,
       certificate_8130: undefined,
       certificate_fabricant: undefined,
