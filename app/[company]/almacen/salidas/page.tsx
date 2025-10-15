@@ -1,12 +1,6 @@
 'use client';
 
 import { ContentLayout } from '@/components/layout/ContentLayout';
-import React, { useState, useMemo } from 'react';
-import { columns } from '@/app/[company]/almacen/solicitudes/salida/columns';
-import { DataTable } from './data-table';
-import { useGetDispatchesByLocation } from '@/hooks/mantenimiento/almacen/solicitudes/useGetDispatchesRequests';
-import { useCompanyStore } from '@/stores/CompanyStore';
-import { Loader2 } from 'lucide-react';
 import {
   Breadcrumb,
   BreadcrumbEllipsis,
@@ -23,6 +17,12 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useGetDispatchesByLocation } from '@/hooks/mantenimiento/almacen/solicitudes/useGetDispatchesRequests';
+import { useCompanyStore } from '@/stores/CompanyStore';
+import { Loader2 } from 'lucide-react';
+import { useMemo, useState } from 'react';
+import { columns } from './columns';
+import { DataTable } from './data-table';
 
 const DispatchRequestPage = () => {
   const { selectedCompany } = useCompanyStore();
