@@ -1,7 +1,7 @@
 'use client';
 
 import { ColumnDef } from '@tanstack/react-table';
-import { ClipboardCheck, MoreHorizontal, SquarePen, Trash2 } from 'lucide-react';
+import { MoreHorizontal, SquarePen, Trash2 } from 'lucide-react';
 
 import { DataTableColumnHeader } from '@/components/tables/DataTableHeader';
 import { Button } from '@/components/ui/button';
@@ -13,16 +13,14 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 
-import { Checkbox } from '@/components/ui/checkbox';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { DispatchRequest, WorkOrder, Convertion, MaintenanceAircraft } from '@/types';
 import DispatchArticlesDialog, {
   DispatchArticle,
 } from '@/components/dialogs/mantenimiento/almacen/DispatchArticlesDialog';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { MaintenanceAircraft, WorkOrder, Workshop } from '@/types';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { Badge } from '@/components/ui/badge';
-import { cn } from '@/lib/utils';
 
 interface IDispatch {
   id: number;
@@ -33,6 +31,7 @@ interface IDispatch {
   submission_date: string;
   work_order?: WorkOrder;
   aircraft?: MaintenanceAircraft;
+  workshop?: Workshop;
   status: 'PROCESO' | 'APROBADO' | 'RECHAZADO';
   articles: DispatchArticle[];
 }
@@ -59,10 +58,14 @@ export const columns: ColumnDef<IDispatch>[] = [
   },
   {
     accessorKey: 'aircraft',
-    header: ({ column }) => <DataTableColumnHeader filter column={column} title="Aeronave" />,
+    header: ({ column }) => <DataTableColumnHeader column={column} title="Aeronave / Taller" />,
     cell: ({ row }) => (
       <p className="flex justify-center font-bold">
-        {row.original.aircraft?.acronym ? row.original.aircraft?.acronym : 'N/A'}
+        {row.original.aircraft
+          ? row.original.aircraft.acronym
+          : row.original.workshop
+            ? row.original.workshop.name
+            : 'N/A'}
       </p>
     ),
   },
@@ -71,13 +74,6 @@ export const columns: ColumnDef<IDispatch>[] = [
     header: ({ column }) => <DataTableColumnHeader column={column} title="Empleado Responsable" />,
     cell: ({ row }) => {
       return <p className="font-medium text-center">{row.original.requested_by}</p>;
-    },
-  },
-  {
-    accessorKey: 'justification',
-    header: ({ column }) => <DataTableColumnHeader column={column} title="Justificación" />,
-    cell: ({ row }) => {
-      return <p className="font-medium text-center">{row.original.justification ?? 'N/A'}</p>;
     },
   },
   {
