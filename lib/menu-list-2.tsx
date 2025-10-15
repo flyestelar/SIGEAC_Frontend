@@ -10,8 +10,6 @@ import {
   BookCheck,
   BookUser,
   Building2,
-  CalendarFold,
-  ClipboardCopy,
   ClipboardList,
   ClipboardPen,
   CreditCardIcon,
@@ -29,12 +27,13 @@ import {
   Plane,
   PlaneIcon,
   Receipt,
+  RotateCcwSquare,
   ScrollText,
   ShieldAlert,
   SquarePen,
   User2,
   UserRoundCog,
-  Wrench
+  Wrench,
 } from 'lucide-react';
 
 type Submenu = {
@@ -497,28 +496,25 @@ export function getMenuList(pathname: string, currentCompany: Company | null, us
           href: `/${currentCompany?.slug}/almacen/inventario`,
           label: 'Inventario',
           active: pathname.includes(`/${currentCompany?.slug}/almacen/inventario`),
-          icon: PackageOpen,
+          icon: PackageSearch,
           roles: ['ANALISTA_ALMACEN', 'JEFE_ALMACEN', 'SUPERUSER'],
           submenus: [],
         },
         {
-          href: '',
-          label: 'Despachos',
-          active: pathname.includes(`/${currentCompany?.slug}/almacen/solicitudes`),
-          icon: ClipboardCopy,
+          href: `/${currentCompany?.slug}/almacen/salidas`,
+          label: 'Salidas',
+          active: pathname.includes(`/${currentCompany?.slug}/almacen/salidas`),
+          icon: RotateCcwSquare,
           roles: ['ANALISTA_ALMACEN', 'JEFE_ALMACEN', 'SUPERUSER'],
-          submenus: [
-            {
-              href: `/${currentCompany?.slug}/almacen/solicitudes/salida`,
-              label: 'Salidas',
-              active: pathname === `/${currentCompany?.slug}/almacen/solicitudes/salida`,
-            },
-            {
-              href: `/${currentCompany?.slug}/almacen/solicitudes/despachados`,
-              label: 'Despachados',
-              active: pathname === `/${currentCompany?.slug}/almacen/solicitudes/despachados`,
-            },
-          ],
+          submenus: [],
+        },
+        {
+          href: `/${currentCompany?.slug}/almacen/despachados`,
+          label: 'Despachados',
+          active: pathname.includes(`/${currentCompany?.slug}/almacen/despachados`),
+          icon: PackageOpen,
+          roles: ['ANALISTA_ALMACEN', 'JEFE_ALMACEN', 'SUPERUSER'],
+          submenus: [],
         },
         {
           href: `/${currentCompany?.slug}/almacen/caja_herramientas`,
