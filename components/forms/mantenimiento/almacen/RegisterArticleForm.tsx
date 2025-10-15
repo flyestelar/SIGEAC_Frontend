@@ -7,7 +7,7 @@ import CreateComponentForm from './CreateComponentForm';
 import CreateConsumableForm from './CreateConsumableForm';
 import { CreateToolForm } from './CreateToolForm';
 
-interface EditingArticle extends Article {
+export interface EditingArticle extends Article {
   batches: Batch;
   tool?: {
     id: number;

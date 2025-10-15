@@ -30,6 +30,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
+import { EditingArticle } from './RegisterArticleForm';
 
 const formSchema = z.object({
   article_type: z.string().optional(),
@@ -99,15 +100,6 @@ const formSchema = z.object({
     .optional(),
   image: z.instanceof(File).optional(),
 });
-
-interface EditingArticle extends Article {
-  batches: Batch;
-  consumable?: {
-    lot_number?: string;
-    caducate_date: Date;
-    fabrication_date: string;
-  };
-}
 
 const CreateConsumableForm = ({ initialData, isEditing }: { initialData?: EditingArticle; isEditing?: boolean }) => {
   const router = useRouter();

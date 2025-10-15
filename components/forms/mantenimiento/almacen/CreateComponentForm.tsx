@@ -13,39 +13,23 @@ import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useGetConditions } from '@/hooks/administracion/useGetConditions';
 import { useGetManufacturers } from '@/hooks/general/fabricantes/useGetManufacturers';
-import { useGetArticlesByCategory } from '@/hooks/mantenimiento/almacen/articulos/useGetArticlesByCategory';
 import { useGetBatchesByCategory } from '@/hooks/mantenimiento/almacen/renglones/useGetBatchesByCategory';
 import { cn } from '@/lib/utils';
 import loadingGif from '@/public/loading2.gif';
 import { useCompanyStore } from '@/stores/CompanyStore';
-import { Article, Batch } from '@/types';
+import { Batch } from '@/types';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { addYears, format, subYears } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { CalendarIcon, FileUpIcon, Loader2 } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { MultiInputField } from '../../../misc/MultiInputField';
 import { Textarea } from '../../../ui/textarea';
-
-interface EditingArticle extends Article {
-  batches: Batch;
-  component?: {
-    serial: string;
-    hard_time: {
-      hour_date: string;
-      cycle_date: string;
-      calendary_date: string;
-    };
-    shell_time: {
-      caducate_date: string;
-      fabrication_date: string;
-    };
-  };
-}
+import { EditingArticle } from './RegisterArticleForm';
 
 const CreateComponentForm = ({ initialData, isEditing }: { initialData?: EditingArticle; isEditing?: boolean }) => {
   const [filteredBatches, setFilteredBatches] = useState<Batch[]>();
