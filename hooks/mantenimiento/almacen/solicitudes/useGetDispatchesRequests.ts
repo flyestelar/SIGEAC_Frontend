@@ -1,3 +1,4 @@
+import { DispatchArticle } from '@/components/dialogs/mantenimiento/almacen/DispatchArticlesDialog';
 import axios from '@/lib/axios';
 import { useCompanyStore } from '@/stores/CompanyStore';
 import { WorkOrder } from '@/types';
@@ -12,13 +13,7 @@ interface IDispatch {
   submission_date: string;
   status: 'PROCESO' | 'APROBADO' | 'RECHAZADO';
   work_order?: WorkOrder;
-  articles: {
-    id: number;
-    part_number: string;
-    serial: string;
-    description: string;
-    quantity: string;
-  }[];
+  articles: DispatchArticle[];
 }
 
 const fetchDispatchesRequests = async ({

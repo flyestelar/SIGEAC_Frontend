@@ -16,7 +16,9 @@ import {
 import { Checkbox } from '@/components/ui/checkbox';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { DispatchRequest, WorkOrder, Convertion, MaintenanceAircraft } from '@/types';
-import DispatchArticlesDialog from '@/components/dialogs/mantenimiento/almacen/DispatchArticlesDialog';
+import DispatchArticlesDialog, {
+  DispatchArticle,
+} from '@/components/dialogs/mantenimiento/almacen/DispatchArticlesDialog';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { Badge } from '@/components/ui/badge';
@@ -32,16 +34,7 @@ interface IDispatch {
   work_order?: WorkOrder;
   aircraft?: MaintenanceAircraft;
   status: 'PROCESO' | 'APROBADO' | 'RECHAZADO';
-  articles: {
-    id: number;
-    part_number: string;
-    serial: string;
-    description: string;
-    unit?: Convertion[];
-    quantity: string;
-    batch: string;
-    dispatch_quantity: string;
-  }[];
+  articles: DispatchArticle[];
 }
 
 export const columns: ColumnDef<IDispatch>[] = [
