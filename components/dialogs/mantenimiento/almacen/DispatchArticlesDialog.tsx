@@ -35,7 +35,7 @@ interface Props {
  * Minimal dialog to display key article info from a dispatch record.
  * Removes work_order and any imagery.
  */
-export default function DispatchArticlesDialogMinimal({ articles, triggerLabel = 'Ver artículos' }: Props) {
+export default function DispatchArticlesDialog({ articles, triggerLabel = 'Ver artículos' }: Props) {
   const items = useMemo(() => articles ?? [], [articles]);
 
   return (

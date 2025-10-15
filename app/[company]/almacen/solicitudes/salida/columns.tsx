@@ -39,7 +39,8 @@ interface IDispatch {
     description: string;
     unit?: Convertion[];
     quantity: string;
-    dispatched_quantity?: string;
+    batch: string;
+    dispatch_quantity: string;
   }[];
 }
 
@@ -102,7 +103,7 @@ export const columns: ColumnDef<IDispatch>[] = [
     header: ({ column }) => <DataTableColumnHeader column={column} title="Articulos" />,
     cell: ({ row }) => (
       <div className="flex justify-center">
-        <DispatchArticlesDialog articles={row.original.articles} work_order={row.original.work_order?.order_number!} />
+        <DispatchArticlesDialog articles={row.original.articles} />
       </div>
     ),
   },
