@@ -7,6 +7,7 @@ import { CheckCircle2, XCircle, Clock, Wrench } from 'lucide-react';
 import { WarehouseResponse } from '@/hooks/mantenimiento/almacen/renglones/useGetArticlesByCategory';
 import { addDays, format } from 'date-fns';
 import { cn } from '@/lib/utils';
+import ArticleDropdownActions from '@/components/dropdowns/mantenimiento/almacen/ArticleDropdownActions';
 
 export interface IArticleSimple {
   id: number;
@@ -174,6 +175,13 @@ const baseCols: ColumnDef<IArticleSimple>[] = [
         {row.original.zone || <span className="text-muted-foreground">Sin asignar</span>}
       </div>
     ),
+  },
+  {
+    id: 'actions',
+    cell: ({ row }) => {
+      const item = row.original;
+      return <ArticleDropdownActions id={item.id} />;
+    },
   },
 ];
 
