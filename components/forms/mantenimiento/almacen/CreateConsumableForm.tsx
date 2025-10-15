@@ -4,12 +4,17 @@ import {
   useConfirmIncomingArticle,
   useCreateArticle,
 } from '@/actions/mantenimiento/almacen/inventario/articulos/actions';
+import { MultiInputField } from '@/components/misc/MultiInputField';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
 import { useGetConditions } from '@/hooks/administracion/useGetConditions';
 import { useGetManufacturers } from '@/hooks/general/fabricantes/useGetManufacturers';
 import { useGetSecondaryUnits } from '@/hooks/general/unidades/useGetSecondaryUnits';
@@ -25,11 +30,6 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
-import { MultiInputField } from '@/components/misc/MultiInputField';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 
 const formSchema = z.object({
   article_type: z.string().optional(),
@@ -103,14 +103,9 @@ const formSchema = z.object({
 interface EditingArticle extends Article {
   batches: Batch;
   consumable?: {
-    article_id: number;
     lot_number?: string;
-    is_managed: boolean;
-    convertions: Convertion[];
-    quantity: number;
     caducate_date: Date;
     fabrication_date: string;
-    consumable_id: string;
   };
 }
 
@@ -145,12 +140,6 @@ const CreateConsumableForm = ({ initialData, isEditing }: { initialData?: Editin
 
   const { data: batches, isLoading: isBatchesLoading, isError } = useGetBatchesByCategory('consumible');
 
-  useEffect(() => {
-    if (initialData && initialData.consumable) {
-      setSecondarySelected(initialData.consumable!.convertions[0]);
-    }
-  }, [initialData]);
-
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -161,8 +150,6 @@ const CreateConsumableForm = ({ initialData, isEditing }: { initialData?: Editin
       condition_id: initialData?.condition?.id.toString() || undefined,
       description: initialData?.description || '',
       zone: initialData?.zone || undefined,
-      is_managed: initialData?.consumable?.is_managed || false,
-      quantity: initialData?.consumable?.quantity || 1,
       lot_number: initialData?.consumable?.lot_number || undefined,
       caducate_date: initialData?.consumable?.caducate_date
         ? format(new Date(initialData?.consumable?.caducate_date), 'yyyy-MM-dd')
