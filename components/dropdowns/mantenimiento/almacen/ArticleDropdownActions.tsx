@@ -6,7 +6,8 @@ import {
 } from '@/components/ui/dropdown-menu';
 
 import { useDeleteArticle } from '@/actions/mantenimiento/almacen/inventario/articulos/actions';
-import { EyeIcon, Loader2, MoreHorizontal, Trash2 } from 'lucide-react';
+import { useCompanyStore } from '@/stores/CompanyStore';
+import { Loader2, MoreHorizontal, SquarePen, Trash2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { Button } from '../../../ui/button';
@@ -19,7 +20,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '../../../ui/dialog';
-import { useCompanyStore } from '@/stores/CompanyStore';
 
 const ArticleDropdownActions = ({ id }: { id: string | number }) => {
   const [open, setOpen] = useState<boolean>(false);
@@ -46,19 +46,19 @@ const ArticleDropdownActions = ({ id }: { id: string | number }) => {
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="center" className="flex gap-2 justify-center">
-          <DialogTrigger asChild>
-            <DropdownMenuItem className="cursor-pointer">
-              <Trash2 className="size-5 text-red-500" />
-            </DropdownMenuItem>
-          </DialogTrigger>
           <DropdownMenuItem
             className="cursor-pointer"
             onClick={() => {
               router.push(`/${selectedCompany?.slug}/almacen/inventario/editar/${id}`);
             }}
           >
-            <EyeIcon className="size-5" />
+            <SquarePen className="size-5" />
           </DropdownMenuItem>
+          <DialogTrigger asChild>
+            <DropdownMenuItem className="cursor-pointer">
+              <Trash2 className="size-5 text-red-500" />
+            </DropdownMenuItem>
+          </DialogTrigger>
         </DropdownMenuContent>
       </DropdownMenu>
       <DialogContent>

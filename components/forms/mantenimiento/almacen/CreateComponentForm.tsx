@@ -1,71 +1,60 @@
-'use client'
+'use client';
 
-import { Button } from "@/components/ui/button"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
+import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
-import { useConfirmIncomingArticle, useCreateArticle } from "@/actions/mantenimiento/almacen/inventario/articulos/actions"
-import { Calendar } from "@/components/ui/calendar"
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
-import { Input } from "@/components/ui/input"
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover"
-import { useGetConditions } from "@/hooks/administracion/useGetConditions"
-import { useGetManufacturers } from "@/hooks/general/fabricantes/useGetManufacturers"
-import { useGetArticlesByCategory } from "@/hooks/mantenimiento/almacen/articulos/useGetArticlesByCategory"
-import { useGetBatchesByCategory } from "@/hooks/mantenimiento/almacen/renglones/useGetBatchesByCategory"
-import { cn } from "@/lib/utils"
-import loadingGif from '@/public/loading2.gif'
-import { useCompanyStore } from "@/stores/CompanyStore"
-import { Article, Batch } from "@/types"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { addYears, format, subYears } from "date-fns"
-import { es } from 'date-fns/locale'
-import { CalendarIcon, FileUpIcon, Loader2 } from "lucide-react"
-import Image from "next/image"
-import { useRouter } from "next/navigation"
-import { useEffect, useState } from "react"
-import { useForm } from "react-hook-form"
-import { z } from "zod"
-import { MultiInputField } from "../../../misc/MultiInputField"
-import { Textarea } from "../../../ui/textarea"
+  useConfirmIncomingArticle,
+  useCreateArticle,
+} from '@/actions/mantenimiento/almacen/inventario/articulos/actions';
+import { Calendar } from '@/components/ui/calendar';
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { useGetConditions } from '@/hooks/administracion/useGetConditions';
+import { useGetManufacturers } from '@/hooks/general/fabricantes/useGetManufacturers';
+import { useGetArticlesByCategory } from '@/hooks/mantenimiento/almacen/articulos/useGetArticlesByCategory';
+import { useGetBatchesByCategory } from '@/hooks/mantenimiento/almacen/renglones/useGetBatchesByCategory';
+import { cn } from '@/lib/utils';
+import loadingGif from '@/public/loading2.gif';
+import { useCompanyStore } from '@/stores/CompanyStore';
+import { Article, Batch } from '@/types';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { addYears, format, subYears } from 'date-fns';
+import { es } from 'date-fns/locale';
+import { CalendarIcon, FileUpIcon, Loader2 } from 'lucide-react';
+import Image from 'next/image';
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
+import { MultiInputField } from '../../../misc/MultiInputField';
+import { Textarea } from '../../../ui/textarea';
 
 interface EditingArticle extends Article {
-  batches: Batch,
+  batches: Batch;
   component?: {
-    serial: string,
+    serial: string;
     hard_time: {
-      hour_date: string,
-      cycle_date: string,
-      calendary_date: string,
-    },
+      hour_date: string;
+      cycle_date: string;
+      calendary_date: string;
+    };
     shell_time: {
-      caducate_date: string,
-      fabrication_date: string,
-    }
-  },
+      caducate_date: string;
+      fabrication_date: string;
+    };
+  };
 }
 
-const CreateComponentForm = ({ initialData, isEditing }: {
-  initialData?: EditingArticle,
-  isEditing?: boolean,
-}) => {
+const CreateComponentForm = ({ initialData, isEditing }: { initialData?: EditingArticle; isEditing?: boolean }) => {
+  const [filteredBatches, setFilteredBatches] = useState<Batch[]>();
 
-  const [filteredBatches, setFilteredBatches] = useState<Batch[]>()
+  const [fabricationDate, setFabricationDate] = useState<Date>();
 
-  const [fabricationDate, setFabricationDate] = useState<Date>()
+  const [caducateDate, setCaducateDate] = useState<Date>();
 
-  const [caducateDate, setCaducateDate] = useState<Date>()
-
-  const [calendarDate, setCalendarDate] = useState<Date>()
+  const [calendarDate, setCalendarDate] = useState<Date>();
 
   const { createArticle } = useCreateArticle();
 
@@ -75,114 +64,134 @@ const CreateComponentForm = ({ initialData, isEditing }: {
 
   const router = useRouter();
 
-  const { data: batches, isPending: isBatchesLoading, isError } = useGetBatchesByCategory("componente");
+  const { data: batches, isPending: isBatchesLoading, isError } = useGetBatchesByCategory('componente');
 
-  const { data: manufacturers, isLoading: isManufacturerLoading, isError: isManufacturerError } = useGetManufacturers(selectedCompany?.slug)
+  const {
+    data: manufacturers,
+    isLoading: isManufacturerLoading,
+    isError: isManufacturerError,
+  } = useGetManufacturers(selectedCompany?.slug);
 
   const { data: conditions, isLoading: isConditionsLoading, error: isConditionsError } = useGetConditions();
 
   const formSchema = z.object({
     article_type: z.string().optional(),
-    serial: z.string().min(2, {
-      message: "El serial debe contener al menos 2 carácteres.",
-    }).optional(),
-    part_number: z.string({ message: "Debe seleccionar un número de parte." }).min(2, {
-      message: "El número de parte debe contener al menos 2 caracteres.",
-    }),
-    alternative_part_number: z.array(
-      z.string().min(2, {
-        message: "Cada número de parte alterno debe contener al menos 2 carácteres.",
+    serial: z
+      .string()
+      .min(2, {
+        message: 'El serial debe contener al menos 2 carácteres.',
       })
-    ).optional(),
-    description: z.string({
-      message: "Debe ingresar la descripción del articulo."
-    }).min(2, {
-      message: "La descripción debe contener al menos 2 carácteres.",
+      .optional(),
+    part_number: z.string({ message: 'Debe seleccionar un número de parte.' }).min(2, {
+      message: 'El número de parte debe contener al menos 2 caracteres.',
     }),
+    alternative_part_number: z
+      .array(
+        z.string().min(2, {
+          message: 'Cada número de parte alterno debe contener al menos 2 carácteres.',
+        }),
+      )
+      .optional(),
+    description: z
+      .string({
+        message: 'Debe ingresar la descripción del articulo.',
+      })
+      .min(2, {
+        message: 'La descripción debe contener al menos 2 carácteres.',
+      }),
     zone: z.string({
-      message: "Debe ingresar la ubicación del articulo.",
+      message: 'Debe ingresar la ubicación del articulo.',
     }),
     caducate_date: z.date().optional(),
     fabrication_date: z.date().optional(),
     cost: z.string().optional(),
     calendar_date: z.date().optional(),
-    hour_date: z.coerce.number({
-      required_error: "Ingrese las horas máximas.",
-    }).optional(),
-    cycle_date: z.coerce.number({
-      required_error: "Ingrese los ciclos máximos.",
-    }).optional(),
-    manufacturer_id: z.string({
-      message: "Debe ingresar una marca.",
-    }).optional(),
-    condition_id: z.string({
-      message: "Debe ingresar la condición del articulo.",
-    }).optional(),
+    hour_date: z.coerce
+      .number({
+        required_error: 'Ingrese las horas máximas.',
+      })
+      .optional(),
+    cycle_date: z.coerce
+      .number({
+        required_error: 'Ingrese los ciclos máximos.',
+      })
+      .optional(),
+    manufacturer_id: z
+      .string({
+        message: 'Debe ingresar una marca.',
+      })
+      .optional(),
+    condition_id: z
+      .string({
+        message: 'Debe ingresar la condición del articulo.',
+      })
+      .optional(),
     batch_id: z.string({
-      message: "Debe ingresar un lote.",
+      message: 'Debe ingresar un lote.',
     }),
     certificate_8130: z
       .instanceof(File, { message: 'Please upload a file.' })
-      .refine((f) => f.size < 10000_000, 'Max 100Kb upload size.').optional(),
+      .refine((f) => f.size < 10000_000, 'Max 100Kb upload size.')
+      .optional(),
 
     certificate_fabricant: z
       .instanceof(File, { message: 'Please upload a file.' })
-      .refine((f) => f.size < 10000_000, 'Max 100Kb upload size.').optional(),
+      .refine((f) => f.size < 10000_000, 'Max 100Kb upload size.')
+      .optional(),
 
     certificate_vendor: z
       .instanceof(File, { message: 'Please upload a file.' })
-      .refine((f) => f.size < 10000_000, 'Max 100Kb upload size.').optional(),
-    image: z
-      .instanceof(File).optional()
-    ,
-  })
-
+      .refine((f) => f.size < 10000_000, 'Max 100Kb upload size.')
+      .optional(),
+    image: z.instanceof(File).optional(),
+  });
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      part_number: initialData?.part_number || "",
-      serial: initialData?.serial || "",
+      part_number: initialData?.part_number || '',
+      serial: initialData?.serial || '',
       alternative_part_number: initialData?.alternative_part_number || [],
-      batch_id: initialData?.batches.id?.toString() || "",
-      manufacturer_id: initialData?.manufacturer?.id.toString() || "",
-      condition_id: initialData?.condition?.id.toString() || "",
-      description: initialData?.description || "",
-      zone: initialData?.zone || "",
-      hour_date: initialData?.component && Number(initialData.component.hard_time.hour_date) || 0,
-      cycle_date: initialData?.component && Number(initialData.component.hard_time.cycle_date) || 0,
-    }
-  })
-  form.setValue("article_type", "componente");
+      batch_id: initialData?.batches.id?.toString() || '',
+      manufacturer_id: initialData?.manufacturer?.id.toString() || '',
+      condition_id: initialData?.condition?.id.toString() || '',
+      description: initialData?.description || '',
+      zone: initialData?.zone || '',
+      hour_date: (initialData?.component && Number(initialData.component.hard_time.hour_date)) || 0,
+      cycle_date: (initialData?.component && Number(initialData.component.hard_time.cycle_date)) || 0,
+    },
+  });
+  form.setValue('article_type', 'componente');
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     const formattedValues = {
       ...values,
-      caducate_date: caducateDate && format(caducateDate, "yyyy-MM-dd"),
-      fabrication_date: fabricationDate && format(fabricationDate, "yyyy-MM-dd"),
-      calendar_date: calendarDate && format(calendarDate, "yyyy-MM-dd"),
-    }
+      caducate_date: caducateDate && format(caducateDate, 'yyyy-MM-dd'),
+      fabrication_date: fabricationDate && format(fabricationDate, 'yyyy-MM-dd'),
+      calendar_date: calendarDate && format(calendarDate, 'yyyy-MM-dd'),
+    };
     if (isEditing) {
       confirmIncoming.mutateAsync({
         values: {
           ...values,
           id: initialData?.id,
-          caducate_date: caducateDate && format(caducateDate, "yyyy-MM-dd"),
-          fabrication_date: fabricationDate && format(fabricationDate, "yyyy-MM-dd"),
-          calendar_date: calendarDate && format(calendarDate, "yyyy-MM-dd"),
+          caducate_date: caducateDate && format(caducateDate, 'yyyy-MM-dd'),
+          fabrication_date: fabricationDate && format(fabricationDate, 'yyyy-MM-dd'),
+          calendar_date: calendarDate && format(calendarDate, 'yyyy-MM-dd'),
           batch_id: values.batch_id,
         },
-        company: selectedCompany!.slug
-      })
-      router.push(`/${selectedCompany?.slug}/almacen/ingreso/en_recepcion`)
+        company: selectedCompany!.slug,
+      });
+      router.push(`/${selectedCompany?.slug}/almacen/ingreso/en_recepcion`);
     } else {
       createArticle.mutate({
-        company: selectedCompany!.slug, data: {
-          ...formattedValues
-        }
+        company: selectedCompany!.slug,
+        data: {
+          ...formattedValues,
+        },
       });
     }
-  }
+  };
   return (
     <Form {...form}>
       <form className="flex flex-col gap-4 max-w-6xl mx-auto" onSubmit={form.handleSubmit(onSubmit)}>
@@ -196,9 +205,7 @@ const CreateComponentForm = ({ initialData, isEditing }: {
                 <FormControl>
                   <Input placeholder="EJ: 234ABAC" {...field} />
                 </FormControl>
-                <FormDescription>
-                  Identificador único del articulo.
-                </FormDescription>
+                <FormDescription>Identificador único del articulo.</FormDescription>
                 <FormMessage />
               </FormItem>
             )}
@@ -210,20 +217,13 @@ const CreateComponentForm = ({ initialData, isEditing }: {
               <FormItem className="w-full xl:w-2/3 min-w-0">
                 <FormLabel>Nro. de Parte Alternos</FormLabel>
                 <FormControl>
-                  <MultiInputField
-                    values={field.value || []}
-                    onChange={field.onChange}
-                    placeholder="EJ: 234ABAC"
-                  />
+                  <MultiInputField values={field.value || []} onChange={field.onChange} placeholder="EJ: 234ABAC" />
                 </FormControl>
-                <FormDescription>
-                  Identificadores alternativos del artículo.
-                </FormDescription>
+                <FormDescription>Identificadores alternativos del artículo.</FormDescription>
                 <FormMessage />
               </FormItem>
             )}
           />
-
         </div>
         <div className="flex flex-row gap-12 justify-start max-w-7xl w-full">
           <div className="grid grid-cols-2 gap-x-10 gap-y-4 w-full max-w-xl">
@@ -236,9 +236,7 @@ const CreateComponentForm = ({ initialData, isEditing }: {
                   <FormControl>
                     <Input placeholder="EJ: 234ABAC" {...field} />
                   </FormControl>
-                  <FormDescription>
-                    Identificador único del articulo.
-                  </FormDescription>
+                  <FormDescription>Identificador único del articulo.</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -256,16 +254,15 @@ const CreateComponentForm = ({ initialData, isEditing }: {
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {
-                        conditions && conditions.map((condition) => (
-                          <SelectItem key={condition.id} value={condition.id.toString()}>{condition.name}</SelectItem>
-                        ))
-                      }
+                      {conditions &&
+                        conditions.map((condition) => (
+                          <SelectItem key={condition.id} value={condition.id.toString()}>
+                            {condition.name}
+                          </SelectItem>
+                        ))}
                     </SelectContent>
                   </Select>
-                  <FormDescription>
-                    Estado físico del articulo.
-                  </FormDescription>
+                  <FormDescription>Estado físico del articulo.</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -280,15 +277,15 @@ const CreateComponentForm = ({ initialData, isEditing }: {
                     <PopoverTrigger asChild>
                       <FormControl>
                         <Button
-                          variant={"outline"}
+                          variant={'outline'}
                           className={cn(
-                            "w-full pl-3 text-left font-normal",
-                            !fabricationDate && "text-muted-foreground"
+                            'w-full pl-3 text-left font-normal',
+                            !fabricationDate && 'text-muted-foreground',
                           )}
                         >
                           {fabricationDate ? (
-                            format(fabricationDate, "PPP", {
-                              locale: es
+                            format(fabricationDate, 'PPP', {
+                              locale: es,
                             })
                           ) : (
                             <span>Seleccione una fecha</span>
@@ -298,11 +295,7 @@ const CreateComponentForm = ({ initialData, isEditing }: {
                       </FormControl>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0" align="start">
-                      <Select
-                        onValueChange={(value) =>
-                          setFabricationDate(subYears(new Date(), parseInt(value)))
-                        }
-                      >
+                      <Select onValueChange={(value) => setFabricationDate(subYears(new Date(), parseInt(value)))}>
                         <SelectTrigger className="p-3">
                           <SelectValue placeholder="Seleccione una opcion..." />
                         </SelectTrigger>
@@ -316,15 +309,14 @@ const CreateComponentForm = ({ initialData, isEditing }: {
                       <Calendar
                         locale={es}
                         mode="single"
-                        selected={fabricationDate} onSelect={setFabricationDate}
+                        selected={fabricationDate}
+                        onSelect={setFabricationDate}
                         initialFocus
                         month={fabricationDate}
                       />
                     </PopoverContent>
                   </Popover>
-                  <FormDescription>
-                    Fecha de creación del articulo.
-                  </FormDescription>
+                  <FormDescription>Fecha de creación del articulo.</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -340,15 +332,12 @@ const CreateComponentForm = ({ initialData, isEditing }: {
                     <PopoverTrigger asChild>
                       <FormControl>
                         <Button
-                          variant={"outline"}
-                          className={cn(
-                            "w-full pl-3 text-left font-normal",
-                            !caducateDate && "text-muted-foreground"
-                          )}
+                          variant={'outline'}
+                          className={cn('w-full pl-3 text-left font-normal', !caducateDate && 'text-muted-foreground')}
                         >
                           {caducateDate ? (
-                            format(caducateDate, "PPP", {
-                              locale: es
+                            format(caducateDate, 'PPP', {
+                              locale: es,
                             })
                           ) : (
                             <span>Seleccione una fecha...</span>
@@ -358,11 +347,7 @@ const CreateComponentForm = ({ initialData, isEditing }: {
                       </FormControl>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0" align="start">
-                      <Select
-                        onValueChange={(value) =>
-                          setCaducateDate(addYears(new Date(), parseInt(value)))
-                        }
-                      >
+                      <Select onValueChange={(value) => setCaducateDate(addYears(new Date(), parseInt(value)))}>
                         <SelectTrigger className="p-3">
                           <SelectValue placeholder="Seleccione una opcion..." />
                         </SelectTrigger>
@@ -376,15 +361,14 @@ const CreateComponentForm = ({ initialData, isEditing }: {
                       <Calendar
                         locale={es}
                         mode="single"
-                        selected={caducateDate} onSelect={setCaducateDate}
+                        selected={caducateDate}
+                        onSelect={setCaducateDate}
                         initialFocus
                         month={caducateDate}
                       />
                     </PopoverContent>
                   </Popover>
-                  <FormDescription>
-                    Fecha límite del articulo.
-                  </FormDescription>
+                  <FormDescription>Fecha límite del articulo.</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -399,15 +383,12 @@ const CreateComponentForm = ({ initialData, isEditing }: {
                     <PopoverTrigger asChild>
                       <FormControl>
                         <Button
-                          variant={"outline"}
-                          className={cn(
-                            "w-full pl-3 text-left font-normal",
-                            !calendarDate && "text-muted-foreground"
-                          )}
+                          variant={'outline'}
+                          className={cn('w-full pl-3 text-left font-normal', !calendarDate && 'text-muted-foreground')}
                         >
                           {calendarDate ? (
-                            format(calendarDate, "PPP", {
-                              locale: es
+                            format(calendarDate, 'PPP', {
+                              locale: es,
                             })
                           ) : (
                             <span>Seleccione una fecha...</span>
@@ -417,11 +398,7 @@ const CreateComponentForm = ({ initialData, isEditing }: {
                       </FormControl>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0" align="start">
-                      <Select
-                        onValueChange={(value) =>
-                          setCalendarDate(subYears(new Date(), parseInt(value)))
-                        }
-                      >
+                      <Select onValueChange={(value) => setCalendarDate(subYears(new Date(), parseInt(value)))}>
                         <SelectTrigger className="p-3">
                           <SelectValue placeholder="Seleccione una opcion..." />
                         </SelectTrigger>
@@ -435,15 +412,14 @@ const CreateComponentForm = ({ initialData, isEditing }: {
                       <Calendar
                         locale={es}
                         mode="single"
-                        selected={calendarDate} onSelect={setCalendarDate}
+                        selected={calendarDate}
+                        onSelect={setCalendarDate}
                         initialFocus
                         month={calendarDate}
                       />
                     </PopoverContent>
                   </Popover>
-                  <FormDescription>
-                    Fecha límite del componente.
-                  </FormDescription>
+                  <FormDescription>Fecha límite del componente.</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -457,9 +433,7 @@ const CreateComponentForm = ({ initialData, isEditing }: {
                   <FormControl>
                     <Input type="number" placeholder="EJ: 25000, 50000" {...field} />
                   </FormControl>
-                  <FormDescription>
-                    Horas límite del componente.
-                  </FormDescription>
+                  <FormDescription>Horas límite del componente.</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -473,9 +447,7 @@ const CreateComponentForm = ({ initialData, isEditing }: {
                   <FormControl>
                     <Input type="number" placeholder="EJ: 65000, 70000" {...field} />
                   </FormControl>
-                  <FormDescription>
-                    Ciclos límite del componente.
-                  </FormDescription>
+                  <FormDescription>Ciclos límite del componente.</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -493,16 +465,15 @@ const CreateComponentForm = ({ initialData, isEditing }: {
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {
-                        manufacturers && manufacturers.map((manufacturer) => (
-                          <SelectItem key={manufacturer.id} value={manufacturer.id.toString()}>{manufacturer.name}</SelectItem>
-                        ))
-                      }
+                      {manufacturers &&
+                        manufacturers.map((manufacturer) => (
+                          <SelectItem key={manufacturer.id} value={manufacturer.id.toString()}>
+                            {manufacturer.name}
+                          </SelectItem>
+                        ))}
                     </SelectContent>
                   </Select>
-                  <FormDescription>
-                    Marca específica del articulo.
-                  </FormDescription>
+                  <FormDescription>Marca específica del articulo.</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -555,9 +526,7 @@ const CreateComponentForm = ({ initialData, isEditing }: {
                   <FormControl>
                     <Input placeholder="EJ: Pasillo 4, etc..." {...field} />
                   </FormControl>
-                  <FormDescription>
-                    Identificador único del articulo.
-                  </FormDescription>
+                  <FormDescription>Identificador único del articulo.</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -566,35 +535,39 @@ const CreateComponentForm = ({ initialData, isEditing }: {
               control={form.control}
               name="batch_id"
               render={({ field }) => (
-                <FormItem className={cn("", isEditing ? "col-span-2" : "col-span-1")}>
-                  <FormLabel>Lote del Articulo</FormLabel>
+                <FormItem className="w-full">
+                  <FormLabel>Categoría del Articulo</FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder={isBatchesLoading ? <Loader2 className="size-4 animate-spin" /> : "Seleccione lote..."} />
+                        <SelectValue
+                          placeholder={
+                            isBatchesLoading ? <Loader2 className="size-4 animate-spin" /> : 'Seleccione categoría...'
+                          }
+                        />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {
-                        batches && batches.map((batch) => (
-                          <SelectItem key={batch.name} value={batch.id.toString()}>{batch.name}</SelectItem>
-                        ))
-                      }
-                      {
-                        !batches || batches?.length <= 0 && (
-                          <p className="text-sm text-muted-foreground p-2 text-center">No se han encontrado lotes....</p>
-                        )
-                      }
-                      {
-                        isError && (
-                          <p className="text-sm text-muted-foreground p-2 text-center">Ha ocurrido un error al cargar los lotes...</p>
-                        )
-                      }
+                      {batches &&
+                        batches.map((batch) => (
+                          <SelectItem key={batch.name} value={batch.id.toString()}>
+                            {batch.name}
+                          </SelectItem>
+                        ))}
+                      {!batches ||
+                        (batches?.length <= 0 && (
+                          <p className="text-sm text-muted-foreground p-2 text-center">
+                            No se han encontrado categorías....
+                          </p>
+                        ))}
+                      {isError && (
+                        <p className="text-sm text-muted-foreground p-2 text-center">
+                          Ha ocurrido un error al cargar las categorías...
+                        </p>
+                      )}
                     </SelectContent>
                   </Select>
-                  <FormDescription>
-                    Lote a asignar el articulo.
-                  </FormDescription>
+                  <FormDescription>Categoría a asignar el articulo.</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -605,14 +578,12 @@ const CreateComponentForm = ({ initialData, isEditing }: {
               control={form.control}
               name="description"
               render={({ field }) => (
-                <FormItem >
+                <FormItem>
                   <FormLabel>Descripción del Articulo</FormLabel>
                   <FormControl>
                     <Textarea rows={5} placeholder="EJ: Motor V8 de..." {...field} />
                   </FormControl>
-                  <FormDescription>
-                    Breve descricion del articulo.
-                  </FormDescription>
+                  <FormDescription>Breve descricion del articulo.</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -628,14 +599,12 @@ const CreateComponentForm = ({ initialData, isEditing }: {
                       <FileUpIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 z-10" />
                       <Input
                         type="file"
-                        onChange={(e) => form.setValue("image", e.target.files![0])}
+                        onChange={(e) => form.setValue('image', e.target.files![0])}
                         className="pl-10 pr-3 py-2 text-md w-full border border-gray-300 rounded shadow-sm focus:outline-none focus:ring-2 focus:ring-[#6E23DD] focus:border-transparent cursor-pointer" // Add additional styling as needed
                       />
                     </div>
                   </FormControl>
-                  <FormDescription>
-                    Imágen descriptiva del articulo
-                  </FormDescription>
+                  <FormDescription>Imágen descriptiva del articulo</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -646,7 +615,9 @@ const CreateComponentForm = ({ initialData, isEditing }: {
                 name="certificate_8130"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>C. #<span className="text-primary font-bold">8130</span></FormLabel>
+                    <FormLabel>
+                      C. #<span className="text-primary font-bold">8130</span>
+                    </FormLabel>
                     <FormControl>
                       <div className="relative h-10 w-full ">
                         <FileUpIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 z-10" />
@@ -654,13 +625,11 @@ const CreateComponentForm = ({ initialData, isEditing }: {
                           type="file"
                           className="pl-8 pr-3 py-2 text-md w-full border border-gray-300 rounded shadow-sm focus:outline-none focus:ring-2 focus:ring-[#6E23DD] focus:border-transparent cursor-pointer" // Add additional styling as needed
                           placeholder="Subir archivo..."
-                          onChange={(e) => form.setValue("certificate_8130", e.target.files![0])}
+                          onChange={(e) => form.setValue('certificate_8130', e.target.files![0])}
                         />
                       </div>
                     </FormControl>
-                    <FormDescription>
-                      Documento legal del archivo.
-                    </FormDescription>
+                    <FormDescription>Documento legal del archivo.</FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -670,20 +639,20 @@ const CreateComponentForm = ({ initialData, isEditing }: {
                 name="certificate_fabricant"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>C. del <span className="text-primary">Fabricante</span></FormLabel>
+                    <FormLabel>
+                      C. del <span className="text-primary">Fabricante</span>
+                    </FormLabel>
                     <FormControl>
                       <div className="relative h-10 w-full ">
                         <FileUpIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 z-10" />
                         <Input
                           type="file"
                           className="pl-8 pr-3 py-2 text-md w-full border border-gray-300 rounded shadow-sm focus:outline-none focus:ring-2 focus:ring-[#6E23DD] focus:border-transparent cursor-pointer"
-                          onChange={(e) => form.setValue("certificate_fabricant", e.target.files![0])}
+                          onChange={(e) => form.setValue('certificate_fabricant', e.target.files![0])}
                         />
                       </div>
                     </FormControl>
-                    <FormDescription>
-                      Documentos legal del articulo.
-                    </FormDescription>
+                    <FormDescription>Documentos legal del articulo.</FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -693,20 +662,20 @@ const CreateComponentForm = ({ initialData, isEditing }: {
                 name="certificate_vendor"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>C. del <span className="text-primary">Vendedor</span></FormLabel>
+                    <FormLabel>
+                      C. del <span className="text-primary">Vendedor</span>
+                    </FormLabel>
                     <FormControl>
                       <div className="relative h-10 w-full ">
                         <FileUpIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 z-10" />
                         <Input
                           type="file"
                           className="pl-8 pr-3 py-2 text-md w-full border border-gray-300 rounded shadow-sm focus:outline-none focus:ring-2 focus:ring-[#6E23DD] focus:border-transparent cursor-pointer" // Add additional styling as needed
-                          onChange={(e) => form.setValue("certificate_vendor", e.target.files![0])}
+                          onChange={(e) => form.setValue('certificate_vendor', e.target.files![0])}
                         />
                       </div>
                     </FormControl>
-                    <FormDescription>
-                      Documentos legal del articulo.
-                    </FormDescription>
+                    <FormDescription>Documentos legal del articulo.</FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -715,13 +684,21 @@ const CreateComponentForm = ({ initialData, isEditing }: {
           </div>
         </div>
         <div>
-          <Button className="bg-primary text-white hover:bg-blue-900 disabled:bg-slate-50 disabled:border-dashed disabled:border-black" disabled={createArticle?.isPending || confirmIncoming.isPending} type="submit">
-            {createArticle?.isPending || confirmIncoming.isPending ? <Image className="text-black" src={loadingGif} width={170} height={170} alt="Loading..." /> : <p>{isEditing ? "Confirmar Ingreso" : "Crear Articulo"}</p>}
+          <Button
+            className="bg-primary text-white hover:bg-blue-900 disabled:bg-slate-50 disabled:border-dashed disabled:border-black"
+            disabled={createArticle?.isPending || confirmIncoming.isPending}
+            type="submit"
+          >
+            {createArticle?.isPending || confirmIncoming.isPending ? (
+              <Image className="text-black" src={loadingGif} width={170} height={170} alt="Loading..." />
+            ) : (
+              <p>{isEditing ? 'Confirmar Ingreso' : 'Crear Articulo'}</p>
+            )}
           </Button>
         </div>
       </form>
     </Form>
-  )
-}
+  );
+};
 
-export default CreateComponentForm
+export default CreateComponentForm;

@@ -534,7 +534,7 @@ const CreateConsumableForm = ({ initialData, isEditing }: { initialData?: Editin
                       <SelectTrigger>
                         <SelectValue
                           placeholder={
-                            isBatchesLoading ? <Loader2 className="size-4 animate-spin" /> : 'Seleccione lote...'
+                            isBatchesLoading ? <Loader2 className="size-4 animate-spin" /> : 'Seleccione categoría...'
                           }
                         />
                       </SelectTrigger>
@@ -549,17 +549,17 @@ const CreateConsumableForm = ({ initialData, isEditing }: { initialData?: Editin
                       {!batches ||
                         (batches?.length <= 0 && (
                           <p className="text-sm text-muted-foreground p-2 text-center">
-                            No se han encontrado lotes....
+                            No se han encontrado categorías....
                           </p>
                         ))}
                       {isError && (
                         <p className="text-sm text-muted-foreground p-2 text-center">
-                          Ha ocurrido un error al cargar los lotes...
+                          Ha ocurrido un error al cargar las categorías...
                         </p>
                       )}
                     </SelectContent>
                   </Select>
-                  <FormDescription>Lote a asignar el articulo.</FormDescription>
+                  <FormDescription>Categoría a asignar el articulo.</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
