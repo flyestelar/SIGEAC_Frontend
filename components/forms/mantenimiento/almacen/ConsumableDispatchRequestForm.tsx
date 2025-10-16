@@ -482,8 +482,10 @@ export function ConsumableDispatchForm({ onClose }: FormProps) {
                                   />
                                   <div className="flex flex-col">
                                     <span className="text-sm font-medium">{article.part_number}</span>
-                                    <span className="text-xs text-muted-foreground">
+                                    <span className="text-xs text-muted-foreground font-bold">
                                       Cant: {article.quantity! ?? '-'}
+                                    </span>
+                                    <span className="text-xs text-muted-foreground">
                                       Serial: {article.serial ?? 'N/A'}
                                     </span>
                                   </div>
