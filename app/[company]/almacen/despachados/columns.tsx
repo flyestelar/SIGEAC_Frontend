@@ -6,6 +6,7 @@ import { DataTableColumnHeader } from '@/components/tables/DataTableHeader';
 
 import { Checkbox } from '@/components/ui/checkbox';
 import { DispachedArticles } from '@/hooks/mantenimiento/almacen/salidas_entradas/useGetDispatchedArticles';
+import DispatchedArticlesDropdownActions from '@/components/dropdowns/mantenimiento/almacen/DispatchedArticlesDropdownActions';
 
 export const columns: ColumnDef<DispachedArticles>[] = [
   {
@@ -77,5 +78,14 @@ export const columns: ColumnDef<DispachedArticles>[] = [
         </p>
       );
     },
+  },
+  {
+    id: 'actions',
+    header: ({ column }) => <DataTableColumnHeader column={column} title="Acciones" />,
+    cell: ({ row }) => (
+      <div className="flex justify-center">
+        <DispatchedArticlesDropdownActions id={row.original.id} />
+      </div>
+    ),
   },
 ];

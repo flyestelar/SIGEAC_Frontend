@@ -1,41 +1,45 @@
-'use client'
+'use client';
 
-import { Button } from "@/components/ui/button"
+import { CreateGeneralRequisitionForm } from '@/components/forms/mantenimiento/compras/CreateGeneralRequisitionForm';
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger
-} from "@/components/ui/dialog"
-import { useState } from "react"
-import { CreateRequisitionForm } from "@/components/forms/mantenimiento/compras/CreateRequisitionForm"
-import { useAuth } from "@/contexts/AuthContext"
-import { CreateGeneralRequisitionForm } from "@/components/forms/mantenimiento/compras/CreateGeneralRequisitionForm"
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import { useAuth } from '@/contexts/AuthContext';
+import { useState } from 'react';
 
 export function CreateRequisitionDialog() {
-  const { user } = useAuth()
+  const { user } = useAuth();
   const [open, setOpen] = useState(false);
 
-  const userRoles = user?.roles?.map(role => role.name) || [];
+  const userRoles = user?.roles?.map((role) => role.name) || [];
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button onClick={() => setOpen(true)} variant={'outline'} className="flex items-center justify-center gap-2 h-8 border-dashed">Nueva Solicitud</Button>
+        <Button
+          onClick={() => setOpen(true)}
+          variant={'outline'}
+          className="flex items-center justify-center gap-2 h-8 border-dashed"
+        >
+          Nueva Solicitud
+        </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[680px]">
         <DialogHeader>
-          <DialogTitle>Creación de Sol. de Compra</DialogTitle>
+          <DialogTitle>Creación de Sol. de Material Faltante</DialogTitle>
           <DialogDescription>
-            Genere una solicitud de compra mediante el siguiente formulario
+            Genere una solicitud de material faltante mediante el siguiente formulario.
           </DialogDescription>
         </DialogHeader>
-        {
-          userRoles.includes("INGENIERO") ? <CreateRequisitionForm onClose={() => setOpen(false)} /> : <CreateGeneralRequisitionForm isEditing={false} onClose={() => setOpen(false)} />
-        }
+
+        <CreateGeneralRequisitionForm isEditing={false} onClose={() => setOpen(false)} />
       </DialogContent>
     </Dialog>
-  )
+  );
 }

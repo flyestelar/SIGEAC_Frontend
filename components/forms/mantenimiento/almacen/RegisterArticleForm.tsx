@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../ui/select';
 import CreateComponentForm from './CreateComponentForm';
 import CreateConsumableForm from './CreateConsumableForm';
-import { CreateToolForm } from './CreateToolForm';
+import CreateToolForm from './CreateToolForm';
 
 export interface EditingArticle extends Article {
   batches: Batch;
@@ -13,6 +13,9 @@ export interface EditingArticle extends Article {
     id: number;
     serial: string;
     isSpecial: boolean;
+    needs_calibration: boolean;
+    last_calibration_date?: string;
+    next_calibration?: string | number;
     article_id: number;
   };
   component?: {
@@ -20,16 +23,17 @@ export interface EditingArticle extends Article {
     hard_time: {
       hour_date: string;
       cycle_date: string;
-      calendary_date: string;
+      calendar_date: string;
     };
     shell_time: {
       caducate_date: string;
       fabrication_date: string;
+      calendar_date: string;
     };
   };
   consumable?: {
     lot_number?: string;
-    caducate_date: Date;
+    caducate_date: string;
     fabrication_date: string;
   };
 }
@@ -60,7 +64,7 @@ const RegisterArticleForm = ({ isEditing = false, initialData }: IRegisterArticl
         </SelectContent>
       </Select>
       {type === 'consumible' && <CreateConsumableForm isEditing={isEditing} initialData={initialData} />}
-      {type === 'herramienta' && <CreateToolForm />}
+      {type === 'herramienta' && <CreateToolForm isEditing={isEditing} initialData={initialData} />}
       {type === 'componente' && <CreateComponentForm isEditing={isEditing} initialData={initialData} />}
     </div>
   );

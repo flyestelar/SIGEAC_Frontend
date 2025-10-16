@@ -32,14 +32,14 @@ export type Aircraft = {
   number_engine: string;
   comments: string;
   model: string;
-  status: "VENDIDO" | "EN POSESION" | "RENTADO";
+  status: 'VENDIDO' | 'EN POSESION' | 'RENTADO';
 };
 
 export type AdministrationArticle = {
   id: number;
   serial: string;
   name: string;
-  status: "VENDIDO" | "EN POSESION" | "RENTADO";
+  status: 'VENDIDO' | 'EN POSESION' | 'RENTADO';
   price: string;
   brand: string;
   type: string;
@@ -65,7 +65,7 @@ export type Article = {
 export interface Tool extends Article {
   needs_calibration?: boolean;
   last_calibration_date?: string;
-  calibration_interval_days?: number;
+  next_calibration?: number;
 }
 
 export interface Consumable extends Article {
@@ -84,7 +84,6 @@ export interface Component extends Article {
   calendar_date?: string;
   component_id?: number;
 }
-
 
 export type Condition = {
   id: number;
@@ -112,7 +111,7 @@ export type Batch = {
   slug: string;
   description: string;
   category: string;
-  status: string,
+  status: string;
   ata_code: string;
   brand: string;
   is_hazarous: boolean;
@@ -122,7 +121,6 @@ export type Batch = {
   article_count: number;
   warehouse_name: string;
 };
-
 
 export type Bank = {
   id: number;
@@ -158,8 +156,8 @@ export type Cash = {
   id: number;
   name: string;
   total_amount: string;
-  coin: "BOLIVARES" | "DOLARES" | "EUROS";
-  type: "EFECTIVO" | "TRANSFERENCIA";
+  coin: 'BOLIVARES' | 'DOLARES' | 'EUROS';
+  type: 'EFECTIVO' | 'TRANSFERENCIA';
 };
 
 export type CashMovement = {
@@ -168,7 +166,7 @@ export type CashMovement = {
   cash: Cash;
   company: Company;
   date: Date;
-  type: "INCOME" | "OUTPUT";
+  type: 'INCOME' | 'OUTPUT';
   details: string;
   reference_cod: string;
   total_amount: string;
@@ -236,19 +234,19 @@ export type Credit = {
   vendor: AdministrationVendor;
   client: Client;
   details: string;
-  type: "PAGAR" | "COBRAR";
+  type: 'PAGAR' | 'COBRAR';
   opening_date: Date;
   closing_date: Date;
   deadline: Date;
   debt: number;
   payed_amount: number;
-  status: "PENDIENTE" | "PAGADO";
+  status: 'PENDIENTE' | 'PAGADO';
 };
 
 export type CreditPayment = {
   id: number;
   bank_account: BankAccount;
-  pay_method: "EFECTIVO" | "TRANSFERENCIA";
+  pay_method: 'EFECTIVO' | 'TRANSFERENCIA';
   pay_amount: string;
   payment_date: Date;
   pay_description: string;
@@ -287,13 +285,13 @@ export type MaintenanceAircraft = {
 };
 
 export type AircraftAssigment = {
-  id: number,
-  hours_at_installation: string,
-  cycles_at_installation: string,
-  removed_date: string | null,
-  assigned_date: string,
-  aircraft_part: MaintenanceAircraftPart
-}
+  id: number;
+  hours_at_installation: string;
+  cycles_at_installation: string;
+  removed_date: string | null;
+  assigned_date: string;
+  aircraft_part: MaintenanceAircraftPart;
+};
 
 export type MaintenanceAircraftPart = {
   part_number: string;
@@ -307,31 +305,31 @@ export type MaintenanceAircraftPart = {
 
 export type PlanificationEvent = {
   id: number;
-  start_date: string,
-  end_date: string,
-  start: string,
-  end: string,
-  title: string,
-  description: string,
-  priority: "LOW" | "MEDIUM" | "HIGH",
-  calendarId: string,
+  start_date: string;
+  end_date: string;
+  start: string;
+  end: string;
+  title: string;
+  description: string;
+  priority: 'LOW' | 'MEDIUM' | 'HIGH';
+  calendarId: string;
   work_order?: {
-    id: string,
+    id: string;
     order_number: string;
-  }
-}
+  };
+};
 
 export type WorkOrderTaskEvent = {
   id: number;
-  start_date: string,
-  end_date: string,
-  start: string,
-  end: string,
-  title: string,
-  description: string,
-  priority: "LOW" | "MEDIUM" | "HIGH",
-  calendarId: string,
-}
+  start_date: string;
+  end_date: string;
+  start: string;
+  end: string;
+  title: string;
+  description: string;
+  priority: 'LOW' | 'MEDIUM' | 'HIGH';
+  calendarId: string;
+};
 
 export type FlightControl = {
   flight_number: string;
@@ -350,7 +348,7 @@ export type MaintenanceService = {
   name: string;
   description: string;
   manufacturer: Manufacturer;
-  type: "AIRCRAFT" | "PART";
+  type: 'AIRCRAFT' | 'PART';
   tasks: ServiceTask[];
 };
 
@@ -388,8 +386,8 @@ export type WorkOrderTask = {
     status: string;
     action?: string;
     needs_task: boolean;
-    work_order_task: Omit<WorkOrderTask, "non_routine">;
-    no_routine_task?: Omit<WorkOrderTask, "non_routine">[];
+    work_order_task: Omit<WorkOrderTask, 'non_routine'>;
+    no_routine_task?: Omit<WorkOrderTask, 'non_routine'>[];
   };
   task_events?: WorkOrderTaskEvent[];
 };
@@ -455,9 +453,9 @@ export type Flight = {
   details: string;
   fee: string;
   total_amount: string;
-  type: "CARGA" | "PAX" | "CHART";
+  type: 'CARGA' | 'PAX' | 'CHART';
   payed_amount: string;
-  debt_status: "PENDIENTE" | "PAGADO";
+  debt_status: 'PENDIENTE' | 'PAGADO';
   bank_account: BankAccount;
 };
 
@@ -482,7 +480,7 @@ export type FlightPayment = {
   bank_account: BankAccount;
   flight: Flight;
   client: Client;
-  pay_method: "EFECTIVO" | "TRANSFERENCIA";
+  pay_method: 'EFECTIVO' | 'TRANSFERENCIA';
   pay_amount: string;
   payment_date: Date;
   pay_description: string;
@@ -511,15 +509,15 @@ export type Location = {
 };
 
 export type Workshop = {
-  id: number,
-  name: string
+  id: number;
+  name: string;
   location: Location;
-}
+};
 
 export type Manufacturer = {
   id: number;
   name: string;
-  type: "AIRCRAFT" | "PART";
+  type: 'AIRCRAFT' | 'PART';
   description: string;
 };
 
@@ -527,7 +525,7 @@ export type Vendor = {
   id: string | number;
   name: string;
   phone: string;
-  type: "PROVEEDOR" | "BENEFICIARIO";
+  type: 'PROVEEDOR' | 'BENEFICIARIO';
   address: string;
   email: string;
 };
@@ -617,8 +615,8 @@ export type Quote = {
 export type Renting = {
   id: number;
   description: string;
-  status: "EN PROCESO" | "CULMINADO" | "RETRASADO";
-  type: "AERONAVE" | "ARTICULO";
+  status: 'EN PROCESO' | 'CULMINADO' | 'RETRASADO';
+  type: 'AERONAVE' | 'ARTICULO';
   price: number;
   payed_amount: number;
   start_date: Date;
@@ -627,7 +625,7 @@ export type Renting = {
   article: AdministrationArticle;
   aircraft: Aircraft;
   client: Client;
-  debt_status: "PENDIENTE" | "PAGADO";
+  debt_status: 'PENDIENTE' | 'PAGADO';
   bank_account: BankAccount;
   //reference_pic: string,
 };
@@ -665,7 +663,7 @@ export type Requisition = {
   submission_date: Date;
   work_order: WorkOrder;
   aircraft: Aircraft;
-  type: "GENERAL" | "AVIACION";
+  type: 'GENERAL' | 'AVIACION';
 };
 
 export type AdministrationRequisition = {
@@ -774,7 +772,7 @@ export type AdministrationVendor = {
   email: string;
   phone: string;
   address: string;
-  type: "PROVEEDOR" | "BENEFICIARIO";
+  type: 'PROVEEDOR' | 'BENEFICIARIO';
   created_at: Date;
   updated_at: Date;
 };
@@ -829,7 +827,7 @@ export type Pilot = {
 export type InformationSource = {
   id: string;
   name: string;
-  type: "PROACTIVO" | "REACTIVO" | "PREDICTIVO";
+  type: 'PROACTIVO' | 'REACTIVO' | 'PREDICTIVO';
 };
 
 export type ObligatoryReport = {
@@ -1061,7 +1059,6 @@ export type CourseStats = {
   completed_courses: number;
   total_courses: number;
 };
-
 
 export type TaskMaster = {
   id: number;
