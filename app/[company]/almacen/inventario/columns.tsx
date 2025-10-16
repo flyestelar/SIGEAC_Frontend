@@ -108,7 +108,7 @@ const baseCols: ColumnDef<IArticleSimple>[] = [
     header: ({ column }) => <DataTableColumnHeader filter column={column} title="Alt. Part Number" />,
     cell: ({ row }) => (
       <div className="font-bold text-center text-base">
-        {row.original.alternative_part_number ? row.original.alternative_part_number.join('- ') : 'N/A'}
+        {row.original.alternative_part_number ? row.original.alternative_part_number.join('/ ') : 'N/A'}
       </div>
     ),
   },

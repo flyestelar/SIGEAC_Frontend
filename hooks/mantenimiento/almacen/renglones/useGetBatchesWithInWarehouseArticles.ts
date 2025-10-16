@@ -1,10 +1,16 @@
 import axios from '@/lib/axios';
 import { useCompanyStore } from '@/stores/CompanyStore';
 import { Batch, Component, Consumable, Tool } from '@/types';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 
 interface BatchesWithArticles extends Batch {
-  articles: Tool[] | Component[] | Consumable[];
+  articles: {
+    serial: string;
+    part_number: string;
+    id: number;
+    quantity?: number;
+    alternative_part_number?: string[];
+  }[];
   batch_id: number;
 }
 

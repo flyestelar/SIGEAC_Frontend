@@ -15,7 +15,6 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useGetWarehousesEmployees } from '@/hooks/mantenimiento/almacen/empleados/useGetWarehousesEmployees';
 import { useGetBatchesWithInWarehouseArticles } from '@/hooks/mantenimiento/almacen/renglones/useGetBatchesWithInWarehouseArticles';
 import { useGetMaintenanceAircrafts } from '@/hooks/planificacion/useGetMaintenanceAircrafts';
-import { useGetDepartments } from '@/hooks/sistema/departamento/useGetDepartment';
 import { useGetWorkshopsByLocation } from '@/hooks/sistema/empresas/talleres/useGetWorkshopsByLocation';
 import { useGetEmployeesByDepartment } from '@/hooks/sistema/useGetEmployeesByDepartament';
 import { cn } from '@/lib/utils';
@@ -484,6 +483,7 @@ export function ConsumableDispatchForm({ onClose }: FormProps) {
                                   <div className="flex flex-col">
                                     <span className="text-sm font-medium">{article.part_number}</span>
                                     <span className="text-xs text-muted-foreground">
+                                      Cant: {article.quantity! ?? '-'}
                                       Serial: {article.serial ?? 'N/A'}
                                     </span>
                                   </div>
