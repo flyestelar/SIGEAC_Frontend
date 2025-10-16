@@ -28,25 +28,35 @@ import { useEffect, useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
-const FormSchema = z.object({
-  requested_by: z.string(),
-  dispatch_type: z.enum(['aircraft', 'workshop'], {
-    message: 'Debe seleccionar si el despacho es para una Aeronave o un Taller.',
-  }),
-  workshop_id: z.string().optional(),
-  delivered_by: z.string(),
-  aircraft_id: z.string(),
-  submission_date: z.date({ message: 'Debe ingresar la fecha.' }),
-  articles: z.object({
-    article_id: z.coerce.number(),
-    serial: z.string().nullable(),
-    quantity: z.number(),
-    batch_id: z.number(),
-  }),
-  justification: z.string({ message: 'Debe ingresar una justificación de la salida.' }),
-  status: z.string(),
-  unit: z.enum(['litros', 'mililitros'], { message: 'Debe seleccionar una unidad.' }).optional(),
-});
+const FormSchema = z
+  .object({
+    requested_by: z.string(),
+    dispatch_type: z.enum(['aircraft', 'workshop'], {
+      message: 'Debe seleccionar si el despacho es para una Aeronave o un Taller.',
+    }),
+    workshop_id: z.string().optional(),
+    delivered_by: z.string(),
+    aircraft_id: z.string().optional(),
+    submission_date: z.date({ message: 'Debe ingresar la fecha.' }),
+    articles: z.object({
+      article_id: z.coerce.number(),
+      serial: z.string().nullable(),
+      quantity: z.number(),
+      batch_id: z.number(),
+    }),
+    justification: z.string({ message: 'Debe ingresar una justificación de la salida.' }),
+    status: z.string(),
+    unit: z.enum(['litros', 'mililitros'], { message: 'Debe seleccionar una unidad.' }).optional(),
+  })
+  .superRefine((d, ctx) => {
+    if (!d.aircraft_id && !d.workshop_id) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Seleccione una aeronave o un taller.',
+        path: ['aircraft_id'],
+      });
+    }
+  });
 
 type FormSchemaType = z.infer<typeof FormSchema>;
 
@@ -148,6 +158,8 @@ export function ConsumableDispatchForm({ onClose }: FormProps) {
       setValue('unit', undefined);
     }
   };
+
+  console.log(form.getValues());
 
   return (
     <Form {...form}>
