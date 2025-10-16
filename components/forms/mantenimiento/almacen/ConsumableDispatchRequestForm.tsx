@@ -467,7 +467,7 @@ export function ConsumableDispatchForm({ onClose }: FormProps) {
                             <CommandGroup key={batch.batch_id} heading={`${batch.name} · ${batch.unit?.label ?? ''}`}>
                               {batch.articles.map((article) => (
                                 <CommandItem
-                                  value={`${article.part_number} ${article.serial ?? ''} ${batch.name}`}
+                                  value={`${article.part_number} ${article.serial ?? ''} ${batch.name} ${article.id}`}
                                   key={article.id}
                                   onSelect={() => {
                                     handleArticleSelect(article.id!, article.serial ?? null, batch.batch_id);

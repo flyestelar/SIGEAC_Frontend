@@ -132,14 +132,6 @@ export function getMenuList(pathname: string, currentCompany: Company | null, us
           roles: [],
           submenus: [],
         },
-        {
-          href: `/${currentCompany?.slug}/general/requisiciones`,
-          label: 'Solicitudes de Compra',
-          active: pathname.includes(`/${currentCompany?.slug}/general/requisiciones`),
-          icon: ScrollText,
-          roles: [],
-          submenus: [],
-        },
       ],
     },
     {
@@ -517,8 +509,8 @@ export function getMenuList(pathname: string, currentCompany: Company | null, us
           submenus: [],
         },
         {
-          href: `/${currentCompany?.slug}/almacen/caja_herramientas`,
-          label: 'Solicitudes de Material Faltante',
+          href: `/${currentCompany?.slug}/almacen/material_faltante`,
+          label: 'Sol. de Material Falt.',
           roles: ['ANALISTA_ALMACEN', 'JEFE_ALMACEN', 'SUPERUSER'],
           active: pathname.includes(`/${currentCompany?.slug}/almacen/material_faltante`),
           icon: PackagePlus,

@@ -71,7 +71,7 @@ export const columns: ColumnDef<IDispatch>[] = [
   },
   {
     accessorKey: 'requested_by',
-    header: ({ column }) => <DataTableColumnHeader column={column} title="Empleado Responsable" />,
+    header: ({ column }) => <DataTableColumnHeader column={column} title="Recibido Por" />,
     cell: ({ row }) => {
       return <p className="font-medium text-center">{row.original.requested_by}</p>;
     },
