@@ -1,12 +1,12 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
-import { z } from 'zod';
-import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
 
 import { addYears, format, subYears } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -15,16 +15,17 @@ import { CalendarIcon, Check, ChevronsUpDown, FileUpIcon, Loader2 } from 'lucide
 
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 
 import {
   useConfirmIncomingArticle,
   useCreateArticle,
+  useUpdateArticle,
 } from '@/actions/mantenimiento/almacen/inventario/articulos/actions';
 
 import { useGetConditions } from '@/hooks/administracion/useGetConditions';
@@ -32,15 +33,14 @@ import { useGetManufacturers } from '@/hooks/general/fabricantes/useGetManufactu
 import { useGetBatchesByCategory } from '@/hooks/mantenimiento/almacen/renglones/useGetBatchesByCategory';
 
 import { useCompanyStore } from '@/stores/CompanyStore';
-import { Batch } from '@/types';
 
 import { cn } from '@/lib/utils';
 import loadingGif from '@/public/loading2.gif';
 
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { MultiInputField } from '../../../misc/MultiInputField';
 import { Textarea } from '../../../ui/textarea';
 import { EditingArticle } from './RegisterArticleForm';
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 
 /* ------------------------------- Schema ------------------------------- */
 
@@ -139,6 +139,9 @@ const CreateComponentForm = ({ initialData, isEditing }: { initialData?: Editing
   const { data: conditions, isLoading: isConditionsLoading, error: isConditionsError } = useGetConditions();
 
   const { createArticle } = useCreateArticle();
+
+  const { updateArticle } = useUpdateArticle();
+
   const { confirmIncoming } = useConfirmIncomingArticle();
 
   const form = useForm<FormValues>({
@@ -170,7 +173,6 @@ const CreateComponentForm = ({ initialData, isEditing }: { initialData?: Editing
   // setValue una sola vez
   useEffect(() => {
     form.setValue('article_type', 'componente');
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Reset si cambia initialData
@@ -199,9 +201,6 @@ const CreateComponentForm = ({ initialData, isEditing }: { initialData?: Editing
         : undefined,
     });
   }, [initialData, form]);
-
-  const batchesOptions = useMemo<Batch[] | undefined>(() => batches, [batches]);
-
   const busy =
     isBatchesLoading ||
     isManufacturerLoading ||
@@ -229,10 +228,11 @@ const CreateComponentForm = ({ initialData, isEditing }: { initialData?: Editing
       calendar_date: values.calendar_date && format(values.calendar_date, 'yyyy-MM-dd'),
     };
 
-    if (isEditing) {
-      await confirmIncoming.mutateAsync({
-        values: { ...formattedValues, id: initialData?.id, batch_id: formattedValues.batch_id },
+    if (isEditing && initialData) {
+      await updateArticle.mutateAsync({
+        data: { ...formattedValues, batch_id: formattedValues.batch_id },
         company: selectedCompany.slug,
+        id: initialData.id,
       });
       router.push(`/${selectedCompany.slug}/almacen/ingreso/en_recepcion`);
     } else {
@@ -242,9 +242,6 @@ const CreateComponentForm = ({ initialData, isEditing }: { initialData?: Editing
       });
     }
   };
-
-  console.log(form.getValues());
-
   return (
     <Form {...form}>
       <form className="flex flex-col gap-6 max-w-7xl mx-auto" onSubmit={form.handleSubmit(onSubmit)}>

@@ -57,6 +57,36 @@ export const useCreateArticle = () => {
   };
 };
 
+export const useUpdateArticle = () => {
+  const queryClient = useQueryClient();
+
+  const updateMutation = useMutation({
+    mutationKey: ['articles'],
+    mutationFn: async ({ id, data, company }: { id: number | string; company: string; data: ArticleData }) => {
+      await axiosInstance.put(`/${company}/article/${id}`, data, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['warehouse-articles'] });
+      toast.success('¡Actualizado!', {
+        description: `El articulo ha sido actualizado correctamente.`,
+      });
+    },
+    onError: (error) => {
+      toast.error('Oops!', {
+        description: 'No se pudo actualizar el articulo...',
+      });
+      console.log(error);
+    },
+  });
+  return {
+    updateArticle: updateMutation,
+  };
+};
+
 export const useCreateDirectArticle = () => {
   const queryClient = useQueryClient();
 
