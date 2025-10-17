@@ -161,7 +161,7 @@ export const useConfirmIncomingArticle = () => {
         part_number: string;
         lot_number?: string;
         alternative_part_number?: string[];
-        description: string;
+        description?: string;
         zone: string;
         manufacturer_id?: number | string;
         condition_id?: number | string;
