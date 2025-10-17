@@ -61,8 +61,7 @@ const formSchema = z
       )
       .optional(),
     description: z
-      .string({ message: 'Debe ingresar la descripción del artículo.' })
-      .min(2, { message: 'La descripción debe contener al menos 2 caracteres.' }),
+      .string().optional(),
     zone: z.string({ message: 'Debe ingresar la ubicación del artículo.' }).min(1, 'Campo requerido'),
     caducate_date: z.string().optional(),
     fabrication_date: z.string().optional(),
