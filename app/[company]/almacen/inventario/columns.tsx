@@ -123,7 +123,7 @@ const baseCols: ColumnDef<IArticleSimple>[] = [
   },
   {
     accessorKey: 'batch_name',
-    header: ({ column }) => <DataTableColumnHeader column={column} title="Descripción" />,
+    header: ({ column }) => <DataTableColumnHeader filter column={column} title="Descripción" />,
     cell: ({ row }) => (
       <div className="text-muted-foreground font-bold text-center max-w-xs line-clamp-2">
         {row.original.batch_name || 'Sin descripción'}

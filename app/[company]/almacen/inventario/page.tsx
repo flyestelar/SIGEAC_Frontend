@@ -18,6 +18,7 @@ import { Loader2, Package2, PaintBucket, Wrench, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { flattenArticles, getColumnsByCategory, IArticleSimple } from './columns';
 import { DataTable } from './data-table';
+import { CreateBatchDialog } from '@/components/dialogs/mantenimiento/almacen/CreateBatchDialog';
 
 const InventarioArticulosPage = () => {
   const { selectedCompany } = useCompanyStore();
@@ -149,6 +150,7 @@ const InventarioArticulosPage = () => {
             <TabsTrigger className="flex gap-2" value="HERRAMIENTA">
               <Wrench className="size-5" /> Herramientas
             </TabsTrigger>
+            <CreateBatchDialog />
           </TabsList>
 
           {/* Tab Content */}

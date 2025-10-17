@@ -162,9 +162,8 @@ export function ConsumableDispatchForm({ onClose }: FormProps) {
       delivered_by: data.delivered_by,
       user_id: Number(user!.id),
     };
-    //await createDispatchRequest.mutateAsync({ data: payload, company: selectedCompany!.slug });
-    //onClose();
-    console.log(payload);
+    await createDispatchRequest.mutateAsync({ data: payload, company: selectedCompany!.slug });
+    onClose();
   };
 
   return (
@@ -526,7 +525,7 @@ export function ConsumableDispatchForm({ onClose }: FormProps) {
                                     <CommandGroup key={b.batch_id} heading={`${b.name} · ${b.unit?.label ?? ''}`}>
                                       {b.articles.map((a) => (
                                         <CommandItem
-                                          value={`${a.part_number} ${a.serial ?? ''} ${b.name} ${a.id}`}
+                                          value={`${a.part_number}-${a.id}`}
                                           key={a.id}
                                           onSelect={() =>
                                             handleArticleSelectAtRow(idx, a.id!, a.serial ?? null, b.batch_id)

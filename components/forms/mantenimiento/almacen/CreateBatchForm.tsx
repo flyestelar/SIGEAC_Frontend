@@ -1,72 +1,67 @@
-"use client"
+'use client';
 
-import { useCreateBatch } from "@/actions/mantenimiento/almacen/inventario/lotes/actions"
-import { Button } from "@/components/ui/button"
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
-import { Input } from "@/components/ui/input"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
-import { useGetWarehousesByLocation } from "@/hooks/administracion/useGetWarehousesByUser"
-import { useGetUnits } from "@/hooks/general/unidades/useGetPrimaryUnits"
-import { useGetBatches } from "@/hooks/mantenimiento/almacen/renglones/useGetBatches"
-import { batches_categories } from "@/lib/batches_categories"
-import { generateSlug } from "@/lib/utils"
-import { useCompanyStore } from "@/stores/CompanyStore"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { Loader2 } from "lucide-react"
-import { useEffect } from "react"
-import { useForm, useWatch } from "react-hook-form"
-import { z } from "zod"
-import { Checkbox } from "../../../ui/checkbox"
-import { Textarea } from "../../../ui/textarea"
+import { useCreateBatch } from '@/actions/mantenimiento/almacen/inventario/lotes/actions';
+import { Button } from '@/components/ui/button';
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useGetWarehousesByLocation } from '@/hooks/administracion/useGetWarehousesByUser';
+import { useGetUnits } from '@/hooks/general/unidades/useGetPrimaryUnits';
+import { useGetBatches } from '@/hooks/mantenimiento/almacen/renglones/useGetBatches';
+import { batches_categories } from '@/lib/batches_categories';
+import { generateSlug } from '@/lib/utils';
+import { useCompanyStore } from '@/stores/CompanyStore';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Loader2 } from 'lucide-react';
+import { useEffect } from 'react';
+import { useForm, useWatch } from 'react-hook-form';
+import { z } from 'zod';
+import { Checkbox } from '../../../ui/checkbox';
+import { Textarea } from '../../../ui/textarea';
 
 const FormSchema = z.object({
   name: z.string().min(3, {
-    message: "Debe introducir un nombre válido."
+    message: 'Debe introducir un nombre válido.',
   }),
   description: z.string({
-    message: "Debe introducir una descripcion válida."
+    message: 'Debe introducir una descripcion válida.',
   }),
   category: z.string({
-    message: "Debe ingresar una categoria para el lote."
+    message: 'Debe ingresar una categoria para el lote.',
   }),
   alternative_part_number: z.string().optional(),
   ata_code: z.string().optional(),
-  is_hazarous: z.boolean().optional(),
+  is_hazardous: z.boolean().optional(),
   unit_id: z.string(),
   min_quantity: z.string().optional(),
   warehouse_id: z.string(),
-})
+});
 
-type FormSchemaType = z.infer<typeof FormSchema>
+type FormSchemaType = z.infer<typeof FormSchema>;
 
 interface FormProps {
-  onClose: () => void
+  onClose: () => void;
 }
 
 export function CreateBatchForm({ onClose }: FormProps) {
+  const { selectedCompany, selectedStation } = useCompanyStore();
 
-
-  const { selectedCompany, selectedStation } = useCompanyStore()
-
-  const { data: warehouses, error, isLoading } = useGetWarehousesByLocation({ company: selectedCompany?.slug, location_id: selectedStation });
+  const {
+    data: warehouses,
+    error,
+    isLoading,
+  } = useGetWarehousesByLocation({ company: selectedCompany?.slug, location_id: selectedStation });
 
   const { createBatch } = useCreateBatch();
 
   const { data: batches } = useGetBatches();
 
-  const { data: units, isLoading: isUnitsLoading, isError: isUnitsError } = useGetUnits()
-
+  const { data: units, isLoading: isUnitsLoading, isError: isUnitsError } = useGetUnits();
 
   const form = useForm<FormSchemaType>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
-      is_hazarous: false,
+      is_hazardous: false,
     },
   });
 
@@ -75,23 +70,23 @@ export function CreateBatchForm({ onClose }: FormProps) {
   const name = useWatch({ control, name: 'name' });
 
   useEffect(() => {
-    const existingBatch = batches?.some(batch => batch.name === name);
+    const existingBatch = batches?.some((batch) => batch.name === name);
     if (existingBatch) {
-      setError("name", {
-        type: "manual",
-        message: "El renglón ya existe."
+      setError('name', {
+        type: 'manual',
+        message: 'El renglón ya existe.',
       });
     } else {
-      clearErrors("name");
+      clearErrors('name');
     }
-  }, [name, batches, clearErrors, setError])
+  }, [name, batches, clearErrors, setError]);
 
   const onSubmit = async (data: FormSchemaType) => {
     const company = selectedCompany?.slug;
     if (!company) {
-      setError("name", {
-        type: "manual",
-        message: "No se ha seleccionado una compañia."
+      setError('name', {
+        type: 'manual',
+        message: 'No se ha seleccionado una compañia.',
       });
       return;
     }
@@ -100,10 +95,10 @@ export function CreateBatchForm({ onClose }: FormProps) {
       slug: generateSlug(data.name),
       min_quantity: Number(data.min_quantity),
       warehouse_id: Number(data.warehouse_id),
-    }
+    };
     await createBatch.mutateAsync({ data: formattedData, company });
     onClose();
-  }
+  };
 
   return (
     <Form {...form}>
@@ -118,15 +113,15 @@ export function CreateBatchForm({ onClose }: FormProps) {
                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                   <FormControl>
                     <SelectTrigger>
-                      <SelectValue placeholder={"Seleccione..."} />
+                      <SelectValue placeholder={'Seleccione...'} />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    {
-                      batches_categories.map((category) => (
-                        <SelectItem key={category.value} value={category.value}>{category.label}</SelectItem>
-                      ))
-                    }
+                    {batches_categories.map((category) => (
+                      <SelectItem key={category.value} value={category.value}>
+                        {category.label}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
                 <FormMessage />
@@ -171,15 +166,18 @@ export function CreateBatchForm({ onClose }: FormProps) {
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger disabled={isUnitsLoading || isUnitsError}>
-                        <SelectValue placeholder={isUnitsLoading ? <Loader2 className="animate-spin" /> : "Seleccione..."} />
+                        <SelectValue
+                          placeholder={isUnitsLoading ? <Loader2 className="animate-spin" /> : 'Seleccione...'}
+                        />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {
-                        units && units.map((unit) => (
-                          <SelectItem key={unit.id} value={unit.id.toString()}>{unit.label}</SelectItem>
-                        ))
-                      }
+                      {units &&
+                        units.map((unit) => (
+                          <SelectItem key={unit.id} value={unit.id.toString()}>
+                            {unit.label}
+                          </SelectItem>
+                        ))}
                     </SelectContent>
                   </Select>
                   <FormDescription>Unidad para medir el lote.</FormDescription>
@@ -228,21 +226,26 @@ export function CreateBatchForm({ onClose }: FormProps) {
                   >
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder={isLoading ? <Loader2 className="size-4 animate-spin" /> : "Seleccione..."} />
+                        <SelectValue
+                          placeholder={isLoading ? <Loader2 className="size-4 animate-spin" /> : 'Seleccione...'}
+                        />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
                       {isLoading && <Loader2 className="size-4 animate-spin" />}
-                      {warehouses && warehouses.map((warehouse) => (
-                        <SelectItem key={warehouse.id} value={warehouse.id.toString()}>
-                          {warehouse.name} - {warehouse.location.address}
-                        </SelectItem>
-                      ))}
+                      {warehouses &&
+                        warehouses.map((warehouse) => (
+                          <SelectItem key={warehouse.id} value={warehouse.id.toString()}>
+                            {warehouse.name} - {warehouse.location.address}
+                          </SelectItem>
+                        ))}
                       {warehouses && warehouses.length < 1 && (
                         <p className="text-xs p-2 text-muted-foreground">No se han encontrado almacenes...</p>
                       )}
                       {error && (
-                        <p className="text-xs p-2 text-muted-foreground">Ha ocurrido un error al cargar los almacenes...</p>
+                        <p className="text-xs p-2 text-muted-foreground">
+                          Ha ocurrido un error al cargar los almacenes...
+                        </p>
                       )}
                     </SelectContent>
                   </Select>
@@ -254,27 +257,26 @@ export function CreateBatchForm({ onClose }: FormProps) {
         </div>
         <FormField
           control={form.control}
-          name="is_hazarous"
+          name="is_hazardous"
           render={({ field }) => (
             <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
               <FormControl>
-                <Checkbox
-                  checked={field.value}
-                  onCheckedChange={field.onChange}
-                />
+                <Checkbox checked={field.value} onCheckedChange={field.onChange} />
               </FormControl>
               <div className="space-y-1 leading-none">
-                <FormLabel>
-                  ¿El renglón contiene articulos peligrosos?
-                </FormLabel>
+                <FormLabel>¿El renglón contiene articulos peligrosos?</FormLabel>
               </div>
             </FormItem>
           )}
         />
-        <Button className="bg-primary mt-2 text-white hover:bg-blue-900 disabled:bg-primary/70" disabled={createBatch?.isPending} type="submit">
+        <Button
+          className="bg-primary mt-2 text-white hover:bg-blue-900 disabled:bg-primary/70"
+          disabled={createBatch?.isPending}
+          type="submit"
+        >
           {createBatch?.isPending ? <Loader2 className="size-4 animate-spin" /> : <p>Crear</p>}
         </Button>
       </form>
     </Form>
-  )
+  );
 }
