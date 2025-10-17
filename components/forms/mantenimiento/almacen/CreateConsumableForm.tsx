@@ -56,10 +56,8 @@ const formSchema = z.object({
   alternative_part_number: z
     .array(z.string().min(2, { message: 'Cada número de parte alterno debe contener al menos 2 caracteres.' }))
     .optional(),
-  description: z
-    .string({ message: 'Debe ingresar la descripción del artículo.' })
-    .min(2, { message: 'La descripción debe contener al menos 2 caracteres.' }),
-  zone: z.string({ message: 'Debe ingresar la ubicación del artículo.' }).min(1, 'Campo requerido'),
+  description: z.string().optional(),
+  zone: z.string().optional(),
   caducate_date: z.string().optional(),
   fabrication_date: z.string().optional(),
   manufacturer_id: z.string().min(1, 'Debe ingresar una marca.'),
@@ -443,11 +441,11 @@ const CreateConsumableForm = ({ initialData, isEditing }: { initialData?: Editin
               name="batch_id"
               render={({ field }) => (
                 <FormItem className="w-full">
-                  <FormLabel>Categoría</FormLabel>
+                  <FormLabel>Descripción del Consumible</FormLabel>
                   <Select onValueChange={field.onChange} value={field.value} disabled={isBatchesLoading}>
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder={isBatchesLoading ? 'Cargando...' : 'Seleccione categoría...'} />
+                        <SelectValue placeholder={isBatchesLoading ? 'Cargando...' : 'Seleccione la descripción...'} />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
@@ -463,12 +461,12 @@ const CreateConsumableForm = ({ initialData, isEditing }: { initialData?: Editin
                       )}
                       {isBatchesError && (
                         <div className="p-2 text-sm text-muted-foreground text-center">
-                          Error al cargar las categorías.
+                          Error al cargar las descripciones.
                         </div>
                       )}
                     </SelectContent>
                   </Select>
-                  <FormDescription>Clasificación para el consumible.</FormDescription>
+                  <FormDescription>Descripción para el consumible.</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -602,11 +600,11 @@ const CreateConsumableForm = ({ initialData, isEditing }: { initialData?: Editin
               name="description"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Descripción</FormLabel>
+                  <FormLabel>Detalles/Observaciones</FormLabel>
                   <FormControl>
                     <Textarea rows={5} placeholder="Ej: Fluido hidráulico MIL-PRF-83282..." {...field} />
                   </FormControl>
-                  <FormDescription>Breve descripción del artículo.</FormDescription>
+                  <FormDescription>Observaciones sobre el artículo.</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
