@@ -442,33 +442,58 @@ const CreateConsumableForm = ({ initialData, isEditing }: { initialData?: Editin
               control={form.control}
               name="batch_id"
               render={({ field }) => (
-                <FormItem className="w-full">
-                  <FormLabel>Descripción del Consumible</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value} disabled={isBatchesLoading}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder={isBatchesLoading ? 'Cargando...' : 'Seleccione la descripción...'} />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {batchesOptions?.map((b) => (
-                        <SelectItem key={b.id} value={b.id.toString()}>
-                          {b.name}
-                        </SelectItem>
-                      ))}
-                      {(!batchesOptions || batchesOptions.length === 0) && !isBatchesLoading && !isBatchesError && (
-                        <div className="p-2 text-sm text-muted-foreground text-center">
-                          No se han encontrado categorías.
-                        </div>
-                      )}
-                      {isBatchesError && (
-                        <div className="p-2 text-sm text-muted-foreground text-center">
-                          Error al cargar las descripciones.
-                        </div>
-                      )}
-                    </SelectContent>
-                  </Select>
-                  <FormDescription>Descripción para el consumible.</FormDescription>
+                <FormItem className="flex flex-col space-y-3 mt-1.5 w-full">
+                  <FormLabel>Descripción de Componente</FormLabel>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <FormControl>
+                        <Button
+                          disabled={isBatchesLoading || isBatchesError}
+                          variant="outline"
+                          role="combobox"
+                          className={cn('justify-between', !field.value && 'text-muted-foreground')}
+                        >
+                          {isBatchesLoading && <Loader2 className="size-4 animate-spin mr-2" />}
+                          {field.value ? (
+                            <p>{batches?.find((b) => `${b.id}` === field.value)?.name}</p>
+                          ) : (
+                            'Elegir descripción...'
+                          )}
+                          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        </Button>
+                      </FormControl>
+                    </PopoverTrigger>
+                    <PopoverContent className="p-0">
+                      <Command>
+                        <CommandInput placeholder="Busque una aeronave..." />
+                        <CommandList>
+                          <CommandEmpty className="text-xs p-2 text-center">
+                            No se ha encontrado ninguna aeronave.
+                          </CommandEmpty>
+                          <CommandGroup>
+                            {batches?.map((batch) => (
+                              <CommandItem
+                                value={`${batch.name}`}
+                                key={batch.id}
+                                onSelect={() => {
+                                  form.setValue('batch_id', batch.id.toString(), { shouldValidate: true });
+                                }}
+                              >
+                                <Check
+                                  className={cn(
+                                    'mr-2 h-4 w-4',
+                                    `${batch.id}` === field.value ? 'opacity-100' : 'opacity-0',
+                                  )}
+                                />
+                                <p>{batch.name}</p>
+                              </CommandItem>
+                            ))}
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
+                  <FormDescription>Descripción del componente a registrar.</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
