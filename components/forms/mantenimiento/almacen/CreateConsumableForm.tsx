@@ -407,11 +407,13 @@ const CreateConsumableForm = ({ initialData, isEditing }: { initialData?: Editin
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {manufacturers?.map((m) => (
-                        <SelectItem key={m.id} value={m.id.toString()}>
-                          {m.name}
-                        </SelectItem>
-                      ))}
+                      {manufacturers
+                        ?.filter((m) => m.type === 'PART')
+                        .map((m) => (
+                          <SelectItem key={m.id} value={m.id.toString()}>
+                            {m.name}
+                          </SelectItem>
+                        ))}
                       {isManufacturerError && (
                         <div className="p-2 text-sm text-muted-foreground">Error al cargar fabricantes.</div>
                       )}
