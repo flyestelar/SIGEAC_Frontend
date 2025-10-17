@@ -77,6 +77,13 @@ export const columns: ColumnDef<IDispatch>[] = [
     },
   },
   {
+    accessorKey: 'created_by',
+    header: ({ column }) => <DataTableColumnHeader column={column} title="Creado Por" />,
+    cell: ({ row }) => {
+      return <p className="font-medium text-center">{row.original.created_by}</p>;
+    },
+  },
+  {
     accessorKey: 'date',
     header: ({ column }) => <DataTableColumnHeader column={column} title="Fecha" />,
     cell: ({ row }) => (
