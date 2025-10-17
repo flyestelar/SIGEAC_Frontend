@@ -16,6 +16,7 @@ import { CalendarIcon, Check, ChevronsUpDown, FileUpIcon, Loader2 } from 'lucide
 import {
   useConfirmIncomingArticle,
   useCreateArticle,
+  useUpdateArticle,
 } from '@/actions/mantenimiento/almacen/inventario/articulos/actions';
 
 import { MultiInputField } from '@/components/misc/MultiInputField';
@@ -48,7 +49,6 @@ import { EditingArticle } from './RegisterArticleForm';
 const fileMaxBytes = 10_000_000; // 10 MB
 
 const formSchema = z.object({
-  article_type: z.string().optional(),
   part_number: z
     .string({ message: 'Debe ingresar un número de parte.' })
     .min(2, { message: 'El número de parte debe contener al menos 2 caracteres.' }),
@@ -102,6 +102,7 @@ const CreateConsumableForm = ({ initialData, isEditing }: { initialData?: Editin
   const { data: secondaryUnits, isLoading: secondaryLoading } = useGetSecondaryUnits();
 
   const { createArticle } = useCreateArticle();
+  const { updateArticle } = useUpdateArticle();
   const { confirmIncoming } = useConfirmIncomingArticle();
 
   const [secondaryOpen, setSecondaryOpen] = useState(false);
@@ -133,12 +134,6 @@ const CreateConsumableForm = ({ initialData, isEditing }: { initialData?: Editin
       is_managed: (initialData as any)?.is_managed ?? true,
     },
   });
-
-  // setValue una sola vez
-  useEffect(() => {
-    form.setValue('article_type', 'consumible');
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   // reset si cambia initialData
   useEffect(() => {
@@ -187,30 +182,33 @@ const CreateConsumableForm = ({ initialData, isEditing }: { initialData?: Editin
       caducate_date?: string;
       fabrication_date?: string;
       part_number: string;
+      article_type: string;
       alternative_part_number?: string[];
     } = {
       ...values,
       part_number: normalizeUpper(values.part_number),
+      article_type: 'consumible',
       alternative_part_number: values.alternative_part_number?.map((v) => normalizeUpper(v)) ?? [],
       caducate_date: caducateDate ? format(caducateDate, 'yyyy-MM-dd') : undefined,
       fabrication_date: fabricationDate ? format(fabricationDate, 'yyyy-MM-dd') : undefined,
       convertion_id: secondarySelected?.id,
     };
 
-    if (isEditing) {
-      await confirmIncoming.mutateAsync({
-        values: {
+    if (isEditing && initialData) {
+      await updateArticle.mutateAsync({
+        data: {
           ...formattedValues,
-          id: initialData?.id,
         },
+        id: initialData?.id,
         company: selectedCompany.slug,
       });
-      router.push(`/${selectedCompany.slug}/almacen/ingreso/en_recepcion`);
+      router.push(`/${selectedCompany.slug}/almacen/inventario`);
     } else {
       await createArticle.mutateAsync({
         company: selectedCompany.slug,
         data: formattedValues,
       });
+      form.reset();
     }
   };
 

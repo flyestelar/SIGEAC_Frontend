@@ -48,7 +48,6 @@ const fileMaxBytes = 10_000_000; // 10 MB
 
 const formSchema = z
   .object({
-    article_type: z.string().optional(),
     serial: z.string().min(2, { message: 'El serial debe contener al menos 2 caracteres.' }).optional(),
     part_number: z
       .string({ message: 'Debe seleccionar un número de parte.' })
@@ -170,11 +169,6 @@ const CreateComponentForm = ({ initialData, isEditing }: { initialData?: Editing
     },
   });
 
-  // setValue una sola vez
-  useEffect(() => {
-    form.setValue('article_type', 'componente');
-  }, []);
-
   // Reset si cambia initialData
   useEffect(() => {
     if (!initialData) return;
@@ -218,9 +212,11 @@ const CreateComponentForm = ({ initialData, isEditing }: { initialData?: Editing
       fabrication_date?: string;
       calendar_date?: string;
       part_number: string;
+      article_type: string;
       alternative_part_number?: string[];
     } = {
       ...values,
+      article_type: 'componente',
       part_number: normalizeUpper(values.part_number),
       alternative_part_number: values.alternative_part_number?.map((v) => normalizeUpper(v)) ?? [],
       caducate_date: caducateDate ? format(caducateDate, 'yyyy-MM-dd') : undefined,
@@ -230,16 +226,17 @@ const CreateComponentForm = ({ initialData, isEditing }: { initialData?: Editing
 
     if (isEditing && initialData) {
       await updateArticle.mutateAsync({
-        data: { ...formattedValues, batch_id: formattedValues.batch_id },
+        data: { ...formattedValues, batch_id: formattedValues.batch_id, article_type: 'componente' },
         company: selectedCompany.slug,
         id: initialData.id,
       });
-      router.push(`/${selectedCompany.slug}/almacen/ingreso/en_recepcion`);
+      router.push(`/${selectedCompany.slug}/almacen/inventario`);
     } else {
       await createArticle.mutateAsync({
         company: selectedCompany.slug,
         data: formattedValues,
       });
+      form.reset();
     }
   };
   return (

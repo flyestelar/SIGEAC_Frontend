@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 interface ArticleData {
   serial?: string;
   part_number: string;
+  article_type: string;
   lot_number?: string;
   alternative_part_number?: string[];
   description?: string;
