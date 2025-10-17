@@ -64,11 +64,7 @@ export const useUpdateArticle = () => {
   const updateMutation = useMutation({
     mutationKey: ['articles'],
     mutationFn: async ({ id, data, company }: { id: number | string; company: string; data: ArticleData }) => {
-      await axiosInstance.put(`/${company}/article/${id}`, data, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
+      await axiosInstance.put(`/${company}/article/${id}`, data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['warehouse-articles'] });
