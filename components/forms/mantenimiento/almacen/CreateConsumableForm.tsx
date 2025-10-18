@@ -770,7 +770,9 @@ const CreateConsumableForm = ({ initialData, isEditing }: { initialData?: Editin
               !form.getValues('part_number') ||
               !form.getValues('batch_id') ||
               !form.getValues('manufacturer_id') ||
-              !form.getValues('condition_id')
+              !form.getValues('condition_id') ||
+              createArticle.isPending ||
+              updateArticle.isPending
             }
             type="submit"
           >
