@@ -1,10 +1,10 @@
 "use client";
 
 import { ContentLayout } from "@/components/layout/ContentLayout";
-import { columns } from "./columns";
 import LoadingPage from "@/components/misc/LoadingPage";
-import { DataTable } from "./date-table";
 import { useGetCreditRent } from "@/hooks/aerolinea/creditos/useGetCreditRent";
+import { columns } from "./columns";
+import { DataTable } from "./date-table";
 
 const CreditPage = () => {
   const { data, isLoading, isError } = useGetCreditRent();

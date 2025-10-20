@@ -73,7 +73,7 @@ const formSchema = z
       .number({ required_error: 'Ingrese los ciclos máximos.' })
       .min(0, 'No puede ser negativo')
       .optional(),
-    manufacturer_id: z.string().min(1, 'Debe ingresar una marca.'),
+    manufacturer_id: z.string().optional(),
     condition_id: z.string().min(1, 'Debe ingresar la condición del artículo.'),
     batch_id: z.string({ message: 'Debe ingresar un lote.' }).min(1, 'Seleccione un lote'),
     certificate_8130: z

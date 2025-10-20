@@ -60,7 +60,7 @@ const formSchema = z.object({
   zone: z.string().optional(),
   caducate_date: z.string().optional(),
   fabrication_date: z.string().optional(),
-  manufacturer_id: z.string().min(1, 'Debe ingresar una marca.'),
+  manufacturer_id: z.string().optional(),
   condition_id: z.string().min(1, 'Debe ingresar la condición del artículo.'),
   quantity: z.coerce.number({ message: 'Debe ingresar una cantidad.' }).min(0, { message: 'No puede ser negativo.' }),
   batch_id: z.string({ message: 'Debe ingresar un lote.' }).min(1, 'Seleccione un lote'),
