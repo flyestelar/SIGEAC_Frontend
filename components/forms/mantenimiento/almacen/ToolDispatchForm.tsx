@@ -33,6 +33,7 @@ const FormSchema = z
     dispatch_type: z.enum(['aircraft', 'workshop'], {
       message: 'Debe seleccionar si el despacho es para una Aeronave o un Taller.',
     }),
+    request_number: z.string(),
     requested_by: z.string().min(1, 'Debe seleccionar el técnico responsable.'),
     delivered_by: z.string().min(1, 'Debe seleccionar el responsable de almacén.'),
     aircraft_id: z.string().optional(),
@@ -207,6 +208,20 @@ export function ToolDispatchForm({ onClose }: FormProps) {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col space-y-3 w-full">
+        {/* Número de Solicitud */}
+        <FormField
+          control={form.control}
+          name="request_number"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Número de Solicitud</FormLabel>
+              <FormControl>
+                <Input {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
         {/* Tipo de Despacho */}
         <FormField
           control={form.control}
