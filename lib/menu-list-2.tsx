@@ -126,7 +126,7 @@ export function getMenuList(pathname: string, currentCompany: Company | null, us
         },
         {
           href: `/${currentCompany?.slug}/general/inventario`,
-          label: 'Inventario',
+          label: 'Consultar Inventario',
           active: pathname.includes(`/${currentCompany?.slug}/general/inventario`),
           icon: PackageSearch,
           roles: [],

@@ -108,8 +108,7 @@ const baseCols: ColumnDef<IArticleSimple>[] = [
     header: ({ column }) => <DataTableColumnHeader filter column={column} title="Alt. Part Number" />,
     cell: ({ row }) => (
       <div className="font-bold text-center text-base">
-        {(row.original.alternative_part_number?.length) ? row.original.alternative_part_number.join('/ ')
-          : 'N/A'}
+        {row.original.alternative_part_number?.length ? row.original.alternative_part_number.join('/ ') : 'N/A'}
       </div>
     ),
   },
@@ -118,7 +117,13 @@ const baseCols: ColumnDef<IArticleSimple>[] = [
     header: ({ column }) => <DataTableColumnHeader filter column={column} title="Serial / Lote" />,
     cell: ({ row }) => (
       <div className="text-center text-sm font-medium">
-        {row.original.serial ?? row.original.lot_number ?? <span className="text-muted-foreground italic">N/A</span>}
+        {row.original.serial ? (
+          row.original.serial
+        ) : row.original.lot_number ? (
+          row.original.lot_number
+        ) : (
+          <span className="text-muted-foreground italic">N/A</span>
+        )}
       </div>
     ),
   },
