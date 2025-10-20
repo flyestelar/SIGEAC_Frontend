@@ -24,7 +24,14 @@ const InventarioArticulosPage = () => {
   const { selectedCompany } = useCompanyStore();
   const [activeCategory, setActiveCategory] = useState<'COMPONENTE' | 'CONSUMIBLE' | 'HERRAMIENTA'>('COMPONENTE');
   const [componentCondition, setComponentCondition] = useState<
-    'all' | 'SERVICIABLE' | 'REMOVIDO - NO SERVICIABLE' | 'REMOVIDO - CUSTODIA'
+    | 'all'
+    | 'SERVICIABLE'
+    | 'REMOVIDO - NO SERVICIABLE'
+    | 'REMOVIDO - CUSTODIA'
+    | 'REMOVIDO - DESCARGADA'
+    | 'REPARADO'
+    | 'USADO'
+    | 'NUEVO'
   >('all');
   const [consumableFilter, setConsumableFilter] = useState<'all' | 'QUIMICOS'>('all');
   const [partNumberSearch, setPartNumberSearch] = useState('');
@@ -69,6 +76,18 @@ const InventarioArticulosPage = () => {
         }
         if (cond === 'REMOVIDO - CUSTODIA') {
           return a.condition === 'REMOVIDO - CUSTODIA';
+        }
+        if (cond === 'REMOVIDO - DESCARGADA') {
+          return a.condition === 'REMOVIDO - DESCARGADA';
+        }
+        if (cond === 'REPARADO') {
+          return a.condition === 'REPARADO';
+        }
+        if (cond === 'USADO') {
+          return a.condition === 'USADO';
+        }
+        if (cond === 'NUEVO') {
+          return a.condition === 'NUEVO';
         }
         return true; // fallback
       });
@@ -164,6 +183,7 @@ const InventarioArticulosPage = () => {
                 <TabsList className="flex justify-center mb-4 space-x-3" aria-label="Condición de componente">
                   <TabsTrigger value="all">Todos</TabsTrigger>
                   <TabsTrigger value="SERVICIABLE">Serviciables</TabsTrigger>
+                  <TabsTrigger value="REPARADO">Reparados</TabsTrigger>
                   <TabsTrigger value="REMOVIDO - NO SERVICIABLE">Removidos - No Serviciables</TabsTrigger>
                   <TabsTrigger value="REMOVIDO - CUSTODIA">Removidos - En custodia</TabsTrigger>
                 </TabsList>

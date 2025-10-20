@@ -7,6 +7,7 @@ import { useQuery } from '@tanstack/react-query';
 interface IDispatch {
   id: number;
   requested_by: string;
+  request_number: string;
   created_by: string;
   justification: string;
   destination_place: string;

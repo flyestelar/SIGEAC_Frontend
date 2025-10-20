@@ -24,6 +24,7 @@ import { es } from 'date-fns/locale';
 
 interface IDispatch {
   id: number;
+  request_number: string;
   requested_by: string;
   created_by: string;
   justification: string;
@@ -55,6 +56,13 @@ export const columns: ColumnDef<IDispatch>[] = [
     ),
     enableSorting: false,
     enableHiding: false,
+  },
+  {
+    accessorKey: 'request_number',
+    header: ({ column }) => <DataTableColumnHeader column={column} title="N° Solicitud" />,
+    cell: ({ row }) => {
+      return <p className="font-medium text-center">{row.original.request_number}</p>;
+    },
   },
   {
     accessorKey: 'aircraft',
