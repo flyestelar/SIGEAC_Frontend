@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 
 interface IDispatchRequestAction {
   aircraft_id?: string;
+  request_number: string;
   justification?: string;
   submission_date: string;
   created_by: string;

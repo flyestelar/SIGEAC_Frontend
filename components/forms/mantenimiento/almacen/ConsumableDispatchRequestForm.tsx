@@ -33,6 +33,7 @@ import { z } from 'zod';
 const FormSchema = z
   .object({
     requested_by: z.string(),
+    request_number: z.string(),
     dispatch_type: z.enum(['aircraft', 'workshop'], {
       message: 'Debe seleccionar si el despacho es para una Aeronave o un Taller.',
     }),
@@ -169,6 +170,19 @@ export function ConsumableDispatchForm({ onClose }: FormProps) {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col space-y-2 w-full">
+        <FormField
+          control={form.control}
+          name="request_number"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Número de Solicitud</FormLabel>
+              <FormControl>
+                <Input className="w-[250px]" placeholder="Ingrese el número de solicitud" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
         {/* Tipo de Despacho */}
         <FormField
           control={form.control}

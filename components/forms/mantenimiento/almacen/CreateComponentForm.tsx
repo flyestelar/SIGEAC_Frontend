@@ -770,8 +770,6 @@ const CreateComponentForm = ({ initialData, isEditing }: { initialData?: Editing
               !selectedCompany ||
               !form.getValues('part_number') ||
               !form.getValues('batch_id') ||
-              !form.getValues('manufacturer_id') ||
-              !form.getValues('condition_id') ||
               createArticle.isPending ||
               updateArticle.isPending
             }
