@@ -162,7 +162,7 @@ const baseCols: ColumnDef<IArticleSimple>[] = [
       const descalibrated = row.original.tool?.status === 'VENCIDO';
       return (
         <div className="flex flex-col justify-center items-center space-y-2">
-          {getStatusBadge(row.original.status?.toUpperCase())}{' '}
+          {!calibrating && getStatusBadge(row.original.status?.toUpperCase())}
           {row.original.tool && (
             <Badge
               className={cn(
@@ -170,7 +170,7 @@ const baseCols: ColumnDef<IArticleSimple>[] = [
                 calibrated ? 'bg-green-500' : calibrating ? 'bg-yellow-500' : descalibrated ? 'bg-red-500' : '',
               )}
             >
-              {row.original.tool.status && !calibrating && row.original.tool.status}
+              {row.original.tool.status ? row.original.tool.status : 'Sin estado'}
             </Badge>
           )}
         </div>
