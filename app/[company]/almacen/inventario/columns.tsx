@@ -170,7 +170,7 @@ const baseCols: ColumnDef<IArticleSimple>[] = [
                 calibrated ? 'bg-green-500' : calibrating ? 'bg-yellow-500' : descalibrated ? 'bg-red-500' : '',
               )}
             >
-              {row.original.tool.status && !calibrating ? row.original.tool.status : 'Sin estado'}
+              {row.original.tool.status && !calibrating && row.original.tool.status}
             </Badge>
           )}
         </div>
