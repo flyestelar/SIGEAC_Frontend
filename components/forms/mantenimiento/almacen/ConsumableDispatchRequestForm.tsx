@@ -170,52 +170,54 @@ export function ConsumableDispatchForm({ onClose }: FormProps) {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col space-y-2 w-full">
-        <FormField
-          control={form.control}
-          name="request_number"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Número de Solicitud</FormLabel>
-              <FormControl>
-                <Input className="w-[250px]" placeholder="Ingrese el número de solicitud" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        {/* Tipo de Despacho */}
-        <FormField
-          control={form.control}
-          name="dispatch_type"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Tipo de Despacho</FormLabel>
-              <FormControl>
-                <div className="flex gap-4">
-                  <label className="flex items-center space-x-2">
-                    <input
-                      type="radio"
-                      value="aircraft"
-                      checked={field.value === 'aircraft'}
-                      onChange={() => field.onChange('aircraft')}
-                    />
-                    <span>Aeronave</span>
-                  </label>
-                  <label className="flex items-center space-x-2">
-                    <input
-                      type="radio"
-                      value="workshop"
-                      checked={field.value === 'workshop'}
-                      onChange={() => field.onChange('workshop')}
-                    />
-                    <span>Taller</span>
-                  </label>
-                </div>
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        <div className="flex gap-2 items-center">
+          <FormField
+            control={form.control}
+            name="request_number"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Número de Solicitud</FormLabel>
+                <FormControl>
+                  <Input className="w-[250px]" placeholder="Ingrese el número de solicitud" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          {/* Tipo de Despacho */}
+          <FormField
+            control={form.control}
+            name="dispatch_type"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Tipo de Despacho</FormLabel>
+                <FormControl>
+                  <div className="flex gap-4">
+                    <label className="flex items-center space-x-2">
+                      <input
+                        type="radio"
+                        value="aircraft"
+                        checked={field.value === 'aircraft'}
+                        onChange={() => field.onChange('aircraft')}
+                      />
+                      <span>Aeronave</span>
+                    </label>
+                    <label className="flex items-center space-x-2">
+                      <input
+                        type="radio"
+                        value="workshop"
+                        checked={field.value === 'workshop'}
+                        onChange={() => field.onChange('workshop')}
+                      />
+                      <span>Taller</span>
+                    </label>
+                  </div>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
 
         <div className="flex gap-2">
           {/* Aeronave */}
@@ -490,7 +492,7 @@ export function ConsumableDispatchForm({ onClose }: FormProps) {
               <Plus className="h-4 w-4 mr-1" /> Agregar
             </Button>
           </div>
-          <ScrollArea className={fields.length > 2 ? 'h-[200px] pr-2' : ''}>
+          <ScrollArea className={fields.length > 1 ? 'h-[200px] pr-2' : ''}>
             <div className="flex flex-col gap-2">
               {fields.map((field, idx) => {
                 const currentBatch = findBatchById(watch(`articles.${idx}.batch_id`));
