@@ -66,7 +66,6 @@ export const getStatusBadge = (status: string | null | undefined) => {
 
 export const flattenArticles = (data: WarehouseResponse | undefined): IArticleSimple[] => {
   if (!data?.batches) return [];
-  console.log(data.batches);
   return data.batches.flatMap((batch) =>
     batch.articles.map((article) => ({
       id: article.id,
