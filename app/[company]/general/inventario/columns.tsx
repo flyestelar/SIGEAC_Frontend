@@ -7,17 +7,18 @@ import { CheckCircle2, XCircle, Clock, Wrench } from 'lucide-react';
 import { WarehouseResponse } from '@/hooks/mantenimiento/almacen/renglones/useGetArticlesByCategory';
 import { addDays, format } from 'date-fns';
 import { cn } from '@/lib/utils';
+import ArticleDropdownActions from '@/components/dropdowns/mantenimiento/almacen/ArticleDropdownActions';
 
 export interface IArticleSimple {
   id: number;
   part_number: string;
   alternative_part_number?: string[];
-  description: string;
+  description?: string;
   quantity: number;
   zone: string;
   article_type: string;
-  serial: string | null;
-  lot_number: string | null;
+  serial?: string;
+  lot_number?: string;
   status: string;
   condition: string;
   is_hazardous?: boolean;
@@ -80,7 +81,7 @@ export const flattenArticles = (data: WarehouseResponse | undefined): IArticleSi
         article.quantity === 0 || article.quantity === null || article.quantity === undefined ? 1 : article.quantity,
       status: article.status,
       condition: article.condition ? article.condition.name : 'N/A',
-      article_type: article.article_type,
+      article_type: article.article_type ?? 'N/A',
       batch_name: batch.name,
       is_hazardous: batch.is_hazardous ?? undefined,
       batch_id: batch.batch_id,
@@ -102,18 +103,35 @@ const baseCols: ColumnDef<IArticleSimple>[] = [
     header: ({ column }) => <DataTableColumnHeader filter column={column} title="Part Number" />,
     cell: ({ row }) => <div className="font-bold text-center text-base">{row.original.part_number}</div>,
   },
+  // {
+  //   accessorKey: 'alternative_part_number',
+  //   header: ({ column }) => <DataTableColumnHeader filter column={column} title="Alt. Part Number" />,
+  //   cell: ({ row }) => (
+  //     <div className="font-bold text-center text-base">
+  //       {row.original.alternative_part_number && row.original.alternative_part_number.length > 0
+  //         ? row.original.alternative_part_number.join('/ ')
+  //         : 'N/A'}
+  //     </div>
+  //   ),
+  // },
   {
     accessorKey: 'serial',
     header: ({ column }) => <DataTableColumnHeader filter column={column} title="Serial / Lote" />,
     cell: ({ row }) => (
       <div className="text-center text-sm font-medium">
-        {row.original.serial ?? row.original.lot_number ?? <span className="text-muted-foreground italic">N/A</span>}
+        {row.original.serial ? (
+          row.original.serial
+        ) : row.original.lot_number ? (
+          row.original.lot_number
+        ) : (
+          <span className="text-muted-foreground italic">N/A</span>
+        )}
       </div>
     ),
   },
   {
     accessorKey: 'batch_name',
-    header: ({ column }) => <DataTableColumnHeader column={column} title="Descripción" />,
+    header: ({ column }) => <DataTableColumnHeader filter column={column} title="Descripción" />,
     cell: ({ row }) => (
       <div className="text-muted-foreground font-bold text-center max-w-xs line-clamp-2">
         {row.original.batch_name || 'Sin descripción'}
@@ -131,7 +149,7 @@ const baseCols: ColumnDef<IArticleSimple>[] = [
             variant={q > 5 ? 'default' : q > 0 ? 'secondary' : 'destructive'}
             className="text-base font-bold px-3 py-1"
           >
-            {row.original.status === 'dispatched' ? 0 : q}
+            {q}
           </Badge>
         </div>
       );
@@ -146,7 +164,7 @@ const baseCols: ColumnDef<IArticleSimple>[] = [
       const descalibrated = row.original.tool?.status === 'VENCIDO';
       return (
         <div className="flex flex-col justify-center items-center space-y-2">
-          {getStatusBadge(row.original.status?.toUpperCase())}{' '}
+          {!calibrating && getStatusBadge(row.original.status?.toUpperCase())}
           {row.original.tool && (
             <Badge
               className={cn(

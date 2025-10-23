@@ -1,8 +1,11 @@
-import { useCallback, useMemo, useState } from "react";
-import { useSearchBatchesByPartNumber } from "@/hooks/mantenimiento/almacen/renglones/useGetBatchesByArticlePartNumber";
-import { useCompanyStore } from "@/stores/CompanyStore";
-import { IWarehouseArticle, useGetWarehouseArticlesByCategory } from "@/hooks/mantenimiento/almacen/renglones/useGetArticlesByCategory";
-import { useDebounce } from "@/hooks/helpers/useDebounce";
+import { useDebounce } from '@/hooks/helpers/useDebounce';
+import {
+  IWarehouseArticle,
+  useGetWarehouseArticlesByCategory,
+} from '@/hooks/mantenimiento/almacen/renglones/useGetArticlesByCategory';
+import { useSearchBatchesWithArticles } from '@/hooks/mantenimiento/almacen/renglones/useSearchBatchesWithArticles';
+import { useCallback, useMemo, useState } from 'react';
+import { mapAndGroupByBatch } from './useMapper';
 
 export interface GlobalSearchState {
   partNumberFilter: string;
@@ -32,32 +35,25 @@ export interface GlobalSearchStats {
  * Hook que maneja la búsqueda global combinando datos paginados con búsqueda por part_number
  */
 export const useGlobalSearch = (paginatedBatches: IWarehouseArticle[] | undefined, allZones: string[] = []) => {
-  const { selectedCompany, selectedStation } = useCompanyStore();
-  const [partNumberFilter, setPartNumberFilter] = useState<string>("");
-  const [selectedZone, setSelectedZone] = useState<string>("all");
+  const [partNumberFilter, setPartNumberFilter] = useState<string>('');
+  const [selectedZone, setSelectedZone] = useState<string>('all');
   const [filtersExpanded, setFiltersExpanded] = useState<boolean>(false);
 
   // Debounce el filtro de número de parte para mejorar rendimiento
   const debouncedPartNumberFilter = useDebounce(partNumberFilter, 300);
 
   // Búsqueda global por part_number usando el endpoint existente
-  const {
-    data: searchedBatches,
-    isLoading: isSearching
-  } = useSearchBatchesByPartNumber(
-    debouncedPartNumberFilter || undefined
+  const { data: searchedBatches, isLoading: isSearching } = useSearchBatchesWithArticles(
+    debouncedPartNumberFilter || undefined,
   );
 
   // Obtener TODOS los batches sin paginación cuando hay búsqueda
   // Solo hacer la consulta si hay un filtro de part_number activo
-  const {
-    data: allBatchesResponse,
-    isLoading: isLoadingAllBatches
-  } = useGetWarehouseArticlesByCategory(
+  const { data: allBatchesResponse, isLoading: isLoadingAllBatches } = useGetWarehouseArticlesByCategory(
     1,
     1000, // Obtener muchos más registros para la búsqueda global
-    "CONSUMIBLE", // Category parameter
-    !!debouncedPartNumberFilter // Solo activar cuando hay búsqueda por part_number
+    'CONSUMIBLE', // Category parameter
+    !!debouncedPartNumberFilter, // Solo activar cuando hay búsqueda por part_number
   );
 
   // Determinar qué batches usar: paginados o búsqueda global
@@ -65,8 +61,8 @@ export const useGlobalSearch = (paginatedBatches: IWarehouseArticle[] | undefine
     // Si hay filtro de part_number, usar búsqueda global
     if (debouncedPartNumberFilter && searchedBatches && allBatchesResponse?.batches) {
       // Filtrar los batches completos usando los IDs encontrados en la búsqueda
-      const searchedBatchIds = new Set(searchedBatches.map(b => b.id));
-      return allBatchesResponse.batches.filter(batch => searchedBatchIds.has(batch.batch_id));
+      const search = mapAndGroupByBatch(searchedBatches);
+      return search;
     }
 
     // Si no hay filtro de part_number, usar datos paginados
@@ -102,8 +98,7 @@ export const useGlobalSearch = (paginatedBatches: IWarehouseArticle[] | undefine
         ...batch,
         articles: batch.articles.filter((article) => {
           // Filtro por zona
-          const zoneMatch =
-            selectedZone === "all" || article.zone === selectedZone;
+          const zoneMatch = selectedZone === 'all' || article.zone === selectedZone;
 
           // Si estamos usando búsqueda global, el filtro de part_number ya se aplicó
           // Si estamos usando datos paginados, aplicar filtro de part_number localmente
@@ -119,25 +114,21 @@ export const useGlobalSearch = (paginatedBatches: IWarehouseArticle[] | undefine
 
   // Verificar si hay filtros activos
   const hasActiveFilters = useMemo(
-    () => selectedZone !== "all" || partNumberFilter !== "",
-    [selectedZone, partNumberFilter]
+    () => selectedZone !== 'all' || partNumberFilter !== '',
+    [selectedZone, partNumberFilter],
   );
 
   // Contadores de artículos
   const articleCounts = useMemo(() => {
-    const totalArticles =
-      sourceBatches?.reduce((count, batch) => count + batch.articles.length, 0) || 0;
-    const filteredArticles = filteredBatches.reduce(
-      (count, batch) => count + batch.articles.length,
-      0
-    );
+    const totalArticles = sourceBatches?.reduce((count, batch) => count + batch.articles.length, 0) || 0;
+    const filteredArticles = filteredBatches.reduce((count, batch) => count + batch.articles.length, 0);
     return { totalArticles, filteredArticles };
   }, [sourceBatches, filteredBatches]);
 
   // Función para limpiar filtros
   const clearFilters = useCallback(() => {
-    setSelectedZone("all");
-    setPartNumberFilter("");
+    setSelectedZone('all');
+    setPartNumberFilter('');
   }, []);
 
   return {

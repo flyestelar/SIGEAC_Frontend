@@ -13,12 +13,12 @@ export interface IArticleSimple {
   id: number;
   part_number: string;
   alternative_part_number?: string[];
-  description: string;
+  description?: string;
   quantity: number;
   zone: string;
   article_type: string;
-  serial: string | null;
-  lot_number: string | null;
+  serial?: string;
+  lot_number?: string;
   status: string;
   condition: string;
   is_hazardous?: boolean;
@@ -81,7 +81,7 @@ export const flattenArticles = (data: WarehouseResponse | undefined): IArticleSi
         article.quantity === 0 || article.quantity === null || article.quantity === undefined ? 1 : article.quantity,
       status: article.status,
       condition: article.condition ? article.condition.name : 'N/A',
-      article_type: article.article_type,
+      article_type: article.article_type ?? 'N/A',
       batch_name: batch.name,
       is_hazardous: batch.is_hazardous ?? undefined,
       batch_id: batch.batch_id,
@@ -103,15 +103,17 @@ const baseCols: ColumnDef<IArticleSimple>[] = [
     header: ({ column }) => <DataTableColumnHeader filter column={column} title="Part Number" />,
     cell: ({ row }) => <div className="font-bold text-center text-base">{row.original.part_number}</div>,
   },
-  {
-    accessorKey: 'alternative_part_number',
-    header: ({ column }) => <DataTableColumnHeader filter column={column} title="Alt. Part Number" />,
-    cell: ({ row }) => (
-      <div className="font-bold text-center text-base">
-        {row.original.alternative_part_number?.length ? row.original.alternative_part_number.join('/ ') : 'N/A'}
-      </div>
-    ),
-  },
+  // {
+  //   accessorKey: 'alternative_part_number',
+  //   header: ({ column }) => <DataTableColumnHeader filter column={column} title="Alt. Part Number" />,
+  //   cell: ({ row }) => (
+  //     <div className="font-bold text-center text-base">
+  //       {row.original.alternative_part_number && row.original.alternative_part_number.length > 0
+  //         ? row.original.alternative_part_number.join('/ ')
+  //         : 'N/A'}
+  //     </div>
+  //   ),
+  // },
   {
     accessorKey: 'serial',
     header: ({ column }) => <DataTableColumnHeader filter column={column} title="Serial / Lote" />,

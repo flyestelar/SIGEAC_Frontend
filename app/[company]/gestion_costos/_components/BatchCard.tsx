@@ -15,7 +15,7 @@ export const BatchCard = React.memo(({ batch, onCostChange }: BatchCardProps) =>
         <CardTitle className="text-lg">{batch.name}</CardTitle>
         <CardDescription className="text-sm">
           {batch.articles.length} artículo
-          {batch.articles.length !== 1 ? 's' : ''} en este batch
+          {batch.articles.length !== 1 ? 's' : ''} para esta descripción
         </CardDescription>
       </CardHeader>
       <CardContent className="pt-1">

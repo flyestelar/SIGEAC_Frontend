@@ -5,31 +5,31 @@ import { useQuery } from '@tanstack/react-query';
 export interface IWarehouseArticle {
   batch_id: number;
   name: string;
-  medition_unit: string;
+  medition_unit?: string;
   article_count: number;
   is_hazardous?: boolean;
   articles: {
     id: number;
     part_number: string;
     alternative_part_number?: string[];
-    serial: string | null;
-    lot_number: string | null;
-    description: string;
+    serial?: string;
+    lot_number?: string;
+    description?: string;
     zone: string;
     quantity: number;
-    tool: {
-      needs_calibration?: boolean | null;
-      calibration_date?: string | null; // ISO string o "dd/MM/yyyy"
-      next_calibration_date?: string | null; // si guardas fecha
-      next_calibration?: number | string | null; // o días
-      status?: string | null;
+    tool?: {
+      needs_calibration?: boolean;
+      calibration_date?: string; // ISO string o "dd/MM/yyyy"
+      next_calibration_date?: string; // si guardas fecha
+      next_calibration?: number | string; // o días
+      status?: string;
     };
     condition: {
       name: string;
     };
     status: string; // "stored" | "dispatch" | etc.
-    article_type: string; // "componente" | "consumible" | "herramienta"
-    cost: number | string
+    article_type?: string; // "componente" | "consumible" | "herramienta"
+    cost: number | string;
   }[];
 }
 

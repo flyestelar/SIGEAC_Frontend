@@ -33,7 +33,6 @@ import {
   SquarePen,
   User2,
   UserRoundCog,
-  Wrench,
 } from 'lucide-react';
 
 type Submenu = {
@@ -477,6 +476,14 @@ export function getMenuList(pathname: string, currentCompany: Company | null, us
             //   active: pathname === `/${currentCompany?.slug}/almacen/ingreso/en_recepcion`
             // },
           ],
+        },
+        {
+          href: `/${currentCompany?.slug}/gestion_costos`,
+          label: 'Gestión de Costos',
+          active: pathname.includes(`/${currentCompany?.slug}/gestion_costos`),
+          icon: Receipt,
+          roles: ['ANALISTA_COMPRAS', 'SUPERUSER', 'JEFE_COMPRAS'],
+          submenus: [],
         },
       ],
     },

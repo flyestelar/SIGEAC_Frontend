@@ -24,8 +24,8 @@ export interface BatchWithArticles {
   articles: {
     id: number;
     part_number: string;
-    alternative_part_number: string[] | null;
-    description: string | null;
+    alternative_part_number?: string[];
+    description?: string;
     serial: string;
     quantity: number | string;
     zone: string;
@@ -33,7 +33,7 @@ export interface BatchWithArticles {
     manufacturer: string | null;
     unit_secondary: string | null;
     status: string;
-    cost: number | null;
+    cost?: number;
     image?: string | null;
     certificates?: string[] | null;
     article_type: 'CONSUMABLE' | 'COMPONENT' | 'TOOL' | null;

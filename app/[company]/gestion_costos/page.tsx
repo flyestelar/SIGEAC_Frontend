@@ -12,10 +12,11 @@ import {
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb';
 import { Button } from '@/components/ui/button';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useGetWarehouseArticlesByCategory } from '@/hooks/mantenimiento/almacen/renglones/useGetArticlesByCategory';
 import { useCompanyStore } from '@/stores/CompanyStore';
 import { Package, Save } from 'lucide-react';
-import { useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { BatchCard } from './_components/BatchCard';
 import { EmptyState } from './_components/EmptyState';
@@ -24,66 +25,103 @@ import { PaginationControls } from './_components/PaginationControls';
 import { useArticleChanges } from './_components/hooks/useArticleChanges';
 import { useGlobalSearch } from './_components/hooks/useGlobalSearch';
 import { useBackendPagination } from './_components/hooks/usePagination';
+
+type ArticleType = 'CONSUMIBLE' | 'COMPONENTE' | 'HERRAMIENTA';
+const CATEGORY_LABEL: Record<ArticleType, string> = {
+  CONSUMIBLE: 'Consumibles',
+  COMPONENTE: 'Componentes',
+  HERRAMIENTA: 'Herramientas',
+};
+
 const GestionCantidadesPage = () => {
   const { selectedCompany } = useCompanyStore();
 
-  // Hook de paginación del backend
+  // Tabs
+  const [articleType, setArticleType] = useState<ArticleType>('COMPONENTE');
+
+  // Paginación backend
   const { currentPage, itemsPerPage, createPaginationInfo, createPaginationActions, scrollTargetRef } =
     useBackendPagination({ initialPage: 1, initialPerPage: 25 });
 
-  // Obtener todos los batches con artículos enviando page y per_page al backend
+  // Reset al cambiar de pestaña
+  useEffect(() => {
+    scrollTargetRef.current?.scrollTo(0, 0);
+  }, [articleType, scrollTargetRef]);
+
+  // Datos (nota: pasamos articleType)
   const {
     data: response,
     isLoading,
     isError,
     error,
-  } = useGetWarehouseArticlesByCategory(currentPage, itemsPerPage, 'CONSUMIBLE');
+  } = useGetWarehouseArticlesByCategory(currentPage, itemsPerPage, articleType);
 
-  // Obtener todas las zonas del almacén para los selects
-
-  // Extraer batches y paginationInfo de la respuesta
-  // Memoize para evitar crear nuevas referencias en cada render
   const batches = useMemo(() => response?.batches || [], [response?.batches]);
   const paginationInfo = createPaginationInfo(response?.pagination);
   const paginationActions = createPaginationActions(paginationInfo.totalPages);
 
-  // Hook para búsqueda global y filtros
+  // Búsqueda y filtros
   const { state: filterState, actions: filterActions, stats: filterStats } = useGlobalSearch(batches);
 
-  // Hook para manejar cambios en artículos usando batches filtrados
+  // Cambios de artículos
   const {
-    state: { costs, hasChanges },
-    actions: { handleCostChange },
+    state: { hasChanges },
+    actions: { handleCostChange, resetChanges },
     utils: { getModifiedArticles, modifiedCount },
   } = useArticleChanges(filterStats.filteredBatches);
 
+  // Limpia cambios al cambiar de tipo
+  useEffect(() => {
+    resetChanges();
+  }, [articleType, resetChanges]);
+
+  // Mutación
   const { updateArticleCost } = useUpdateArticleCost();
 
-  const handleSave = useCallback(() => {
-    const modifiedEntries = getModifiedArticles();
+  // Helpers
+  const buildPayload = useCallback(() => {
+    const updates = getModifiedArticles()
+      .map(({ articleId, cost }) => ({ id: Number(articleId), cost: Number(cost) }))
+      .filter(({ id, cost }) => Number.isFinite(id) && Number.isFinite(cost) && cost >= 0);
 
-    if (modifiedEntries.length === 0) {
-      toast.info('No hay cambios para guardar');
+    // incluye tipo para que el backend pueda validar/rutear si aplica
+    return { company: selectedCompany?.slug ?? '', type: articleType, updates };
+  }, [getModifiedArticles, selectedCompany?.slug, articleType]);
+
+  const handleSave = useCallback(async () => {
+    if (!selectedCompany?.slug) {
+      toast.error('Falta la compañía seleccionada.');
       return;
     }
 
-    const requestPayload = {
-      updates: modifiedEntries.map((entry) => ({
-        article_id: entry.articleId,
-        ...(entry.costChanged && { new_cost: entry.newCost }),
-      })),
-      company: selectedCompany!.slug,
-    };
+    const payload = buildPayload();
+    if (!payload.updates.length) {
+      toast.info('No hay cambios para guardar.');
+      return;
+    }
 
-    updateArticleCost.mutate(requestPayload);
-  }, [getModifiedArticles, selectedCompany, updateArticleCost]);
+    try {
+      await updateArticleCost.mutateAsync(payload);
+      toast.success(`Se han guardado los cambios en ${payload.updates.length} artículo(s).`);
+      resetChanges();
+    } catch (e: unknown) {
+      const message = e instanceof Error ? e.message : 'Error desconocido';
+      toast.error(`No se pudo guardar: ${message}`);
+    }
+  }, [buildPayload, updateArticleCost, resetChanges, selectedCompany?.slug]);
 
-  if (isLoading) {
-    return <LoadingPage />;
+  if (isLoading) return <LoadingPage />;
+
+  if (isError) {
+    return (
+      <ContentLayout title="Gestión de Costos">
+        <div className="p-4 rounded-lg border bg-red-50 text-red-700">Error al cargar inventario: {String(error)}</div>
+      </ContentLayout>
+    );
   }
 
   return (
-    <ContentLayout title="Gestión de Cantidades y Ubicaciones">
+    <ContentLayout title="Gestión de Costos">
       <div className="flex flex-col gap-4">
         {/* Breadcrumbs */}
         <Breadcrumb>
@@ -97,55 +135,66 @@ const GestionCantidadesPage = () => {
             <BreadcrumbItem>Inventario</BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem>
-              <BreadcrumbPage>Gestión de Cantidades</BreadcrumbPage>
+              <BreadcrumbPage>Gestión de Costos</BreadcrumbPage>
             </BreadcrumbItem>
           </BreadcrumbList>
         </Breadcrumb>
-
-        {/* Scroll target para paginación */}
-        <div ref={scrollTargetRef} className="scroll-mt-4" />
 
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold flex items-center gap-2">
               <Package className="h-8 w-8" />
-              Gestión de Cantidades y Ubicaciones
+              Gestión de Costos
             </h1>
             <p className="text-sm text-muted-foreground mt-2">
-              Actualiza las cantidades de consumibles y las ubicaciones de componentes en el almacén
+              {CATEGORY_LABEL[articleType]} • Actualiza costos de forma segura y trazable.
             </p>
           </div>
-          <Button onClick={handleSave} disabled={!hasChanges} className="flex items-center gap-2">
+          <Button
+            onClick={handleSave}
+            disabled={!hasChanges || updateArticleCost.isPending || modifiedCount === 0}
+            className="flex items-center gap-2"
+          >
             <Save className="h-4 w-4" />
-            Guardar Cambios
+            {updateArticleCost.isPending ? 'Guardando…' : 'Guardar Cambios'}
             {hasChanges && modifiedCount > 0 && (
               <span className="ml-1 bg-red-500 text-white text-xs px-2 py-1 rounded-full">{modifiedCount}</span>
             )}
           </Button>
         </div>
 
-        {/* Filter Panel */}
+        {/* Tabs de tipo de artículo */}
+        <Tabs value={articleType} onValueChange={(v) => setArticleType(v as ArticleType)} className="w-full">
+          <TabsList className="grid grid-cols-3 w-full">
+            <TabsTrigger value="CONSUMIBLE">Consumibles</TabsTrigger>
+            <TabsTrigger value="COMPONENTE">Componentes</TabsTrigger>
+            <TabsTrigger value="HERRAMIENTA">Herramientas</TabsTrigger>
+          </TabsList>
+        </Tabs>
+
+        {/* Scroll anchor */}
+        <div ref={scrollTargetRef} className="scroll-mt-4" />
+
+        {/* Panel de filtros */}
         <FilterPanel batches={batches} filterState={filterState} filterActions={filterActions} stats={filterStats} />
 
-        {/* Performance Info */}
+        {/* Estado de consulta */}
         <div className="bg-muted/50 p-3 rounded-lg">
           <p className="text-sm text-muted-foreground">
             {filterStats.isSearching ? (
-              <span className="text-blue-600">🔍 Buscando en toda la base de datos...</span>
+              <span className="text-blue-600">🔍 Búsqueda global en progreso…</span>
             ) : filterState.partNumberFilter ? (
               <span>
                 ✅ Resultados de búsqueda global
                 {filterStats.hasActiveFilters && (
-                  <span className="ml-2 text-blue-600">
-                    • {filterStats.articleCounts.filteredArticles} artículos encontrados
-                  </span>
+                  <span className="ml-2 text-blue-600">• {filterStats.articleCounts.filteredArticles} artículos</span>
                 )}
               </span>
             ) : (
               <span>
-                Mostrando {paginationInfo.from} - {paginationInfo.to} de {paginationInfo.totalItems} batches • Página{' '}
-                {paginationInfo.currentPage} de {paginationInfo.totalPages}• {paginationInfo.itemsPerPage} por página
+                Mostrando {paginationInfo.from}–{paginationInfo.to} de {paginationInfo.totalItems} • Página{' '}
+                {paginationInfo.currentPage} de {paginationInfo.totalPages} • {paginationInfo.itemsPerPage} por página
                 {filterStats.hasActiveFilters && (
                   <span className="ml-2 text-blue-600">
                     • {filterStats.articleCounts.filteredArticles} artículos filtrados
@@ -156,22 +205,19 @@ const GestionCantidadesPage = () => {
           </p>
         </div>
 
-        {/* Articles by Batch - Datos filtrados */}
-        {filterStats.filteredBatches &&
-          Array.isArray(filterStats.filteredBatches) &&
+        {/* Listado filtrado */}
+        {Array.isArray(filterStats.filteredBatches) &&
           filterStats.filteredBatches.map((batch) => (
-            <BatchCard key={batch.batch_id} batch={batch} onCostChange={handleCostChange} />
+            <BatchCard key={`${articleType}-${batch.batch_id}`} batch={batch} onCostChange={handleCostChange} />
           ))}
 
-        {/* Pagination Controls - Ocultar durante búsqueda global */}
+        {/* Paginación */}
         {!filterState.partNumberFilter && (
           <PaginationControls paginationInfo={paginationInfo} paginationActions={paginationActions} />
         )}
 
-        {/* Empty State */}
-        {(!filterStats.filteredBatches ||
-          !Array.isArray(filterStats.filteredBatches) ||
-          filterStats.filteredBatches.length === 0) &&
+        {/* Vacío */}
+        {(!Array.isArray(filterStats.filteredBatches) || filterStats.filteredBatches.length === 0) &&
           !isLoading &&
           !filterStats.isSearching && (
             <EmptyState hasActiveFilters={filterStats.hasActiveFilters} onClearFilters={filterActions.clearFilters} />
