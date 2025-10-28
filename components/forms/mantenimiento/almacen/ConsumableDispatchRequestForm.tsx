@@ -132,11 +132,20 @@ export function ConsumableDispatchForm({ onClose }: FormProps) {
     clearErrors([`articles.${rowIndex}.quantity`, `articles.${rowIndex}.unit`]);
   }
 
-  function validateQuantityAtRow(rowIndex: number, raw: string) {
+  function validateQuantityAtRow(rowIndex: number, raw: string, article_id: number) {
+    const art = findArticleById(article_id);
+    const qt = art!.quantity;
     const str = raw.replace(',', '.');
     const value = parseFloat(str);
-    if (Number.isNaN(value) || value <= 0) {
+    if (value <= 0) {
       setError(`articles.${rowIndex}.quantity`, { type: 'manual', message: 'La cantidad debe ser mayor a 0' });
+      return;
+    }
+    if (value > qt) {
+      setError(`articles.${rowIndex}.quantity`, {
+        type: 'manual',
+        message: 'La cantidad debe ser menor a la cantidad máxima.',
+      });
       return;
     }
     const batch = findBatchById(watch(`articles.${rowIndex}.batch_id`));
@@ -580,7 +589,7 @@ export function ConsumableDispatchForm({ onClose }: FormProps) {
                             <FormControl>
                               <Input
                                 value={field.value ?? ''}
-                                onChange={(e) => validateQuantityAtRow(idx, e.target.value)}
+                                onChange={(e) => validateQuantityAtRow(idx, e.target.value, selectedArticle!.id)}
                                 disabled={!selectedArticle}
                                 placeholder={unitType === 'U' ? 'Ej: 1, 2, 3...' : 'Ej: 0.5, 1, 2...'}
                               />

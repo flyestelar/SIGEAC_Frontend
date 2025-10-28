@@ -8,7 +8,7 @@ const fetchConditions = async (company?: string): Promise<Condition[]> => {
   return data;
 };
 
-export const useGetConditions = (company?: string) => {
+export const useGetConditions = () => {
   const { selectedCompany } = useCompanyStore();
   return useQuery<Condition[]>({
     queryKey: ['conditions'],

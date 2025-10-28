@@ -59,7 +59,7 @@ const formSchema = z
 
     // Calibración
     needs_calibration: z.boolean().optional(),
-    last_calibration_date: z.date().optional(),
+    calibration_date: z.date().optional(),
     next_calibration: z.union([z.coerce.number().int().positive(), z.nan()]).optional(), // ingresado solo si needs_calibration
 
     // Archivos
@@ -79,11 +79,11 @@ const formSchema = z
   })
   .superRefine((vals, ctx) => {
     if (vals.needs_calibration) {
-      if (!vals.last_calibration_date) {
+      if (!vals.calibration_date) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           message: 'Ingrese la última fecha de calibración.',
-          path: ['last_calibration_date'],
+          path: ['calibration_date'],
         });
       }
       if (
@@ -142,9 +142,7 @@ export default function CreateToolForm({
       condition_id: initialData?.condition?.id?.toString() || '',
       batch_id: initialData?.batches?.id?.toString() || '',
       needs_calibration: initialData?.tool?.needs_calibration ?? false,
-      last_calibration_date: initialData?.tool?.last_calibration_date
-        ? new Date(initialData.tool.last_calibration_date)
-        : undefined,
+      calibration_date: initialData?.tool?.calibration_date ? new Date(initialData.tool.calibration_date) : undefined,
       next_calibration: undefined,
     },
   });
@@ -166,9 +164,7 @@ export default function CreateToolForm({
       condition_id: initialData.condition?.id?.toString() || '',
       batch_id: initialData.batches?.id?.toString() || '',
       needs_calibration: initialData.tool?.needs_calibration ?? false,
-      last_calibration_date: initialData.tool?.last_calibration_date
-        ? new Date(initialData.tool.last_calibration_date)
-        : undefined,
+      calibration_date: initialData.tool?.calibration_date ? new Date(initialData.tool.calibration_date) : undefined,
       next_calibration: undefined,
     });
   }, [initialData, form]);
@@ -191,9 +187,7 @@ export default function CreateToolForm({
       ...values,
       part_number: normalizeUpper(values.part_number),
       alternative_part_number: values.alternative_part_number?.map((v) => normalizeUpper(v)) ?? [],
-      last_calibration_date: values.last_calibration_date
-        ? format(values.last_calibration_date, 'yyyy-MM-dd')
-        : undefined,
+      calibration_date: values.calibration_date ? format(values.calibration_date, 'yyyy-MM-dd') : undefined,
       // `next_calibration` se envía tal cual como número
     };
 
@@ -413,7 +407,7 @@ export default function CreateToolForm({
               <>
                 <FormField
                   control={form.control}
-                  name="last_calibration_date"
+                  name="calibration_date"
                   render={({ field }) => (
                     <FormItem className="flex flex-col w-full mt-1.5 space-y-3">
                       <FormLabel>Última calibración</FormLabel>
@@ -442,7 +436,7 @@ export default function CreateToolForm({
                             mode="single"
                             selected={field.value}
                             onSelect={(d) =>
-                              form.setValue('last_calibration_date', d, { shouldDirty: true, shouldValidate: true })
+                              form.setValue('calibration_date', d, { shouldDirty: true, shouldValidate: true })
                             }
                             initialFocus
                             month={field.value}

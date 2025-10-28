@@ -1,4 +1,5 @@
 import axiosInstance from '@/lib/axios';
+import { useCompanyStore } from '@/stores/CompanyStore';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
@@ -89,5 +90,32 @@ export const useUpdateStatusDispatchRequest = () => {
   });
   return {
     updateDispatchStatus: updateStatusMutation,
+  };
+};
+
+export const useCancelDispatchRequest = () => {
+  const { selectedCompany } = useCompanyStore();
+  const queryClient = useQueryClient();
+  const cancelDispatchRequestMutation = useMutation({
+    mutationKey: ['dispatch-request-cancel'],
+    mutationFn: async ({ id }: { id: string | number }) => {
+      await axiosInstance.put(`/${selectedCompany?.slug}/cancel-dispatch-order/${id}`);
+    },
+    onSuccess: () => {
+      (queryClient.invalidateQueries({ queryKey: ['dispatch-orders'] }),
+        queryClient.invalidateQueries({ queryKey: ['dispatched-articles'] }),
+        toast.success('¡Cancelada!', {
+          description: '¡La solicitud ha sido cancelada!',
+        }));
+    },
+    onError: (error) => {
+      toast.error('Oops!', {
+        description: 'No se pudo crear la solicitud...',
+      });
+      console.log(error);
+    },
+  });
+  return {
+    cancelDispatchRequest: cancelDispatchRequestMutation,
   };
 };

@@ -4,7 +4,13 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+
 import { useUpdateArticleStatus } from '@/actions/mantenimiento/almacen/inventario/articulos/actions';
+import { useCompanyStore } from '@/stores/CompanyStore';
+import { IterationCw, Loader2, MoreHorizontal, Trash2 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
+import { Button } from '../../../ui/button';
 import {
   Dialog,
   DialogContent,
@@ -13,19 +19,15 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '@/components/ui/dialog';
-import { IterationCw, Loader2, MoreHorizontal } from 'lucide-react';
-import { useRouter } from 'next/navigation';
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
+} from '../../../ui/dialog';
+import { useCancelDispatchRequest } from '@/actions/mantenimiento/almacen/solicitudes/salida/action';
 
-const DispatchedArticlesDropdownActions = ({ id }: { id: string | number }) => {
+const DispatchRequestDropdownActions = ({ id }: { id: string | number }) => {
   const [open, setOpen] = useState<boolean>(false);
-  const router = useRouter();
-  const { updateArticleStatus } = useUpdateArticleStatus();
+  const { cancelDispatchRequest } = useCancelDispatchRequest();
 
-  const handleUpdate = async (id: number) => {
-    await updateArticleStatus.mutateAsync({ id, status: 'STORED' });
+  const handleCancel = async (id: number) => {
+    await cancelDispatchRequest.mutateAsync({ id });
   };
 
   return (
@@ -47,9 +49,9 @@ const DispatchedArticlesDropdownActions = ({ id }: { id: string | number }) => {
       </DropdownMenu>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle className="text-center">¿El componente ha sido devuelto a almacén?</DialogTitle>
+          <DialogTitle className="text-center">¿Desea cancelar el despacho?</DialogTitle>
           <DialogDescription className="text-center p-2 mb-0 pb-0">
-            El componente volverá a estar disponible en stock.
+            Los articulos volverán a estar disponibles en su almacén.
           </DialogDescription>
         </DialogHeader>
         <DialogFooter className="flex flex-col gap-2 md:gap-0">
@@ -61,11 +63,11 @@ const DispatchedArticlesDropdownActions = ({ id }: { id: string | number }) => {
             Cancelar
           </Button>
           <Button
-            disabled={updateArticleStatus.isPending}
+            disabled={cancelDispatchRequest.isPending}
             className="hover:bg-white hover:text-black hover:border hover:border-black transition-all"
-            onClick={() => handleUpdate(Number(id))}
+            onClick={() => handleCancel(Number(id))}
           >
-            {updateArticleStatus.isPending ? <Loader2 className="size-4 animate-spin" /> : <p>Confirmar</p>}
+            {cancelDispatchRequest.isPending ? <Loader2 className="size-4 animate-spin" /> : <p>Confirmar</p>}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -73,4 +75,4 @@ const DispatchedArticlesDropdownActions = ({ id }: { id: string | number }) => {
   );
 };
 
-export default DispatchedArticlesDropdownActions;
+export default DispatchRequestDropdownActions;

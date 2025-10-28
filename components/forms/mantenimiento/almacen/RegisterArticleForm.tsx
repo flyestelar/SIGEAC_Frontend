@@ -14,7 +14,7 @@ export interface EditingArticle extends Article {
     serial: string;
     isSpecial: boolean;
     needs_calibration: boolean;
-    last_calibration_date?: string;
+    calibration_date?: string;
     next_calibration?: string | number;
     article_id: number;
   };

@@ -24,18 +24,12 @@ export interface DispatchReport {
   }[];
 }
 
-const fetchDispatchReport = async (
-  location_id: string,
-  company?: string,
-): Promise<DispatchReport[]> => {
-  const { data } = await axios.get(`/${company}/report-dispatch-orders/${location_id}`);
+const fetchDispatchReport = async (location_id: string, company?: string): Promise<DispatchReport[]> => {
+  const { data } = await axios.get(`/${company}/${location_id}/report-dispatch-orders`);
   return data;
 };
 
-export const useGetDispatchReport = (
-  location_id: string | null,
-  company?: string,
-) => {
+export const useGetDispatchReport = (location_id: string | null, company?: string) => {
   return useQuery<DispatchReport[], Error>({
     queryKey: ['dispatch-report', company, location_id],
     queryFn: () => fetchDispatchReport(location_id!, company!),

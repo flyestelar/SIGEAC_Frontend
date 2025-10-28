@@ -70,7 +70,7 @@ export interface Tool extends Article {
 
 export interface Consumable extends Article {
   is_managed?: boolean;
-  quantity?: number;
+  quantity: number;
   unit: Unit;
   caducate_date?: string;
   fabrication_date?: string;

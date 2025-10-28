@@ -21,6 +21,8 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { MaintenanceAircraft, WorkOrder, Workshop } from '@/types';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
+import PendingDispatchRequestDropdownActions from '@/components/dropdowns/mantenimiento/almacen/PendingDispatchRequestDropdownActions';
+import DispatchRequestDropdownActions from '@/components/dropdowns/mantenimiento/almacen/DispatchRequestDropdownActions';
 
 interface IDispatch {
   id: number;
@@ -38,25 +40,6 @@ interface IDispatch {
 }
 
 export const columns: ColumnDef<IDispatch>[] = [
-  {
-    id: 'select',
-    header: ({ table }) => (
-      <Checkbox
-        checked={table.getIsAllPageRowsSelected() || (table.getIsSomePageRowsSelected() && 'indeterminate')}
-        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-        aria-label="Seleccionar todos"
-      />
-    ),
-    cell: ({ row }) => (
-      <Checkbox
-        checked={row.getIsSelected()}
-        onCheckedChange={(value) => row.toggleSelected(!!value)}
-        aria-label="Seleccionar fila"
-      />
-    ),
-    enableSorting: false,
-    enableHiding: false,
-  },
   {
     accessorKey: 'request_number',
     header: ({ column }) => <DataTableColumnHeader column={column} title="N° Solicitud" />,
@@ -114,39 +97,8 @@ export const columns: ColumnDef<IDispatch>[] = [
   {
     id: 'actions',
     cell: ({ row }) => {
-      return (
-        <TooltipProvider>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="h-8 w-8 p-0">
-                <span className="sr-only">Abrir menu</span>
-                <MoreHorizontal className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="center" className="flex gap-2 justify-center">
-              <DropdownMenuSeparator />
-              <DropdownMenuItem>
-                <Tooltip>
-                  <TooltipTrigger>
-                    <Trash2 className="size-5 text-red-500" />
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Eliminar</p>
-                  </TooltipContent>
-                </Tooltip>
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <Tooltip>
-                  <TooltipTrigger>
-                    <SquarePen className="size-5" />
-                  </TooltipTrigger>
-                  <TooltipContent>Editar</TooltipContent>
-                </Tooltip>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </TooltipProvider>
-      );
+      const id = row.original.id;
+      return <DispatchRequestDropdownActions id={id} />;
     },
   },
 ];
