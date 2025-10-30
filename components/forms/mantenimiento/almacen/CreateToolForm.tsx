@@ -290,7 +290,7 @@ export default function CreateToolForm({
                     <SelectContent>
                       {manufacturers?.map((m) => (
                         <SelectItem key={m.id} value={m.id.toString()}>
-                          {m.name}
+                          {`${m.name} - ${m.type ?? 'Sin tipo'}`}
                         </SelectItem>
                       ))}
                       {isManufacturerError && (

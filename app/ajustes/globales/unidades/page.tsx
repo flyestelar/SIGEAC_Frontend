@@ -31,19 +31,37 @@ const UnitsPage = () => {
         Control de Unidades
       </h1>
       <p className="text-sm text-muted-foreground text-center italic mt-2">
-        Aquí puede llevar el control de las unidades primarias para las
+        Aquí puede llevar el control de las unidades primarias y secundarias para las
         diferentes conversiones necesarias.
       </p>
-      <div className="flex flex-col lg:flex-row gap-2">
-        {primaryUnits && (
-          <PrimaryDataTable columns={columns} data={primaryUnits} />
-        )}
-        {secondaryUnits && (
-          <SecondaryDataTable
-            columns={secondary_columns}
-            data={secondaryUnits}
-          />
-        )}
+
+      <div className="flex flex-col lg:flex-row gap-6 mt-6">
+        <div className="flex-1">
+          <h2 className="text-2xl font-semibold text-center mb-3">
+            Unidades Primarias
+          </h2>
+          <p className="text-sm text-muted-foreground italic text-center mb-3">
+            Son las unidades principales que se usan como base, por ejemplo: metro, litro o kilo.
+          </p>
+          {primaryUnits && (
+            <PrimaryDataTable columns={columns} data={primaryUnits} />
+          )}
+        </div>
+
+        <div className="flex-1">
+          <h2 className="text-2xl font-semibold text-center mb-3">
+            Unidades Secundarias
+          </h2>
+          <p className="text-sm text-muted-foreground italic text-center mb-3">
+            Son las unidades que dependen de las principales, como caja o galón.
+          </p>
+          {secondaryUnits && (
+            <SecondaryDataTable
+              columns={secondary_columns}
+              data={secondaryUnits}
+            />
+          )}
+        </div>
       </div>
     </ContentLayout>
   );
