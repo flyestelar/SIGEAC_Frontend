@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useCallback, useRef, useState } from 'react';
-import { Upload, FileSpreadsheet, X, CheckCircle2, AlertCircle } from 'lucide-react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
+import { Upload, FileSpreadsheet, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
@@ -19,43 +19,57 @@ export default function InventoryUploadPage() {
 
   const { importInventory, progress, setProgress } = useImportInventory();
 
-  const allowed = [
-    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-    'application/vnd.ms-excel',
-    'text/csv',
-  ];
+  const allowed = useMemo(
+    () => [
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      'application/vnd.ms-excel',
+      'text/csv',
+    ],
+    []
+  );
 
-  const onSelect = (f: File) => {
-    if (!allowed.includes(f.type) && !/\.(xlsx|xls|csv)$/i.test(f.name)) {
-      toast('Formato inválido', { description: 'Usa .xlsx, .xls o .csv' });
-      setFile(null);
-      return;
-    }
-    if (f.size > 15 * 1024 * 1024) {
-      toast('Archivo muy grande', { description: 'Máximo 15 MB' });
-      setFile(null);
-      return;
-    }
-    setFile(f);
-  };
+  const onSelect = useCallback(
+    (f: File) => {
+      if (!allowed.includes(f.type) && !/\.(xlsx|xls|csv)$/i.test(f.name)) {
+        toast('Formato inválido', { description: 'Usa .xlsx, .xls o .csv' });
+        setFile(null);
+        return;
+      }
+      if (f.size > 15 * 1024 * 1024) {
+        toast('Archivo muy grande', { description: 'Máximo 15 MB' });
+        setFile(null);
+        return;
+      }
+      setFile(f);
+    },
+    [allowed]
+  );
 
-  const handleDrop = useCallback((e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setDragActive(false);
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) onSelect(e.dataTransfer.files[0]);
-  }, []);
+  const handleDrop = useCallback(
+    (e: React.DragEvent<HTMLDivElement>) => {
+      e.preventDefault();
+      e.stopPropagation();
+      setDragActive(false);
+      if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+        onSelect(e.dataTransfer.files[0]);
+      }
+    },
+    [onSelect]
+  );
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const f = e.target.files?.[0];
-    if (f) onSelect(f);
-  };
+  const handleChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const f = e.target.files?.[0];
+      if (f) onSelect(f);
+    },
+    [onSelect]
+  );
 
-  const handleUpload = () => {
+  const handleUpload = useCallback(() => {
     if (!file) return;
     setProgress(5);
     importInventory.mutate(
-      { file, company: 'estelar', extra: {} },
+      { file, company: params?.company ?? 'estelar', extra: {} },
       {
         onSuccess: () => {
           setFile(null);
@@ -65,9 +79,9 @@ export default function InventoryUploadPage() {
         onError: () => {
           setTimeout(() => setProgress(0), 600);
         },
-      },
+      }
     );
-  };
+  }, [file, importInventory, params?.company, setProgress]);
 
   const uploading = importInventory.isPending;
 

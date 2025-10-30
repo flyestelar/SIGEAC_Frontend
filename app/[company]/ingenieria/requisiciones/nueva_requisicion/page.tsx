@@ -43,7 +43,7 @@ import { useGetWorkOrders } from "@/hooks/planificacion/useGetWorkOrders";
 import { useGetUserDepartamentEmployees } from "@/hooks/sistema/empleados/useGetUserDepartamentEmployees";
 import { cn } from "@/lib/utils";
 import { useCompanyStore } from "@/stores/CompanyStore";
-import { WorkOrder } from "@/types";
+// import { WorkOrder } from "@/types";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Check, ChevronsUpDown, Loader2, MinusCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -138,20 +138,26 @@ const CreateRequisitionPage = () => {
     },
   });
 
+  const { setValue, handleSubmit, control } = form;
+
   useEffect(() => {
     if (user && selectedCompany && selectedStation) {
       console.log("first")
-      form.setValue("created_by", user.id.toString());
-      form.setValue("company", selectedCompany?.slug);
-      form.setValue("location_id", selectedStation);
+      setValue("created_by", user.id.toString());
+      setValue("company", selectedCompany?.slug);
+      setValue("location_id", selectedStation);
     }
-  }, [user, form, selectedCompany, selectedStation]);
+  }, [user, selectedCompany, selectedStation, setValue]);
 
   useEffect(() => {
-    if (selectedStation) {
-      mutate({ location_id: Number(selectedStation), company: selectedCompany!.slug });
+    if (selectedStation && selectedCompany) {
+      mutate({ location_id: Number(selectedStation), company: selectedCompany.slug });
     }
-  }, [selectedStation, mutate, selectedCompany]);
+  }, [selectedStation, selectedCompany, mutate]);
+
+  useEffect(() => {
+    setValue("aircrafts", aircraftsData);
+  }, [aircraftsData, setValue]);
 
   const handleAircraftSelect = (aircraftId: string) => {
     const isSelected = selectedAircrafts.includes(aircraftId);
@@ -162,10 +168,8 @@ const CreateRequisitionPage = () => {
     );
     setAircraftsData(prev => {
       if (isSelected) {
-        // Si la aeronave ya estaba seleccionada y ahora se des-selecciona, la quitamos
         return prev.filter(a => a.aircraft_id !== aircraftId);
       } else {
-        // Si no existía, la agregamos
         return [...prev, { aircraft_id: aircraftId, articles: [] }];
       }
     });
@@ -302,8 +306,8 @@ const CreateRequisitionPage = () => {
   };
 
   useEffect(() => {
-    form.setValue("aircrafts", aircraftsData)
-  }, [aircraftsData])
+    setValue("aircrafts", aircraftsData)
+  }, [aircraftsData, setValue])
 
   return (
     <ContentLayout title="Solicitud de Compra">

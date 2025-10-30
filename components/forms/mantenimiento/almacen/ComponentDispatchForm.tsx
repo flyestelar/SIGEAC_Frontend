@@ -139,7 +139,7 @@ export function ComponentDispatchForm({ onClose }: FormProps) {
       })),
       { shouldValidate: true },
     );
-  }, [selectedComponents]);
+  }, [selectedComponents, form]);
 
   // Resolver nombre del técnico si hay DNI por defecto
   useEffect(() => {
@@ -147,7 +147,7 @@ export function ComponentDispatchForm({ onClose }: FormProps) {
       const found = employees.find((e) => String(e.dni) === form.getValues('requested_by'));
       if (found) setRequestedBy(found);
     }
-  }, [employees]);
+  }, [employees, form, requestBy]);
 
   const addOrRemoveComponent = (item: {
     id: number;

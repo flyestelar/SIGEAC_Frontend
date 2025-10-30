@@ -166,7 +166,7 @@ export default function CreateTaskMasterTaskForm({ onSubmit }: { onSubmit?: (pay
       appl = null;
     }
     return { ...v, applicability: appl, status: 'ACTIVE' };
-  }, [watch('applicability'), watch('required_tools'), watch('access_panels')]);
+  }, [getValues]);
 
   async function submit(values: TaskMasterFormInput) {
     try {

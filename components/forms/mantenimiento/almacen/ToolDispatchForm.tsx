@@ -137,7 +137,7 @@ export function ToolDispatchForm({ onClose }: FormProps) {
       })),
       { shouldValidate: true },
     );
-  }, [selectedTools]);
+  }, [selectedTools, form]);
 
   // Resolver nombre en el botón si hay DNI por default
   useEffect(() => {
@@ -145,7 +145,7 @@ export function ToolDispatchForm({ onClose }: FormProps) {
       const found = employees.find((e) => String(e.dni) === form.getValues('requested_by'));
       if (found) setRequestedBy(found);
     }
-  }, [employees]);
+  }, [employees, form, requestBy]);
 
   const addOrRemoveTool = (tool: {
     id: number;
