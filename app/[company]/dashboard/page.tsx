@@ -3,7 +3,7 @@ import { ContentLayout } from '@/components/layout/ContentLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useCompanyStore } from '@/stores/CompanyStore';
-import { BarChart3, Plane, Shield, Users } from 'lucide-react';
+import { BarChart3, Plane, Shield } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 const DashboardPage = () => {
   const { selectedCompany } = useCompanyStore();
