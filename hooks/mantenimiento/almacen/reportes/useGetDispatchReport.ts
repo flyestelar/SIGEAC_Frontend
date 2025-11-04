@@ -11,9 +11,13 @@ export interface DispatchReport {
   delivered_by: string;
   created_by: string;
   justification: string;
-  destination_place: string;
   submission_date: string;
-  work_order?: string;
+  work_order?: string | null;
+  work_shop?: {
+    id: number;
+    name: string;
+    location_id: string;
+  } | null;
   aircraft?: Aircraft | null;
   articles: {
     id: number;

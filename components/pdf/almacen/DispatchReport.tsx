@@ -12,9 +12,13 @@ export interface DispatchReport {
   delivered_by: string;
   created_by: string;
   justification: string;
-  destination_place: string;
   submission_date: string;
-  work_order?: string;
+  work_order?: string | null;
+  work_shop?: {
+    id: number;
+    name: string;
+    location_id: string;
+  } | null;
   aircraft?: Aircraft | null;
   articles: {
     id: number;
@@ -213,7 +217,7 @@ const DispatchReportPdf = ({
             <View style={styles.headerTable}>
               {/* Columna 1: Logo */}
               <View style={[styles.headerCell, { width: "33%", alignItems: "center" }]}>
-                <PDFImage src="/tmd_nombre.png" style={styles.logo} />
+                <PDFImage src="/logo.png" style={styles.logo} />
               </View>
 
               {/* Columna 2: Título */}
@@ -259,26 +263,22 @@ const DispatchReportPdf = ({
                     </View>
                   </View>
 
-                  {/* Fila 2 */}
+                  {/* Fila 2 (ajustada) */}
                   <View style={styles.tableRow}>
                     <View style={styles.tableCell}>
                       <Text style={styles.tableCellLabel}>Status:</Text>
                       <Text style={styles.tableCellValue}>{dispatch.status}</Text>
                     </View>
                     <View style={styles.tableCell}>
-                      <Text style={styles.tableCellLabel}>Destino:</Text>
-                      <Text style={styles.tableCellValue}>{dispatch.destination_place}</Text>
-                    </View>
-                    <View style={styles.tableCell}>
-                      <Text style={styles.tableCellLabel}>Orden de Trabajo:</Text>
-                      <Text style={styles.tableCellValue}>{dispatch.work_order ?? "N/A"}</Text>
+                      <Text style={styles.tableCellLabel}>Taller:</Text>
+                      <Text style={styles.tableCellValue}>
+                        {dispatch.work_shop?.name ?? "N/A"}
+                      </Text>
                     </View>
                     <View style={styles.tableCell2}>
                       <Text style={styles.tableCellLabel}>Aeronave:</Text>
                       <Text style={styles.tableCellValue}>
-                        {dispatch.aircraft
-                          ? `${dispatch.aircraft.acronym}`
-                          : "N/A"}
+                        {dispatch.aircraft ? dispatch.aircraft.acronym : "N/A"}
                       </Text>
                     </View>
                   </View>
