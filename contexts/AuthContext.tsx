@@ -1,11 +1,12 @@
 'use client';
 
 import { default as axiosInstance } from '@/lib/axios';
-import { createCookie, deleteCookie } from '@/lib/cookie';
+import { AxiosError } from 'axios';
+import { createCookie } from '@/lib/cookie';
 import { createSession, deleteSession } from '@/lib/session';
 import { useCompanyStore } from '@/stores/CompanyStore';
 import { User } from '@/types';
-import { useMutation, UseMutationResult, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, UseMutationResult, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { createContext, ReactNode, useContext, useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
@@ -102,12 +103,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       });
     },
     onError: (err) => {
-      const errorMessage = err.message || 'Credenciales incorrectas';
+      const axiosError = err as AxiosError<{ message?: string }>;
+      const status = axiosError.response?.status;
+
+      const errorMessage = status === 401 ? 'Credenciales incorrectas' : axiosError.response?.data?.message || axiosError.message || 'Ocurrió un error inesperado';
+      
       setError(errorMessage);
-      toast.error('Error al iniciar sesión', {
-        description: errorMessage,
-        position: 'bottom-center'
-      });
+      toast.error('Error al iniciar sesión', {  description: errorMessage,  position: 'bottom-center' });
     },
   });
 

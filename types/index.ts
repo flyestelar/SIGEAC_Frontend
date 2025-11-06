@@ -1093,3 +1093,24 @@ export type TaskMaster = {
   created_at?: string;
   updated_at?: string;
 };
+
+export interface WarehouseDashboard {
+  storedCount: number
+  dispatchCount: number
+  dispatchAircraftCount: number
+  dispatchWorkshopCount: number
+  tool_need_calibration_count: number
+  returnToolsCount: number
+  tools_need_calibration: any[]
+  toolsToReturn: any[]
+  articlesOutOfStock: {
+    id: number
+    description: string
+    part_number: string
+    serial: string
+    category: string
+    condition: string
+    zone: string
+  }[]
+  restockCount: number
+}
