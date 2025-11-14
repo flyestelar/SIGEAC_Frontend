@@ -1,27 +1,40 @@
-'use client';
+// components/dashboard/WarehouseDashboard.tsx
+'use client'
 
-import { ContentLayout } from '@/components/layout/ContentLayout';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { BarChart3, Plane, Shield } from 'lucide-react';
-import { useRouter } from 'next/navigation';
-import { useGetWarehouseDashboard } from '@/hooks/sistema/dashboard/useWarehouseDashboard';
+import { ContentLayout } from '@/components/layout/ContentLayout'
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
+import { Plane, Shield, Package2, Wrench, Users, LayoutDashboard } from 'lucide-react'
+import { useState } from 'react'
+import { useGetWarehouseDashboard } from '@/hooks/sistema/dashboard/useWarehouseDashboard'
+import { User } from '@/types'
+
+// Subcomponents
+import ArticlesSummary from '@/components/dashboard/sections/ArticlesSummary'
+import ToolsSummary from '@/components/dashboard/sections/ToolsSummary'
+import UsersSummary from '@/components/dashboard/sections/UsersSummary'
+import DashboardSummary from '@/components/dashboard/sections/DashboardSummary'
 
 interface WarehouseDashboardProps {
-  companySlug: string;
-  location_id: string;
+  companySlug: string
+  location_id: string
+  user: User
+  roleNames: string[]
 }
 
-export default function WarehouseDashboard({ companySlug, location_id }: WarehouseDashboardProps) {
-  const router = useRouter();
-  const { data, isLoading, isError } = useGetWarehouseDashboard(companySlug, location_id);
+export default function WarehouseDashboard({ companySlug, location_id, user, roleNames }: WarehouseDashboardProps) {
+  const [activeTab, setActiveTab] = useState('DASHBOARD')
+  const { data, isLoading, isError } = useGetWarehouseDashboard(companySlug, location_id)
+
+  const canViewUsersTab = roleNames.some((r) => ['SUPERUSER', 'JEFE_ALMACEN'].includes(r))
 
   return (
     <ContentLayout title={`Dashboard / ${companySlug || ''}`}>
       <header className="shadow-sm border-b">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <div className="bg-blue-600 p-2 rounded-lg">  <Plane className="h-6 w-6 text-white" /> </div>
+            <div className="bg-blue-600 p-2 rounded-lg">
+              <Plane className="h-6 w-6 text-white" />
+            </div>
             <div>
               <h1 className="text-xl font-bold">Sistema de Gestión Aeronáutica Civil</h1>
               <p className="text-sm">Plataforma oficial de administración</p>
@@ -34,54 +47,48 @@ export default function WarehouseDashboard({ companySlug, location_id }: Warehou
         </div>
       </header>
 
-      <main className="max-w-7xl mt-4 mx-auto px-4">
-        {/* Hero Section */}
-        <div className="text-center mb-16">
-          <h1 className="text-4xl md:text-5xl font-bold mb-6">
-            Bienvenido a <span className="text-blue-600 block italic">SIGEAC</span>
-          </h1>
-          <p className="text-xl max-w-3xl mx-auto leading-relaxed">
-            Plataforma integral para la gestión y control de operaciones aeronáuticas. 
-            Acceda a herramientas especializadas para administrar el inventario, 
-            supervisar operaciones y garantizar el cumplimiento normativo.
-          </p>
-        </div>
+      {/* Tabs principales */}
+      <main className="max-w-7xl mt-6 mx-auto px-4">
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
+          <TabsList className="flex justify-center mb-0 space-x-3 border-b rounded-t-xl bg-muted/40">
+            <TabsTrigger value="DASHBOARD" className="flex gap-2">
+              <LayoutDashboard className="size-4" /> Dashboard
+            </TabsTrigger>
+            <TabsTrigger value="ARTICULOS" className="flex gap-2">
+              <Package2 className="size-4" /> Artículos
+            </TabsTrigger>
+            <TabsTrigger value="HERRAMIENTAS" className="flex gap-2">
+              <Wrench className="size-4" /> Herramientas
+            </TabsTrigger>
 
-        {/* Call to Action Cards */}
-        <div className="flex justify-center mb-12">
-          <Card className="hover:shadow-lg transition-all duration-300 border-blue-200">
-            <CardHeader className="pb-4">
-              <div className="flex items-center space-x-3 justify-center">
-                <div className="bg-blue-100 p-2 rounded-lg"> <BarChart3 className="h-6 w-6 text-blue-600" /> </div>
-                <CardTitle className="text-xl">Consulta de Inventario</CardTitle>
-              </div>
-              <CardDescription className="text-base pt-2"> Acceda al sistema completo de gestión de inventario aeronáutico </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button className="w-full bg-blue-600 hover:bg-blue-700" onClick={() => router.push(`/${companySlug}/almacen/inventario`)} >
-                Ver Inventario Completo
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
+            {canViewUsersTab && (
+              <TabsTrigger value="USUARIOS" className="flex gap-2">
+                <Users className="size-4" /> Usuarios
+              </TabsTrigger>
+            )}
+          </TabsList>
 
-        {/* Quick Stats */}
-        <div className="rounded-xl shadow-sm border p-8 min-h-[200px] flex flex-col justify-center">
-          <h2 className="text-2xl font-bold mb-6 text-center">Sistema en Operación</h2>
+          <div className="mt-10">
+            <TabsContent value="DASHBOARD">
+              <DashboardSummary companySlug={companySlug} />
+            </TabsContent>
 
-          {isLoading && ( <div className="text-center text-blue-600"> Cargando datos del sistema...  </div> )}
-          {isError && ( <div className="text-center text-red-500"> Error al cargar la información del dashboard. </div> )}
+            <TabsContent value="ARTICULOS">
+              <ArticlesSummary data={data} isLoading={isLoading} isError={isError} />
+            </TabsContent>
 
-          {!isLoading && !isError && data && (
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
-              <div> <div className="text-3xl font-bold text-blue-600"> {data.dispatchAircraftCount ?? '—'} </div> <div>Aeronaves Registradas</div> </div>
-              <div> <div className="text-3xl font-bold text-green-600"> {data.storedCount ?? '—'} % </div> <div>Artículos Activos</div> </div>
-              <div> <div className="text-3xl font-bold text-purple-600"> {data.dispatchCount ?? '—'} </div> <div>Despachos Realizados</div> </div>
-              <div> <div className="text-3xl font-bold text-orange-600"> {data.tool_need_calibration_count ?? '—'} </div> <div>Herramientas por Calibrar </div> </div>
-            </div>
-          )}
-        </div>
+            <TabsContent value="HERRAMIENTAS">
+              <ToolsSummary data={data} isLoading={isLoading} isError={isError} />
+            </TabsContent>
+
+            {canViewUsersTab && (
+              <TabsContent value="USUARIOS">
+                <UsersSummary data={data} isLoading={isLoading} isError={isError} currentUserRole={roleNames[0]}/>
+              </TabsContent>
+            )}
+          </div>
+        </Tabs>
       </main>
     </ContentLayout>
-  );
+  )
 }

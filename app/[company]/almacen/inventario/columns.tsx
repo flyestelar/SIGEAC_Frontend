@@ -5,7 +5,7 @@ import { DataTableColumnHeader } from '@/components/tables/DataTableHeader';
 import { Badge } from '@/components/ui/badge';
 import { CheckCircle2, XCircle, Clock, Wrench } from 'lucide-react';
 import { WarehouseResponse } from '@/hooks/mantenimiento/almacen/renglones/useGetArticlesByCategory';
-import { addDays, format } from 'date-fns';
+import { addDays, format, parseISO } from 'date-fns';
 import { cn } from '@/lib/utils';
 import ArticleDropdownActions from '@/components/dropdowns/mantenimiento/almacen/ArticleDropdownActions';
 
@@ -187,13 +187,13 @@ const baseCols: ColumnDef<IArticleSimple>[] = [
       </div>
     ),
   },
-  {
-    id: 'actions',
-    cell: ({ row }) => {
-      const item = row.original;
-      return <ArticleDropdownActions id={item.id} />;
-    },
-  },
+  // {
+  //   id: 'actions',
+  //   cell: ({ row }) => {
+  //     const item = row.original;
+  //     return <ArticleDropdownActions id={item.id} />;
+  //   },
+  // },
 ];
 
 // Columnas extra para HERRAMIENTA
@@ -204,7 +204,7 @@ export const herramientaCols: ColumnDef<IArticleSimple>[] = [
     header: ({ column }) => <DataTableColumnHeader column={column} title="Fech. Calibración" />,
     cell: ({ row }) => (
       <div className="text-center text-sm font-bold text-muted-foreground">
-        {row.original.tool?.calibration_date ? format(row.original.tool.calibration_date, 'dd/MM/yyyy') : 'N/A'}
+        {row.original.tool?.calibration_date ? format(parseISO(row.original.tool.calibration_date), 'dd/MM/yyyy') : 'N/A'}
       </div>
     ),
   },
@@ -216,9 +216,9 @@ export const herramientaCols: ColumnDef<IArticleSimple>[] = [
         <div className="text-center text-sm font-bold text-muted-foreground">
           {row.original.tool?.next_calibration && row.original.tool.calibration_date
             ? format(
-                addDays(row.original.tool.calibration_date, Number(row.original.tool.next_calibration)),
-                'dd/MM/yyyy',
-              )
+              addDays(parseISO(row.original.tool.calibration_date), Number(row.original.tool.next_calibration)),
+              'dd/MM/yyyy'
+            )
             : 'N/A'}
         </div>
       );

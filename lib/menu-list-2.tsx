@@ -741,11 +741,11 @@ export function getMenuList(pathname: string, currentCompany: Company | null, us
               label: 'Administrar Roles',
               active: pathname === '/sistema/usuarios_permisos/roles',
             },
-            {
-              href: '/sistema/usuarios_permisos/permisos',
-              label: 'Administrar Permisos',
-              active: pathname === '/sistema/usuarios_permisos/permisos',
-            },
+            // {
+            //   href: '/sistema/usuarios_permisos/permisos',
+            //   label: 'Administrar Permisos',
+            //   active: pathname === '/sistema/usuarios_permisos/permisos',
+            // },
           ],
         },
         {
@@ -796,9 +796,16 @@ export function getMenuList(pathname: string, currentCompany: Company | null, us
     },
   ];
 
+  const filteredMenu = fullMenu.filter((group) => {
+    if (group.groupLabel === 'General' && userRoles.some(r => ['JEFE_ALMACEN', 'ANALISTA_ALMACEN'].includes(r))) {
+      return false;
+    }
+    return true;
+  });
+
   // 4. Filtrar el menú completo
   return (
-    fullMenu
+    filteredMenu
       // Filtrar grupos por módulo activo
       .filter((group) => isModuleActive(group.moduleValue))
       // Filtrar menús y submenús
