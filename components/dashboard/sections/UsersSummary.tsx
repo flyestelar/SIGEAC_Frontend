@@ -69,8 +69,8 @@ export default function UsersSummary({ data, isLoading, isError, currentUserRole
                 <XAxis dataKey="name" tick={{ fontSize: 12 }} />
                 <YAxis />
                 <Tooltip />
-                <Bar dataKey="dispatch" stackId="a" radius={[6,6,0,0]} fill="#2563eb" />
-                <Bar dataKey="incoming" stackId="a" radius={[6,6,0,0]} fill="#f59e0b" />
+                <Bar dataKey="dispatch" name="Salidas" stackId="a" radius={[6,6,0,0]} fill="#2563eb" />
+                <Bar dataKey="incoming" name="Registros" stackId="a" radius={[6,6,0,0]} fill="#f59e0b" />
               </BarChart>
             </ResponsiveContainer>
           </CardContent>

@@ -98,7 +98,7 @@ export default function  ArticlesSummary({ data, isLoading, isError }: Props) {
             />
             <YAxis />
                 <Tooltip />
-                <Bar dataKey="value" radius={[6, 6, 0, 0]}>
+                <Bar dataKey="value" name="Cantidad" radius={[6, 6, 0, 0]}>
                   {chartData.map((entry, idx) => <Cell key={`cell-${idx}`} fill={entry.color} />)}
                 </Bar>
               </BarChart>
