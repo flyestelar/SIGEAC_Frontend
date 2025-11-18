@@ -49,21 +49,21 @@ export default function  ArticlesSummary({ data, isLoading, isError }: Props) {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="overflow-y-auto max-h-[300px]">
+            <div className="overflow-y-auto max-h-[220px]">
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Descripción</TableHead>
-                    <TableHead>Part Number</TableHead>
-                    <TableHead>Categoría</TableHead>
+                    <TableHead className="text-center">Descripción</TableHead>
+                    <TableHead className="text-center">Part Number</TableHead>
+                    <TableHead className="text-center">Categoría</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {data.articlesOutOfStock?.length ? data.articlesOutOfStock.map(item => (
                     <TableRow key={item.id}>
-                      <TableCell className="max-w-[180px] truncate">{item.description}</TableCell>
-                      <TableCell>{item.part_number}</TableCell>
-                      <TableCell>{item.category}</TableCell>
+                      <TableCell className="max-w-[180px] truncate text-center">{item.description}</TableCell>
+                      <TableCell className="text-center">{item.part_number}</TableCell>
+                      <TableCell className="text-center">{item.category}</TableCell>
                     </TableRow>
                   )) : (
                     <TableRow>

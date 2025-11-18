@@ -27,7 +27,7 @@ export default function ToolsSummary({ data, isLoading, isError }: Props) {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="overflow-y-auto max-h-[300px]">
+            <div className="overflow-y-auto max-h-[220px]">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -62,7 +62,7 @@ export default function ToolsSummary({ data, isLoading, isError }: Props) {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="overflow-y-auto max-h-[300px]">
+            <div className="overflow-y-auto max-h-[220px]">
               <Table>
                 <TableHeader>
                   <TableRow>

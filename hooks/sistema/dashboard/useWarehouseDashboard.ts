@@ -15,5 +15,6 @@ export const useGetWarehouseDashboard = (company: string, location_id: string) =
     queryFn: () => fetchWarehouseDashboard(company!, location_id!),
     enabled: !!company && location_id !== undefined,
     staleTime: 1000 * 60 * 5,
+    refetchInterval: 30000,
   })
 }
