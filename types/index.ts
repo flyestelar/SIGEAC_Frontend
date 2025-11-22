@@ -1136,7 +1136,7 @@ export interface WarehouseDashboard {
     job_title: string
     dispatch_count: number
     incoming_count: number
-    last_used_at: string
+    last_seen_at: string
   }[]
 }
 

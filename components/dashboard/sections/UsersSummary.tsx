@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts'
@@ -24,30 +24,41 @@ export default function UsersSummary({ data, isLoading, isError, currentUserRole
   if (isLoading) return <div className="text-center text-blue-600 py-8">Cargando información...</div>
   if (isError || !data?.userStats?.length) return <div className="text-center text-red-500 py-8">Error al cargar información.</div>
 
-  const filteredUsers = data.userStats.filter(u =>
-    currentUserRole === 'SUPERUSER' ||
-    (currentUserRole === 'JEFE_ALMACEN' && u.job_title === 'Analista')
+  const filteredUsers = useMemo(
+    () =>
+      data.userStats.filter(u =>
+        currentUserRole === 'SUPERUSER' ||
+        (currentUserRole === 'JEFE_ALMACEN' && u.job_title === 'Analista')
+      ),
+    [data.userStats, currentUserRole]
   )
 
-  const chartData = filteredUsers.map(u => ({
-    name: u.username,
-    dispatch: u.dispatch_count,
-    incoming: u.incoming_count
-  }))
+  const chartData = useMemo(
+    () =>
+      filteredUsers.map(u => ({
+        name: u.username,
+        dispatch: u.dispatch_count,
+        incoming: u.incoming_count
+      })),
+    [filteredUsers]
+  )
 
-  const parseDate = (str: string | null) => {
+  const parseDate = useCallback((str: string | null) => {
     if (!str) return null
     const [d, t] = str.split(' ')
     const [day, month, year] = d.split('-').map(Number)
     const [h, m, s] = t.split(':').map(Number)
     return new Date(year, month - 1, day, h, m, s)
-  }
+  }, [])
 
-  const isActive = (lastUsed: string | null) => {
-    const parsed = parseDate(lastUsed)
-    if (!parsed) return false
-    return (Date.now() - parsed.getTime()) / 60000 <= 2
-  }
+  const isActive = useCallback(
+    (lastUsed: string | null) => {
+      const parsed = parseDate(lastUsed)
+      if (!parsed) return false
+      return Date.now() - parsed.getTime() <= 15000
+    },
+    [parseDate]
+  )
 
   return (
     <div className="flex gap-6">
@@ -76,10 +87,10 @@ export default function UsersSummary({ data, isLoading, isError, currentUserRole
                       <TableCell className="text-center">
                         <span
                           className={`px-3 py-1 rounded-full text-white text-sm font-medium ${
-                            isActive(u.last_used_at) ? 'bg-green-600' : 'bg-gray-400'
+                            isActive(u.last_seen_at) ? 'bg-green-600' : 'bg-gray-400'
                           }`}
                         >
-                          {isActive(u.last_used_at) ? 'Activo' : 'Inactivo'}
+                          {isActive(u.last_seen_at) ? 'Activo' : 'Inactivo'}
                         </span>
                       </TableCell>
                     </TableRow>

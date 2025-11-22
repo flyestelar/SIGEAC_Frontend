@@ -10,6 +10,7 @@ import { useMutation, UseMutationResult, useQueryClient } from '@tanstack/react-
 import { useRouter } from 'next/navigation';
 import { createContext, ReactNode, useContext, useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
+import { useHeartbeat } from '@/hooks/sistema/usuario/useHeartbeat';
 
 interface AuthContextType {
   user: User | null;
@@ -36,6 +37,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const { reset } = useCompanyStore();
 
   const isAuthenticated = useMemo(() => !!user, [user]);
+
+  useHeartbeat();
 
   const fetchUser = async (): Promise<User | null> => {
     try {
