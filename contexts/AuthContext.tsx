@@ -28,6 +28,11 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+const HeartbeatWrapper = () => {
+  useHeartbeat();
+  return null; // No renderiza nada
+};
+
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const queryClient = useQueryClient();
   const router = useRouter();
@@ -37,8 +42,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const { reset } = useCompanyStore();
 
   const isAuthenticated = useMemo(() => !!user, [user]);
-
-  useHeartbeat();
 
   const fetchUser = async (): Promise<User | null> => {
     try {
@@ -148,7 +151,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   return (
     <AuthContext.Provider value={contextValue}>
-      {children}
+      {children} {user && <HeartbeatWrapper />}
     </AuthContext.Provider>
   );
 };

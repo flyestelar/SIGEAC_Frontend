@@ -21,16 +21,14 @@ export default function UsersSummary({ data, isLoading, isError, currentUserRole
     return () => clearInterval(interval)
   }, [])
 
-  if (isLoading) return <div className="text-center text-blue-600 py-8">Cargando información...</div>
-  if (isError || !data?.userStats?.length) return <div className="text-center text-red-500 py-8">Error al cargar información.</div>
-
+  // Hooks siempre arriba
   const filteredUsers = useMemo(
     () =>
-      data.userStats.filter(u =>
+      data?.userStats?.filter(u =>
         currentUserRole === 'SUPERUSER' ||
         (currentUserRole === 'JEFE_ALMACEN' && u.job_title === 'Analista')
-      ),
-    [data.userStats, currentUserRole]
+      ) ?? [],
+    [data?.userStats, currentUserRole]
   )
 
   const chartData = useMemo(
@@ -55,10 +53,13 @@ export default function UsersSummary({ data, isLoading, isError, currentUserRole
     (lastUsed: string | null) => {
       const parsed = parseDate(lastUsed)
       if (!parsed) return false
-      return Date.now() - parsed.getTime() <= 15000
+      return Date.now() - parsed.getTime() <= 25000
     },
     [parseDate]
   )
+
+  if (isLoading) return <div className="text-center text-blue-600 py-8">Cargando información...</div>
+  if (isError || !data?.userStats?.length) return <div className="text-center text-red-500 py-8">Error al cargar información.</div>
 
   return (
     <div className="flex gap-6">

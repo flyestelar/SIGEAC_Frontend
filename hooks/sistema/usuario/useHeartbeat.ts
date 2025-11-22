@@ -5,18 +5,15 @@ import axiosInstance from '@/lib/axios';
 import { useAuth } from '@/contexts/AuthContext';
 
 export const useHeartbeat = () => {
-  const { isAuthenticated } = useAuth();
+  const { user } = useAuth();
 
   useEffect(() => {
-    if (!isAuthenticated) return;
+    if (!user) return;
 
     const interval = setInterval(() => {
-      axiosInstance
-        .post('/heartbeat')
-        .catch(() => {
-        });
+      axiosInstance.post('/heartbeat').catch(() => {});
     }, 15_000);
 
     return () => clearInterval(interval);
-  }, [isAuthenticated]);
+  }, [user]);
 };
