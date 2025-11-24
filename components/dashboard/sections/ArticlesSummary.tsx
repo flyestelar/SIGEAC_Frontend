@@ -16,7 +16,6 @@ export default function  ArticlesSummary({ data, isLoading, isError }: Props) {
     { name: 'Salidas\n Totales', value: data.dispatchCount, color: '#2563eb' },
     { name: 'Salidas a\n Aeronaves', value: data.dispatchAircraftCount, color: '#e90e3dff' },
     { name: 'Salidas a\n Taller', value: data.dispatchWorkshopCount, color: '#f59e0b' },
-    // { name: 'Artículos por\n Reabastecer', value: data.restockCount, color: '#22c55e' },
   ]
 
   return (
@@ -27,7 +26,7 @@ export default function  ArticlesSummary({ data, isLoading, isError }: Props) {
         <Card className="rounded-xl border shadow-sm">
           <CardHeader className="pb-2 text-center">
             <CardTitle className="text-2xl font-semibold">Resumen de Artículos</CardTitle>
-            <CardDescription className="text-gray-500">Datos generales de inventario activo (últimos 7 días)</CardDescription>
+            <CardDescription className="text-gray-500">Datos generales de inventario activo (Esta semana)</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6 text-center">
@@ -82,7 +81,7 @@ export default function  ArticlesSummary({ data, isLoading, isError }: Props) {
         <Card className="rounded-xl border shadow-sm h-full flex flex-col justify-center">
           <CardHeader className="text-center">
             <CardTitle className="text-2xl font-semibold">Gráfico de Salidas</CardTitle>
-            <CardDescription className="text-gray-500">Comparativa de tipos de despacho (últimos 7 días)</CardDescription>
+            <CardDescription className="text-gray-500">Comparativa de tipos de despacho (Esta semana)</CardDescription>
           </CardHeader>
           <CardContent className="flex justify-center items-center h-80">
             <ResponsiveContainer width="100%" height="100%">
