@@ -26,7 +26,7 @@ interface DialogProps {
 const handleDownload = async (url: string) => {
   const fileUrl = url;
   try {
-    const response = await axiosInstance.get(`/estelar/articles/certificates/${fileUrl}`, {
+    const response = await axiosInstance.get(`/estelar/warehouse/download-certificate/${fileUrl}`, {
       responseType: 'blob', // Necesario para manejar la descarga de archivos
     });
     // Crear una URL para el blob y hacer que el navegador lo descargue
