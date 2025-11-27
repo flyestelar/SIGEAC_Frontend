@@ -6,6 +6,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 
 import { useDeleteArticle } from '@/actions/mantenimiento/almacen/inventario/articulos/actions';
+import { IArticleSimple } from '@/app/[company]/almacen/inventario/columns';
 import { useCompanyStore } from '@/stores/CompanyStore';
 import { Loader2, MoreHorizontal, SquarePen, Trash2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -21,7 +22,7 @@ import {
   DialogTrigger,
 } from '../../../ui/dialog';
 
-const ArticleDropdownActions = ({ id }: { id: string | number }) => {
+const ArticleDropdownActions = ({ article }: { article: IArticleSimple }) => {
   const [open, setOpen] = useState<boolean>(false);
   const router = useRouter();
   const { selectedCompany } = useCompanyStore();
@@ -49,7 +50,7 @@ const ArticleDropdownActions = ({ id }: { id: string | number }) => {
           <DropdownMenuItem
             className="cursor-pointer"
             onClick={() => {
-              router.push(`/${selectedCompany?.slug}/almacen/inventario/editar/${id}`);
+              router.push(`/${selectedCompany?.slug}/almacen/inventario/editar/${article.id}`);
             }}
           >
             <SquarePen className="size-5" />
@@ -79,7 +80,7 @@ const ArticleDropdownActions = ({ id }: { id: string | number }) => {
           <Button
             disabled={deleteArticle.isPending}
             className="hover:bg-white hover:text-black hover:border hover:border-black transition-all"
-            onClick={() => handleDelete(id)}
+            onClick={() => handleDelete(article.id)}
           >
             {deleteArticle.isPending ? <Loader2 className="size-4 animate-spin" /> : <p>Confirmar</p>}
           </Button>

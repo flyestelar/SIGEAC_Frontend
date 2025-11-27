@@ -133,30 +133,30 @@ export function ConsumableDispatchForm({ onClose }: FormProps) {
   }
 
   function validateQuantityAtRow(rowIndex: number, raw: string, article_id: number) {
+    // 1. Manejar cadena vacía o espacios en blanco
+    const trimmedRaw = raw.trim(); // Opcional: limpiar espacios
+    if (trimmedRaw === '') {
+      setValue(`articles.${rowIndex}.quantity`, 0, { shouldValidate: true, shouldDirty: true });
+      clearErrors(`articles.${rowIndex}.quantity`);
+      return; // Detener la ejecución
+    }
+
     const art = findArticleById(article_id);
     const qt = art!.quantity;
-    const str = raw.replace(',', '.');
+    const str = trimmedRaw.replace(',', '.'); // Usar trimmedRaw
     const value = parseFloat(str);
+
+    if (isNaN(value)) {
+      setError(`articles.${rowIndex}.quantity`, { type: 'manual', message: 'Formato de número inválido' });
+      return;
+    }
+
+
     if (value <= 0) {
       setError(`articles.${rowIndex}.quantity`, { type: 'manual', message: 'La cantidad debe ser mayor a 0' });
       return;
     }
-    if (value > qt) {
-      setError(`articles.${rowIndex}.quantity`, {
-        type: 'manual',
-        message: 'La cantidad debe ser menor a la cantidad máxima.',
-      });
-      return;
-    }
-    const batch = findBatchById(watch(`articles.${rowIndex}.batch_id`));
-    const unitType = batch?.unit?.value?.toUpperCase();
-    if (unitType === 'U' && !Number.isInteger(value)) {
-      setError(`articles.${rowIndex}.quantity`, {
-        type: 'manual',
-        message: 'Para unidades, la cantidad debe ser entera',
-      });
-      return;
-    }
+
     clearErrors(`articles.${rowIndex}.quantity`);
     setValue(`articles.${rowIndex}.quantity`, value, { shouldValidate: true, shouldDirty: true });
   }

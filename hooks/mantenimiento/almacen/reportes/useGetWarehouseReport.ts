@@ -31,17 +31,10 @@ const fetchWarehouseReport = async ({
   return data;
 };
 
-export const useGetWarehouseReport = ({
-  company,
-  location_id,
-}: {
-  company?: string;
-  location_id: string | null;
-}) => {
+export const useGetWarehouseReport = ({ company, location_id }: { company?: string; location_id: string | null }) => {
   return useQuery<WarehouseReport[], Error>({
     queryKey: ['warehouse-report', company, location_id],
-    queryFn: () =>
-      fetchWarehouseReport({company: company!, location_id: location_id!}),
+    queryFn: () => fetchWarehouseReport({ company: company!, location_id: location_id! }),
     enabled: !!company && !!location_id,
   });
 };

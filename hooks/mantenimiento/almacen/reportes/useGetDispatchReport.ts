@@ -1,6 +1,8 @@
 import axios from '@/lib/axios';
-import { useQuery } from '@tanstack/react-query';
-import { Aircraft } from "@/types";
+import { useCompanyStore } from '@/stores/CompanyStore';
+import { Aircraft } from '@/types';
+import { useMutation } from '@tanstack/react-query';
+import { formatISO } from 'date-fns';
 
 export interface DispatchReport {
   id: number;
@@ -29,15 +31,46 @@ export interface DispatchReport {
   }[];
 }
 
-const fetchDispatchReport = async (location_id: string, company?: string): Promise<DispatchReport[]> => {
-  const { data } = await axios.get(`/${company}/${location_id}/report-dispatch-orders`);
+const normalizeDate = (d?: Date | string | null): string | null => {
+  if (!d) return null;
+  if (typeof d === 'string') return d;
+  return formatISO(d, { representation: 'date' });
+};
+
+interface DispatchFilters {
+  aircraft_id?: number | null;
+  workshop_id?: string | null;
+  from?: Date | string | null;
+  to?: Date | string | null;
+}
+
+const fetchDispatchReport = async (
+  location_id: string,
+  company: string,
+  filters: DispatchFilters,
+): Promise<DispatchReport[]> => {
+  const body = {
+    aircraft_id: filters.aircraft_id ?? null,
+    workshop_id: filters.workshop_id ?? null,
+    from: normalizeDate(filters.from),
+    to: normalizeDate(filters.to),
+  };
+
+  const { data } = await axios.post(`/${company}/${location_id}/report-dispatch-orders`, body);
   return data;
 };
 
-export const useGetDispatchReport = (location_id: string | null, company?: string) => {
-  return useQuery<DispatchReport[], Error>({
-    queryKey: ['dispatch-report', company, location_id],
-    queryFn: () => fetchDispatchReport(location_id!, company!),
-    enabled: !!company && !!location_id,
+export const useGetDispatchReport = () => {
+  const { selectedCompany, selectedStation } = useCompanyStore();
+
+  return useMutation<DispatchReport[], Error, DispatchFilters>({
+    mutationKey: ['dispatch-report', selectedCompany?.slug, selectedStation],
+    mutationFn: (filters: DispatchFilters) => {
+      if (!selectedCompany?.slug || !selectedStation) {
+        throw new Error('Station or Company not defined');
+      }
+
+      return fetchDispatchReport(selectedStation, selectedCompany.slug, filters);
+    },
   });
 };

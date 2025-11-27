@@ -1,28 +1,16 @@
 'use client';
 
 import { ColumnDef } from '@tanstack/react-table';
-import { MoreHorizontal, SquarePen, Trash2 } from 'lucide-react';
 
 import { DataTableColumnHeader } from '@/components/tables/DataTableHeader';
-import { Button } from '@/components/ui/button';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 
 import DispatchArticlesDialog, {
   DispatchArticle,
 } from '@/components/dialogs/mantenimiento/almacen/DispatchArticlesDialog';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import DispatchRequestDropdownActions from '@/components/dropdowns/mantenimiento/almacen/DispatchRequestDropdownActions';
 import { MaintenanceAircraft, WorkOrder, Workshop } from '@/types';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
-import PendingDispatchRequestDropdownActions from '@/components/dropdowns/mantenimiento/almacen/PendingDispatchRequestDropdownActions';
-import DispatchRequestDropdownActions from '@/components/dropdowns/mantenimiento/almacen/DispatchRequestDropdownActions';
 
 interface IDispatch {
   id: number;

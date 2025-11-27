@@ -239,3 +239,34 @@ export const useConfirmIncomingArticle = () => {
     confirmIncoming: confirmIncomingArticleMutation,
   };
 };
+
+export const useUpdateToolArticleStatus = () => {
+  const { selectedCompany } = useCompanyStore();
+
+  const queryClient = useQueryClient();
+
+  const updateToolArticleStatusMutation = useMutation({
+    mutationKey: ['calibrated-tools'],
+    mutationFn: async ({ id, status, calibration_date }: { id: number; status: string; calibration_date?: string }) => {
+      await axiosInstance.put(`/${selectedCompany?.slug}/update-tool-status/${id}`, {
+        status: status,
+        calibration_date: calibration_date || null,
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['warehouse-articles'] });
+      toast.success('¡Actualizado!', {
+        description: `El articulo ha sido actualizado correctamente.`,
+      });
+    },
+    onError: (error) => {
+      toast.error('Oops!', {
+        description: 'No se pudo actualizar el articulo...',
+      });
+      console.log(error);
+    },
+  });
+  return {
+    updateToolArticleStatus: updateToolArticleStatusMutation,
+  };
+};

@@ -8,6 +8,7 @@ import { WarehouseResponse } from '@/hooks/mantenimiento/almacen/renglones/useGe
 import { addDays, format, parseISO } from 'date-fns';
 import { cn } from '@/lib/utils';
 import ArticleDropdownActions from '@/components/dropdowns/mantenimiento/almacen/ArticleDropdownActions';
+import StatusCellWithPopover from '@/components/misc/StatusCellWithPopover';
 
 export interface IArticleSimple {
   id: number;
@@ -158,22 +159,12 @@ const baseCols: ColumnDef<IArticleSimple>[] = [
     accessorKey: 'status',
     header: ({ column }) => <DataTableColumnHeader column={column} title="Estado" />,
     cell: ({ row }) => {
-      const calibrated = row.original.tool?.status === 'CALIBRADO';
       const calibrating = row.original.tool?.status === 'EN CALIBRACION';
       const descalibrated = row.original.tool?.status === 'VENCIDO';
       return (
         <div className="flex flex-col justify-center items-center space-y-2">
-          {!calibrating && getStatusBadge(row.original.status?.toUpperCase())}
-          {row.original.tool && (
-            <Badge
-              className={cn(
-                'text-xs text-center',
-                calibrated ? 'bg-green-500' : calibrating ? 'bg-yellow-500' : descalibrated ? 'bg-red-500' : '',
-              )}
-            >
-              {row.original.tool.status}
-            </Badge>
-          )}
+          {!calibrating && !descalibrated && getStatusBadge(row.original.status?.toUpperCase())}
+          {row.original.tool && <StatusCellWithPopover tool={row.original} globalStatus={'hola'} />}
         </div>
       );
     },
@@ -187,13 +178,13 @@ const baseCols: ColumnDef<IArticleSimple>[] = [
       </div>
     ),
   },
-  // {
-  //   id: 'actions',
-  //   cell: ({ row }) => {
-  //     const item = row.original;
-  //     return <ArticleDropdownActions id={item.id} />;
-  //   },
-  // },
+  {
+    id: 'actions',
+    cell: ({ row }) => {
+      const article = row.original;
+      return <ArticleDropdownActions article={article} />;
+    },
+  },
 ];
 
 // Columnas extra para HERRAMIENTA
@@ -204,7 +195,9 @@ export const herramientaCols: ColumnDef<IArticleSimple>[] = [
     header: ({ column }) => <DataTableColumnHeader column={column} title="Fech. Calibración" />,
     cell: ({ row }) => (
       <div className="text-center text-sm font-bold text-muted-foreground">
-        {row.original.tool?.calibration_date ? format(parseISO(row.original.tool.calibration_date), 'dd/MM/yyyy') : 'N/A'}
+        {row.original.tool?.calibration_date
+          ? format(parseISO(row.original.tool.calibration_date), 'dd/MM/yyyy')
+          : 'N/A'}
       </div>
     ),
   },
@@ -216,9 +209,9 @@ export const herramientaCols: ColumnDef<IArticleSimple>[] = [
         <div className="text-center text-sm font-bold text-muted-foreground">
           {row.original.tool?.next_calibration && row.original.tool.calibration_date
             ? format(
-              addDays(parseISO(row.original.tool.calibration_date), Number(row.original.tool.next_calibration)),
-              'dd/MM/yyyy'
-            )
+                addDays(parseISO(row.original.tool.calibration_date), Number(row.original.tool.next_calibration)),
+                'dd/MM/yyyy',
+              )
             : 'N/A'}
         </div>
       );
