@@ -614,14 +614,7 @@ export default function CreateToolForm({
         <div className="flex items-center gap-3">
           <Button
             className="bg-primary text-white hover:bg-blue-900 disabled:bg-slate-100 disabled:text-slate-400"
-            disabled={
-              busy ||
-              !selectedCompany ||
-              !form.getValues('part_number') ||
-              !form.getValues('batch_id') ||
-              !form.getValues('manufacturer_id') ||
-              !form.getValues('condition_id')
-            }
+            disabled={busy || !selectedCompany || !form.getValues('part_number') || !form.getValues('batch_id')}
             type="submit"
           >
             {busy ? (
