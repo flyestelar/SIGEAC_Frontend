@@ -25,12 +25,12 @@ export default function  ArticlesSummary({ data, isLoading, isError }: Props) {
         {/* Bloque superior: KPIs de resumen de artículos */}
         <Card className="rounded-xl border shadow-sm">
           <CardHeader className="pb-2 text-center">
-            <CardTitle className="text-2xl font-semibold">Resumen de Artículos</CardTitle>
+            <CardTitle className="text-2xl font-semibold">Resumen de Materiales</CardTitle>
             <CardDescription className="text-gray-500">Datos generales de inventario activo (Esta semana)</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6 text-center">
-              <div><div className="text-3xl font-bold text-blue-600">{data.storedCount ?? 0}%</div><p className="text-sm text-gray-600">Artículos Activos</p></div>
+              <div><div className="text-3xl font-bold text-blue-600">{data.storedCount ?? 0}%</div><p className="text-sm text-gray-600">Materiales Activos</p></div>
               <div><div className="text-3xl font-bold text-emerald-600">{data.dispatchCount ?? 0}</div><p className="text-sm text-gray-600">Salidas Totales</p></div>
               <div><div className="text-3xl font-bold text-cyan-600">{data.dispatchAircraftCount ?? 0}</div><p className="text-sm text-gray-600">Salidas a Aeronaves</p></div>
               <div><div className="text-3xl font-bold text-amber-600">{data.dispatchWorkshopCount ?? 0}</div><p className="text-sm text-gray-600">Salidas a Taller</p></div>
@@ -41,10 +41,10 @@ export default function  ArticlesSummary({ data, isLoading, isError }: Props) {
         {/* Bloque inferior: Tabla de artículos fuera de stock con scroll */}
         <Card className="rounded-xl border shadow-sm flex flex-col">
           <CardHeader className="pb-2 text-center">
-            <CardTitle className="text-2xl font-semibold">Artículos Fuera de Stock</CardTitle>
+            <CardTitle className="text-2xl font-semibold">Materiales Fuera de Stock</CardTitle>
             <CardDescription className="text-gray-500">
-              Listado de artículos sin disponibilidad<br />
-              Cantidad de artículos por reabastecer: {data.restockCount ?? 0}
+              Listado de materiales sin disponibilidad<br />
+              Cantidad de materiales por reabastecer: {data.restockCount ?? 0}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -66,7 +66,7 @@ export default function  ArticlesSummary({ data, isLoading, isError }: Props) {
                     </TableRow>
                   )) : (
                     <TableRow>
-                      <TableCell colSpan={3} className="text-center text-gray-500 py-4">No hay artículos fuera de stock</TableCell>
+                      <TableCell colSpan={3} className="text-center text-gray-500 py-4">No hay materiales fuera de stock</TableCell>
                     </TableRow>
                   )}
                 </TableBody>
