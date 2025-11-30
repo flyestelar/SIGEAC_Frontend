@@ -55,7 +55,7 @@ export default function WarehouseDashboard({ companySlug, location_id, user, rol
               <LayoutDashboard className="size-4" /> Dashboard
             </TabsTrigger>
             <TabsTrigger value="ARTICULOS" className="flex gap-2 data-[state=active]:border-b-2 data-[state=active]:border-blue-600 data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-t-lg px-3 py-2">
-              <Package2 className="size-4" /> Artículos
+              <Package2 className="size-4" /> Materiales
             </TabsTrigger>
             <TabsTrigger value="HERRAMIENTAS" className="flex gap-2 data-[state=active]:border-b-2 data-[state=active]:border-blue-600 data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-t-lg px-3 py-2">
               <Wrench className="size-4" /> Herramientas
