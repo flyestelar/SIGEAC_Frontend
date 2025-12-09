@@ -103,7 +103,6 @@ const formSchema = z
 
 type FormValues = z.infer<typeof formSchema>;
 
-/* ----------------------------- Componente ----------------------------- */
 
 export default function CreateToolForm({
   initialData,

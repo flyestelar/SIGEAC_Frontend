@@ -21,11 +21,32 @@ import { useGetDispatchesByLocation } from '@/hooks/mantenimiento/almacen/solici
 import { useCompanyStore } from '@/stores/CompanyStore';
 import { Loader2 } from 'lucide-react';
 import { useMemo, useState } from 'react';
-import { columns } from './columns';
+import { columns, DispatchArticleRow } from './columns';
 import { DataTable } from './data-table';
+
+function mapDispatchesToRows(dispatches: any[]): DispatchArticleRow[] {
+  return dispatches.flatMap((dispatch) =>
+    dispatch.articles.map((article: any) => ({
+      dispatchId: dispatch.id,
+      request_number: dispatch.request_number,
+      aircraftOrWorkshop: dispatch.aircraft
+        ? dispatch.aircraft.acronym
+        : dispatch.workshop
+          ? dispatch.workshop.name
+          : 'N/A',
+      submission_date: dispatch.submission_date,
+
+      part_number: article.partNumber, // adapta estos campos
+      description: article.description,
+      quantity: article.quantity,
+      serial: article.serial,
+    })),
+  );
+}
 
 const DispatchRequestPage = () => {
   const { selectedCompany } = useCompanyStore();
+
   const { data: dispatches, isLoading: isDispatchesLoading, isError } = useGetDispatchesByLocation();
 
   const [activeCategory, setActiveCategory] = useState('Todos');
@@ -37,6 +58,8 @@ const DispatchRequestPage = () => {
 
     return dispatches.filter((d) => d.status === activeCategory);
   }, [dispatches, activeCategory]);
+
+  const rows = mapDispatchesToRows(filteredDispatches);
 
   return (
     <ContentLayout title="Salida">
@@ -95,7 +118,7 @@ const DispatchRequestPage = () => {
             </TabsList>
 
             <TabsContent value={activeCategory}>
-              <DataTable columns={columns} data={filteredDispatches} />
+              <DataTable columns={columns} data={rows} />
             </TabsContent>
           </Tabs>
         )}
