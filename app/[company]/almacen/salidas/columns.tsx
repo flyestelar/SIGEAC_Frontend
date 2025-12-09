@@ -2,6 +2,7 @@ import { ColumnDef } from '@tanstack/react-table';
 import { DataTableColumnHeader } from '@/components/tables/DataTableHeader';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
+import DispatchArticlesDialog from '@/components/dialogs/mantenimiento/almacen/DispatchArticlesDialog';
 
 export interface DispatchArticleRow {
   dispatchId: number;
@@ -12,6 +13,8 @@ export interface DispatchArticleRow {
   description: string | null;
   quantity: string | number;
   serial?: string | null;
+  requested_by?: string;
+  created_by?: string;
 }
 
 export const columns: ColumnDef<DispatchArticleRow>[] = [
@@ -33,7 +36,9 @@ export const columns: ColumnDef<DispatchArticleRow>[] = [
   {
     accessorKey: 'description',
     header: ({ column }) => <DataTableColumnHeader column={column} title="Descripción" />,
-    cell: ({ row }) => <p className="truncate text-muted-foreground italic font-medium">{row.original.description}</p>,
+    cell: ({ row }) => (
+      <p className="text-center text-muted-foreground italic font-medium">{row.original.description}</p>
+    ),
   },
   {
     accessorKey: 'quantity',
@@ -52,6 +57,13 @@ export const columns: ColumnDef<DispatchArticleRow>[] = [
       <p className="text-center italic text-muted-foreground">
         {format(row.original.submission_date, 'PPP', { locale: es })}
       </p>
+    ),
+  },
+  {
+    accessorKey: 'requested_by',
+    header: ({ column }) => <DataTableColumnHeader column={column} title="Fecha" />,
+    cell: ({ row }) => (
+      <DispatchArticlesDialog requested_by={row.original.requested_by} created_by={row.original.created_by} />
     ),
   },
 ];

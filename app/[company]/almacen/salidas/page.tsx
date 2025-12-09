@@ -56,6 +56,8 @@ function mapDispatchesToRows(dispatches: IDispatch[]): DispatchArticleRow[] {
       description: article.batch,
       quantity: article.dispatch_quantity,
       serial: article.serial,
+      requested_by: dispatch.requested_by,
+      created_by: dispatch.created_by,
     })),
   );
 }
