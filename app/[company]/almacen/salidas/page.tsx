@@ -23,8 +23,17 @@ import { Loader2 } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { columns, DispatchArticleRow } from './columns';
 import { DataTable } from './data-table';
-import { DispatchArticle } from '@/components/dialogs/mantenimiento/almacen/DispatchArticlesDialog';
 import { MaintenanceAircraft, WorkOrder, Workshop } from '@/types';
+
+export interface DispatchArticle {
+  id: number;
+  part_number: string;
+  serial: string | null;
+  description: string | null;
+  category?: string | null;
+  batch: string;
+  dispatch_quantity: string | number;
+}
 
 interface IDispatch {
   id: number;
