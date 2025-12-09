@@ -28,12 +28,12 @@ export const columns: ColumnDef<DispatchArticleRow>[] = [
   {
     accessorKey: 'part_number',
     header: ({ column }) => <DataTableColumnHeader column={column} title="Part Number" />,
-    cell: ({ row }) => <p className="text-center">{row.original.part_number}</p>,
+    cell: ({ row }) => <p className="text-center font-bold">{row.original.part_number}</p>,
   },
   {
     accessorKey: 'description',
     header: ({ column }) => <DataTableColumnHeader column={column} title="Descripción" />,
-    cell: ({ row }) => <p className="truncate">{row.original.description}</p>,
+    cell: ({ row }) => <p className="truncate text-muted-foreground italic font-medium">{row.original.description}</p>,
   },
   {
     accessorKey: 'quantity',

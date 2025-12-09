@@ -53,7 +53,7 @@ function mapDispatchesToRows(dispatches: IDispatch[]): DispatchArticleRow[] {
           : 'N/A',
       submission_date: dispatch.submission_date,
       part_number: article.part_number, // adapta estos campos
-      description: article.description,
+      description: article.batch,
       quantity: article.dispatch_quantity,
       serial: article.serial,
     })),
