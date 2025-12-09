@@ -23,10 +23,27 @@ import { Loader2 } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { columns, DispatchArticleRow } from './columns';
 import { DataTable } from './data-table';
+import { DispatchArticle } from '@/components/dialogs/mantenimiento/almacen/DispatchArticlesDialog';
+import { MaintenanceAircraft, WorkOrder, Workshop } from '@/types';
 
-function mapDispatchesToRows(dispatches: any[]): DispatchArticleRow[] {
+interface IDispatch {
+  id: number;
+  request_number: string;
+  requested_by: string;
+  created_by: string;
+  justification: string;
+  destination_place: string;
+  submission_date: string;
+  work_order?: WorkOrder;
+  aircraft?: MaintenanceAircraft;
+  workshop?: Workshop;
+  status: 'PROCESO' | 'APROBADO' | 'RECHAZADO';
+  articles: DispatchArticle[];
+}
+
+function mapDispatchesToRows(dispatches: IDispatch[]): DispatchArticleRow[] {
   return dispatches.flatMap((dispatch) =>
-    dispatch.articles.map((article: any) => ({
+    dispatch.articles.map((article) => ({
       dispatchId: dispatch.id,
       request_number: dispatch.request_number,
       aircraftOrWorkshop: dispatch.aircraft
@@ -35,10 +52,9 @@ function mapDispatchesToRows(dispatches: any[]): DispatchArticleRow[] {
           ? dispatch.workshop.name
           : 'N/A',
       submission_date: dispatch.submission_date,
-
-      part_number: article.partNumber, // adapta estos campos
+      part_number: article.part_number, // adapta estos campos
       description: article.description,
-      quantity: article.quantity,
+      quantity: article.dispatch_quantity,
       serial: article.serial,
     })),
   );

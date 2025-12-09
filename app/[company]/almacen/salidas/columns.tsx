@@ -8,10 +8,9 @@ export interface DispatchArticleRow {
   request_number: string;
   aircraftOrWorkshop: string;
   submission_date: string;
-
   part_number: string;
-  description: string;
-  quantity: number;
+  description: string | null;
+  quantity: string | number;
   serial?: string | null;
 }
 
