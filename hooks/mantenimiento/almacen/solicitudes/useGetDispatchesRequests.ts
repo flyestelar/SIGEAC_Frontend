@@ -1,4 +1,4 @@
-import { DispatchArticle } from '@/components/dialogs/mantenimiento/almacen/DispatchArticlesDialog';
+import { DispatchArticle } from '@/app/[company]/almacen/salidas/page';
 import axios from '@/lib/axios';
 import { useCompanyStore } from '@/stores/CompanyStore';
 import { WorkOrder } from '@/types';
