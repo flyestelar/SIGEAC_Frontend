@@ -264,7 +264,7 @@ export function CreateBatchForm({ onClose }: FormProps) {
                 <Checkbox checked={field.value} onCheckedChange={field.onChange} />
               </FormControl>
               <div className="space-y-1 leading-none">
-                <FormLabel>¿El renglón contiene articulos peligrosos?</FormLabel>
+                <FormLabel>¿El renglón contiene Materialespeligrosos?</FormLabel>
               </div>
             </FormItem>
           )}

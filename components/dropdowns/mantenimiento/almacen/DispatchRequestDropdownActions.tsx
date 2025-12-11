@@ -51,7 +51,7 @@ const DispatchRequestDropdownActions = ({ id }: { id: string | number }) => {
         <DialogHeader>
           <DialogTitle className="text-center">¿Desea cancelar el despacho?</DialogTitle>
           <DialogDescription className="text-center p-2 mb-0 pb-0">
-            Los articulos volverán a estar disponibles en su almacén.
+            Los Materialesvolverán a estar disponibles en su almacén.
           </DialogDescription>
         </DialogHeader>
         <DialogFooter className="flex flex-col gap-2 md:gap-0">

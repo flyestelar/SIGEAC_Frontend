@@ -6,23 +6,33 @@ import { useCompanyStore } from '@/stores/CompanyStore';
 import { Loader2 } from 'lucide-react';
 import { columns } from './columns';
 import { DataTable } from './data-table';
-import { Breadcrumb, BreadcrumbEllipsis, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb"
+import {
+  Breadcrumb,
+  BreadcrumbEllipsis,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from '@/components/ui/breadcrumb';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+} from '@/components/ui/dropdown-menu';
 const InventarioPage = () => {
-
   const { selectedStation, selectedCompany } = useCompanyStore();
 
-  const { data: articles, isLoading: isArticlesLoading, isError } = useGetInTransitArticles(selectedStation ?? null, selectedCompany?.slug);
-
+  const {
+    data: articles,
+    isLoading: isArticlesLoading,
+    isError,
+  } = useGetInTransitArticles(selectedStation ?? null, selectedCompany?.slug);
 
   return (
-    <ContentLayout title='Inventario'>
-      <div className='flex flex-col gap-y-2'>
+    <ContentLayout title="Inventario">
+      <div className="flex flex-col gap-y-2">
         <Breadcrumb>
           <BreadcrumbList>
             <BreadcrumbItem>
@@ -38,46 +48,44 @@ const InventarioPage = () => {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="start">
                   <DropdownMenuItem>
-                    <BreadcrumbLink href={`/${selectedCompany?.slug}/almacen/inventario/entregado`}>Ingreso de Articulo</BreadcrumbLink>
+                    <BreadcrumbLink href={`/${selectedCompany?.slug}/almacen/inventario/entregado`}>
+                      Ingreso de Articulo
+                    </BreadcrumbLink>
                   </DropdownMenuItem>
                   <DropdownMenuItem>
-                    <BreadcrumbLink href={`/${selectedCompany?.slug}/almacen/inventario/gestion`}>Articulos de Transito</BreadcrumbLink>
+                    <BreadcrumbLink href={`/${selectedCompany?.slug}/almacen/inventario/gestion`}>
+                      Materialesde Transito
+                    </BreadcrumbLink>
                   </DropdownMenuItem>
                   <DropdownMenuItem>
-                    <BreadcrumbLink href={`/${selectedCompany?.slug}/almacen/inventario/entregado`}>Articulos en Recepcion</BreadcrumbLink>
+                    <BreadcrumbLink href={`/${selectedCompany?.slug}/almacen/inventario/entregado`}>
+                      Materialesen Recepcion
+                    </BreadcrumbLink>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             </BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem>
-              <BreadcrumbPage>Articulos de Transito</BreadcrumbPage>
+              <BreadcrumbPage>Materialesde Transito</BreadcrumbPage>
             </BreadcrumbItem>
           </BreadcrumbList>
         </Breadcrumb>
-        <h1 className='text-5xl font-bold text-center'>Articulos En Transito</h1>
-        <p className='text-sm text-muted-foreground text-center italic mb-0'>
-          Aquí puede observar todos los articulos que se encuentran aun en transito. <br />Filtre y/o busque sí desea un articulo en específico.
+        <h1 className="text-5xl font-bold text-center">MaterialesEn Transito</h1>
+        <p className="text-sm text-muted-foreground text-center italic mb-0">
+          Aquí puede observar todos los Materialesque se encuentran aun en transito. <br />
+          Filtre y/o busque sí desea un articulo en específico.
         </p>
-        {
-          isArticlesLoading && (
-            <div className='flex w-full h-full justify-center items-center'>
-              <Loader2 className='size-24 animate-spin mt-48' />
-            </div>
-          )
-        }
-        {
-          articles && (
-            <DataTable columns={columns} data={articles} />
-
-          )
-        }
-        {
-          isError && <p className='text-sm text-muted-foreground'>Ha ocurrido un error al cargar los articulos...</p>
-        }
+        {isArticlesLoading && (
+          <div className="flex w-full h-full justify-center items-center">
+            <Loader2 className="size-24 animate-spin mt-48" />
+          </div>
+        )}
+        {articles && <DataTable columns={columns} data={articles} />}
+        {isError && <p className="text-sm text-muted-foreground">Ha ocurrido un error al cargar los articulos...</p>}
       </div>
     </ContentLayout>
-  )
-}
+  );
+};
 
-export default InventarioPage
+export default InventarioPage;

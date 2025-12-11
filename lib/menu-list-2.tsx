@@ -467,12 +467,12 @@ export function getMenuList(pathname: string, currentCompany: Company | null, us
             },
             // {
             //   href: `/${currentCompany?.slug}/almacen/ingreso/en_transito`,
-            //   label: "Articulos en Tránsito",
+            //   label: "Materialesen Tránsito",
             //   active: pathname === `/${currentCompany?.slug}/almacen/ingreso/en_transito`
             // },
             // {
             //   href: `/${currentCompany?.slug}/almacen/ingreso/en_recepcion`,
-            //   label: "Articulos en Recepción",
+            //   label: "Materialesen Recepción",
             //   active: pathname === `/${currentCompany?.slug}/almacen/ingreso/en_recepcion`
             // },
           ],
@@ -509,7 +509,7 @@ export function getMenuList(pathname: string, currentCompany: Company | null, us
         },
         {
           href: `/${currentCompany?.slug}/almacen/despachados`,
-          label: 'Articulos Despachados',
+          label: 'MaterialesDespachados',
           active: pathname.includes(`/${currentCompany?.slug}/almacen/despachados`),
           icon: PackageOpen,
           roles: ['ANALISTA_ALMACEN', 'JEFE_ALMACEN', 'SUPERUSER'],
@@ -797,7 +797,7 @@ export function getMenuList(pathname: string, currentCompany: Company | null, us
   ];
 
   const filteredMenu = fullMenu.filter((group) => {
-    if (group.groupLabel === 'General' && userRoles.some(r => ['JEFE_ALMACEN', 'ANALISTA_ALMACEN'].includes(r))) {
+    if (group.groupLabel === 'General' && userRoles.some((r) => ['JEFE_ALMACEN', 'ANALISTA_ALMACEN'].includes(r))) {
       return false;
     }
     return true;
