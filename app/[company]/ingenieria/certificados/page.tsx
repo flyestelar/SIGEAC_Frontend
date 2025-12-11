@@ -2,7 +2,14 @@
 
 import { ContentLayout } from '@/components/layout/ContentLayout';
 import LoadingPage from '@/components/misc/LoadingPage';
-import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb';
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from '@/components/ui/breadcrumb';
 import { useAuth } from '@/contexts/AuthContext';
 import { useGetCertificates } from '@/hooks/mantenimiento/ingenieria/useGetCertificates';
 import { columns } from './columns';
@@ -12,7 +19,7 @@ import { useCompanyStore } from '@/stores/CompanyStore';
 const InventarioPage = () => {
   const { user } = useAuth();
   const { selectedCompany } = useCompanyStore();
-  const { data: certificates, isLoading, isError } = useGetCertificates(selectedCompany?.slug)
+  const { data: certificates, isLoading, isError } = useGetCertificates(selectedCompany?.slug);
 
   if (isLoading) {
     return <LoadingPage />;
@@ -36,11 +43,10 @@ const InventarioPage = () => {
         </Breadcrumb>
         <h1 className="text-4xl font-bold text-center">Certificados</h1>
         <p className="text-sm text-muted-foreground text-center italic">
-          Aquí se gestionan los diferentes certificados y/o documentos que un articulo pueda requerir para verificiar su autenticidad.
+          Aquí se gestionan los diferentes certificados y/o documentos que un Material pueda requerir para verificiar su
+          autenticidad.
         </p>
-        {
-          certificates && <DataTable columns={columns} data={certificates} />
-        }
+        {certificates && <DataTable columns={columns} data={certificates} />}
         {isError && <p className="text-muted-foreground italic">Ha ocurrido un error al cargar las requisiciones...</p>}
       </div>
     </ContentLayout>

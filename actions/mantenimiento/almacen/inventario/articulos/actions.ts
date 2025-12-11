@@ -43,7 +43,7 @@ export const useCreateArticle = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['warehouse-articles'] });
       toast.success('¡Creado!', {
-        description: `El articulo ha sido creado correctamente.`,
+        description: `El Material ha sido creado correctamente.`,
       });
     },
     onError: (error) => {
@@ -69,7 +69,7 @@ export const useUpdateArticle = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['warehouse-articles'] });
       toast.success('¡Actualizado!', {
-        description: `El articulo ha sido actualizado correctamente.`,
+        description: `El Material ha sido actualizado correctamente.`,
       });
     },
     onError: (error) => {
@@ -99,7 +99,7 @@ export const useCreateDirectArticle = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['warehouse-articles'] });
       toast.success('¡Creado!', {
-        description: `El articulo ha sido creado correctamente.`,
+        description: `El Material ha sido creado correctamente.`,
       });
     },
     onError: (error) => {
@@ -124,7 +124,7 @@ export const useDeleteArticle = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['warehouse-articles'] });
       toast.success('¡Eliminado!', {
-        description: `¡El articulo ha sido eliminado correctamente!`,
+        description: `¡El Material ha sido eliminado correctamente!`,
       });
     },
     onError: (e) => {
@@ -158,7 +158,7 @@ export const useUpdateArticleStatus = () => {
       queryClient.invalidateQueries({ queryKey: ['dispatch-orders'] });
       queryClient.invalidateQueries({ queryKey: ['warehouse-articles'] });
       toast.success('¡Actualizado!', {
-        description: `El articulo ha sido actualizado correctamente.`,
+        description: `El Material ha sido actualizado correctamente.`,
       });
     },
     onError: (error) => {
@@ -225,7 +225,7 @@ export const useConfirmIncomingArticle = () => {
       queryClient.invalidateQueries({ queryKey: ['articles'] });
       queryClient.invalidateQueries({ queryKey: ['warehouse-articles'] });
       toast.success('¡Actualizado!', {
-        description: `El articulo ha sido actualizado correctamente.`,
+        description: `El Material ha sido actualizado correctamente.`,
       });
     },
     onError: (error) => {
@@ -256,7 +256,7 @@ export const useUpdateToolArticleStatus = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['warehouse-articles'] });
       toast.success('¡Actualizado!', {
-        description: `El articulo ha sido actualizado correctamente.`,
+        description: `El Material ha sido actualizado correctamente.`,
       });
     },
     onError: (error) => {

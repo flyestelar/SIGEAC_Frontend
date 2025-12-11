@@ -127,7 +127,7 @@ const DispatchRequestPage = () => {
 
         <h1 className="text-5xl font-bold text-center">Registro de Salidas</h1>
         <p className="text-sm italic text-muted-foreground text-center">
-          Aquí puede ver el registro de movimientos de los articulos, así como también solicitar la salida de uno.
+          Aquí puede ver el registro de movimientos de los materiales, así como también solicitar la salida de uno.
         </p>
 
         {isDispatchesLoading && (

@@ -462,17 +462,17 @@ export function getMenuList(pathname: string, currentCompany: Company | null, us
           submenus: [
             {
               href: `/${currentCompany?.slug}/almacen/ingreso/registrar_ingreso`,
-              label: 'Ingreso de Articulo',
+              label: 'Ingreso de Matarial',
               active: pathname === `/${currentCompany?.slug}/almacen/ingreso/registrar_ingreso`,
             },
             // {
             //   href: `/${currentCompany?.slug}/almacen/ingreso/en_transito`,
-            //   label: "Materialesen Tránsito",
+            //   label: "Materiales en Tránsito",
             //   active: pathname === `/${currentCompany?.slug}/almacen/ingreso/en_transito`
             // },
             // {
             //   href: `/${currentCompany?.slug}/almacen/ingreso/en_recepcion`,
-            //   label: "Materialesen Recepción",
+            //   label: "Materiales en Recepción",
             //   active: pathname === `/${currentCompany?.slug}/almacen/ingreso/en_recepcion`
             // },
           ],
@@ -509,7 +509,7 @@ export function getMenuList(pathname: string, currentCompany: Company | null, us
         },
         {
           href: `/${currentCompany?.slug}/almacen/despachados`,
-          label: 'MaterialesDespachados',
+          label: 'Materiales Despachados',
           active: pathname.includes(`/${currentCompany?.slug}/almacen/despachados`),
           icon: PackageOpen,
           roles: ['ANALISTA_ALMACEN', 'JEFE_ALMACEN', 'SUPERUSER'],

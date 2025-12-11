@@ -74,7 +74,7 @@ const InventarioPage = () => {
         <h1 className="text-5xl font-bold text-center">MaterialesEn Transito</h1>
         <p className="text-sm text-muted-foreground text-center italic mb-0">
           Aquí puede observar todos los Materialesque se encuentran aun en transito. <br />
-          Filtre y/o busque sí desea un articulo en específico.
+          Filtre y/o busque sí desea un Material en específico.
         </p>
         {isArticlesLoading && (
           <div className="flex w-full h-full justify-center items-center">
