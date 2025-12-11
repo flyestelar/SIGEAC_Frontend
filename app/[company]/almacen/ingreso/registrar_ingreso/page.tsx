@@ -40,17 +40,17 @@ const AgregarPage = () => {
               <DropdownMenuContent align="start">
                 <DropdownMenuItem>
                   <BreadcrumbLink href={`/${selectedCompany?.slug}/almacen/inventario/entregado`}>
-                    Ingreso de Articulo
+                    Ingreso de Material
                   </BreadcrumbLink>
                 </DropdownMenuItem>
                 <DropdownMenuItem>
                   <BreadcrumbLink href={`/${selectedCompany?.slug}/almacen/inventario/gestion`}>
-                    Materialesde Transito
+                    Materiales en Transito
                   </BreadcrumbLink>
                 </DropdownMenuItem>
                 <DropdownMenuItem>
                   <BreadcrumbLink href={`/${selectedCompany?.slug}/almacen/inventario/entregado`}>
-                    Materialesen Recepcion
+                    Materiales en Recepcion
                   </BreadcrumbLink>
                 </DropdownMenuItem>
               </DropdownMenuContent>
