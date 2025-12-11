@@ -52,7 +52,7 @@ const RegisterArticleForm = ({ isEditing = false, initialData }: IRegisterArticl
   return (
     <div className="space-y-3 mb-4">
       <h1 className="font-bold text-3xl">{isEditing ? 'Confirmacion de Articulo' : 'Ingreso de Articulo'}</h1>
-      {!isEditing && <p className="text-sm text-muted-foreground">Seleccione el tipo de articulo a registrar:</p>}
+      {!isEditing && <p className="text-sm text-muted-foreground">Seleccione el tipo de Material a registrar:</p>}
       <Select disabled={isEditing} value={type} onValueChange={handleTypeSelect}>
         <SelectTrigger className="w-[230px]">
           <SelectValue placeholder="Seleccionar..." />

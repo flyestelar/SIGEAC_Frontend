@@ -1,50 +1,54 @@
-"use client"
+'use client';
 
-import { Button } from "@/components/ui/button"
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
-import { Input } from "@/components/ui/input"
-import { useAuth } from "@/contexts/AuthContext"
-import { cn } from "@/lib/utils"
-import { useCompanyStore } from "@/stores/CompanyStore"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { Check, ChevronsUpDown, Loader2, MinusCircle, PlusCircle } from "lucide-react"
-import { useEffect, useState } from "react"
-import { useForm } from "react-hook-form"
-import { z } from "zod"
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "../../../ui/command"
-import { Popover, PopoverContent, PopoverTrigger } from "../../../ui/popover"
-import { ScrollArea } from "../../../ui/scroll-area"
-import { Separator } from "../../../ui/separator"
-import { Textarea } from "../../../ui/textarea"
-import { useCreateRequisition } from "@/actions/aerolinea/compras/requisiciones/actions"
-import { useGetUserDepartamentEmployees } from "@/hooks/sistema/empleados/useGetUserDepartamentEmployees"
+import { Button } from '@/components/ui/button';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { useAuth } from '@/contexts/AuthContext';
+import { cn } from '@/lib/utils';
+import { useCompanyStore } from '@/stores/CompanyStore';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Check, ChevronsUpDown, Loader2, MinusCircle, PlusCircle } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '../../../ui/command';
+import { Popover, PopoverContent, PopoverTrigger } from '../../../ui/popover';
+import { ScrollArea } from '../../../ui/scroll-area';
+import { Separator } from '../../../ui/separator';
+import { Textarea } from '../../../ui/textarea';
+import { useCreateRequisition } from '@/actions/aerolinea/compras/requisiciones/actions';
+import { useGetUserDepartamentEmployees } from '@/hooks/sistema/empleados/useGetUserDepartamentEmployees';
 
 const FormSchema = z.object({
-  justification: z.string().min(2, { message: "La justificación debe ser válida." }),
+  justification: z.string().min(2, { message: 'La justificación debe ser válida.' }),
   company: z.string(),
   location_id: z.string(),
   created_by: z.string(),
-  requested_by: z.string({ message: "Debe ingresar quien lo solicita." }),
+  requested_by: z.string({ message: 'Debe ingresar quien lo solicita.' }),
   image: z.instanceof(File).optional(),
-  articles: z.array(
-    z.object({
-      batch_articles: z.array(
-        z.object({
-          description: z.string().min(1, "La descripción es obligatoria"),
-          quantity: z.number().min(1, "Debe ingresar una cantidad válida"),
-        })
-      ).min(1, "Debe agregar al menos un artículo")
-    })
-  ).min(1, "Debe agregar al menos un lote"),
+  articles: z
+    .array(
+      z.object({
+        batch_articles: z
+          .array(
+            z.object({
+              description: z.string().min(1, 'La descripción es obligatoria'),
+              quantity: z.number().min(1, 'Debe ingresar una cantidad válida'),
+            }),
+          )
+          .min(1, 'Debe agregar al menos un artículo'),
+      }),
+    )
+    .min(1, 'Debe agregar al menos un lote'),
 });
 
-type FormSchemaType = z.infer<typeof FormSchema>
+type FormSchemaType = z.infer<typeof FormSchema>;
 
 interface FormProps {
-  onClose: () => void,
-  initialData?: FormSchemaType,
-  id?: number | string,
-  isEditing?: boolean,
+  onClose: () => void;
+  initialData?: FormSchemaType;
+  id?: number | string;
+  isEditing?: boolean;
 }
 
 interface BatchArticle {
@@ -53,87 +57,85 @@ interface BatchArticle {
 }
 
 export function CreateAdministrationRequisitionForm({ onClose, initialData, isEditing, id }: FormProps) {
-  const { user } = useAuth()
-  const { selectedCompany, selectedStation } = useCompanyStore()
+  const { user } = useAuth();
+  const { selectedCompany, selectedStation } = useCompanyStore();
   const { data: employees, isPending: employeesLoading } = useGetUserDepartamentEmployees(selectedCompany?.slug);
-  const { createRequisition } = useCreateRequisition()
-  const [batches, setBatches] = useState<{ batch_articles: BatchArticle[] }[]>([{ batch_articles: [] }])
+  const { createRequisition } = useCreateRequisition();
+  const [batches, setBatches] = useState<{ batch_articles: BatchArticle[] }[]>([{ batch_articles: [] }]);
 
   const form = useForm<FormSchemaType>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
       articles: [{ batch_articles: [] }],
     },
-  })
+  });
 
   useEffect(() => {
     if (user && selectedCompany && selectedStation) {
-      form.setValue("created_by", user.id.toString())
-      form.setValue("company", selectedCompany.slug)
-      form.setValue("location_id", selectedStation)
+      form.setValue('created_by', user.id.toString());
+      form.setValue('company', selectedCompany.slug);
+      form.setValue('location_id', selectedStation);
     }
     if (initialData && selectedCompany) {
       form.reset(initialData);
-      form.setValue("company", selectedCompany.slug)
+      form.setValue('company', selectedCompany.slug);
     }
-  }, [user, initialData, form, selectedCompany, selectedStation])
-
+  }, [user, initialData, form, selectedCompany, selectedStation]);
 
   useEffect(() => {
-    form.setValue("articles", batches)
-  }, [batches, form])
+    form.setValue('articles', batches);
+  }, [batches, form]);
 
   const handleArticleChange = (batchIndex: number, articleIndex: number, field: string, value: string | number) => {
-    setBatches(prev =>
+    setBatches((prev) =>
       prev.map((batch, bIndex) =>
         bIndex === batchIndex
           ? {
-            ...batch,
-            batch_articles: batch.batch_articles.map((article, aIndex) =>
-              aIndex === articleIndex ? { ...article, [field]: value } : article
-            )
-          }
-          : batch
-      )
+              ...batch,
+              batch_articles: batch.batch_articles.map((article, aIndex) =>
+                aIndex === articleIndex ? { ...article, [field]: value } : article,
+              ),
+            }
+          : batch,
+      ),
     );
   };
 
   const addArticle = (batchIndex: number) => {
-    setBatches(prev =>
+    setBatches((prev) =>
       prev.map((batch, index) =>
         index === batchIndex
-          ? { ...batch, batch_articles: [...batch.batch_articles, { description: "", quantity: 0 }] }
-          : batch
-      )
+          ? { ...batch, batch_articles: [...batch.batch_articles, { description: '', quantity: 0 }] }
+          : batch,
+      ),
     );
   };
 
   const removeArticle = (batchIndex: number, articleIndex: number) => {
-    setBatches(prev =>
+    setBatches((prev) =>
       prev.map((batch, index) =>
         index === batchIndex
           ? {
-            ...batch,
-            batch_articles: batch.batch_articles.filter((_, aIndex) => aIndex !== articleIndex)
-          }
-          : batch
-      )
+              ...batch,
+              batch_articles: batch.batch_articles.filter((_, aIndex) => aIndex !== articleIndex),
+            }
+          : batch,
+      ),
     );
   };
 
   const addBatch = () => {
-    setBatches(prev => [...prev, { batch_articles: [] }]);
+    setBatches((prev) => [...prev, { batch_articles: [] }]);
   };
 
   const removeBatch = (batchIndex: number) => {
-    setBatches(prev => prev.filter((_, index) => index !== batchIndex));
+    setBatches((prev) => prev.filter((_, index) => index !== batchIndex));
   };
 
   const onSubmit = async (data: FormSchemaType) => {
-
     await createRequisition.mutateAsync({
       ...data,
-      type: "GENERAL",
+      type: 'GENERAL',
     });
 
     onClose();
@@ -155,22 +157,26 @@ export function CreateAdministrationRequisitionForm({ onClose, initialData, isEd
                       disabled={employeesLoading}
                       variant="outline"
                       role="combobox"
-                      className={cn(
-                        "justify-between",
-                        !field.value && "text-muted-foreground"
-                      )}
+                      className={cn('justify-between', !field.value && 'text-muted-foreground')}
                     >
-                      {
-                        employeesLoading && <Loader2 className="size-4 animate-spin mr-2" />
-                      }
-                      {field.value
-                        ? <p>{employees?.find(
-                          (employee) => `${employee.first_name} ${employee.last_name}` === field.value
-                        )?.first_name} - {employees?.find(
-                          (employee) => `${employee.first_name} ${employee.last_name}` === field.value
-                        )?.last_name}</p>
-                        : "Elige al solicitante..."
-                      }
+                      {employeesLoading && <Loader2 className="size-4 animate-spin mr-2" />}
+                      {field.value ? (
+                        <p>
+                          {
+                            employees?.find(
+                              (employee) => `${employee.first_name} ${employee.last_name}` === field.value,
+                            )?.first_name
+                          }{' '}
+                          -{' '}
+                          {
+                            employees?.find(
+                              (employee) => `${employee.first_name} ${employee.last_name}` === field.value,
+                            )?.last_name
+                          }
+                        </p>
+                      ) : (
+                        'Elige al solicitante...'
+                      )}
                       <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                     </Button>
                   </FormControl>
@@ -179,26 +185,30 @@ export function CreateAdministrationRequisitionForm({ onClose, initialData, isEd
                   <Command>
                     <CommandInput placeholder="Busque un empleado..." />
                     <CommandList>
-                      <CommandEmpty className="text-sm p-2 text-center">No se ha encontrado ningún empleado.</CommandEmpty>
+                      <CommandEmpty className="text-sm p-2 text-center">
+                        No se ha encontrado ningún empleado.
+                      </CommandEmpty>
                       <CommandGroup>
                         {employees?.map((employee) => (
                           <CommandItem
                             value={`${employee.first_name} ${employee.last_name}`}
                             key={employee.id}
                             onSelect={() => {
-                              form.setValue("requested_by", `${employee.first_name} ${employee.last_name}`)
+                              form.setValue('requested_by', `${employee.first_name} ${employee.last_name}`);
                             }}
                           >
                             <Check
                               className={cn(
-                                "mr-2 h-4 w-4",
+                                'mr-2 h-4 w-4',
                                 `${employee.first_name} ${employee.last_name}` === field.value
-                                  ? "opacity-100"
-                                  : "opacity-0"
+                                  ? 'opacity-100'
+                                  : 'opacity-0',
                               )}
                             />
                             {
-                              <p>{employee.first_name} {employee.last_name}</p>
+                              <p>
+                                {employee.first_name} {employee.last_name}
+                              </p>
                             }
                           </CommandItem>
                         ))}
@@ -219,11 +229,11 @@ export function CreateAdministrationRequisitionForm({ onClose, initialData, isEd
             <FormItem className="flex flex-col">
               <FormLabel>Artículos</FormLabel>
               <div className="mt-4 space-y-6">
-                <ScrollArea className={cn("", batches.length > 1 ? "h-[400px]" : "")}>
+                <ScrollArea className={cn('', batches.length > 1 ? 'h-[400px]' : '')}>
                   {batches.map((batch, batchIndex) => (
                     <div key={batchIndex} className="mb-6 p-4 border rounded-lg">
                       <div className="flex justify-between items-center mb-3">
-                        <h4 className="font-medium">Articulo {batchIndex + 1}</h4>
+                        <h4 className="font-medium">Material {batchIndex + 1}</h4>
                         <Button
                           variant="ghost"
                           type="button"
@@ -241,14 +251,18 @@ export function CreateAdministrationRequisitionForm({ onClose, initialData, isEd
                             <Input
                               placeholder="Descripción"
                               value={article.description}
-                              onChange={(e) => handleArticleChange(batchIndex, articleIndex, "description", e.target.value)}
+                              onChange={(e) =>
+                                handleArticleChange(batchIndex, articleIndex, 'description', e.target.value)
+                              }
                               className="flex-1"
                             />
                             <Input
                               type="number"
                               placeholder="Cantidad"
-                              value={article.quantity || ""}
-                              onChange={(e) => handleArticleChange(batchIndex, articleIndex, "quantity", Number(e.target.value))}
+                              value={article.quantity || ''}
+                              onChange={(e) =>
+                                handleArticleChange(batchIndex, articleIndex, 'quantity', Number(e.target.value))
+                              }
                               className="w-24"
                             />
                             <Button
@@ -290,10 +304,7 @@ export function CreateAdministrationRequisitionForm({ onClose, initialData, isEd
             <FormItem>
               <FormLabel>Justificación</FormLabel>
               <FormControl>
-                <Textarea
-                  placeholder="Ej: Necesidad de materiales para mantenimiento..."
-                  {...field}
-                />
+                <Textarea placeholder="Ej: Necesidad de materiales para mantenimiento..." {...field} />
               </FormControl>
               <FormMessage className="text-xs" />
             </FormItem>
@@ -330,9 +341,9 @@ export function CreateAdministrationRequisitionForm({ onClose, initialData, isEd
         </div>
 
         <Button disabled={createRequisition.isPending}>
-          {isEditing ? "Editar Requisición" : "Generar Requisición"}
+          {isEditing ? 'Editar Requisición' : 'Generar Requisición'}
         </Button>
       </form>
     </Form>
-  )
+  );
 }

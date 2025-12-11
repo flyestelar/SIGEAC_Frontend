@@ -66,7 +66,7 @@ const ArticleDropdownActions = ({ article }: { article: IArticleSimple }) => {
         <DialogHeader>
           <DialogTitle className="text-center">¿Seguro que desea eliminar el articulo?</DialogTitle>
           <DialogDescription className="text-center p-2 mb-0 pb-0">
-            Esta acción es irreversible y estaría eliminando por completo el articulo seleccionado.
+            Esta acción es irreversible y estaría eliminando por completo el Material seleccionado.
           </DialogDescription>
         </DialogHeader>
         <DialogFooter className="flex flex-col gap-2 md:gap-0">
