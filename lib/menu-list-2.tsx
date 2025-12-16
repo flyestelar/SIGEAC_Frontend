@@ -425,7 +425,7 @@ export function getMenuList(pathname: string, currentCompany: Company | null, us
       menus: [
         {
           href: `/${currentCompany?.slug}/compras/requisiciones`,
-          label: 'Requisiciones',
+          label: 'Sol. de Material Faltante',
           active: pathname.includes(`/${currentCompany?.slug}/compras/requisiciones`),
           icon: ClipboardList,
           roles: ['ANALISTA_COMPRAS', 'JEFE_COMPRAS', 'SUPERUSER'],
