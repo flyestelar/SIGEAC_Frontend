@@ -32,7 +32,7 @@ export function CreateRequisitionDialog() {
       </DialogTrigger>
       <DialogContent className="sm:max-w-[680px]">
         <DialogHeader>
-          <DialogTitle>Creación de Sol. de Material Faltante</DialogTitle>
+          <DialogTitle>Solicitud de Material Faltante</DialogTitle>
           <DialogDescription>
             Genere una solicitud de material faltante mediante el siguiente formulario.
           </DialogDescription>
