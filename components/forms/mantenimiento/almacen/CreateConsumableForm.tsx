@@ -53,6 +53,12 @@ const formSchema = z.object({
     .string({ message: 'Debe ingresar un número de parte.' })
     .min(2, { message: 'El número de parte debe contener al menos 2 caracteres.' }),
   lot_number: z.string().optional(),
+  inspector: z
+    .string({ message: 'Debe ingresar el inspector de ingreso.' })
+    .min(1, 'Debe ingresar el inspector de ingreso.'),
+  reception_date: z
+    .string({ message: 'Debe ingresar la fecha de recepción.' })
+    .min(1, 'Debe ingresar la fecha de recepción.'),
   alternative_part_number: z
     .array(z.string().min(2, { message: 'Cada número de parte alterno debe contener al menos 2 caracteres.' }))
     .optional(),
@@ -112,11 +118,16 @@ const CreateConsumableForm = ({ initialData, isEditing }: { initialData?: Editin
   const [fabricationDate, setFabricationDate] = useState<Date | undefined>(
     initialData?.consumable?.fabrication_date ? new Date(initialData?.consumable?.fabrication_date) : undefined,
   );
+  const [receptionDate, setReceptionDate] = useState<Date | undefined>(
+    (initialData as any)?.reception_date ? new Date((initialData as any).reception_date) : undefined,
+  );
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       part_number: initialData?.part_number || '',
+      inspector: (initialData as any)?.inspector || '',
+      reception_date: (initialData as any)?.reception_date || '',
       alternative_part_number: initialData?.alternative_part_number || [],
       batch_id: initialData?.batches?.id?.toString() || '',
       manufacturer_id: initialData?.manufacturer?.id?.toString() || '',
@@ -138,6 +149,8 @@ const CreateConsumableForm = ({ initialData, isEditing }: { initialData?: Editin
     if (!initialData) return;
     form.reset({
       part_number: initialData.part_number ?? '',
+      inspector: (initialData as any)?.inspector ?? '',
+      reception_date: (initialData as any)?.reception_date ?? '',
       alternative_part_number: initialData.alternative_part_number ?? [],
       batch_id: initialData.batches?.id?.toString() ?? '',
       manufacturer_id: initialData.manufacturer?.id?.toString() ?? '',
@@ -171,8 +184,6 @@ const CreateConsumableForm = ({ initialData, isEditing }: { initialData?: Editin
     createArticle.isPending ||
     confirmIncoming.isPending;
 
-  const batchesOptions = useMemo<Batch[] | undefined>(() => batches, [batches]);
-
   const onSubmit = async (values: FormValues) => {
     if (!selectedCompany?.slug) return;
 
@@ -186,6 +197,8 @@ const CreateConsumableForm = ({ initialData, isEditing }: { initialData?: Editin
       ...values,
       part_number: normalizeUpper(values.part_number),
       article_type: 'consumible',
+      inspector: values.inspector,
+      reception_date: receptionDate ? format(receptionDate, 'yyyy-MM-dd') : '',
       alternative_part_number: values.alternative_part_number?.map((v) => normalizeUpper(v)) ?? [],
       caducate_date: caducateDate ? format(caducateDate, 'yyyy-MM-dd') : undefined,
       fabrication_date: fabricationDate ? format(fabricationDate, 'yyyy-MM-dd') : undefined,
@@ -219,6 +232,66 @@ const CreateConsumableForm = ({ initialData, isEditing }: { initialData?: Editin
             <CardTitle className="text-xl">Registrar consumible</CardTitle>
           </CardHeader>
           <CardContent className="grid grid-cols-1 xl:grid-cols-3 gap-4">
+            {/* Inspector */}
+            <FormField
+              control={form.control}
+              name="inspector"
+              render={({ field }) => (
+                <FormItem className="w-full">
+                  <FormLabel>Inspector (incoming)</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Ej: Juan Pérez" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* Fecha incoming */}
+            <FormField
+              control={form.control}
+              name="reception_date"
+              render={() => (
+                <FormItem className="flex flex-col p-0 mt-2.5 w-full">
+                  <FormLabel>Fecha de incoming</FormLabel>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <FormControl>
+                        <Button
+                          variant="outline"
+                          className={cn('w-full pl-3 text-left font-normal', !receptionDate && 'text-muted-foreground')}
+                        >
+                          {receptionDate ? (
+                            format(receptionDate, 'PPP', { locale: es })
+                          ) : (
+                            <span>Seleccione una fecha...</span>
+                          )}
+                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                        </Button>
+                      </FormControl>
+                    </PopoverTrigger>
+
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        locale={es}
+                        mode="single"
+                        selected={receptionDate}
+                        onSelect={(d) => {
+                          setReceptionDate(d);
+                          form.setValue('reception_date', d ? format(d, 'yyyy-MM-dd') : '', {
+                            shouldDirty: true,
+                            shouldValidate: true,
+                          });
+                        }}
+                        initialFocus
+                        month={receptionDate}
+                      />
+                    </PopoverContent>
+                  </Popover>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
             <FormField
               control={form.control}
               name="part_number"

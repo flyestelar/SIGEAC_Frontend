@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { format } from 'date-fns';
@@ -47,6 +47,8 @@ const fileMaxBytes = 10_000_000; // 10 MB
 const formSchema = z
   .object({
     article_type: z.string().optional(),
+    inspector: z.string({ message: 'Debe ingresar un inspector.' }),
+    reception_date: z.string({ message: 'Debe ingresar una fecha de recepción.' }),
     part_number: z.string().min(2, 'Al menos 2 caracteres.'),
     alternative_part_number: z.array(z.string().min(2)).optional(),
     serial: z.string().optional(),
@@ -103,7 +105,6 @@ const formSchema = z
 
 type FormValues = z.infer<typeof formSchema>;
 
-
 export default function CreateToolForm({
   initialData,
   isEditing,
@@ -128,11 +129,16 @@ export default function CreateToolForm({
 
   const { createArticle } = useCreateArticle();
   const { confirmIncoming } = useConfirmIncomingArticle();
+  const [receptionDate, setReceptionDate] = useState<Date | undefined>(
+    (initialData as any)?.reception_date ? new Date((initialData as any).reception_date) : undefined,
+  );
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       part_number: initialData?.part_number || '',
+      inspector: (initialData as any)?.inspector || '',
+      reception_date: (initialData as any)?.reception_date || '',
       alternative_part_number: initialData?.alternative_part_number || [],
       serial: initialData?.serial || '',
       description: initialData?.description || '',
@@ -155,6 +161,8 @@ export default function CreateToolForm({
     if (!initialData) return;
     form.reset({
       part_number: initialData.part_number || '',
+      inspector: (initialData as any).inspector || '',
+      reception_date: (initialData as any).reception_date || '',
       alternative_part_number: initialData.alternative_part_number || [],
       serial: initialData.serial || '',
       description: initialData.description || '',
@@ -185,6 +193,7 @@ export default function CreateToolForm({
     const payload: any = {
       ...values,
       part_number: normalizeUpper(values.part_number),
+      reception_date: receptionDate ? format(receptionDate, 'yyyy-MM-dd') : undefined,
       alternative_part_number: values.alternative_part_number?.map((v) => normalizeUpper(v)) ?? [],
       calibration_date: values.calibration_date ? format(values.calibration_date, 'yyyy-MM-dd') : undefined,
       // `next_calibration` se envía tal cual como número
@@ -218,6 +227,65 @@ export default function CreateToolForm({
             </CardTitle>
           </CardHeader>
           <CardContent className="grid grid-cols-1 xl:grid-cols-3 gap-4">
+            {/* Inspector */}
+            <FormField
+              control={form.control}
+              name="inspector"
+              render={({ field }) => (
+                <FormItem className="w-full">
+                  <FormLabel>Inspector (incoming)</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Ej: Juan Pérez" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            {/* Fecha de recepción */}
+            <FormField
+              control={form.control}
+              name="reception_date"
+              render={() => (
+                <FormItem className="flex flex-col p-0 mt-2.5 w-full">
+                  <FormLabel>Fecha de recepción</FormLabel>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <FormControl>
+                        <Button
+                          variant="outline"
+                          className={cn('w-full pl-3 text-left font-normal', !receptionDate && 'text-muted-foreground')}
+                        >
+                          {receptionDate ? (
+                            format(receptionDate, 'PPP', { locale: es })
+                          ) : (
+                            <span>Seleccione una fecha...</span>
+                          )}
+                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                        </Button>
+                      </FormControl>
+                    </PopoverTrigger>
+
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        locale={es}
+                        mode="single"
+                        selected={receptionDate}
+                        onSelect={(d) => {
+                          setReceptionDate(d);
+                          form.setValue('reception_date', d ? format(d, 'yyyy-MM-dd') : '', {
+                            shouldDirty: true,
+                            shouldValidate: true,
+                          });
+                        }}
+                        initialFocus
+                        month={receptionDate}
+                      />
+                    </PopoverContent>
+                  </Popover>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
             <FormField
               control={form.control}
               name="part_number"
@@ -246,7 +314,6 @@ export default function CreateToolForm({
                 </FormItem>
               )}
             />
-
             <FormField
               control={form.control}
               name="alternative_part_number"

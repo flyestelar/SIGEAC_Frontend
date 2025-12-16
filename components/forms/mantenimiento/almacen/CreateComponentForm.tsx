@@ -48,6 +48,10 @@ const fileMaxBytes = 10_000_000; // 10 MB
 
 const formSchema = z
   .object({
+    inspector: z
+      .string({ message: 'Debe indicar el inspector.' })
+      .min(2, 'El inspector debe tener al menos 2 caracteres.'),
+    reception_date: z.string({ message: 'Debe indicar la fecha de incoming.' }).min(1, 'Campo requerido'),
     serial: z.string().min(2, { message: 'El serial debe contener al menos 2 caracteres.' }).optional(),
     part_number: z
       .string({ message: 'Debe seleccionar un número de parte.' })
@@ -125,7 +129,10 @@ const CreateComponentForm = ({ initialData, isEditing }: { initialData?: Editing
       ? new Date(initialData.component.shell_time?.calendar_date)
       : undefined,
   );
-  const { selectedStation, selectedCompany } = useCompanyStore();
+  const [receptionDate, setReceptionDate] = useState<Date | undefined>(
+    (initialData as any)?.reception_date ? new Date((initialData as any).reception_date) : undefined,
+  );
+  const { selectedCompany } = useCompanyStore();
 
   const { data: batches, isPending: isBatchesLoading, isError: isBatchesError } = useGetBatchesByCategory('componente');
 
@@ -147,6 +154,8 @@ const CreateComponentForm = ({ initialData, isEditing }: { initialData?: Editing
     resolver: zodResolver(formSchema),
     defaultValues: {
       part_number: initialData?.part_number || '',
+      inspector: (initialData as any)?.inspector ?? '',
+      reception_date: (initialData as any)?.reception_date ?? '',
       serial: initialData?.serial || '',
       alternative_part_number: initialData?.alternative_part_number || [],
       batch_id: initialData?.batches?.id?.toString() || '',
@@ -175,6 +184,8 @@ const CreateComponentForm = ({ initialData, isEditing }: { initialData?: Editing
     form.reset({
       part_number: initialData.part_number ?? '',
       serial: initialData.serial ?? '',
+      inspector: (initialData as any)?.inspector ?? '',
+      reception_date: (initialData as any)?.reception_date ?? '',
       alternative_part_number: initialData.alternative_part_number ?? [],
       batch_id: initialData.batches?.id?.toString() ?? '',
       manufacturer_id: initialData.manufacturer?.id?.toString() ?? '',
@@ -220,6 +231,8 @@ const CreateComponentForm = ({ initialData, isEditing }: { initialData?: Editing
       part_number: normalizeUpper(values.part_number),
       alternative_part_number: values.alternative_part_number?.map((v) => normalizeUpper(v)) ?? [],
       caducate_date: caducateDate ? format(caducateDate, 'yyyy-MM-dd') : undefined,
+      inspector: values.inspector?.trim(),
+      reception_date: receptionDate ? format(receptionDate, 'yyyy-MM-dd') : values.reception_date,
       fabrication_date: fabricationDate ? format(fabricationDate, 'yyyy-MM-dd') : undefined,
       calendar_date: values.calendar_date && format(values.calendar_date, 'yyyy-MM-dd'),
     };
@@ -248,6 +261,66 @@ const CreateComponentForm = ({ initialData, isEditing }: { initialData?: Editing
             <CardTitle className="text-xl">Registrar componente</CardTitle>
           </CardHeader>
           <CardContent className="grid grid-cols-1 xl:grid-cols-3 gap-4">
+            {/* Inspector */}
+            <FormField
+              control={form.control}
+              name="inspector"
+              render={({ field }) => (
+                <FormItem className="w-full">
+                  <FormLabel>Inspector (incoming)</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Ej: Juan Pérez" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* Fecha incoming */}
+            <FormField
+              control={form.control}
+              name="reception_date"
+              render={() => (
+                <FormItem className="flex flex-col p-0 mt-2.5 w-full">
+                  <FormLabel>Fecha de incoming</FormLabel>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <FormControl>
+                        <Button
+                          variant="outline"
+                          className={cn('w-full pl-3 text-left font-normal', !receptionDate && 'text-muted-foreground')}
+                        >
+                          {receptionDate ? (
+                            format(receptionDate, 'PPP', { locale: es })
+                          ) : (
+                            <span>Seleccione una fecha...</span>
+                          )}
+                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                        </Button>
+                      </FormControl>
+                    </PopoverTrigger>
+
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        locale={es}
+                        mode="single"
+                        selected={receptionDate}
+                        onSelect={(d) => {
+                          setReceptionDate(d);
+                          form.setValue('reception_date', d ? format(d, 'yyyy-MM-dd') : '', {
+                            shouldDirty: true,
+                            shouldValidate: true,
+                          });
+                        }}
+                        initialFocus
+                        month={receptionDate}
+                      />
+                    </PopoverContent>
+                  </Popover>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
             <FormField
               control={form.control}
               name="part_number"
@@ -270,7 +343,6 @@ const CreateComponentForm = ({ initialData, isEditing }: { initialData?: Editing
                   <FormControl>
                     <MultiInputField values={field.value || []} onChange={field.onChange} placeholder="Ej: 234ABAC" />
                   </FormControl>
-
                   <FormMessage />
                 </FormItem>
               )}
