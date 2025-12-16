@@ -32,7 +32,6 @@ const FormSchema = z.object({
     .min(2, { message: 'La justificación debe ser válida.' }),
   company: z.string(),
   location_id: z.string(),
-  type: z.string({ message: 'Debe seleccionar un tipo de requisición.' }),
   aircraft_id: z.string().optional(),
   created_by: z.string(),
   requested_by: z.string({ message: 'Debe ingresar quien lo solicita.' }),
@@ -241,13 +240,15 @@ export function CreateGeneralRequisitionForm({ onClose, initialData, isEditing, 
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col space-y-3">
-        <div className="flex gap-2 items-center">
+        <div className="flex gap-2 items-center justify-center">
           <FormField
             control={form.control}
             name="requested_by"
             render={({ field }) => (
               <FormItem className="flex flex-col mt-2.5 w-full">
-                <FormLabel>Empleado Responsable</FormLabel>
+                <FormLabel>Técnico Solicitante
+                  
+                </FormLabel>
                 <Popover open={openRequestedBy} onOpenChange={setOpenRequestedBy}>
                   <PopoverTrigger asChild>
                     <Button
@@ -301,21 +302,57 @@ export function CreateGeneralRequisitionForm({ onClose, initialData, isEditing, 
           />
           <FormField
             control={form.control}
-            name="type"
+            name="aircraft_id"
             render={({ field }) => (
-              <FormItem className="w-full">
-                <FormLabel>Tipo de Req.</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={'AVIACION'} disabled>
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Seleccione.." />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    <SelectItem value="AVIACION">Aviacion</SelectItem>
-                    <SelectItem value="GENERAL">General</SelectItem>
-                  </SelectContent>
-                </Select>
+              <FormItem className="flex flex-col w-full mt-2.5">
+                <FormLabel>Aeronave</FormLabel>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <FormControl>
+                      <Button
+                        disabled={isAircraftsLoading}
+                        variant="outline"
+                        role="combobox"
+                        className={cn('justify-between', !field.value && 'text-muted-foreground')}
+                      >
+                        {isAircraftsLoading && <Loader2 className="size-4 animate-spin mr-2" />}
+                        {field.value
+                          ? aircrafts?.find((aircraft) => aircraft.id.toString() === field.value)?.acronym
+                          : 'Selec. la aeronave...'}
+                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                      </Button>
+                    </FormControl>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-[200px] p-0">
+                    <Command>
+                      <CommandInput placeholder="Busque una aeronave..." />
+                      <CommandList>
+                        <CommandEmpty className="text-sm p-2 text-center">
+                          No se ha encontrado ninguna aeronave.
+                        </CommandEmpty>
+                        <CommandGroup>
+                          {aircrafts?.map((aircraft) => (
+                            <CommandItem
+                              value={aircraft.id.toString()}
+                              key={aircraft.id}
+                              onSelect={() => {
+                                form.setValue('aircraft_id', aircraft.id.toString());
+                              }}
+                            >
+                              <Check
+                                className={cn(
+                                  'mr-2 h-4 w-4',
+                                  aircraft.id.toString() === field.value ? 'opacity-100' : 'opacity-0',
+                                )}
+                              />
+                              {aircraft.acronym}
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
                 <FormMessage />
               </FormItem>
             )}
@@ -328,7 +365,7 @@ export function CreateGeneralRequisitionForm({ onClose, initialData, isEditing, 
             <FormItem className="flex flex-col">
               <div className="flex gap-4 items-end">
                 <FormItem className="flex flex-col w-[200px]">
-                  <FormLabel>Artículos</FormLabel>
+                  <FormLabel>Descripción</FormLabel>
                   <Popover>
                     <PopoverTrigger asChild>
                       <FormControl>
@@ -340,7 +377,7 @@ export function CreateGeneralRequisitionForm({ onClose, initialData, isEditing, 
                         >
                           {selectedBatches.length > 0
                             ? `${selectedBatches.length} reng. seleccionados`
-                            : 'Selec. un renglón...'}
+                            : 'Selec. una descripción...'}
                           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                         </Button>
                       </FormControl>
@@ -378,64 +415,6 @@ export function CreateGeneralRequisitionForm({ onClose, initialData, isEditing, 
                     </PopoverContent>
                   </Popover>
                 </FormItem>
-
-                <FormField
-                  control={form.control}
-                  name="aircraft_id"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-col w-[200px]">
-                      <FormLabel>Aeronave</FormLabel>
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <FormControl>
-                            <Button
-                              disabled={isAircraftsLoading}
-                              variant="outline"
-                              role="combobox"
-                              className={cn('justify-between', !field.value && 'text-muted-foreground')}
-                            >
-                              {isAircraftsLoading && <Loader2 className="size-4 animate-spin mr-2" />}
-                              {field.value
-                                ? aircrafts?.find((aircraft) => aircraft.id.toString() === field.value)?.acronym
-                                : 'Selec. la aeronave...'}
-                              <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                            </Button>
-                          </FormControl>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-[200px] p-0">
-                          <Command>
-                            <CommandInput placeholder="Busque una aeronave..." />
-                            <CommandList>
-                              <CommandEmpty className="text-sm p-2 text-center">
-                                No se ha encontrado ninguna aeronave.
-                              </CommandEmpty>
-                              <CommandGroup>
-                                {aircrafts?.map((aircraft) => (
-                                  <CommandItem
-                                    value={aircraft.id.toString()}
-                                    key={aircraft.id}
-                                    onSelect={() => {
-                                      form.setValue('aircraft_id', aircraft.id.toString());
-                                    }}
-                                  >
-                                    <Check
-                                      className={cn(
-                                        'mr-2 h-4 w-4',
-                                        aircraft.id.toString() === field.value ? 'opacity-100' : 'opacity-0',
-                                      )}
-                                    />
-                                    {aircraft.acronym}
-                                  </CommandItem>
-                                ))}
-                              </CommandGroup>
-                            </CommandList>
-                          </Command>
-                        </PopoverContent>
-                      </Popover>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
               </div>
               <div className="mt-4 space-y-4">
                 <ScrollArea className={cn('', selectedBatches.length > 2 ? 'h-[300px]' : '')}>
