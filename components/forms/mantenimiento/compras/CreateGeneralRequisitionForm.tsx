@@ -305,7 +305,7 @@ export function CreateGeneralRequisitionForm({ onClose, initialData, isEditing, 
             render={({ field }) => (
               <FormItem className="w-full">
                 <FormLabel>Tipo de Req.</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={'AVIACION'} disabled>
+                <Select onValueChange={field.onChange} defaultValue={'AVIACION'}>
                   <FormControl>
                     <SelectTrigger>
                       <SelectValue placeholder="Seleccione.." />
