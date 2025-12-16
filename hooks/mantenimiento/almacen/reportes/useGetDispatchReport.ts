@@ -39,7 +39,7 @@ const normalizeDate = (d?: Date | string | null): string | null => {
 
 interface DispatchFilters {
   aircraft_id?: number | null;
-  workshop_id?: string | null;
+  workshop_id?: number | null;
   from?: Date | string | null;
   to?: Date | string | null;
 }

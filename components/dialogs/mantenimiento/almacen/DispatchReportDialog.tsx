@@ -3,7 +3,7 @@
 import { PDFDownloadLink } from '@react-pdf/renderer';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { CalendarDays, NotepadText, Plane } from 'lucide-react';
+import { CalendarDays, NotepadText, Plane, Wrench } from 'lucide-react';
 import { useMemo, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
@@ -22,19 +22,28 @@ import { cn } from '@/lib/utils';
 
 import DispatchReportPdf from '@/components/pdf/almacen/DispatchReport';
 import { useGetAircrafts } from '@/hooks/aerolinea/aeronaves/useGetAircrafts';
-import type { DispatchReport } from '@/hooks/mantenimiento/almacen/reportes/useGetDispatchReport'; // si exportas el tipo
+import type { DispatchReport } from '@/hooks/mantenimiento/almacen/reportes/useGetDispatchReport';
 import { useGetDispatchReport } from '@/hooks/mantenimiento/almacen/reportes/useGetDispatchReport';
+import { useGetWorkshopsByLocation } from '@/hooks/sistema/empresas/talleres/useGetWorkshopsByLocation';
 import { useCompanyStore } from '@/stores/CompanyStore';
+
+// ⬇️ AJUSTA este import a tu ruta real
 
 export function DispatchReportDialog() {
   const { selectedStation, selectedCompany } = useCompanyStore();
 
   const [open, setOpen] = useState(false);
-  const [aircraft, setAircraft] = useState<string>('all'); // 'all' -> sin filtro
+
+  const [aircraft, setAircraft] = useState<string>('all');
+  const [workshop, setWorkshop] = useState<string>('all'); // ✅ nuevo
+
   const [startDate, setStartDate] = useState<Date | undefined>();
   const [endDate, setEndDate] = useState<Date | undefined>();
 
   const { data: aircrafts, isLoading: isLoadingAircrafts } = useGetAircrafts(selectedCompany?.slug);
+
+  // ✅ nuevo: lista de talleres
+  const { data: workshops, isLoading: isLoadingWorkshops } = useGetWorkshopsByLocation();
 
   const {
     mutate: generateReport,
@@ -48,9 +57,13 @@ export function DispatchReportDialog() {
 
   const aircraftFilter = useMemo(() => (aircraft && aircraft !== 'all' ? parseInt(aircraft, 10) : null), [aircraft]);
 
+  const workshopFilter = useMemo(() => (workshop && workshop !== 'all' ? parseInt(workshop, 10) : null), [workshop]);
+
   const filename = useMemo(() => {
     const parts: string[] = ['salidas'];
     if (aircraftFilter) parts.push(`avion_${aircraftFilter}`);
+    if (workshopFilter) parts.push(`taller_${workshopFilter}`);
+
     if (startDate && endDate) {
       parts.push(
         `${format(startDate, 'dd-MM-yyyy', { locale: es })}_a_${format(endDate, 'dd-MM-yyyy', { locale: es })}`,
@@ -59,16 +72,15 @@ export function DispatchReportDialog() {
       parts.push(format(new Date(), 'dd-MM-yyyy', { locale: es }));
     }
     return `${parts.join('_')}.pdf`;
-  }, [aircraftFilter, startDate, endDate]);
+  }, [aircraftFilter, workshopFilter, startDate, endDate]);
 
-  // accion que dispara la mutation
   const onGenerate = () => {
     if (!selectedCompany?.slug || !selectedStation) return;
     if (isDateRangeInvalid) return;
 
     generateReport({
       aircraft_id: aircraftFilter,
-      workshop_id: null,
+      workshop_id: workshopFilter, // ✅ aquí
       from: startDate ?? null,
       to: endDate ?? null,
     });
@@ -100,27 +112,52 @@ export function DispatchReportDialog() {
             <p className="text-muted-foreground text-sm italic">Descargue el reporte general o aplique filtros.</p>
           </div>
 
-          {/* Filtro por Avión */}
-          <div className="space-y-2">
-            <h2 className="text-lg font-semibold flex gap-2 items-center justify-center">
-              Filtrar por aeronave <Plane />
-            </h2>
-            <p className="text-muted-foreground text-sm italic">Seleccione un avión o Todos los aviones.</p>
+          {/* Filtros (minimalista: dos selects, mismo patrón) */}
+          <div className="space-y-4">
+            {/* Avión */}
+            <div className="space-y-2">
+              <h2 className="text-lg font-semibold flex gap-2 items-center justify-center">
+                Aeronave <Plane />
+              </h2>
 
-            <div className="flex gap-2 items-center justify-center">
-              <Select value={aircraft} onValueChange={(value) => setAircraft(value)}>
-                <SelectTrigger disabled={isLoadingAircrafts} className="w-[200px]">
-                  <SelectValue placeholder="Todos los aviones" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todos los aviones</SelectItem>
-                  {aircrafts?.map((a) => (
-                    <SelectItem key={a.id} value={a.id.toString()}>
-                      {a.acronym ?? `Aeronave #${a.id}`}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <div className="flex gap-2 items-center justify-center">
+                <Select value={aircraft} onValueChange={setAircraft}>
+                  <SelectTrigger disabled={isLoadingAircrafts} className="w-[240px]">
+                    <SelectValue placeholder="Todos los aviones" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todos los aviones</SelectItem>
+                    {aircrafts?.map((a) => (
+                      <SelectItem key={a.id} value={a.id.toString()}>
+                        {a.acronym ?? `Aeronave #${a.id}`}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            {/* Taller ✅ nuevo */}
+            <div className="space-y-2">
+              <h2 className="text-lg font-semibold flex gap-2 items-center justify-center">
+                Taller <Wrench />
+              </h2>
+
+              <div className="flex gap-2 items-center justify-center">
+                <Select value={workshop} onValueChange={setWorkshop}>
+                  <SelectTrigger disabled={isLoadingWorkshops} className="w-[240px]">
+                    <SelectValue placeholder="Todos los talleres" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todos los talleres</SelectItem>
+                    {workshops?.map((w: { id: number; name?: string }) => (
+                      <SelectItem key={w.id} value={w.id.toString()}>
+                        {w.name ?? `Taller #${w.id}`}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           </div>
 
@@ -178,29 +215,26 @@ export function DispatchReportDialog() {
             )}
           </div>
 
-          {/* Botones: Generar + Descargar */}
+          {/* Botones */}
           <div className="pt-2 flex flex-col items-center gap-2">
-            <div>
-              <Button
-                onClick={onGenerate}
-                disabled={isLoadingDispatchReport || isDateRangeInvalid || !selectedCompany?.slug || !selectedStation}
-                className="mt-2"
-              >
-                {isLoadingDispatchReport ? 'Generando...' : 'Generar Reporte'}
-              </Button>
-            </div>
+            <Button
+              onClick={onGenerate}
+              disabled={isLoadingDispatchReport || isDateRangeInvalid || !selectedCompany?.slug || !selectedStation}
+              className="mt-2"
+            >
+              {isLoadingDispatchReport ? 'Generando...' : 'Generar Reporte'}
+            </Button>
 
-            {/* Mostrar errores */}
             {isError && (
               <p className="text-sm text-red-600">Error al generar reporte: {error?.message ?? 'Desconocido'}</p>
             )}
 
-            {/* Si hay datos, mostrar link de descarga */}
             {dispatchReport && dispatchReport.length > 0 ? (
               <PDFDownloadLink
                 key={
                   filename +
                   (aircraftFilter ?? 'all') +
+                  (workshopFilter ?? 'all') +
                   (startDate ? startDate.toISOString() : '') +
                   (endDate ? endDate.toISOString() : '')
                 }
@@ -211,6 +245,8 @@ export function DispatchReportDialog() {
                     aircraftFilter={aircraftFilter}
                     startDate={startDate}
                     endDate={endDate}
+                    // si tu PDF también quiere mostrar el taller filtrado:
+                    // workshopFilter={workshopFilter}
                   />
                 }
               >
@@ -219,7 +255,6 @@ export function DispatchReportDialog() {
                 </Button>
               </PDFDownloadLink>
             ) : (
-              // indica que aún no hay datos o que el reporte no devolvió resultados
               <p className="text-sm text-muted-foreground">
                 {isLoadingDispatchReport ? 'Generando reporte...' : 'Aún no hay datos para descargar.'}
               </p>
