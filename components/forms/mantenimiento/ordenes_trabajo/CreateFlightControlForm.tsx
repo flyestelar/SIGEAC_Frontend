@@ -347,7 +347,7 @@ export default function CreateFlightControlForm({ onClose }: FormProps) {
                     <Command>
                       <CommandInput placeholder="Selec. el técnico..." />
                       <CommandList>
-                        <CommandEmpty>No se han encontrado técnicos...</CommandEmpty>
+                        <CommandEmpty>No se han encontrado pilotos...</CommandEmpty>
                         {employees?.map((e) => (
                           <CommandItem
                             value={`${e.first_name} ${e.last_name} ${e.dni}`}
