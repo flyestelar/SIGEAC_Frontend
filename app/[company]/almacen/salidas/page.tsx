@@ -21,7 +21,7 @@ import { useGetDispatchesByLocation } from '@/hooks/mantenimiento/almacen/solici
 import { useCompanyStore } from '@/stores/CompanyStore';
 import { Loader2 } from 'lucide-react';
 import { useMemo, useState } from 'react';
-import { columns, DispatchArticleRow } from './columns';
+import { columns } from './columns';
 import { DataTable } from './data-table';
 import { MaintenanceAircraft, WorkOrder, Workshop } from '@/types';
 import { DispatchArticlesInline } from './DispatchArticleInLine';
