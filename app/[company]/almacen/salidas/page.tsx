@@ -24,6 +24,7 @@ import { useMemo, useState } from 'react';
 import { columns, DispatchArticleRow } from './columns';
 import { DataTable } from './data-table';
 import { MaintenanceAircraft, WorkOrder, Workshop } from '@/types';
+import { DispatchArticlesInline } from './DispatchArticleInLine';
 
 export interface DispatchArticle {
   id: number;
@@ -50,25 +51,32 @@ interface IDispatch {
   articles: DispatchArticle[];
 }
 
-function mapDispatchesToRows(dispatches: IDispatch[]): DispatchArticleRow[] {
-  return dispatches.flatMap((dispatch) =>
-    dispatch.articles.map((article) => ({
-      dispatchId: dispatch.id,
-      request_number: dispatch.request_number,
-      aircraftOrWorkshop: dispatch.aircraft
-        ? dispatch.aircraft.acronym
-        : dispatch.workshop
-          ? dispatch.workshop.name
-          : 'N/A',
-      submission_date: dispatch.submission_date,
-      part_number: article.part_number, // adapta estos campos
-      description: article.batch,
-      quantity: article.dispatch_quantity,
-      serial: article.serial,
-      requested_by: dispatch.requested_by,
-      created_by: dispatch.created_by,
-    })),
-  );
+export interface DispatchGroupRow {
+  dispatchId: number;
+  request_number: string;
+  aircraftOrWorkshop: string;
+  submission_date: string;
+  status: 'PROCESO' | 'APROBADO' | 'RECHAZADO';
+  requested_by?: string;
+  created_by?: string;
+  articles: DispatchArticle[];
+}
+
+function mapDispatchesToGroups(dispatches: IDispatch[]): DispatchGroupRow[] {
+  return dispatches.map((dispatch) => ({
+    dispatchId: dispatch.id,
+    request_number: dispatch.request_number,
+    aircraftOrWorkshop: dispatch.aircraft
+      ? dispatch.aircraft.acronym
+      : dispatch.workshop
+        ? dispatch.workshop.name
+        : 'N/A',
+    submission_date: dispatch.submission_date,
+    status: dispatch.status,
+    requested_by: dispatch.requested_by,
+    created_by: dispatch.created_by,
+    articles: dispatch.articles,
+  }));
 }
 
 const DispatchRequestPage = () => {
@@ -86,7 +94,7 @@ const DispatchRequestPage = () => {
     return dispatches.filter((d) => d.status === activeCategory);
   }, [dispatches, activeCategory]);
 
-  const rows = mapDispatchesToRows(filteredDispatches);
+  const rows = mapDispatchesToGroups(filteredDispatches);
 
   return (
     <ContentLayout title="Salida">
@@ -137,17 +145,12 @@ const DispatchRequestPage = () => {
         )}
 
         {dispatches && (
-          <Tabs value={activeCategory} onValueChange={setActiveCategory}>
-            <TabsList className="flex justify-center mb-4">
-              <TabsTrigger value="Todos">Todos</TabsTrigger>
-              <TabsTrigger value="APROBADA">Aprobados</TabsTrigger>
-              <TabsTrigger value="CERRADO">Cerrados</TabsTrigger>
-            </TabsList>
-
-            <TabsContent value={activeCategory}>
-              <DataTable columns={columns} data={rows} />
-            </TabsContent>
-          </Tabs>
+          <DataTable
+            columns={columns}
+            data={rows} // DispatchGroupRow[]
+            canExpandRow={(row: any) => Array.isArray(row.articles) && row.articles.length > 0}
+            renderSubComponent={(row: any) => <DispatchArticlesInline articles={row.articles} />}
+          />
         )}
 
         {isError && <p className="text-sm text-muted-foreground">Ha ocurrido un error al cargar las solicitudes...</p>}
