@@ -1,11 +1,11 @@
-import { ColumnDef } from '@tanstack/react-table';
-import { ChevronDown, ChevronRight, Package } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import DispatchArticlesDialog from '@/components/dialogs/mantenimiento/almacen/DispatchArticlesDialog';
 import { DataTableColumnHeader } from '@/components/tables/DataTableHeader';
+import { Button } from '@/components/ui/button';
+import { ColumnDef } from '@tanstack/react-table';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
-import DispatchArticlesDialog from '@/components/dialogs/mantenimiento/almacen/DispatchArticlesDialog';
-import type { DispatchGroupRow } from './types'; // donde lo pongas
+import { ChevronDown, ChevronRight, Package } from 'lucide-react';
+import { DispatchGroupRow } from './page';
 
 export const columns: ColumnDef<DispatchGroupRow>[] = [
   {
