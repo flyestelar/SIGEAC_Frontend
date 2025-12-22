@@ -31,6 +31,7 @@ const FormSchema = z.object({
     .string({ message: 'La justificación debe ser válida.' })
     .min(2, { message: 'La justificación debe ser válida.' }),
   company: z.string(),
+  work_order: z.string(),
   location_id: z.string(),
   aircraft_id: z.string().optional(),
   created_by: z.string(),
@@ -241,6 +242,20 @@ export function CreateGeneralRequisitionForm({ onClose, initialData, isEditing, 
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col space-y-3">
         <div className="flex gap-2 items-center justify-center">
+          <FormField
+            control={form.control}
+            name="work_order"
+            render={
+              ({field}) => (
+                <FormItem>
+                  <FormLabel>Justificación</FormLabel>
+                   <FormControl>
+                  <Input placeholder="Ej: Ingrese orden de trabajo..." {...field} />
+                  </FormControl>
+                  <FormMessage className="text-xs" />
+                </FormItem>
+              )
+            }
           <FormField
             control={form.control}
             name="requested_by"
@@ -522,6 +537,7 @@ export function CreateGeneralRequisitionForm({ onClose, initialData, isEditing, 
             </FormItem>
           )}
         />
+        
         <FormField
           control={form.control}
           name="justification"
