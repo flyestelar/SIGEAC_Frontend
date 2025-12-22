@@ -54,6 +54,7 @@ const FormSchema = z.object({
     message: "La justificación debe tener al menos 2 caracteres."
   }),
   company: z.string(),
+  work_order: z.string({message: "Debe ingresar una orden de trabajo."}),
   aircraft_id: z.string({ message: "Debe elegir una aeronave." }),
   location_id: z.string(),
   type: z.string({ required_error: "Debe seleccionar un tipo de requisición." }),
@@ -609,6 +610,22 @@ const CreateRequisitionPage = () => {
                   <FormControl>
                     <Textarea
                       placeholder="Ej: Necesidad de la pieza X para instalación..."
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage className="text-xs" />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="work_order"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Orden de Trabajo</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="Ej: Ingrese la orden de trabajo..."
                       {...field}
                     />
                   </FormControl>
