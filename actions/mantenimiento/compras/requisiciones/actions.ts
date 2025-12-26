@@ -3,25 +3,28 @@ import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
 
 interface CreateRequisitionData {
-  justification: string,
-  requested_by: string,
-  created_by: number | string,
-  aircraft_id?: string,
-  work_order_id?: string,
-  type: string,
-  image?: File,
+  justification: string;
+  requested_by: string;
+  created_by: number | string;
+  aircraft_id?: string;
+  work_order_id?: string;
+  work_order?: string; // ESTE ES EL NOMBRE COMO STRING DE LA WO , TEMPORALMENTE HASTA TENER CARGADAS LAS WO EN LA BD
+  type: string;
+  image?: File;
+  location_id: number;
+  company: string;
   articles: {
-    batch: string,
-    batch_name: string,
+    batch: string;
+    batch_name: string;
     batch_articles: {
-      quantity: number,
-      part_number?: string,
-      alt_part_number?: string,
-      pma?: string,
-      unit?: string | number,
-      image?: File,
-    }[]
-  }[]
+      quantity: number;
+      part_number?: string;
+      alt_part_number?: string;
+      pma?: string;
+      unit?: string | number;
+      image?: File;
+    }[];
+  }[];
 }
 
 export const useCreateRequisition = () => {

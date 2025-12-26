@@ -5,40 +5,37 @@ import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/contexts/AuthContext';
+import { useGetAircrafts } from '@/hooks/aerolinea/aeronaves/useGetAircrafts';
 import { useGetSecondaryUnits } from '@/hooks/general/unidades/useGetSecondaryUnits';
 import { useGetBatchesByLocationId } from '@/hooks/mantenimiento/almacen/renglones/useGetBatchesByLocationId';
-import { useGetMaintenanceAircrafts } from '@/hooks/planificacion/useGetMaintenanceAircrafts';
 import { useGetEmployeesByDepartment } from '@/hooks/sistema/useGetEmployeesByDepartament';
 import { cn } from '@/lib/utils';
 import { useCompanyStore } from '@/stores/CompanyStore';
 import { Employee } from '@/types';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Check, ChevronsUpDown, Loader2, MinusCircle } from 'lucide-react';
-import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '../../../ui/command';
-import { Popover, PopoverContent, PopoverTrigger } from '../../../ui/popover';
-import { ScrollArea } from '../../../ui/scroll-area';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../ui/select';
-import { Separator } from '../../../ui/separator';
-import { Textarea } from '../../../ui/textarea';
-import { useGetAircrafts } from '@/hooks/aerolinea/aeronaves/useGetAircrafts';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Separator } from '@/components/ui/separator';
+import { Textarea } from '@/components/ui/textarea';
 
 const FormSchema = z.object({
   justification: z
     .string({ message: 'La justificación debe ser válida.' })
     .min(2, { message: 'La justificación debe ser válida.' }),
-  company: z.string(),
-  location_id: z.string(),
   aircraft_id: z.string().optional(),
+  work_order: z.string().optional(),
   created_by: z.string(),
   requested_by: z.string({ message: 'Debe ingresar quien lo solicita.' }),
-  image: z
+  document: z
     .instanceof(File)
-    .refine((file) => file.size <= 5 * 1024 * 1024, 'Max 5MB')
-    .refine((file) => ['image/jpeg', 'image/png'].includes(file.type), 'Solo JPEG/PNG')
+    .refine((file) => file.size <= 5 * 1024 * 1024, 'Máximo 5MB')
+    .refine((file) => file.type === 'application/pdf', 'Solo se permiten archivos PDF')
     .optional(),
   articles: z
     .array(
@@ -92,7 +89,7 @@ interface Batch {
   batch_articles: Article[];
 }
 
-export function CreateGeneralRequisitionForm({ onClose, initialData, isEditing, id }: FormProps) {
+export function CreateWarehouseRequisitionForm({ onClose, initialData, isEditing, id }: FormProps) {
   const { user } = useAuth();
 
   const { mutate, data, isPending: isBatchesLoading } = useGetBatchesByLocationId();
@@ -125,16 +122,17 @@ export function CreateGeneralRequisitionForm({ onClose, initialData, isEditing, 
       articles: [],
     },
   });
-
+  console.log('ZOD ERRORS:', form.formState.errors);
+  console.log('Valores actuales del formulario:', form.watch());
   useEffect(() => {
     if (user && selectedCompany && selectedStation) {
       form.setValue('created_by', user.id.toString());
-      form.setValue('company', selectedCompany.slug);
-      form.setValue('location_id', selectedStation);
+      //form.setValue('company', selectedCompany.slug);
+      //form.setValue('location_id', selectedStation);
     }
     if (initialData && selectedCompany) {
       form.reset(initialData); // Set initial form values
-      form.setValue('company', selectedCompany.slug);
+      //form.setValue('company', selectedCompany.slug);
     }
   }, [user, initialData, form, selectedCompany, selectedStation]);
 
@@ -227,7 +225,9 @@ export function CreateGeneralRequisitionForm({ onClose, initialData, isEditing, 
   const onSubmit = async (data: FormSchemaType) => {
     const formattedData = {
       ...data,
-      type: 'AVIACION',
+      type: 'WAREHOUSE',
+      location_id: Number(selectedStation),
+      company: selectedCompany!.slug,
     };
     if (isEditing) {
       await updateRequisition.mutateAsync({ id: id!, data: formattedData, company: selectedCompany!.slug });
@@ -298,24 +298,17 @@ export function CreateGeneralRequisitionForm({ onClose, initialData, isEditing, 
               </FormItem>
             )}
           />
+
           <FormField
             control={form.control}
-            name="aircraft_id"
+            name="work_order"
             render={({ field }) => (
               <FormItem className="w-full">
-                <FormLabel>Tipo de Req.</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={'AVIACION'}>
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Seleccione.." />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    <SelectItem value="AVIACION">Aviacion</SelectItem>
-                    <SelectItem value="GENERAL">General</SelectItem>
-                  </SelectContent>
-                </Select>
-                <FormMessage />
+                <FormLabel>Nº de Orden de Trabajo</FormLabel>
+                <FormControl>
+                  <Input placeholder="Ej: 281025-B1-01" {...field} />
+                </FormControl>
+                <FormMessage className="text-xs" />
               </FormItem>
             )}
           />
@@ -537,24 +530,19 @@ export function CreateGeneralRequisitionForm({ onClose, initialData, isEditing, 
         />
         <FormField
           control={form.control}
-          name="image"
+          name="document"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Imagen General</FormLabel>
+              <FormLabel>Documento</FormLabel>
               <div className="flex items-center gap-4">
                 {field.value && (
-                  <Image
-                    src={URL.createObjectURL(field.value)}
-                    alt="Preview"
-                    className="h-16 w-16 rounded-md object-cover"
-                  />
+                  <div>
+                    <p className="text-sm text-gray-500">Archivo seleccionado:</p>
+                    <p className="font-semibold text-sm">{field.value.name}</p>
+                  </div>
                 )}
                 <FormControl>
-                  <Input
-                    type="file"
-                    accept="image/jpeg, image/png"
-                    onChange={(e) => field.onChange(e.target.files?.[0])}
-                  />
+                  <Input type="file" accept="application/pdf" onChange={(e) => field.onChange(e.target.files?.[0])} />
                 </FormControl>
               </div>
               <FormMessage />
