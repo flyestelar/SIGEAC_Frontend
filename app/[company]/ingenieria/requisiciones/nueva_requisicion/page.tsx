@@ -74,15 +74,16 @@ interface BackendAircraft {
 
 const FormSchema = z.object({
   company: z.string(),
+  work_order: z.string().optional(),
   location_id: z.string(),
-  work_order_id: z.string(),
+  work_order_id: z.string().optional(),
   created_by: z.string(),
-  requested_by: z.string({ required_error: "Debe ingresar quien lo solicita." }),
+  requested_by: z.string({ required_error: 'Debe ingresar quien lo solicita.' }),
   type: z.string(),
   image: z
     .instanceof(File)
-    .refine(file => file.size <= 5 * 1024 * 1024, "Max 5MB")
-    .refine(file => ["image/jpeg", "image/png"].includes(file.type), "Solo JPEG/PNG")
+    .refine((file) => file.size <= 5 * 1024 * 1024, 'Max 5MB')
+    .refine((file) => ['image/jpeg', 'image/png'].includes(file.type), 'Solo JPEG/PNG')
     .optional(),
   aircrafts: z.array(
     z.object({
@@ -94,19 +95,19 @@ const FormSchema = z.object({
             z.object({
               part_number: z.string().optional(),
               alt_part_number: z.string().optional(),
-              manual: z.string({ required_error: "Debe ingresar un manual de referencia." }),
-              reference_cod: z.string({ required_error: "Debe ingresar el código de referencia." }),
+              manual: z.string({ required_error: 'Debe ingresar un manual de referencia.' }),
+              reference_cod: z.string({ required_error: 'Debe ingresar el código de referencia.' }),
               pma: z.string().optional(),
-              quantity: z.number().min(1, "Debe ingresar una cantidad válida"),
+              quantity: z.number().min(1, 'Debe ingresar una cantidad válida'),
               image: z.instanceof(File).optional(),
               unit: z.string().optional(),
               observation: z.string().optional(),
               certificates: z.array(z.string()).optional(),
-            })
+            }),
           ),
-        })
+        }),
       ),
-    })
+    }),
   ),
 });
 
@@ -131,7 +132,7 @@ const CreateRequisitionPage = () => {
   const form = useForm<FormSchemaType>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
-      type: "AVIACION",
+      type: "ENGINEERING",
       requested_by: "",
       created_by: `${user?.username}`,
       aircrafts: [],
@@ -300,9 +301,39 @@ const CreateRequisitionPage = () => {
 
 
   const onSubmit = async (data: FormSchemaType) => {
-    // await createRequisition.mutateAsync({ data: { ...data, aircrafts: aircraftsData }, company: selectedCompany!.slug });
-    // router.push(`/${selectedCompany!.slug}/general/requisiciones`);
-    console.log(data)
+    const articlesArray = data.aircrafts.flatMap((aircraft) =>
+      aircraft.articles.flatMap((batch) => ({
+        batch: batch.batch_id,
+        batch_name: batches?.find((b) => b.id.toString() === batch.batch_id)?.name || '',
+        batch_articles: batch.batch_articles.map((article) => ({
+          quantity: article.quantity,
+          part_number: article.part_number,
+          alt_part_number: article.alt_part_number,
+          pma: article.pma,
+          unit: article.unit,
+          image: article.image,
+        })),
+      })),
+    );
+
+    const requisitionData = {
+      type: 'ENGINEERING',
+      company: selectedCompany!.slug,
+      location_id: data.location_id,
+      // work_order_id: data.work_order_id,
+      work_order: data.work_order,
+      created_by: data.created_by,
+      requested_by: data.requested_by,
+      articles: articlesArray, // Asegúrate de incluir esta propiedad
+      image: data.image,
+    };
+
+    await createRequisition.mutateAsync({
+      data: requisitionData,
+      company: selectedCompany!.slug,
+    });
+    router.push(`/${selectedCompany!.slug}/general/requisiciones`);
+    console.log(requisitionData);
   };
 
   useEffect(() => {
@@ -318,7 +349,7 @@ const CreateRequisitionPage = () => {
         </p>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col space-y-3">
-            <div className="flex gap-2">
+            <div className="flex gap-2 items-center ">
               {/* Solicitante */}
               <FormField
                 control={form.control}
@@ -333,12 +364,12 @@ const CreateRequisitionPage = () => {
                             disabled={employeesLoading}
                             variant="outline"
                             role="combobox"
-                            className={cn("justify-between", !field.value && "text-muted-foreground")}
+                            className={cn('justify-between', !field.value && 'text-muted-foreground')}
                           >
                             {employeesLoading && <Loader2 className="size-4 animate-spin mr-2" />}
                             {field.value
-                              ? `${employees?.find(e => `${e.dni}` === field.value)?.first_name} ${employees?.find(e => `${e.dni}` === field.value)?.last_name}`
-                              : "Elige al solicitante..."}
+                              ? `${employees?.find((e) => `${e.dni}` === field.value)?.first_name} ${employees?.find((e) => `${e.dni}` === field.value)?.last_name}`
+                              : 'Elige al solicitante...'}
                             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                           </Button>
                         </FormControl>
@@ -347,15 +378,22 @@ const CreateRequisitionPage = () => {
                         <Command>
                           <CommandInput placeholder="Busque un empleado..." />
                           <CommandList>
-                            <CommandEmpty className="text-sm p-2 text-center">No se ha encontrado ningún empleado.</CommandEmpty>
+                            <CommandEmpty className="text-sm p-2 text-center">
+                              No se ha encontrado ningún empleado.
+                            </CommandEmpty>
                             <CommandGroup>
-                              {employees?.map(employee => (
+                              {employees?.map((employee) => (
                                 <CommandItem
                                   value={`${employee.dni}`}
                                   key={employee.id}
-                                  onSelect={() => form.setValue("requested_by", `${employee.dni}`)}
+                                  onSelect={() => form.setValue('requested_by', `${employee.dni}`)}
                                 >
-                                  <Check className={cn("mr-2 h-4 w-4", `${employee.dni}` === field.value ? "opacity-100" : "opacity-0")} />
+                                  <Check
+                                    className={cn(
+                                      'mr-2 h-4 w-4',
+                                      `${employee.dni}` === field.value ? 'opacity-100' : 'opacity-0',
+                                    )}
+                                  />
                                   {employee.first_name} {employee.last_name}
                                 </CommandItem>
                               ))}
@@ -370,7 +408,7 @@ const CreateRequisitionPage = () => {
               />
               {/* Orden de Trabajo */}
 
-              <FormField
+              {/* <FormField
                 control={form.control}
                 name="work_order_id"
                 render={({ field }) => (
@@ -420,7 +458,22 @@ const CreateRequisitionPage = () => {
                     <FormMessage />
                   </FormItem>
                 )}
+              /> */}
+
+              <FormField
+                control={form.control}
+                name="work_order"
+                render={({ field }) => (
+                  <FormItem className="w-full h-70">
+                    <FormLabel>Nº de Orden de Trabajo</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Ej: 281025-B1-01" {...field} />
+                    </FormControl>
+                    <FormMessage className="text-xs" />
+                  </FormItem>
+                )}
               />
+
               {/* Aeronaves */}
               <FormField
                 control={form.control}
@@ -431,7 +484,9 @@ const CreateRequisitionPage = () => {
                     <Popover open={openAircraft} onOpenChange={setOpenAircraft}>
                       <PopoverTrigger asChild>
                         <Button disabled={isAircraftsLoading} variant="outline" className="justify-between">
-                          {selectedAircrafts.length > 0 ? `${selectedAircrafts.length} seleccionadas` : "Seleccione aeronave(s)..."}
+                          {selectedAircrafts.length > 0
+                            ? `${selectedAircrafts.length} seleccionadas`
+                            : 'Seleccione aeronave(s)...'}
                           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                         </Button>
                       </PopoverTrigger>
@@ -441,9 +496,18 @@ const CreateRequisitionPage = () => {
                           <CommandList>
                             <CommandEmpty>No hay aeronaves disponibles.</CommandEmpty>
                             <CommandGroup>
-                              {aircrafts?.map(aircraft => (
-                                <CommandItem key={aircraft.id} value={aircraft.id.toString()} onSelect={() => handleAircraftSelect(aircraft.id.toString())}>
-                                  <Check className={cn("mr-2 h-4 w-4", isAircraftSelected(aircraft.id.toString()) ? "opacity-100" : "opacity-0")} />
+                              {aircrafts?.map((aircraft) => (
+                                <CommandItem
+                                  key={aircraft.id}
+                                  value={aircraft.id.toString()}
+                                  onSelect={() => handleAircraftSelect(aircraft.id.toString())}
+                                >
+                                  <Check
+                                    className={cn(
+                                      'mr-2 h-4 w-4',
+                                      isAircraftSelected(aircraft.id.toString()) ? 'opacity-100' : 'opacity-0',
+                                    )}
+                                  />
                                   {aircraft.acronym}
                                 </CommandItem>
                               ))}
@@ -457,8 +521,8 @@ const CreateRequisitionPage = () => {
               />
             </div>
             {/* Batches + Artículos por Aeronave */}
-            {aircraftsData.map(a => {
-              const aircraftInfo = aircrafts?.find(ac => ac.id.toString() === a.aircraft_id);
+            {aircraftsData.map((a) => {
+              const aircraftInfo = aircrafts?.find((ac) => ac.id.toString() === a.aircraft_id);
               return (
                 <div key={a.aircraft_id} className="border p-4 rounded-lg space-y-4">
                   <h3 className="font-semibold">Aeronave: {aircraftInfo?.acronym}</h3>
@@ -467,9 +531,7 @@ const CreateRequisitionPage = () => {
                   <Popover>
                     <PopoverTrigger asChild>
                       <Button variant="outline" className="w-[200px] justify-between">
-                        {a.articles.length > 0
-                          ? `${a.articles.length} renglones selec...`
-                          : "Selec. renglón(es)..."}
+                        {a.articles.length > 0 ? `${a.articles.length} renglones selec...` : 'Selec. renglón(es)...'}
                         <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                       </Button>
                     </PopoverTrigger>
@@ -479,8 +541,10 @@ const CreateRequisitionPage = () => {
                         <CommandList>
                           <CommandEmpty>No hay renglones disponibles.</CommandEmpty>
                           <CommandGroup>
-                            <div className="flex justify-center m-2"><CreateBatchDialog /></div>
-                            {batches?.map(batch => (
+                            <div className="flex justify-center m-2">
+                              <CreateBatchDialog />
+                            </div>
+                            {batches?.map((batch) => (
                               <CommandItem
                                 key={batch.id}
                                 value={batch.id.toString()}
@@ -488,10 +552,10 @@ const CreateRequisitionPage = () => {
                               >
                                 <Check
                                   className={cn(
-                                    "mr-2 h-4 w-4",
-                                    a.articles.some(b => b.batch_id === batch.id.toString())
-                                      ? "opacity-100"
-                                      : "opacity-0"
+                                    'mr-2 h-4 w-4',
+                                    a.articles.some((b) => b.batch_id === batch.id.toString())
+                                      ? 'opacity-100'
+                                      : 'opacity-0',
                                   )}
                                 />
                                 {batch.name}
@@ -505,34 +569,40 @@ const CreateRequisitionPage = () => {
 
                   {/* Artículos por Batch */}
                   <div className="space-y-4">
-                    {a.articles.map(batch => {
-                      const batchInfo = batches?.find(b => b.id.toString() === batch.batch_id);
+                    {a.articles.map((batch) => {
+                      const batchInfo = batches?.find((b) => b.id.toString() === batch.batch_id);
 
                       return (
                         <div key={batch.batch_id} className="border p-3 rounded-md space-y-3 bg-gray-50">
                           <div className="flex justify-between items-center">
-                            <h4 className="font-medium">{batchInfo?.name || "Lote sin nombre"}</h4>
+                            <h4 className="font-medium">{batchInfo?.name || 'Lote sin nombre'}</h4>
                             <Button
                               variant="ghost"
                               size="sm"
                               onClick={() => removeBatchFromAircraft(a.aircraft_id, batch.batch_id)}
                               className="text-red-500"
                             >
-                              <MinusCircle className="mr-1" />Eliminar lote
+                              <MinusCircle className="mr-1" />
+                              Eliminar lote
                             </Button>
                           </div>
 
                           {batch.batch_articles.map((article, index) => (
                             <div key={index} className="p-4 border rounded-md bg-white space-y-4">
                               <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-
                                 <div className="flex flex-col justify-center gap-2">
                                   <Label>N° de Parte</Label>
                                   <Input
                                     placeholder="N° de parte"
                                     value={article.part_number}
-                                    onChange={e =>
-                                      handleArticleChange(a.aircraft_id, batch.batch_id, index, "part_number", e.target.value)
+                                    onChange={(e) =>
+                                      handleArticleChange(
+                                        a.aircraft_id,
+                                        batch.batch_id,
+                                        index,
+                                        'part_number',
+                                        e.target.value,
+                                      )
                                     }
                                   />
                                 </div>
@@ -541,9 +611,15 @@ const CreateRequisitionPage = () => {
                                   <Label>N/P Alterno</Label>
                                   <Input
                                     placeholder="N/P Alterno"
-                                    value={article.alt_part_number || ""}
-                                    onChange={e =>
-                                      handleArticleChange(a.aircraft_id, batch.batch_id, index, "alt_part_number", e.target.value)
+                                    value={article.alt_part_number || ''}
+                                    onChange={(e) =>
+                                      handleArticleChange(
+                                        a.aircraft_id,
+                                        batch.batch_id,
+                                        index,
+                                        'alt_part_number',
+                                        e.target.value,
+                                      )
                                     }
                                   />
                                 </div>
@@ -553,8 +629,14 @@ const CreateRequisitionPage = () => {
                                   <Input
                                     placeholder="Manual"
                                     value={article.manual}
-                                    onChange={e =>
-                                      handleArticleChange(a.aircraft_id, batch.batch_id, index, "manual", e.target.value)
+                                    onChange={(e) =>
+                                      handleArticleChange(
+                                        a.aircraft_id,
+                                        batch.batch_id,
+                                        index,
+                                        'manual',
+                                        e.target.value,
+                                      )
                                     }
                                   />
                                 </div>
@@ -564,22 +646,27 @@ const CreateRequisitionPage = () => {
                                   <Input
                                     placeholder="Código Referencia"
                                     value={article.reference_cod}
-                                    onChange={e =>
-                                      handleArticleChange(a.aircraft_id, batch.batch_id, index, "reference_cod", e.target.value)
+                                    onChange={(e) =>
+                                      handleArticleChange(
+                                        a.aircraft_id,
+                                        batch.batch_id,
+                                        index,
+                                        'reference_cod',
+                                        e.target.value,
+                                      )
                                     }
                                   />
                                 </div>
                               </div>
 
                               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-
                                 <div className="flex flex-col gap-2">
                                   <Label>PMA</Label>
                                   <Input
                                     placeholder="PMA"
-                                    value={article.pma || ""}
-                                    onChange={e =>
-                                      handleArticleChange(a.aircraft_id, batch.batch_id, index, "pma", e.target.value)
+                                    value={article.pma || ''}
+                                    onChange={(e) =>
+                                      handleArticleChange(a.aircraft_id, batch.batch_id, index, 'pma', e.target.value)
                                     }
                                   />
                                 </div>
@@ -588,13 +675,15 @@ const CreateRequisitionPage = () => {
                                   <Label>Unidad</Label>
                                   <Select
                                     value={article.unit}
-                                    onValueChange={v =>
-                                      handleArticleChange(a.aircraft_id, batch.batch_id, index, "unit", v)
+                                    onValueChange={(v) =>
+                                      handleArticleChange(a.aircraft_id, batch.batch_id, index, 'unit', v)
                                     }
                                   >
-                                    <SelectTrigger><SelectValue placeholder="Unidad Secundaria" /></SelectTrigger>
+                                    <SelectTrigger>
+                                      <SelectValue placeholder="Unidad Secundaria" />
+                                    </SelectTrigger>
                                     <SelectContent>
-                                      {secondaryUnits?.map(u => (
+                                      {secondaryUnits?.map((u) => (
                                         <SelectItem key={u.id} value={u.id.toString()}>
                                           {u.secondary_unit}
                                         </SelectItem>
@@ -609,8 +698,14 @@ const CreateRequisitionPage = () => {
                                     type="number"
                                     placeholder="Cantidad"
                                     value={article.quantity}
-                                    onChange={e =>
-                                      handleArticleChange(a.aircraft_id, batch.batch_id, index, "quantity", Number(e.target.value))
+                                    onChange={(e) =>
+                                      handleArticleChange(
+                                        a.aircraft_id,
+                                        batch.batch_id,
+                                        index,
+                                        'quantity',
+                                        Number(e.target.value),
+                                      )
                                     }
                                   />
                                 </div>
@@ -620,16 +715,28 @@ const CreateRequisitionPage = () => {
                                   <Input
                                     type="file"
                                     accept="image/*"
-                                    onChange={e =>
-                                      handleArticleChange(a.aircraft_id, batch.batch_id, index, "image", e.target.files?.[0])
+                                    onChange={(e) =>
+                                      handleArticleChange(
+                                        a.aircraft_id,
+                                        batch.batch_id,
+                                        index,
+                                        'image',
+                                        e.target.files?.[0],
+                                      )
                                     }
                                   />
                                 </div>
                                 <div className="flex flex-col gap-2 col-span-4">
                                   <Label>Observaciones</Label>
                                   <Textarea
-                                    onChange={e =>
-                                      handleArticleChange(a.aircraft_id, batch.batch_id, index, "observation", e.target.value)
+                                    onChange={(e) =>
+                                      handleArticleChange(
+                                        a.aircraft_id,
+                                        batch.batch_id,
+                                        index,
+                                        'observation',
+                                        e.target.value,
+                                      )
                                     }
                                   />
                                 </div>
@@ -661,7 +768,9 @@ const CreateRequisitionPage = () => {
               );
             })}
             <div className="flex justify-center">
-              <Button type="submit" className="mt-4">Crear Solicitud</Button>
+              <Button type="submit" className="mt-4">
+                Crear Solicitud
+              </Button>
             </div>
           </form>
         </Form>
