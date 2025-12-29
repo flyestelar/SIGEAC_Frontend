@@ -13,7 +13,7 @@ import { cn } from '@/lib/utils';
 import { useCompanyStore } from '@/stores/CompanyStore';
 import { Employee } from '@/types';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Check, ChevronsUpDown, Loader2, MinusCircle } from 'lucide-react';
+import { Check, ChevronsUpDown, FileText, Loader2, MinusCircle, Trash2, Upload } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -33,9 +33,9 @@ const FormSchema = z.object({
   created_by: z.string(),
   requested_by: z.string({ message: 'Debe ingresar quien lo solicita.' }),
   document: z
-    .instanceof(File)
-    .refine((file) => file.size <= 5 * 1024 * 1024, 'Máximo 5MB')
-    .refine((file) => file.type === 'application/pdf', 'Solo se permiten archivos PDF')
+    .array(z.instanceof(File))
+    .refine((files) => files.every((file) => file.size <= 5 * 1024 * 1024), 'Cada archivo PDF debe ser menor a 5MB')
+    .refine((files) => files.every((file) => file.type === 'application/pdf'), 'Solo se permiten archivos PDF')
     .optional(),
   articles: z
     .array(
@@ -483,9 +483,7 @@ export function CreateWarehouseRequisitionForm({ onClose, initialData, isEditing
                               type="file"
                               accept="image/*"
                               className="cursor-pointer"
-                              onChange={(e) =>
-                                handleArticleChange(batch.batch, index, "image", e.target.files?.[0])
-                              }
+                              onChange={(e) => handleArticleChange(batch.batch, index, 'image', e.target.files?.[0])}
                             />
                             <Button
                               variant="ghost"
@@ -531,23 +529,129 @@ export function CreateWarehouseRequisitionForm({ onClose, initialData, isEditing
         <FormField
           control={form.control}
           name="document"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Documento</FormLabel>
-              <div className="flex items-center gap-4">
-                {field.value && (
-                  <div>
-                    <p className="text-sm text-gray-500">Archivo seleccionado:</p>
-                    <p className="font-semibold text-sm">{field.value.name}</p>
+          render={({ field }) => {
+            // Asegurarnos de que siempre trabajemos con un array
+            const files = field.value || [];
+
+            // Función para manejar la selección con validación
+            const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+              const selectedFiles = e.target.files;
+              if (selectedFiles) {
+                const fileArray = Array.from(selectedFiles);
+
+                // Validar que sean PDFs
+                const pdfFiles = fileArray.filter(
+                  (file) => file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf'),
+                );
+
+                // Validar tamaño (5MB)
+                const validFiles = pdfFiles.filter((file) => file.size <= 5 * 1024 * 1024);
+
+                // Mostrar alertas para archivos inválidos
+                fileArray.forEach((file) => {
+                  const isPDF = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
+                  const isSizeValid = file.size <= 5 * 1024 * 1024;
+
+                  if (!isPDF) {
+                    alert(`"${file.name}" no es un PDF y será ignorado.`);
+                  } else if (!isSizeValid) {
+                    alert(`"${file.name}" excede el límite de 5MB.`);
+                  }
+                });
+
+                if (validFiles.length > 0) {
+                  const newFiles = [...files, ...validFiles];
+                  field.onChange(newFiles);
+                }
+              }
+
+              // Limpiar el input para permitir seleccionar el mismo archivo nuevamente
+              e.target.value = '';
+            };
+
+            return (
+              <FormItem>
+                <FormLabel>Documentos PDF Adjuntos</FormLabel>
+                <div className="space-y-4">
+                  {/* Área de carga */}
+                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 hover:border-gray-400 transition-colors">
+                    <div className="flex items-center gap-3">
+                      <Upload className="h-5 w-5 text-gray-400" />
+                      <div className="flex-1">
+                        <FormControl>
+                          <Input
+                            type="file"
+                            multiple
+                            accept=".pdf,application/pdf"
+                            onChange={handleFileChange}
+                            className="cursor-pointer"
+                          />
+                        </FormControl>
+                        <p className="text-xs text-gray-500 mt-1">
+                          Arrastra o selecciona archivos PDF (máx. 5MB cada uno)
+                        </p>
+                      </div>
+                    </div>
                   </div>
-                )}
-                <FormControl>
-                  <Input type="file" accept="application/pdf" onChange={(e) => field.onChange(e.target.files?.[0])} />
-                </FormControl>
-              </div>
-              <FormMessage />
-            </FormItem>
-          )}
+
+                  {/* Lista de archivos */}
+                  {files.length > 0 && (
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium">Archivos seleccionados ({files.length})</span>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => field.onChange([])}
+                          className="text-red-500 hover:text-red-700"
+                        >
+                          <Trash2 className="h-4 w-4 mr-1" />
+                          Limpiar todos
+                        </Button>
+                      </div>
+
+                      <div className="space-y-2 max-h-60 overflow-y-auto">
+                        {files.map((file: File, index: number) => (
+                          <div
+                            key={`${file.name}-${index}`}
+                            className="flex items-center justify-between p-3 border-black rounded-md"
+                          >
+                            <div className="flex items-center gap-3">
+                              <div className="bg-red-100 p-2 rounded">
+                                <FileText className="h-4 w-4 text-red-600" />
+                              </div>
+                              <div>
+                                <p className="font-medium text-sm truncate max-w-xs">{file.name}</p>
+                                <div className="flex items-center gap-3 text-xs text-gray-500">
+                                  <span>{(file.size / 1024).toFixed(0)} KB</span>
+                                  <span>•</span>
+                                  <span className="px-1.5 py-0.5 bg-red-100 text-red-700 rounded">PDF</span>
+                                </div>
+                              </div>
+                            </div>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => {
+                                const updatedFiles = files.filter((_: File, i: number) => i !== index);
+                                field.onChange(updatedFiles);
+                              }}
+                              className="h-8 w-8 p-0 hover:bg-red-50"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+                <FormMessage />
+              </FormItem>
+            );
+          }}
         />
         <div className="flex justify-between items-center gap-x-4">
           <Separator className="flex-1" />

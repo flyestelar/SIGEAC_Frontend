@@ -10,7 +10,8 @@ interface CreateRequisitionData {
   work_order_id?: string;
   work_order?: string; // ESTE ES EL NOMBRE COMO STRING DE LA WO , TEMPORALMENTE HASTA TENER CARGADAS LAS WO EN LA BD
   type: string;
-  image?: File;
+  //image?: File;
+  document?: File[];
   location_id: number | string;
   company: string;
   articles: {
