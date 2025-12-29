@@ -479,14 +479,14 @@ export function CreateWarehouseRequisitionForm({ onClose, initialData, isEditing
                                 handleArticleChange(batch.batch, index, 'quantity', Number(e.target.value))
                               }
                             />
-                            {/* <Input
+                            <Input
                               type="file"
                               accept="image/*"
                               className="cursor-pointer"
                               onChange={(e) =>
                                 handleArticleChange(batch.batch, index, "image", e.target.files?.[0])
                               }
-                            /> */}
+                            />
                             <Button
                               variant="ghost"
                               type="button"
