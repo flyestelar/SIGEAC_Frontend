@@ -12,10 +12,11 @@ interface DocumentDisplayDialogProps {
   fileName: string;
   isPublic?: boolean;
   className?: string; // 1. Agregamos la prop opcional a la interfaz
+  title?: string;
 }
 
 // 2. Desestructuramos className de las props
-function DocumentDisplayDialog({ fileName, isPublic = false, className }: DocumentDisplayDialogProps) {
+function DocumentDisplayDialog({ fileName, isPublic = false, title = 'Ver', className }: DocumentDisplayDialogProps) {
   const { selectedCompany } = useCompanyStore();
   const [isOpen, setIsOpen] = useState(false);
   const [hasFetched, setHasFetched] = useState(false);
@@ -59,7 +60,7 @@ function DocumentDisplayDialog({ fileName, isPublic = false, className }: Docume
       <DialogTrigger asChild>
         {/* 3. Usamos cn() para mezclar las clases base con la prop externa */}
         <Button variant="outline" size="sm" className={cn('h-10 gap-2', className)} title="Ver documento">
-          <EyeIcon className="h-5 w-5" />
+          {title} <EyeIcon className="h-4 w-4" />
         </Button>
       </DialogTrigger>
 
