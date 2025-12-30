@@ -197,7 +197,12 @@ const RequisitionPage = () => {
         <CardFooter className="flex gap-2 justify-end">
           {Array.isArray(data?.document) &&
             data.document.map((doc, idx) => (
-              <DocumentDisplayDialog key={idx} fileName={doc} isPublic={true} title={doc.split('/').pop()} />
+              <DocumentDisplayDialog
+                key={idx}
+                fileName={doc}
+                isPublic={true}
+                title={doc.substring(doc.lastIndexOf('/') + 1)}
+              />
             ))}
           <Button
             onClick={() => setOpenDelete(true)}
