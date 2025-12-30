@@ -195,7 +195,7 @@ const RequisitionPage = () => {
         </CardContent>
 
         <CardFooter className="flex gap-2 justify-end">
-          {data?.document && <DocumentDisplayDialog fileName={data?.document} isPublic={true} className="flex" />}
+          
           <Button
             onClick={() => setOpenDelete(true)}
             variant={'destructive'}

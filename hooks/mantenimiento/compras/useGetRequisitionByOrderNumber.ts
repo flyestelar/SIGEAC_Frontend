@@ -8,7 +8,7 @@ interface Requisition {
   created_by: User,
   requested_by: string,
   received_by: string,
-  document?: string,
+  document?: string[],
   image?:string,
   justification: string,
   arrival_date: Date,

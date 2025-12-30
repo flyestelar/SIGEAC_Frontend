@@ -29,7 +29,7 @@ export function CreateRequisitionDialog() {
           Nueva Solicitud
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[680px]">
+      <DialogContent className="sm:max-w-[680px] max-h-[900px] overflow-auto">
         <DialogHeader>
           <DialogTitle>Solicitud de Material Faltante</DialogTitle>
           <DialogDescription>
