@@ -1,10 +1,13 @@
 'use client';
 
+import React, { Fragment, useMemo, useState } from 'react';
 import {
   ColumnDef,
   ColumnFiltersState,
+  ExpandedState,
   flexRender,
   getCoreRowModel,
+  getExpandedRowModel,
   getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
@@ -13,39 +16,52 @@ import {
 } from '@tanstack/react-table';
 
 import { RegisterDispatchRequestDialog } from '@/components/dialogs/mantenimiento/almacen/RegisterDispatchRequestDialog';
+import { DispatchReportDialog } from '@/components/dialogs/mantenimiento/almacen/DispatchReportDialog';
 import { DataTablePagination } from '@/components/tables/DataTablePagination';
 import { DataTableViewOptions } from '@/components/tables/DataTableViewOptions';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { useRouter } from 'next/navigation';
-import { useState } from 'react';
-import { DispatchReportDialog } from '@/components/dialogs/mantenimiento/almacen/DispatchReportDialog';
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
+  // ✅ opcional: si quieres un “detalle” custom por pantalla
+  renderSubComponent?: (row: TData) => React.ReactNode;
+  // ✅ si una fila puede expandirse (por defecto: true)
+  canExpandRow?: (row: TData) => boolean;
 }
 
-export function DataTable<TData, TValue>({ columns, data }: DataTableProps<TData, TValue>) {
+export function DataTable<TData, TValue>({
+  columns,
+  data,
+  renderSubComponent,
+  canExpandRow,
+}: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+  const [expanded, setExpanded] = useState<ExpandedState>({});
+
   const table = useReactTable({
     data,
     columns,
-    getCoreRowModel: getCoreRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
-    onSortingChange: setSorting,
-    onColumnFiltersChange: setColumnFilters,
-    getSortedRowModel: getSortedRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
     state: {
       sorting,
       columnFilters,
+      expanded,
     },
+    onSortingChange: setSorting,
+    onColumnFiltersChange: setColumnFilters,
+    onExpandedChange: setExpanded,
+
+    getCoreRowModel: getCoreRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
+    getExpandedRowModel: getExpandedRowModel(),
+
+    getRowCanExpand: (row) => (canExpandRow ? canExpandRow(row.original) : true),
   });
 
-  const router = useRouter();
-
-  const isFiltered = table.getState().columnFilters.length > 0;
+  const visibleColumnCount = table.getVisibleLeafColumns().length;
 
   return (
     <>
@@ -54,31 +70,43 @@ export function DataTable<TData, TValue>({ columns, data }: DataTableProps<TData
           <RegisterDispatchRequestDialog />
           <DispatchReportDialog />
         </div>
-        <DataTableViewOptions table={table} />
+        <div className="ml-auto">
+          <DataTableViewOptions table={table} />
+        </div>
       </div>
+
       <div className="rounded-md border mb-4">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => {
-                  return (
-                    <TableHead key={header.id}>
-                      {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
-                    </TableHead>
-                  );
-                })}
+                {headerGroup.headers.map((header) => (
+                  <TableHead key={header.id}>
+                    {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
+                  </TableHead>
+                ))}
               </TableRow>
             ))}
           </TableHeader>
+
           <TableBody>
             {table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row) => (
-                <TableRow key={row.id} data-state={row.getIsSelected() && 'selected'}>
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>
-                  ))}
-                </TableRow>
+                <Fragment key={row.id}>
+                  <TableRow data-state={row.getIsSelected() && 'selected'}>
+                    {row.getVisibleCells().map((cell) => (
+                      <TableCell key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>
+                    ))}
+                  </TableRow>
+
+                  {row.getIsExpanded() && renderSubComponent && (
+                    <TableRow className="bg-muted/20">
+                      <TableCell colSpan={visibleColumnCount} className="p-0">
+                        {renderSubComponent(row.original)}
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </Fragment>
               ))
             ) : (
               <TableRow>
@@ -90,6 +118,7 @@ export function DataTable<TData, TValue>({ columns, data }: DataTableProps<TData
           </TableBody>
         </Table>
       </div>
+
       <DataTablePagination table={table} />
     </>
   );

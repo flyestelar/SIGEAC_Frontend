@@ -243,6 +243,21 @@ export function CreateWarehouseRequisitionForm({ onClose, initialData, isEditing
         <div className="flex gap-2 items-center justify-center">
           <FormField
             control={form.control}
+            name="work_order"
+            render={
+              ({field}) => (
+                <FormItem>
+                  <FormLabel>Justificación</FormLabel>
+                   <FormControl>
+                  <Input placeholder="Ej: Ingrese orden de trabajo..." {...field} />
+                  </FormControl>
+                  <FormMessage className="text-xs" />
+                </FormItem>
+              )
+            }
+          />
+          <FormField
+            control={form.control}
             name="requested_by"
             render={({ field }) => (
               <FormItem className="flex flex-col mt-2.5 w-full">
@@ -513,6 +528,7 @@ export function CreateWarehouseRequisitionForm({ onClose, initialData, isEditing
             </FormItem>
           )}
         />
+        
         <FormField
           control={form.control}
           name="justification"

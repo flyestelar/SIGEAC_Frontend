@@ -530,12 +530,23 @@ export function getMenuList(pathname: string, currentCompany: Company | null, us
       moduleValue: 'planification',
       menus: [
         {
-          href: `/${currentCompany?.slug}/planificacion/servicios`,
-          label: 'Servicios',
-          active: pathname.includes(`/${currentCompany?.slug}/planificacion/servicios`),
-          icon: Drill,
-          roles: ['ANALISTA_ADMINISTRACION', 'JEFE_PLANIFICACION', 'SUPERUSER'],
-          submenus: [],
+          href: `/${currentCompany?.slug}/planificacion/aeronaves`,
+          label: 'Control de Vuelos',
+          active: pathname.includes(`/${currentCompany?.slug}/planificacion/control_vuelos`),
+          icon: BookCheck,
+          roles: ['ANALISTA_PLANIFICACION', 'JEFE_PLANIFICACION', 'SUPERUSER'],
+          submenus: [
+            {
+              href: `/${currentCompany?.slug}/planificacion/control_vuelos/vuelos`,
+              label: 'Vuelos',
+              active: pathname === `/${currentCompany?.slug}/planificacion/control_vuelos/vuelos`,
+            },
+            {
+              href: `/${currentCompany?.slug}/planificacion/control_vuelos/reportes`,
+              label: 'Reportes',
+              active: pathname === `/${currentCompany?.slug}/planificacion/control_vuelos/reportes`,
+            },
+          ],
         },
         {
           href: `/${currentCompany?.slug}/planificacion/aeronaves`,
@@ -554,25 +565,6 @@ export function getMenuList(pathname: string, currentCompany: Company | null, us
             //   label: 'Gestión de Partes',
             //   active: pathname === `/${currentCompany?.slug}/planificacion/aeronaves/partes`,
             // },
-          ],
-        },
-        {
-          href: `/${currentCompany?.slug}/planificacion/aeronaves`,
-          label: 'Control de Vuelos',
-          active: pathname.includes(`/${currentCompany?.slug}/planificacion/control_vuelos`),
-          icon: BookCheck,
-          roles: ['ANALISTA_PLANIFICACION', 'JEFE_PLANIFICACION', 'SUPERUSER'],
-          submenus: [
-            {
-              href: `/${currentCompany?.slug}/planificacion/control_vuelos/vuelos`,
-              label: 'Vuelos',
-              active: pathname === `/${currentCompany?.slug}/planificacion/control_vuelos/vuelos`,
-            },
-            {
-              href: `/${currentCompany?.slug}/planificacion/control_vuelos/reportes`,
-              label: 'Reportes',
-              active: pathname === `/${currentCompany?.slug}/planificacion/control_vuelos/reportes`,
-            },
           ],
         },
         // {
@@ -603,6 +595,14 @@ export function getMenuList(pathname: string, currentCompany: Company | null, us
               roles: ['ANALISTA_ADMINISTRACION', 'JEFE_PLANIFICACION', 'SUPERUSER'],
             },
           ],
+        },
+        {
+          href: `/${currentCompany?.slug}/planificacion/servicios`,
+          label: 'Servicios',
+          active: pathname.includes(`/${currentCompany?.slug}/planificacion/servicios`),
+          icon: Drill,
+          roles: ['ANALISTA_ADMINISTRACION', 'JEFE_PLANIFICACION', 'SUPERUSER'],
+          submenus: [],
         },
       ],
     },
