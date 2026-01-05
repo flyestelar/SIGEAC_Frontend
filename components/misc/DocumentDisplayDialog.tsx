@@ -11,11 +11,10 @@ import { cn } from '@/lib/utils'; // Importante: utilidad para combinar clases
 interface DocumentDisplayDialogProps {
   fileName: string;
   isPublic?: boolean;
-  className?: string; // 1. Agregamos la prop opcional a la interfaz
+  className?: string;
   title?: string;
 }
 
-// 2. Desestructuramos className de las props
 function DocumentDisplayDialog({ fileName, isPublic = false, title = 'Ver', className }: DocumentDisplayDialogProps) {
   const { selectedCompany } = useCompanyStore();
   const [isOpen, setIsOpen] = useState(false);
