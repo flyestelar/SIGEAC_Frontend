@@ -245,17 +245,15 @@ export function CreateGeneralRequisitionForm({ onClose, initialData, isEditing, 
           <FormField
             control={form.control}
             name="work_order"
-            render={
-              ({field}) => (
-                <FormItem>
-                  <FormLabel>Justificación</FormLabel>
-                   <FormControl>
+            render={({ field }) => (
+              <FormItem className="w-full">
+                <FormLabel>Ord. de Trabajo</FormLabel>
+                <FormControl>
                   <Input placeholder="Ej: Ingrese orden de trabajo..." {...field} />
-                  </FormControl>
-                  <FormMessage className="text-xs" />
-                </FormItem>
-              )
-            }
+                </FormControl>
+                <FormMessage className="text-xs" />
+              </FormItem>
+            )}
           />
           <FormField
             control={form.control}
@@ -538,7 +536,7 @@ export function CreateGeneralRequisitionForm({ onClose, initialData, isEditing, 
             </FormItem>
           )}
         />
-        
+
         <FormField
           control={form.control}
           name="justification"
