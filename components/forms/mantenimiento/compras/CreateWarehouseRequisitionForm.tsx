@@ -311,20 +311,6 @@ export function CreateWarehouseRequisitionForm({ onClose, initialData, isEditing
               </FormItem>
             )}
           />
-
-          <FormField
-            control={form.control}
-            name="work_order"
-            render={({ field }) => (
-              <FormItem className="w-full">
-                <FormLabel>Nº de Orden de Trabajo</FormLabel>
-                <FormControl>
-                  <Input placeholder="Ej: 281025-B1-01" {...field} />
-                </FormControl>
-                <FormMessage className="text-xs" />
-              </FormItem>
-            )}
-          />
         </div>
         <FormField
           control={form.control}
