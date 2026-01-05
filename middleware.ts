@@ -5,12 +5,12 @@ const PUBLIC_ROUTES = ['/', '/login'];
 export default function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
-  // 1️⃣ Permitir rutas públicas
+  // Permitir rutas públicas
   if (PUBLIC_ROUTES.includes(pathname)) {
     return NextResponse.next();
   }
 
-  // 2️⃣ Ignorar archivos estáticos y assets internos
+  // Ignorar archivos estáticos y assets internos
   if (
     pathname.startsWith('/_next') ||
     pathname.startsWith('/favicon.ico') ||
@@ -21,7 +21,7 @@ export default function middleware(req: NextRequest) {
     return NextResponse.next();
   }
 
-  // 3️⃣ Verificar autenticación
+  // Verificar autenticación
   const authToken = req.cookies.get('auth_token')?.value;
 
   if (!authToken) {
