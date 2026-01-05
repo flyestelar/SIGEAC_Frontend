@@ -256,6 +256,7 @@ export function CreateGeneralRequisitionForm({ onClose, initialData, isEditing, 
                 </FormItem>
               )
             }
+          />
           <FormField
             control={form.control}
             name="requested_by"

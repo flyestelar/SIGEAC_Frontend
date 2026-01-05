@@ -5,6 +5,10 @@ const nextConfig = {
       {
         hostname: '172.190.0.166',
       },
+      {
+        protocol: 'https',
+        hostname: 'p818zgogs0bj.share.zrok.io',
+      },
     ],
   },
 };
