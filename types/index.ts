@@ -661,9 +661,9 @@ export type Requisition = {
   justification: string;
   arrival_date: Date;
   submission_date: Date;
-  work_order: WorkOrder;
+  work_order: string;
   aircraft: Aircraft;
-  type: 'GENERAL' | 'AVIACION';
+  type: 'WAREHOUSE' | 'ENGINEERING';
 };
 
 export type AdministrationRequisition = {

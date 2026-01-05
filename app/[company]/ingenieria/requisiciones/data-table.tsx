@@ -43,13 +43,6 @@ export function DataTable<TData, TValue>({
     []
   )
 
-  const locations = [
-    {
-      label: 'Puerto Ordaz',
-      value: 'pzo'
-    }
-  ]
-
   const table = useReactTable({
     data,
     columns,

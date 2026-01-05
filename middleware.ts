@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 // 1. Definición centralizada de rutas protegidas
-const PROTECTED_ROUTES = ['/estelar'];
+const PROTECTED_ROUTES = ['/'];
 
 export default async function middleware(req: NextRequest) {
   const currentPath = req.nextUrl.pathname;

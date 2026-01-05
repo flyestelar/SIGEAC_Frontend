@@ -3,7 +3,10 @@ const nextConfig = {
   images: {
     remotePatterns: [
       {
-        hostname: '172.190.0.166',
+        protocol: 'http',
+        hostname: '172.190.0.162',
+        port: '83',
+        pathname: '/storage/**',
       },
       {
         protocol: 'https',

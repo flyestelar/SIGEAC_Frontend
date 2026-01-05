@@ -5,41 +5,37 @@ import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/contexts/AuthContext';
+import { useGetAircrafts } from '@/hooks/aerolinea/aeronaves/useGetAircrafts';
 import { useGetSecondaryUnits } from '@/hooks/general/unidades/useGetSecondaryUnits';
 import { useGetBatchesByLocationId } from '@/hooks/mantenimiento/almacen/renglones/useGetBatchesByLocationId';
-import { useGetMaintenanceAircrafts } from '@/hooks/planificacion/useGetMaintenanceAircrafts';
 import { useGetEmployeesByDepartment } from '@/hooks/sistema/useGetEmployeesByDepartament';
 import { cn } from '@/lib/utils';
 import { useCompanyStore } from '@/stores/CompanyStore';
 import { Employee } from '@/types';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Check, ChevronsUpDown, Loader2, MinusCircle } from 'lucide-react';
-import Image from 'next/image';
+import { Check, ChevronsUpDown, FileText, Loader2, MinusCircle, Trash2, Upload } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '../../../ui/command';
-import { Popover, PopoverContent, PopoverTrigger } from '../../../ui/popover';
-import { ScrollArea } from '../../../ui/scroll-area';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../ui/select';
-import { Separator } from '../../../ui/separator';
-import { Textarea } from '../../../ui/textarea';
-import { useGetAircrafts } from '@/hooks/aerolinea/aeronaves/useGetAircrafts';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Separator } from '@/components/ui/separator';
+import { Textarea } from '@/components/ui/textarea';
 
 const FormSchema = z.object({
   justification: z
     .string({ message: 'La justificación debe ser válida.' })
     .min(2, { message: 'La justificación debe ser válida.' }),
-  company: z.string(),
-  work_order: z.string(),
-  location_id: z.string(),
   aircraft_id: z.string().optional(),
+  work_order: z.string().optional(),
   created_by: z.string(),
   requested_by: z.string({ message: 'Debe ingresar quien lo solicita.' }),
-  image: z
-    .instanceof(File)
-    .refine((file) => file.size <= 5 * 1024 * 1024, 'Max 5MB')
-    .refine((file) => ['image/jpeg', 'image/png'].includes(file.type), 'Solo JPEG/PNG')
+  document: z
+    .array(z.instanceof(File))
+    .refine((files) => files.every((file) => file.size <= 5 * 1024 * 1024), 'Cada archivo PDF debe ser menor a 5MB')
+    .refine((files) => files.every((file) => file.type === 'application/pdf'), 'Solo se permiten archivos PDF')
     .optional(),
   articles: z
     .array(
@@ -93,7 +89,7 @@ interface Batch {
   batch_articles: Article[];
 }
 
-export function CreateGeneralRequisitionForm({ onClose, initialData, isEditing, id }: FormProps) {
+export function CreateWarehouseRequisitionForm({ onClose, initialData, isEditing, id }: FormProps) {
   const { user } = useAuth();
 
   const { mutate, data, isPending: isBatchesLoading } = useGetBatchesByLocationId();
@@ -126,16 +122,17 @@ export function CreateGeneralRequisitionForm({ onClose, initialData, isEditing, 
       articles: [],
     },
   });
-
+  console.log('ZOD ERRORS:', form.formState.errors);
+  console.log('Valores actuales del formulario:', form.watch());
   useEffect(() => {
     if (user && selectedCompany && selectedStation) {
       form.setValue('created_by', user.id.toString());
-      form.setValue('company', selectedCompany.slug);
-      form.setValue('location_id', selectedStation);
+      //form.setValue('company', selectedCompany.slug);
+      //form.setValue('location_id', selectedStation);
     }
     if (initialData && selectedCompany) {
       form.reset(initialData); // Set initial form values
-      form.setValue('company', selectedCompany.slug);
+      //form.setValue('company', selectedCompany.slug);
     }
   }, [user, initialData, form, selectedCompany, selectedStation]);
 
@@ -228,7 +225,9 @@ export function CreateGeneralRequisitionForm({ onClose, initialData, isEditing, 
   const onSubmit = async (data: FormSchemaType) => {
     const formattedData = {
       ...data,
-      type: 'AVIACION',
+      type: 'WAREHOUSE',
+      location_id: Number(selectedStation),
+      company: selectedCompany!.slug,
     };
     if (isEditing) {
       await updateRequisition.mutateAsync({ id: id!, data: formattedData, company: selectedCompany!.slug });
@@ -312,24 +311,17 @@ export function CreateGeneralRequisitionForm({ onClose, initialData, isEditing, 
               </FormItem>
             )}
           />
+
           <FormField
             control={form.control}
-            name="aircraft_id"
+            name="work_order"
             render={({ field }) => (
               <FormItem className="w-full">
-                <FormLabel>Tipo de Req.</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={'AVIACION'}>
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Seleccione.." />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    <SelectItem value="AVIACION">Aviacion</SelectItem>
-                    <SelectItem value="GENERAL">General</SelectItem>
-                  </SelectContent>
-                </Select>
-                <FormMessage />
+                <FormLabel>Nº de Orden de Trabajo</FormLabel>
+                <FormControl>
+                  <Input placeholder="Ej: 281025-B1-01" {...field} />
+                </FormControl>
+                <FormMessage className="text-xs" />
               </FormItem>
             )}
           />
@@ -500,14 +492,12 @@ export function CreateGeneralRequisitionForm({ onClose, initialData, isEditing, 
                                 handleArticleChange(batch.batch, index, 'quantity', Number(e.target.value))
                               }
                             />
-                            {/* <Input
+                            <Input
                               type="file"
                               accept="image/*"
                               className="cursor-pointer"
-                              onChange={(e) =>
-                                handleArticleChange(batch.batch, index, "image", e.target.files?.[0])
-                              }
-                            /> */}
+                              onChange={(e) => handleArticleChange(batch.batch, index, 'image', e.target.files?.[0])}
+                            />
                             <Button
                               variant="ghost"
                               type="button"
@@ -552,29 +542,130 @@ export function CreateGeneralRequisitionForm({ onClose, initialData, isEditing, 
         />
         <FormField
           control={form.control}
-          name="image"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Imagen General</FormLabel>
-              <div className="flex items-center gap-4">
-                {field.value && (
-                  <Image
-                    src={URL.createObjectURL(field.value)}
-                    alt="Preview"
-                    className="h-16 w-16 rounded-md object-cover"
-                  />
-                )}
-                <FormControl>
-                  <Input
-                    type="file"
-                    accept="image/jpeg, image/png"
-                    onChange={(e) => field.onChange(e.target.files?.[0])}
-                  />
-                </FormControl>
-              </div>
-              <FormMessage />
-            </FormItem>
-          )}
+          name="document"
+          render={({ field }) => {
+            // Asegurarnos de que siempre trabajemos con un array
+            const files = field.value || [];
+
+            // Función para manejar la selección con validación
+            const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+              const selectedFiles = e.target.files;
+              if (selectedFiles) {
+                const fileArray = Array.from(selectedFiles);
+
+                // Validar que sean PDFs
+                const pdfFiles = fileArray.filter(
+                  (file) => file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf'),
+                );
+
+                // Validar tamaño (5MB)
+                const validFiles = pdfFiles.filter((file) => file.size <= 5 * 1024 * 1024);
+
+                // Mostrar alertas para archivos inválidos
+                fileArray.forEach((file) => {
+                  const isPDF = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
+                  const isSizeValid = file.size <= 5 * 1024 * 1024;
+
+                  if (!isPDF) {
+                    alert(`"${file.name}" no es un PDF y será ignorado.`);
+                  } else if (!isSizeValid) {
+                    alert(`"${file.name}" excede el límite de 5MB.`);
+                  }
+                });
+
+                if (validFiles.length > 0) {
+                  const newFiles = [...files, ...validFiles];
+                  field.onChange(newFiles);
+                }
+              }
+
+              // Limpiar el input para permitir seleccionar el mismo archivo nuevamente
+              e.target.value = '';
+            };
+
+            return (
+              <FormItem>
+                <FormLabel>Documentos PDF Adjuntos</FormLabel>
+                <div className="space-y-4">
+                  {/* Área de carga */}
+                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 hover:border-gray-400 transition-colors">
+                    <div className="flex items-center gap-3">
+                      <Upload className="h-5 w-5 text-gray-400" />
+                      <div className="flex-1">
+                        <FormControl>
+                          <Input
+                            type="file"
+                            multiple
+                            accept=".pdf,application/pdf"
+                            onChange={handleFileChange}
+                            className="cursor-pointer"
+                          />
+                        </FormControl>
+                        <p className="text-xs text-gray-500 mt-1">
+                          Arrastra o selecciona archivos PDF (máx. 5MB cada uno)
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Lista de archivos */}
+                  {files.length > 0 && (
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium">Archivos seleccionados ({files.length})</span>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => field.onChange([])}
+                          className="text-red-500 hover:text-red-700"
+                        >
+                          <Trash2 className="h-4 w-4 mr-1" />
+                          Limpiar todos
+                        </Button>
+                      </div>
+
+                      <div className="space-y-2 max-h-60 overflow-y-auto">
+                        {files.map((file: File, index: number) => (
+                          <div
+                            key={`${file.name}-${index}`}
+                            className="flex items-center justify-between p-3 border-black rounded-md"
+                          >
+                            <div className="flex items-center gap-3">
+                              <div className="bg-red-100 p-2 rounded">
+                                <FileText className="h-4 w-4 text-red-600" />
+                              </div>
+                              <div>
+                                <p className="font-medium text-sm truncate max-w-xs">{file.name}</p>
+                                <div className="flex items-center gap-3 text-xs text-gray-500">
+                                  <span>{(file.size / 1024).toFixed(0)} KB</span>
+                                  <span>•</span>
+                                  <span className="px-1.5 py-0.5 bg-red-100 text-red-700 rounded">PDF</span>
+                                </div>
+                              </div>
+                            </div>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => {
+                                const updatedFiles = files.filter((_: File, i: number) => i !== index);
+                                field.onChange(updatedFiles);
+                              }}
+                              className="h-8 w-8 p-0 hover:bg-red-50"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+                <FormMessage />
+              </FormItem>
+            );
+          }}
         />
         <div className="flex justify-between items-center gap-x-4">
           <Separator className="flex-1" />
