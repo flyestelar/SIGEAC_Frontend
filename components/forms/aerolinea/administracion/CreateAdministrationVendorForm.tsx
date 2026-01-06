@@ -15,6 +15,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../../ui/select";
+import { useCompanyStore } from "@/stores/CompanyStore";
 
 const phoneRegex = new RegExp(
   /^([+]?[\s0-9]+)?(\d{3}|[(]?[0-9]+[)])?([-]?[\s]?[0-9])+$/
@@ -42,6 +43,7 @@ interface FormProps {
 }
 
 export function CreateAdministrationVendorForm({ onClose }: FormProps) {
+  const { selectedCompany } = useCompanyStore();
   const { createAdministrationVendor } = useCreateAdministartionVendor();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -49,7 +51,11 @@ export function CreateAdministrationVendorForm({ onClose }: FormProps) {
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    createAdministrationVendor.mutate(values, {
+    const formattedValues = {
+      ...values,
+      company: selectedCompany!.slug,
+    };
+    createAdministrationVendor.mutate(formattedValues, {
       onSuccess: () => {
         onClose(); // Cierra el modal solo si la creación fue exitosa
       },
