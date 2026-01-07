@@ -196,7 +196,7 @@ const CreateConsumableForm = ({ initialData, isEditing }: { initialData?: Editin
     } = {
       ...values,
       part_number: normalizeUpper(values.part_number),
-      article_type: 'consumible',
+      article_type: 'consumable',
       inspector: values.inspector,
       reception_date: receptionDate ? format(receptionDate, 'yyyy-MM-dd') : '',
       alternative_part_number: values.alternative_part_number?.map((v) => normalizeUpper(v)) ?? [],

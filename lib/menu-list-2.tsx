@@ -668,6 +668,11 @@ export function getMenuList(pathname: string, currentCompany: Company | null, us
               active: pathname === '/ajustes/globales/proveedores',
             },
             {
+              href: '/ajustes/globales/terceros',
+              label: 'Terceros',
+              active: pathname === '/ajustes/globales/terceros',
+            },
+            {
               href: '/ajustes/globales/clientes',
               label: 'Clientes',
               active: pathname === '/ajustes/globales/clientes',

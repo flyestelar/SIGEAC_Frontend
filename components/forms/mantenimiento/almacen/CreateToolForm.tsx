@@ -153,11 +153,6 @@ export default function CreateToolForm({
   });
 
   useEffect(() => {
-    form.setValue('article_type', 'herramienta');
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  useEffect(() => {
     if (!initialData) return;
     form.reset({
       part_number: initialData.part_number || '',
@@ -192,6 +187,7 @@ export default function CreateToolForm({
 
     const payload: any = {
       ...values,
+      article_type: 'tool',
       part_number: normalizeUpper(values.part_number),
       reception_date: receptionDate ? format(receptionDate, 'yyyy-MM-dd') : undefined,
       alternative_part_number: values.alternative_part_number?.map((v) => normalizeUpper(v)) ?? [],

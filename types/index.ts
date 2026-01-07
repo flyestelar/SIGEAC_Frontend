@@ -1139,3 +1139,18 @@ export interface WarehouseDashboard {
     last_used_at: string;
   }[];
 }
+
+export type ThirdParty = {
+  id: number;
+  name: string;
+  email: string;
+  phone: string;
+  status: 'ACTIVE' | 'INACTIVE' | 'BLOCKED';
+  third_party_role: ThirPartyRole;
+};
+
+export type ThirPartyRole = {
+  id: number;
+  value: string;
+  label: string;
+};

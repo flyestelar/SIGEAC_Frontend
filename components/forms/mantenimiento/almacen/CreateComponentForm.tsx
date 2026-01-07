@@ -227,7 +227,7 @@ const CreateComponentForm = ({ initialData, isEditing }: { initialData?: Editing
       alternative_part_number?: string[];
     } = {
       ...values,
-      article_type: 'componente',
+      article_type: 'component',
       part_number: normalizeUpper(values.part_number),
       alternative_part_number: values.alternative_part_number?.map((v) => normalizeUpper(v)) ?? [],
       caducate_date: caducateDate ? format(caducateDate, 'yyyy-MM-dd') : undefined,
