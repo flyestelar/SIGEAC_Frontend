@@ -240,19 +240,115 @@ export function ComponentDispatchForm({ onClose }: FormProps) {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col space-y-3 w-full">
-        <FormField
-          control={form.control}
-          name="request_number"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Número de Solicitud</FormLabel>
-              <FormControl>
-                <Input className="w-[250px]" placeholder="Ingrese el número de solicitud" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        <div className="flex gap-2 items-center w-full">
+          <FormField
+            control={form.control}
+            name="request_number"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Número de Solicitud</FormLabel>
+                <FormControl>
+                  <Input placeholder="Ingrese el número de solicitud" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <div className="flex gap-2">
+            <FormField
+              control={form.control}
+              name="delivered_by"
+              render={({ field }) => (
+                <FormItem className="w-full">
+                  <FormLabel>Entregado por:</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Seleccione el responsable..." />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {warehouseEmployeesLoading && <Loader2 className="size-4 animate-spin mx-2 my-1" />}
+                      {warehouseEmployeesError && (
+                        <div className="px-2 py-1 text-destructive text-sm">Error cargando personal de almacén</div>
+                      )}
+                      {warehouseEmployees?.map((employee) => (
+                        <SelectItem key={employee.dni} value={`${employee.dni}`}>
+                          {employee.first_name} {employee.last_name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            {form.watch('dispatch_type') !== 'loan' && (
+              <FormField
+                control={form.control}
+                name="requested_by"
+                render={({ field }) => (
+                  <FormItem className="flex flex-col mt-2.5 w-full">
+                    <FormLabel>Empleado Responsable</FormLabel>
+                    <Popover open={openRequestedBy} onOpenChange={setOpenRequestedBy}>
+                      <PopoverTrigger asChild>
+                        <Button
+                          disabled={employeesLoading || employeesError}
+                          variant="outline"
+                          role="combobox"
+                          aria-expanded={openRequestedBy}
+                          className="justify-between"
+                        >
+                          {requestBy
+                            ? `${requestBy.first_name} ${requestBy.last_name}`
+                            : (() => {
+                                const dni = form.getValues('requested_by');
+                                const found = employees?.find((e) => String(e.dni) === String(dni));
+                                return found ? `${found.first_name} ${found.last_name}` : 'Selec. el técnico';
+                              })()}
+                          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-[260px] p-0">
+                        <Command>
+                          <CommandInput placeholder="Selec. el técnico..." />
+                          <CommandList>
+                            <CommandEmpty>No se han encontrado técnicos...</CommandEmpty>
+                            {employees?.map((e) => (
+                              <CommandItem
+                                value={`${e.first_name} ${e.last_name} ${e.dni}`}
+                                key={e.id}
+                                onSelect={() => {
+                                  setRequestedBy(e);
+                                  form.setValue('requested_by', String(e.dni), {
+                                    shouldValidate: true,
+                                    shouldDirty: true,
+                                  });
+                                  setOpenRequestedBy(false);
+                                }}
+                              >
+                                <Check
+                                  className={cn(
+                                    'mr-2 h-4 w-4',
+                                    String(requestBy?.dni ?? form.getValues('requested_by')) === String(e.dni)
+                                      ? 'opacity-100'
+                                      : 'opacity-0',
+                                  )}
+                                />
+                                {`${e.first_name} ${e.last_name}`}
+                              </CommandItem>
+                            ))}
+                          </CommandList>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
+          </div>
+        </div>
         {/* Tipo de Despacho */}
         <FormField
           control={form.control}
@@ -601,101 +697,6 @@ export function ComponentDispatchForm({ onClose }: FormProps) {
         </FormItem>
 
         {/* Entregado por / Responsable */}
-        <div className="flex gap-2">
-          <FormField
-            control={form.control}
-            name="delivered_by"
-            render={({ field }) => (
-              <FormItem className="w-full">
-                <FormLabel>Entregado por:</FormLabel>
-                <Select onValueChange={field.onChange} value={field.value}>
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Seleccione el responsable..." />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {warehouseEmployeesLoading && <Loader2 className="size-4 animate-spin mx-2 my-1" />}
-                    {warehouseEmployeesError && (
-                      <div className="px-2 py-1 text-destructive text-sm">Error cargando personal de almacén</div>
-                    )}
-                    {warehouseEmployees?.map((employee) => (
-                      <SelectItem key={employee.dni} value={`${employee.dni}`}>
-                        {employee.first_name} {employee.last_name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          {form.watch('dispatch_type') !== 'loan' && (
-            <FormField
-              control={form.control}
-              name="requested_by"
-              render={({ field }) => (
-                <FormItem className="flex flex-col mt-2.5 w-full">
-                  <FormLabel>Empleado Responsable</FormLabel>
-                  <Popover open={openRequestedBy} onOpenChange={setOpenRequestedBy}>
-                    <PopoverTrigger asChild>
-                      <Button
-                        disabled={employeesLoading || employeesError}
-                        variant="outline"
-                        role="combobox"
-                        aria-expanded={openRequestedBy}
-                        className="justify-between"
-                      >
-                        {requestBy
-                          ? `${requestBy.first_name} ${requestBy.last_name}`
-                          : (() => {
-                              const dni = form.getValues('requested_by');
-                              const found = employees?.find((e) => String(e.dni) === String(dni));
-                              return found ? `${found.first_name} ${found.last_name}` : 'Selec. el técnico';
-                            })()}
-                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-[260px] p-0">
-                      <Command>
-                        <CommandInput placeholder="Selec. el técnico..." />
-                        <CommandList>
-                          <CommandEmpty>No se han encontrado técnicos...</CommandEmpty>
-                          {employees?.map((e) => (
-                            <CommandItem
-                              value={`${e.first_name} ${e.last_name} ${e.dni}`}
-                              key={e.id}
-                              onSelect={() => {
-                                setRequestedBy(e);
-                                form.setValue('requested_by', String(e.dni), {
-                                  shouldValidate: true,
-                                  shouldDirty: true,
-                                });
-                                setOpenRequestedBy(false);
-                              }}
-                            >
-                              <Check
-                                className={cn(
-                                  'mr-2 h-4 w-4',
-                                  String(requestBy?.dni ?? form.getValues('requested_by')) === String(e.dni)
-                                    ? 'opacity-100'
-                                    : 'opacity-0',
-                                )}
-                              />
-                              {`${e.first_name} ${e.last_name}`}
-                            </CommandItem>
-                          ))}
-                        </CommandList>
-                      </Command>
-                    </PopoverContent>
-                  </Popover>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          )}
-        </div>
-
         {/* Fecha */}
         <FormField
           control={form.control}
