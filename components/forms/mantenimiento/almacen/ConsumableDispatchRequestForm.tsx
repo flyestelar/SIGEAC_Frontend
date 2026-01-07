@@ -791,19 +791,6 @@ export function ConsumableDispatchForm({ onClose }: FormProps) {
         >
           {createDispatchRequest?.isPending ? <Loader2 className="size-4 animate-spin" /> : <p>Crear</p>}
         </Button>
-
-        <Button
-          type="button"
-          variant="outline"
-          onClick={() => {
-            console.log('Form values:', form.getValues());
-            console.log('Form errors:', form.formState.errors);
-            console.log('Is form valid?', form.formState.isValid);
-            console.log('Validation result:', FormSchema.safeParse(form.getValues()));
-          }}
-        >
-          Debug Form
-        </Button>
       </form>
     </Form>
   );
