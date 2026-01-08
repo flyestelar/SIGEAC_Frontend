@@ -1,9 +1,19 @@
 'use client';
+
 import { useCreateRequisition, useUpdateRequisition } from '@/actions/mantenimiento/compras/requisiciones/actions';
 import { CreateBatchDialog } from '@/components/dialogs/mantenimiento/almacen/CreateBatchDialog';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Separator } from '@/components/ui/separator';
+import { Switch } from '@/components/ui/switch';
+import { Textarea } from '@/components/ui/textarea';
 import { useAuth } from '@/contexts/AuthContext';
 import { useGetAircrafts } from '@/hooks/aerolinea/aeronaves/useGetAircrafts';
 import { useGetSecondaryUnits } from '@/hooks/general/unidades/useGetSecondaryUnits';
@@ -11,34 +21,30 @@ import { useGetBatchesByLocationId } from '@/hooks/mantenimiento/almacen/renglon
 import { useGetEmployeesByDepartment } from '@/hooks/sistema/useGetEmployeesByDepartament';
 import { cn } from '@/lib/utils';
 import { useCompanyStore } from '@/stores/CompanyStore';
-import { Employee } from '@/types';
+import type { Employee } from '@/types';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
+  AlertCircle,
   Check,
   ChevronsUpDown,
+  Clock,
   FileText,
+  Flag,
   Loader2,
   MinusCircle,
   Trash2,
   Upload,
-  AlertCircle,
-  Clock,
-  Flag,
-  CircleHelp,
 } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import React, { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Separator } from '@/components/ui/separator';
-import { Textarea } from '@/components/ui/textarea';
-import { Badge } from '@/components/ui/badge';
-import { Switch } from '@/components/ui/switch';
 
-// Actualizar el esquema de validación
+/* =========================
+  Schema
+========================= */
+const MAX_PDF_MB = 5;
+const MAX_PDF_BYTES = MAX_PDF_MB * 1024 * 1024;
+
 const FormSchema = z.object({
   justification: z
     .string({ message: 'La justificación debe ser válida.' })
@@ -51,7 +57,10 @@ const FormSchema = z.object({
   is_referred: z.boolean().default(false),
   document: z
     .array(z.instanceof(File))
-    .refine((files) => files.every((file) => file.size <= 5 * 1024 * 1024), 'Cada archivo PDF debe ser menor a 5MB')
+    .refine(
+      (files) => files.every((file) => file.size <= MAX_PDF_BYTES),
+      `Cada archivo PDF debe ser menor a ${MAX_PDF_MB}MB`,
+    )
     .refine((files) => files.every((file) => file.type === 'application/pdf'), 'Solo se permiten archivos PDF')
     .optional(),
   articles: z
@@ -76,26 +85,22 @@ const FormSchema = z.object({
         articles.every((batch) =>
           batch.batch_articles.every((article) => batch.category !== 'consumible' || article.unit),
         ),
-      {
-        message: 'La unidad secundaria es obligatoria para consumibles',
-        path: ['articles'],
-      },
+      { message: 'La unidad secundaria es obligatoria para consumibles', path: ['articles'] },
     ),
 });
 
 type FormSchemaType = z.infer<typeof FormSchema>;
 
-interface FormProps {
-  onClose: () => void;
-  initialData?: FormSchemaType;
-  id?: number | string;
-  isEditing?: boolean;
-}
+/* =========================
+  Local types
+========================= */
+type Priority = 'low' | 'medium' | 'high';
 
-// Tipos para batches y artículos
 interface Article {
   part_number: string;
+  alt_part_number?: string;
   quantity: number;
+  image?: File;
   unit?: string;
 }
 
@@ -106,25 +111,30 @@ interface Batch {
   batch_articles: Article[];
 }
 
-// Componente de prioridad con iconos
-const PriorityBadge = ({ priority }: { priority: 'low' | 'medium' | 'high' }) => {
+interface FormProps {
+  onClose: () => void;
+  initialData?: FormSchemaType;
+  id?: number | string;
+  isEditing?: boolean;
+}
+
+/* =========================
+  UI atoms
+========================= */
+const PriorityBadge = memo(({ priority }: { priority: Priority }) => {
   const config = {
-    low: {
-      label: 'Baja',
-      icon: <Clock className="h-3 w-3" />,
-      className: 'bg-gray-100 text-gray-700 hover:bg-gray-100',
-    },
+    low: { label: 'Baja', icon: <Clock className="h-3 w-3" />, className: 'bg-muted text-foreground' },
     medium: {
       label: 'Media',
       icon: <Flag className="h-3 w-3" />,
-      className: 'bg-blue-100 text-blue-700 hover:bg-blue-100',
+      className: 'bg-blue-50 text-blue-700 border-blue-200',
     },
     high: {
       label: 'Alta',
       icon: <AlertCircle className="h-3 w-3" />,
-      className: 'bg-red-100 text-red-700 hover:bg-red-100',
+      className: 'bg-red-50 text-red-700 border-red-200',
     },
-  };
+  } satisfies Record<Priority, { label: string; icon: React.ReactNode; className: string }>;
 
   const { label, icon, className } = config[priority];
 
@@ -134,208 +144,424 @@ const PriorityBadge = ({ priority }: { priority: 'low' | 'medium' | 'high' }) =>
       {label}
     </Badge>
   );
+});
+PriorityBadge.displayName = 'PriorityBadge';
+
+const Section = ({ title, hint, children }: { title: string; hint?: string; children: React.ReactNode }) => {
+  return (
+    <Card className="rounded-2xl shadow-sm">
+      <CardHeader className="pb-3">
+        <CardTitle className="text-base">{title}</CardTitle>
+        {hint ? <p className="text-xs text-muted-foreground">{hint}</p> : null}
+      </CardHeader>
+      <CardContent className="space-y-4">{children}</CardContent>
+    </Card>
+  );
 };
 
+const formatKB = (bytes: number) => `${Math.round(bytes / 1024)} KB`;
+const isPdf = (file: File) => file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
+
+const emptyArticle = (): Article => ({ part_number: '', quantity: 1 });
+
+/* =========================
+  Main
+========================= */
 export function CreateWarehouseRequisitionForm({ onClose, initialData, isEditing, id }: FormProps) {
   const { user } = useAuth();
-  const { mutate, data, isPending: isBatchesLoading } = useGetBatchesByLocationId();
+  const { mutate, data: batches, isPending: isBatchesLoading } = useGetBatchesByLocationId();
   const { selectedCompany, selectedStation } = useCompanyStore();
   const { data: secondaryUnits, isLoading: secondaryUnitLoading } = useGetSecondaryUnits();
   const { createRequisition } = useCreateRequisition();
   const { updateRequisition } = useUpdateRequisition();
 
   const [selectedBatches, setSelectedBatches] = useState<Batch[]>([]);
-  const [requestBy, setRequestedBy] = useState<Employee | null>(null);
   const [openRequestedBy, setOpenRequestedBy] = useState(false);
+  const [requestedByObj, setRequestedByObj] = useState<Employee | null>(null);
 
   const {
     data: aircrafts,
     isLoading: isAircraftsLoading,
     isError: isAircraftsError,
   } = useGetAircrafts(selectedCompany?.slug);
-
   const { data: employees, isLoading: employeesLoading, isError: employeesError } = useGetEmployeesByDepartment('MANP');
 
   const form = useForm<FormSchemaType>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
-      articles: [],
+      work_order: '',
+      aircraft_id: undefined,
+      justification: '',
+      created_by: '',
+      requested_by: '',
       priority: 'medium',
       is_referred: false,
+      articles: [],
+      document: [],
     },
+    mode: 'onChange',
   });
 
+  const isSubmitting = createRequisition.isPending || updateRequisition.isPending;
+
+  /* ---------- Derived labels ---------- */
+  const aircraftLabel = useMemo(() => {
+    const id = form.getValues('aircraft_id');
+    if (!id) return 'Seleccionar aeronave';
+    const found = aircrafts?.find((a) => String(a.id) === String(id));
+    return found?.acronym ?? 'Seleccionar aeronave';
+  }, [aircrafts, form]);
+
+  const requestedByLabel = useMemo(() => {
+    const dni = form.getValues('requested_by');
+    if (requestedByObj) return `${requestedByObj.first_name} ${requestedByObj.last_name}`;
+    const found = employees?.find((e) => String(e.dni) === String(dni));
+    return found ? `${found.first_name} ${found.last_name}` : 'Seleccionar técnico';
+  }, [employees, form, requestedByObj]);
+
+  const batchesButtonLabel = useMemo(() => {
+    if (selectedBatches.length === 0) return 'Seleccionar renglones...';
+    return `${selectedBatches.length} renglón(es) seleccionado(s)`;
+  }, [selectedBatches.length]);
+
+  /* ---------- Effects ---------- */
   useEffect(() => {
-    if (user && selectedCompany && selectedStation) {
-      form.setValue('created_by', user.id.toString());
-    }
-    if (initialData && selectedCompany) {
-      form.reset(initialData);
-    }
-  }, [user, initialData, form, selectedCompany, selectedStation]);
+    if (user?.id) form.setValue('created_by', String(user.id), { shouldDirty: false });
+  }, [user, form]);
 
   useEffect(() => {
-    if (selectedStation) {
-      mutate({ location_id: Number(selectedStation), company: selectedCompany?.slug });
-    }
-  }, [selectedStation, mutate, selectedCompany]);
+    if (!selectedStation || !selectedCompany?.slug) return;
+    mutate({ location_id: Number(selectedStation), company: selectedCompany.slug });
+  }, [selectedStation, selectedCompany?.slug, mutate]);
 
   useEffect(() => {
-    form.setValue('articles', selectedBatches);
+    form.setValue('articles', selectedBatches as any, { shouldValidate: true, shouldDirty: true });
   }, [selectedBatches, form]);
 
-  const handleBatchSelect = (batchName: string, batchId: string, batch_category: string) => {
+  useEffect(() => {
+    if (!initialData) return;
+
+    form.reset(initialData);
+    const incoming = (initialData.articles ?? []) as unknown as Batch[];
+    setSelectedBatches(incoming);
+
+    // Intentar hidratar el empleado seleccionado cuando llegue employees
+    const dni = initialData.requested_by;
+    const found = employees?.find((e) => String(e.dni) === String(dni));
+    if (found) setRequestedByObj(found);
+  }, [initialData, form, employees]);
+
+  /* ---------- Handlers ---------- */
+  const handleBatchSelect = useCallback((batchName: string, batchId: string, batchCategory: string) => {
     setSelectedBatches((prev) => {
       const exists = prev.some((b) => b.batch === batchId);
-      if (exists) {
-        return prev.filter((b) => b.batch !== batchId);
-      }
+      if (exists) return prev.filter((b) => b.batch !== batchId);
+
       return [
         ...prev,
         {
           batch: batchId,
           batch_name: batchName,
-          category: batch_category,
-          batch_articles: [{ part_number: '', quantity: 0 }],
+          category: batchCategory,
+          batch_articles: [emptyArticle()],
         },
       ];
     });
-  };
+  }, []);
 
-  const handleArticleChange = (
-    batchName: string,
-    index: number,
-    field: string,
-    value: string | number | File | undefined,
-  ) => {
+  const handleArticleChange = useCallback(
+    (batchId: string, index: number, field: keyof Article, value: Article[keyof Article]) => {
+      setSelectedBatches((prev) =>
+        prev.map((batch) =>
+          batch.batch === batchId
+            ? {
+                ...batch,
+                batch_articles: batch.batch_articles.map((article, i) =>
+                  i === index ? { ...article, [field]: value } : article,
+                ),
+              }
+            : batch,
+        ),
+      );
+    },
+    [],
+  );
+
+  const addArticle = useCallback((batchId: string) => {
     setSelectedBatches((prev) =>
       prev.map((batch) =>
-        batch.batch === batchName
-          ? {
-              ...batch,
-              batch_articles: batch.batch_articles.map((article, i) =>
-                i === index ? { ...article, [field]: value } : article,
-              ),
-            }
-          : batch,
+        batch.batch === batchId ? { ...batch, batch_articles: [...batch.batch_articles, emptyArticle()] } : batch,
       ),
     );
-  };
+  }, []);
 
-  const addArticle = (batchName: string) => {
+  const removeArticleFromBatch = useCallback((batchId: string, articleIndex: number) => {
     setSelectedBatches((prev) =>
       prev.map((batch) =>
-        batch.batch === batchName
-          ? {
-              ...batch,
-              batch_articles: [...batch.batch_articles, { part_number: '', quantity: 0 }],
-            }
+        batch.batch === batchId
+          ? { ...batch, batch_articles: batch.batch_articles.filter((_, i) => i !== articleIndex) }
           : batch,
       ),
     );
-  };
+  }, []);
 
-  const removeArticleFromBatch = (batchName: string, articleIndex: number) => {
-    setSelectedBatches((prevBatches) =>
-      prevBatches.map((batch) =>
-        batch.batch === batchName
-          ? {
-              ...batch,
-              batch_articles: batch.batch_articles.filter((_, index) => index !== articleIndex),
-            }
-          : batch,
-      ),
-    );
-  };
+  const removeBatch = useCallback((batchId: string) => {
+    setSelectedBatches((prev) => prev.filter((b) => b.batch !== batchId));
+  }, []);
 
-  const removeBatch = (batchName: string) => {
-    setSelectedBatches((prevBatches) => prevBatches.filter((batch) => batch.batch !== batchName));
-  };
+  const onSubmit = useCallback(
+    async (values: FormSchemaType) => {
+      if (!selectedCompany?.slug || !selectedStation) return;
 
-  const onSubmit = async (data: FormSchemaType) => {
-    const formattedData = {
-      ...data,
-      type: 'WAREHOUSE',
-      location_id: Number(selectedStation),
-      company: selectedCompany!.slug,
-    };
-    if (isEditing) {
-      await updateRequisition.mutateAsync({ id: id!, data: formattedData, company: selectedCompany!.slug });
-    } else {
-      await createRequisition.mutateAsync({ data: formattedData, company: selectedCompany!.slug });
-    }
-    onClose();
-  };
+      const formattedData = {
+        ...values,
+        type: 'WAREHOUSE',
+        location_id: Number(selectedStation),
+        company: selectedCompany.slug,
+      };
+
+      try {
+        if (isEditing) {
+          await updateRequisition.mutateAsync({ id: id!, data: formattedData, company: selectedCompany.slug });
+        } else {
+          await createRequisition.mutateAsync({ data: formattedData, company: selectedCompany.slug });
+        }
+        onClose();
+      } catch (e) {
+        // Mantengo lógica de flujo. Si tu app ya muestra toast global, esto evita cerrar el modal en error.
+        console.error(e);
+      }
+    },
+    [selectedCompany?.slug, selectedStation, isEditing, id, updateRequisition, createRequisition, onClose],
+  );
+
+  /* ---------- Documents field helper ---------- */
+  const handleDocumentsPick = useCallback(
+    (incomingFiles: FileList | null, currentFiles: File[], onChange: (files: File[]) => void) => {
+      if (!incomingFiles) return;
+
+      const fileArray = Array.from(incomingFiles);
+
+      const rejected: string[] = [];
+      const accepted = fileArray.filter((file) => {
+        const okType = isPdf(file);
+        const okSize = file.size <= MAX_PDF_BYTES;
+        if (!okType) rejected.push(`"${file.name}" no es PDF.`);
+        else if (!okSize) rejected.push(`"${file.name}" excede ${MAX_PDF_MB}MB.`);
+        return okType && okSize;
+      });
+
+      if (rejected.length > 0) {
+        form.setError('document', { type: 'manual', message: rejected.join(' ') });
+      } else {
+        form.clearErrors('document');
+      }
+
+      if (accepted.length > 0) onChange([...currentFiles, ...accepted]);
+    },
+    [form],
+  );
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col space-y-4">
-        {/* Sección de información básica */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          <FormField
-            control={form.control}
-            name="work_order"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-sm font-medium">Orden de Trabajo</FormLabel>
-                <FormControl>
-                  <Input placeholder="Ej: OT-2024-001" {...field} className="h-9" />
-                </FormControl>
-                <FormMessage className="text-xs" />
-              </FormItem>
-            )}
-          />
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        {/* Estado de carga / error sutil */}
+        {(isAircraftsError || employeesError) && (
+          <div className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+            Hubo un problema cargando catálogos. Intenta recargar o verifica tu conexión.
+          </div>
+        )}
 
+        <Section title="Información básica" hint="Completa lo mínimo necesario para identificar la requisición.">
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+            <FormField
+              control={form.control}
+              name="work_order"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-sm font-medium">Orden de trabajo</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Ej: OT-2024-001" {...field} className="h-9" />
+                  </FormControl>
+                  <FormMessage className="text-xs" />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="aircraft_id"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-sm font-medium">Aeronave</FormLabel>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <FormControl>
+                        <Button
+                          disabled={isAircraftsLoading}
+                          variant="outline"
+                          role="combobox"
+                          className={cn(
+                            'h-9 w-full justify-between font-normal',
+                            !field.value && 'text-muted-foreground',
+                          )}
+                        >
+                          {isAircraftsLoading ? <Loader2 className="mr-2 size-3.5 animate-spin" /> : null}
+                          {aircraftLabel}
+                          <ChevronsUpDown className="ml-2 h-3.5 w-3.5 shrink-0 opacity-50" />
+                        </Button>
+                      </FormControl>
+                    </PopoverTrigger>
+
+                    <PopoverContent className="w-[260px] p-0" align="start">
+                      <Command>
+                        <CommandInput placeholder="Buscar aeronave..." className="h-9" />
+                        <CommandList>
+                          <CommandEmpty className="py-2 text-center text-xs">
+                            No se ha encontrado ninguna aeronave.
+                          </CommandEmpty>
+                          <CommandGroup>
+                            {aircrafts?.map((aircraft) => (
+                              <CommandItem
+                                value={String(aircraft.id)}
+                                key={aircraft.id}
+                                onSelect={() =>
+                                  form.setValue('aircraft_id', String(aircraft.id), { shouldDirty: true })
+                                }
+                                className="py-2 text-sm"
+                              >
+                                <Check
+                                  className={cn(
+                                    'mr-2 h-3.5 w-3.5',
+                                    String(aircraft.id) === field.value ? 'opacity-100' : 'opacity-0',
+                                  )}
+                                />
+                                {aircraft.acronym}
+                              </CommandItem>
+                            ))}
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
+                  <FormMessage className="text-xs" />
+                </FormItem>
+              )}
+            />
+          </div>
+        </Section>
+
+        <Section title="Prioridad y referencia" hint="Ajusta la urgencia y marca si aplica un flujo referido.">
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+            <FormField
+              control={form.control}
+              name="priority"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-sm font-medium">Prioridad</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger className="h-9">
+                        <SelectValue placeholder="Seleccionar prioridad" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="low">
+                        <div className="flex items-center gap-2 py-1">
+                          <Clock className="h-3.5 w-3.5" />
+                          <span>Baja</span>
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="medium">
+                        <div className="flex items-center gap-2 py-1">
+                          <Flag className="h-3.5 w-3.5" />
+                          <span>Media</span>
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="high">
+                        <div className="flex items-center gap-2 py-1">
+                          <AlertCircle className="h-3.5 w-3.5" />
+                          <span>Alta</span>
+                        </div>
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage className="text-xs" />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="is_referred"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-center justify-between rounded-xl border p-3">
+                  <div className="space-y-0.5">
+                    <FormLabel className="text-sm font-medium">¿Es referido?</FormLabel>
+                    <p className="text-xs text-muted-foreground">Actívalo si la requisición tiene referencia previa.</p>
+                  </div>
+                  <FormControl>
+                    <Switch checked={field.value} onCheckedChange={field.onChange} />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+          </div>
+        </Section>
+
+        <Section title="Responsable" hint="Selecciona el técnico responsable de la solicitud.">
           <FormField
             control={form.control}
-            name="aircraft_id"
+            name="requested_by"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-sm font-medium">Aeronave</FormLabel>
-                <Popover>
+                <FormLabel className="text-sm font-medium">Empleado responsable</FormLabel>
+                <Popover open={openRequestedBy} onOpenChange={setOpenRequestedBy}>
                   <PopoverTrigger asChild>
-                    <FormControl>
-                      <Button
-                        disabled={isAircraftsLoading}
-                        variant="outline"
-                        role="combobox"
-                        className={cn(
-                          'w-full h-9 justify-between font-normal',
-                          !field.value && 'text-muted-foreground',
-                        )}
-                      >
-                        {isAircraftsLoading && <Loader2 className="size-3.5 animate-spin mr-2" />}
-                        {field.value
-                          ? aircrafts?.find((aircraft) => aircraft.id.toString() === field.value)?.acronym
-                          : 'Seleccionar aeronave'}
-                        <ChevronsUpDown className="ml-2 h-3.5 w-3.5 shrink-0 opacity-50" />
-                      </Button>
-                    </FormControl>
+                    <Button
+                      disabled={employeesLoading || employeesError}
+                      variant="outline"
+                      role="combobox"
+                      aria-expanded={openRequestedBy}
+                      className="h-9 w-full justify-between font-normal"
+                    >
+                      {requestedByLabel}
+                      <ChevronsUpDown className="ml-2 h-3.5 w-3.5 shrink-0 opacity-50" />
+                    </Button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-[200px] p-0">
+
+                  <PopoverContent className="w-full p-0" align="start">
                     <Command>
-                      <CommandInput placeholder="Buscar aeronave..." className="h-9" />
+                      <CommandInput placeholder="Buscar técnico..." className="h-9" />
                       <CommandList>
-                        <CommandEmpty className="py-2 text-xs text-center">
-                          No se ha encontrado ninguna aeronave.
+                        <CommandEmpty className="py-2 text-center text-xs">
+                          No se han encontrado técnicos...
                         </CommandEmpty>
                         <CommandGroup>
-                          {aircrafts?.map((aircraft) => (
+                          {employees?.map((e) => (
                             <CommandItem
-                              value={aircraft.id.toString()}
-                              key={aircraft.id}
+                              value={`${e.first_name} ${e.last_name} ${e.dni}`}
+                              key={e.id}
                               onSelect={() => {
-                                form.setValue('aircraft_id', aircraft.id.toString());
+                                setRequestedByObj(e);
+                                form.setValue('requested_by', String(e.dni), {
+                                  shouldValidate: true,
+                                  shouldDirty: true,
+                                });
+                                setOpenRequestedBy(false);
                               }}
                               className="py-2 text-sm"
                             >
                               <Check
                                 className={cn(
                                   'mr-2 h-3.5 w-3.5',
-                                  aircraft.id.toString() === field.value ? 'opacity-100' : 'opacity-0',
+                                  String((requestedByObj?.dni ?? field.value) || '') === String(e.dni)
+                                    ? 'opacity-100'
+                                    : 'opacity-0',
                                 )}
                               />
-                              {aircraft.acronym}
+                              {`${e.first_name} ${e.last_name}`}
+                              <span className="ml-auto text-xs text-muted-foreground">{e.dni}</span>
                             </CommandItem>
                           ))}
                         </CommandGroup>
@@ -347,447 +573,326 @@ export function CreateWarehouseRequisitionForm({ onClose, initialData, isEditing
               </FormItem>
             )}
           />
-        </div>
+        </Section>
 
-        {/* Sección de prioridad y referido */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <Section
+          title="Artículos"
+          hint="Selecciona renglones y registra los artículos. Consumibles requieren unidad secundaria."
+        >
           <FormField
             control={form.control}
-            name="priority"
-            render={({ field }) => (
+            name="articles"
+            render={() => (
               <FormItem>
-                <FormLabel className="text-sm font-medium">Prioridad</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                  <FormControl>
-                    <SelectTrigger className="h-9">
-                      <SelectValue>
-                        {field.value ? (
-                          <div className="flex items-center gap-2">
-                            <PriorityBadge priority={field.value} />
-                          </div>
-                        ) : (
-                          'Seleccionar prioridad'
+                <div className="flex items-center justify-between gap-2">
+                  <FormLabel className="text-sm font-medium">Renglones</FormLabel>
+                  <CreateBatchDialog />
+                </div>
+
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <FormControl>
+                      <Button
+                        variant="outline"
+                        disabled={isBatchesLoading}
+                        role="combobox"
+                        className={cn(
+                          'h-9 w-full justify-between font-normal',
+                          selectedBatches.length === 0 && 'text-muted-foreground',
                         )}
-                      </SelectValue>
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    <SelectItem value="low">
-                      <div className="flex items-center gap-2 py-1">
-                        <Clock className="h-3.5 w-3.5" />
-                        <span>Baja</span>
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="medium">
-                      <div className="flex items-center gap-2 py-1">
-                        <Flag className="h-3.5 w-3.5" />
-                        <span>Media</span>
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="high">
-                      <div className="flex items-center gap-2 py-1">
-                        <AlertCircle className="h-3.5 w-3.5" />
-                        <span>Alta</span>
-                      </div>
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
-                <FormMessage className="text-xs" />
-              </FormItem>
-            )}
-          />
+                      >
+                        {isBatchesLoading ? <Loader2 className="mr-2 size-3.5 animate-spin" /> : null}
+                        {batchesButtonLabel}
+                        <ChevronsUpDown className="ml-2 h-3.5 w-3.5 shrink-0 opacity-50" />
+                      </Button>
+                    </FormControl>
+                  </PopoverTrigger>
 
-          <FormField
-            control={form.control}
-            name="is_referred"
-            render={({ field }) => (
-              <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
-                <div className="space-y-0.5">
-                  <FormLabel className="text-sm font-medium flex items-center gap-2">
-                    <CircleHelp className="h-3.5 w-3.5" />
-                    ¿Es referido?
-                  </FormLabel>
-                  <p className="text-xs text-muted-foreground">Marcar si esta requisición está referida</p>
-                </div>
-                <FormControl>
-                  <Switch checked={field.value} onCheckedChange={field.onChange} />
-                </FormControl>
-              </FormItem>
-            )}
-          />
-        </div>
+                  <PopoverContent className="w-full p-0" align="start">
+                    <Command>
+                      <CommandInput placeholder="Buscar renglones..." className="h-9" />
+                      <CommandList>
+                        <CommandEmpty className="py-2 text-center text-xs">No existen renglones...</CommandEmpty>
+                        <CommandGroup>
+                          {batches?.map((batch) => {
+                            const active = selectedBatches.some((b) => b.batch === String(batch.id));
+                            return (
+                              <CommandItem
+                                key={batch.id}
+                                value={batch.name}
+                                onSelect={() => handleBatchSelect(batch.name, String(batch.id), batch.category)}
+                                className="py-2 text-sm"
+                              >
+                                <Check className={cn('mr-2 h-3.5 w-3.5', active ? 'opacity-100' : 'opacity-0')} />
+                                <span className="truncate">{batch.name}</span>
+                                <Badge variant="secondary" className="ml-auto text-[11px] font-normal">
+                                  {batch.category}
+                                </Badge>
+                              </CommandItem>
+                            );
+                          })}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
 
-        {/* Responsable */}
-        <FormField
-          control={form.control}
-          name="requested_by"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel className="text-sm font-medium">Empleado Responsable</FormLabel>
-              <Popover open={openRequestedBy} onOpenChange={setOpenRequestedBy}>
-                <PopoverTrigger asChild>
-                  <Button
-                    disabled={employeesLoading || employeesError}
-                    variant="outline"
-                    role="combobox"
-                    aria-expanded={openRequestedBy}
-                    className="w-full h-9 justify-between font-normal"
-                  >
-                    {requestBy
-                      ? `${requestBy.first_name} ${requestBy.last_name}`
-                      : (() => {
-                          const dni = field.value;
-                          const found = employees?.find((e) => String(e.dni) === String(dni));
-                          return found ? `${found.first_name} ${found.last_name}` : 'Seleccionar técnico';
-                        })()}
-                    <ChevronsUpDown className="ml-2 h-3.5 w-3.5 shrink-0 opacity-50" />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-full p-0">
-                  <Command>
-                    <CommandInput placeholder="Buscar técnico..." className="h-9" />
-                    <CommandList>
-                      <CommandEmpty className="py-2 text-xs text-center">No se han encontrado técnicos...</CommandEmpty>
-                      <CommandGroup>
-                        {employees?.map((e) => (
-                          <CommandItem
-                            value={`${e.first_name} ${e.last_name} ${e.dni}`}
-                            key={e.id}
-                            onSelect={() => {
-                              setRequestedBy(e);
-                              form.setValue('requested_by', String(e.dni), { shouldValidate: true, shouldDirty: true });
-                              setOpenRequestedBy(false);
-                            }}
-                            className="py-2 text-sm"
-                          >
-                            <Check
-                              className={cn(
-                                'mr-2 h-3.5 w-3.5',
-                                String(requestBy?.dni ?? field.value) === String(e.dni) ? 'opacity-100' : 'opacity-0',
-                              )}
-                            />
-                            {`${e.first_name} ${e.last_name}`}
-                          </CommandItem>
-                        ))}
-                      </CommandGroup>
-                    </CommandList>
-                  </Command>
-                </PopoverContent>
-              </Popover>
-              <FormMessage className="text-xs" />
-            </FormItem>
-          )}
-        />
-
-        {/* Artículos */}
-        <FormField
-          control={form.control}
-          name="articles"
-          render={({ field }: { field: any }) => (
-            <FormItem>
-              <div className="flex items-center justify-between mb-2">
-                <FormLabel className="text-sm font-medium">Artículos</FormLabel>
-                <CreateBatchDialog />
-              </div>
-
-              <Popover>
-                <PopoverTrigger asChild>
-                  <FormControl>
-                    <Button
-                      variant="outline"
-                      disabled={isBatchesLoading}
-                      role="combobox"
-                      className={cn(
-                        'w-full h-9 justify-between font-normal',
-                        selectedBatches.length === 0 && 'text-muted-foreground',
-                      )}
-                    >
-                      {selectedBatches.length > 0
-                        ? `${selectedBatches.length} renglón(es) seleccionado(s)`
-                        : 'Seleccionar renglones...'}
-                      <ChevronsUpDown className="ml-2 h-3.5 w-3.5 shrink-0 opacity-50" />
-                    </Button>
-                  </FormControl>
-                </PopoverTrigger>
-                <PopoverContent className="w-full p-0">
-                  <Command>
-                    <CommandInput placeholder="Buscar renglones..." className="h-9" />
-                    <CommandList>
-                      <CommandEmpty className="py-2 text-xs text-center">No existen renglones...</CommandEmpty>
-                      <CommandGroup>
-                        {data?.map((batch) => (
-                          <CommandItem
-                            key={batch.name}
-                            value={batch.name}
-                            onSelect={() => handleBatchSelect(batch.name, batch.id.toString(), batch.category)}
-                            className="py-2 text-sm"
-                          >
-                            <Check
-                              className={cn(
-                                'mr-2 h-3.5 w-3.5',
-                                selectedBatches.some((b) => b.batch === batch.id.toString())
-                                  ? 'opacity-100'
-                                  : 'opacity-0',
-                              )}
-                            />
-                            {batch.name}
-                          </CommandItem>
-                        ))}
-                      </CommandGroup>
-                    </CommandList>
-                  </Command>
-                </PopoverContent>
-              </Popover>
-
-              {/* Lista de batches seleccionados */}
-              {selectedBatches.length > 0 && (
-                <div className="mt-3 space-y-3">
-                  <ScrollArea className={cn('', selectedBatches.length > 2 ? 'h-[250px]' : '')}>
-                    {selectedBatches.map((batch) => (
-                      <div key={batch.batch} className="mb-3 p-3 border rounded-lg">
-                        <div className="flex items-center justify-between mb-2">
-                          <h4 className="font-medium text-sm">{batch.batch_name}</h4>
-                          <Button
-                            variant="ghost"
-                            type="button"
-                            size="sm"
-                            onClick={() => removeBatch(batch.batch)}
-                            className="h-7 w-7 p-0 hover:bg-red-50 hover:text-red-600"
-                          >
-                            <MinusCircle className="h-3.5 w-3.5" />
-                          </Button>
-                        </div>
-
-                        <div className="space-y-2">
-                          {batch.batch_articles.map((article, index) => (
-                            <div key={index} className="grid grid-cols-1 md:grid-cols-5 gap-2 items-center">
-                              <Input
-                                placeholder="Número de parte"
-                                value={article.part_number}
-                                onChange={(e) => handleArticleChange(batch.batch, index, 'part_number', e.target.value)}
-                                className="h-8 text-sm"
-                              />
-                              {batch.category === 'consumible' && (
-                                <Select
-                                  disabled={secondaryUnitLoading}
-                                  onValueChange={(value) => handleArticleChange(batch.batch, index, 'unit', value)}
-                                  value={article.unit}
-                                >
-                                  <SelectTrigger className="h-8 text-sm">
-                                    <SelectValue placeholder="Unidad Sec." />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    {secondaryUnits?.map((secU) => (
-                                      <SelectItem key={secU.id} value={secU.id.toString()} className="text-sm">
-                                        {secU.secondary_unit}
-                                      </SelectItem>
-                                    ))}
-                                  </SelectContent>
-                                </Select>
-                              )}
-
-                              <Input
-                                type="number"
-                                placeholder="Cantidad"
-                                value={article.quantity || ''}
-                                onChange={(e) =>
-                                  handleArticleChange(batch.batch, index, 'quantity', Number(e.target.value))
-                                }
-                                className="h-8 text-sm"
-                              />
-
-                              <div className="flex items-center gap-2">
-                                <Input
-                                  type="file"
-                                  accept="image/*"
-                                  className="cursor-pointer h-8 text-xs"
-                                  onChange={(e) =>
-                                    handleArticleChange(batch.batch, index, 'image', e.target.files?.[0])
-                                  }
-                                />
-
-                                <Button
-                                  variant="ghost"
-                                  type="button"
-                                  size="sm"
-                                  onClick={() => removeArticleFromBatch(batch.batch, index)}
-                                  className="h-7 w-7 p-0 hover:bg-red-50 hover:text-red-600"
-                                >
-                                  <MinusCircle className="h-3.5 w-3.5" />
-                                </Button>
+                {selectedBatches.length > 0 ? (
+                  <div className="mt-3 space-y-3">
+                    <ScrollArea className={cn(selectedBatches.length > 2 ? 'h-[270px]' : '')}>
+                      <div className="space-y-3 pr-3">
+                        {selectedBatches.map((batch) => (
+                          <div key={batch.batch} className="rounded-2xl border bg-card p-3">
+                            <div className="flex items-start justify-between gap-3">
+                              <div className="min-w-0">
+                                <div className="flex items-center gap-2">
+                                  <h4 className="truncate text-sm font-semibold">{batch.batch_name}</h4>
+                                  <Badge variant="outline" className="text-[11px] font-normal">
+                                    {batch.category}
+                                  </Badge>
+                                  <span className="text-xs text-muted-foreground">
+                                    {batch.batch_articles.length} item(s)
+                                  </span>
+                                </div>
                               </div>
+
+                              <Button
+                                variant="ghost"
+                                type="button"
+                                size="sm"
+                                onClick={() => removeBatch(batch.batch)}
+                                className="h-8 w-8 p-0 hover:bg-red-50 hover:text-red-600"
+                                aria-label="Eliminar renglón"
+                              >
+                                <MinusCircle className="h-4 w-4" />
+                              </Button>
                             </div>
-                          ))}
-                        </div>
 
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => addArticle(batch.batch)}
-                          className="mt-2 text-xs h-7"
-                        >
-                          + Agregar artículo
-                        </Button>
-                      </div>
-                    ))}
-                  </ScrollArea>
-                </div>
-              )}
-              <FormMessage className="text-xs" />
-            </FormItem>
-          )}
-        />
+                            <div className="mt-3 space-y-2">
+                              {batch.batch_articles.map((article, index) => (
+                                <div
+                                  key={`${batch.batch}-${index}`}
+                                  className="grid grid-cols-1 gap-2 md:grid-cols-5 md:items-center"
+                                >
+                                  <Input
+                                    placeholder="Número de parte"
+                                    value={article.part_number}
+                                    onChange={(e) =>
+                                      handleArticleChange(batch.batch, index, 'part_number', e.target.value)
+                                    }
+                                    className="h-9 text-sm"
+                                  />
 
-        {/* Justificación */}
-        <FormField
-          control={form.control}
-          name="justification"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel className="text-sm font-medium">Justificación</FormLabel>
-              <FormControl>
-                <Textarea
-                  placeholder="Describa la necesidad de los materiales..."
-                  {...field}
-                  className="min-h-[80px] text-sm"
-                />
-              </FormControl>
-              <FormMessage className="text-xs" />
-            </FormItem>
-          )}
-        />
+                                  {batch.category === 'consumible' ? (
+                                    <Select
+                                      disabled={secondaryUnitLoading}
+                                      onValueChange={(value) => handleArticleChange(batch.batch, index, 'unit', value)}
+                                      value={article.unit}
+                                    >
+                                      <SelectTrigger className="h-9 text-sm">
+                                        <SelectValue placeholder="Unidad sec." />
+                                      </SelectTrigger>
+                                      <SelectContent>
+                                        {secondaryUnits?.map((secU) => (
+                                          <SelectItem key={secU.id} value={String(secU.id)} className="text-sm">
+                                            {secU.secondary_unit}
+                                          </SelectItem>
+                                        ))}
+                                      </SelectContent>
+                                    </Select>
+                                  ) : (
+                                    <div className="hidden md:block" />
+                                  )}
 
-        {/* Documentos */}
-        <FormField
-          control={form.control}
-          name="document"
-          render={({ field }) => {
-            const files = field.value || [];
+                                  <Input
+                                    type="number"
+                                    min={1}
+                                    placeholder="Cantidad"
+                                    value={article.quantity || ''}
+                                    onChange={(e) => {
+                                      const raw = e.target.value;
+                                      const qty = raw === '' ? 0 : Number(raw);
+                                      handleArticleChange(batch.batch, index, 'quantity', qty);
+                                    }}
+                                    className="h-9 text-sm"
+                                  />
 
-            const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-              const selectedFiles = e.target.files;
-              if (selectedFiles) {
-                const fileArray = Array.from(selectedFiles);
-                const pdfFiles = fileArray.filter(
-                  (file) => file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf'),
-                );
-                const validFiles = pdfFiles.filter((file) => file.size <= 5 * 1024 * 1024);
-
-                fileArray.forEach((file) => {
-                  const isPDF = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
-                  const isSizeValid = file.size <= 5 * 1024 * 1024;
-
-                  if (!isPDF) {
-                    alert(`"${file.name}" no es un PDF y será ignorado.`);
-                  } else if (!isSizeValid) {
-                    alert(`"${file.name}" excede el límite de 5MB.`);
-                  }
-                });
-
-                if (validFiles.length > 0) {
-                  const newFiles = [...files, ...validFiles];
-                  field.onChange(newFiles);
-                }
-              }
-              e.target.value = '';
-            };
-
-            return (
-              <FormItem>
-                <FormLabel className="text-sm font-medium">Documentos Adjuntos</FormLabel>
-
-                <div className="space-y-3">
-                  {/* Área de carga */}
-                  <div className="border border-dashed border-gray-200 rounded-lg p-3 hover:border-gray-300 transition-colors">
-                    <label className="cursor-pointer">
-                      <div className="flex items-center gap-2">
-                        <Upload className="h-4 w-4 text-gray-400" />
-                        <div className="flex-1">
-                          <FormControl>
-                            <Input
-                              type="file"
-                              multiple
-                              accept=".pdf,application/pdf"
-                              onChange={handleFileChange}
-                              className="cursor-pointer border-0 h-auto p-0"
-                            />
-                          </FormControl>
-                          <p className="text-xs text-gray-500 mt-1">
-                            Haga clic o arrastre archivos PDF (máx. 5MB cada uno)
-                          </p>
-                        </div>
-                      </div>
-                    </label>
-                  </div>
-
-                  {/* Lista de archivos */}
-                  {files.length > 0 && (
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium">Archivos ({files.length})</span>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => field.onChange([])}
-                          className="text-red-600 hover:text-red-700 h-7 text-xs"
-                        >
-                          <Trash2 className="h-3.5 w-3.5 mr-1" />
-                          Limpiar
-                        </Button>
-                      </div>
-
-                      <div className="space-y-1.5 max-h-48 overflow-y-auto">
-                        {files.map((file: File, index: number) => (
-                          <div
-                            key={`${file.name}-${index}`}
-                            className="flex items-center justify-between p-2 border rounded-md hover:bg-gray-50"
-                          >
-                            <div className="flex items-center gap-2 flex-1 min-w-0">
-                              <FileText className="h-4 w-4 text-red-500 flex-shrink-0" />
-                              <div className="min-w-0 flex-1">
-                                <p className="text-sm font-medium truncate">{file.name}</p>
-                                <p className="text-xs text-gray-500">{(file.size / 1024).toFixed(0)} KB • PDF</p>
-                              </div>
+                                  <div className="flex items-center gap-2 md:col-span-2">
+                                    <Input
+                                      type="file"
+                                      accept="image/*"
+                                      className="h-9 cursor-pointer text-xs"
+                                      onChange={(e) =>
+                                        handleArticleChange(batch.batch, index, 'image', e.target.files?.[0])
+                                      }
+                                    />
+                                    <Button
+                                      variant="ghost"
+                                      type="button"
+                                      size="sm"
+                                      onClick={() => removeArticleFromBatch(batch.batch, index)}
+                                      className="h-9 w-9 p-0 hover:bg-red-50 hover:text-red-600"
+                                      aria-label="Eliminar artículo"
+                                    >
+                                      <Trash2 className="h-4 w-4" />
+                                    </Button>
+                                  </div>
+                                </div>
+                              ))}
                             </div>
+
                             <Button
                               type="button"
-                              variant="ghost"
+                              variant="secondary"
                               size="sm"
-                              onClick={() => {
-                                const updatedFiles = files.filter((_: File, i: number) => i !== index);
-                                field.onChange(updatedFiles);
-                              }}
-                              className="h-6 w-6 p-0 hover:bg-red-50 hover:text-red-600"
+                              onClick={() => addArticle(batch.batch)}
+                              className="mt-3 h-9 text-xs"
                             >
-                              <Trash2 className="h-3.5 w-3.5" />
+                              + Agregar artículo
                             </Button>
                           </div>
                         ))}
                       </div>
-                    </div>
-                  )}
-                </div>
+                    </ScrollArea>
+                  </div>
+                ) : null}
+
                 <FormMessage className="text-xs" />
               </FormItem>
-            );
-          }}
-        />
+            )}
+          />
+        </Section>
 
-        {/* Separador y botón de envío */}
-        <div className="flex items-center gap-3 pt-2">
+        <Section title="Justificación" hint="Explica el motivo con el contexto mínimo necesario.">
+          <FormField
+            control={form.control}
+            name="justification"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-sm font-medium">Justificación</FormLabel>
+                <FormControl>
+                  <Textarea
+                    placeholder="Describa la necesidad de los materiales..."
+                    {...field}
+                    className="min-h-[92px] text-sm"
+                  />
+                </FormControl>
+                <FormMessage className="text-xs" />
+              </FormItem>
+            )}
+          />
+        </Section>
+
+        <Section title="Documentos adjuntos" hint={`Solo PDF, máximo ${MAX_PDF_MB}MB por archivo.`}>
+          <FormField
+            control={form.control}
+            name="document"
+            render={({ field }) => {
+              const files = field.value || [];
+
+              return (
+                <FormItem>
+                  <FormLabel className="text-sm font-medium">Adjuntar PDFs</FormLabel>
+
+                  <div className="space-y-3">
+                    <div className="rounded-2xl border border-dashed p-3 transition-colors hover:border-muted-foreground/40">
+                      <label className="cursor-pointer">
+                        <div className="flex items-start gap-3">
+                          <div className="mt-0.5 rounded-xl border bg-muted/30 p-2">
+                            <Upload className="h-4 w-4 text-muted-foreground" />
+                          </div>
+
+                          <div className="flex-1">
+                            <FormControl>
+                              <Input
+                                type="file"
+                                multiple
+                                accept=".pdf,application/pdf"
+                                onChange={(e) => {
+                                  handleDocumentsPick(e.target.files, files, field.onChange);
+                                  e.target.value = '';
+                                }}
+                                className="cursor-pointer border-0 p-0"
+                              />
+                            </FormControl>
+                            <p className="mt-1 text-xs text-muted-foreground">Selecciona uno o más archivos.</p>
+                          </div>
+                        </div>
+                      </label>
+                    </div>
+
+                    {files.length > 0 ? (
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm font-medium">Archivos ({files.length})</span>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => field.onChange([])}
+                            className="h-8 text-xs text-red-600 hover:text-red-700"
+                          >
+                            <Trash2 className="mr-2 h-4 w-4" />
+                            Limpiar
+                          </Button>
+                        </div>
+
+                        <div className="max-h-52 space-y-1.5 overflow-y-auto pr-1">
+                          {files.map((file: File, index: number) => (
+                            <div
+                              key={`${file.name}-${index}`}
+                              className="flex items-center justify-between rounded-xl border p-2 hover:bg-muted/30"
+                            >
+                              <div className="flex min-w-0 flex-1 items-center gap-2">
+                                <FileText className="h-4 w-4 flex-shrink-0 text-red-500" />
+                                <div className="min-w-0 flex-1">
+                                  <p className="truncate text-sm font-medium">{file.name}</p>
+                                  <p className="text-xs text-muted-foreground">{formatKB(file.size)} • PDF</p>
+                                </div>
+                              </div>
+
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => field.onChange(files.filter((_, i) => i !== index))}
+                                className="h-8 w-8 p-0 hover:bg-red-50 hover:text-red-600"
+                                aria-label="Eliminar archivo"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ) : null}
+                  </div>
+
+                  <FormMessage className="text-xs" />
+                </FormItem>
+              );
+            }}
+          />
+        </Section>
+
+        <div className="flex items-center gap-3 pt-1">
           <Separator className="flex-1" />
           <span className="text-xs text-muted-foreground">SIGEAC</span>
           <Separator className="flex-1" />
         </div>
 
-        <Button type="submit" disabled={createRequisition.isPending || updateRequisition.isPending} className="mt-2">
-          {isEditing ? 'Actualizar Requisición' : 'Generar Requisición'}
-          {(createRequisition.isPending || updateRequisition.isPending) && (
-            <Loader2 className="ml-2 h-4 w-4 animate-spin" />
-          )}
-        </Button>
+        <div className="sticky bottom-0 z-10 rounded-2xl border bg-background/80 p-3 backdrop-blur">
+          <div className="flex items-center justify-end gap-2">
+            <Button type="button" variant="ghost" onClick={onClose} className="h-9" disabled={isSubmitting}>
+              Cancelar
+            </Button>
+
+            <Button type="submit" disabled={isSubmitting} className="h-9">
+              {isEditing ? 'Actualizar requisición' : 'Generar requisición'}
+              {isSubmitting ? <Loader2 className="ml-2 h-4 w-4 animate-spin" /> : null}
+            </Button>
+          </div>
+        </div>
       </form>
     </Form>
   );
