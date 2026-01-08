@@ -14,6 +14,9 @@ import { useCompanyStore } from '@/stores/CompanyStore';
 import { Employee } from '@/types';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
+  AlertCircle,
+  ArrowDown,
+  ArrowUp,
   Check,
   ChevronDown,
   ChevronsUpDown,
@@ -33,20 +36,15 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
-import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowDown, ArrowUp, AlertCircle, Link2 } from 'lucide-react';
+import { AnimatePresence, motion } from 'framer-motion';
 
 const FormSchema = z.object({
   justification: z
     .string({ message: 'La justificación debe ser válida.' })
     .min(2, { message: 'La justificación debe ser válida.' }),
-
-  priority: z.enum(['low', 'medium', 'high'], {
-    required_error: 'Debe seleccionar una prioridad',
-  }),
-  is_referred: z.boolean().optional(),
   aircraft_id: z.string().optional(),
   work_order: z.string().optional(),
+  priority: z.enum(['low', 'medium', 'high'], { required_error: 'Debe seleccionar una prioridad.' }),
   created_by: z.string(),
   requested_by: z.string({ message: 'Debe ingresar quien lo solicita.' }),
   document: z
@@ -83,24 +81,6 @@ const FormSchema = z.object({
     ),
 });
 
-const PRIORITY_CONFIG = {
-  low: {
-    label: 'Baja',
-    icon: ArrowDown,
-    className: 'bg-green-100 text-green-700 border-green-200',
-  },
-  medium: {
-    label: 'Media',
-    icon: AlertCircle,
-    className: 'bg-yellow-100 text-yellow-700 border-yellow-200',
-  },
-  high: {
-    label: 'Alta',
-    icon: ArrowUp,
-    className: 'bg-red-100 text-red-700 border-red-200',
-  },
-};
-
 type FormSchemaType = z.infer<typeof FormSchema>;
 
 interface FormProps {
@@ -124,6 +104,24 @@ interface Batch {
   batch_articles: Article[];
   _open?: boolean;
 }
+
+const PRIORITY_CONFIG = {
+  low: {
+    label: 'Baja',
+    icon: ArrowDown,
+    className: 'bg-green-100 text-green-700 border-green-200',
+  },
+  medium: {
+    label: 'Media',
+    icon: AlertCircle,
+    className: 'bg-yellow-100 text-yellow-700 border-yellow-200',
+  },
+  high: {
+    label: 'Alta',
+    icon: ArrowUp,
+    className: 'bg-red-100 text-red-700 border-red-200',
+  },
+};
 
 export function CreateWarehouseRequisitionForm({ onClose, initialData, isEditing, id }: FormProps) {
   const { user } = useAuth();
@@ -156,11 +154,10 @@ export function CreateWarehouseRequisitionForm({ onClose, initialData, isEditing
     resolver: zodResolver(FormSchema),
     defaultValues: {
       articles: [],
-      priority: 'medium',
-      is_referred: false,
     },
   });
-
+  console.log('ZOD ERRORS:', form.formState.errors);
+  console.log('Valores actuales del formulario:', form.watch());
   useEffect(() => {
     if (user && selectedCompany && selectedStation) {
       form.setValue('created_by', user.id.toString());
@@ -277,16 +274,17 @@ export function CreateWarehouseRequisitionForm({ onClose, initialData, isEditing
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col space-y-3">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="flex gap-2 items-center justify-center">
           <FormField
             control={form.control}
             name="work_order"
             render={({ field }) => (
-              <FormItem>
-                <FormLabel>Nº Orden de Trabajo</FormLabel>
+              <FormItem className="w-full">
+                <FormLabel>Ord. de Trabajo</FormLabel>
                 <FormControl>
-                  <Input {...field} placeholder="Ej: 281025-B1-01" />
+                  <Input placeholder="Ej: Ingrese orden de trabajo..." {...field} />
                 </FormControl>
+                <FormMessage className="text-xs" />
               </FormItem>
             )}
           />
@@ -347,241 +345,321 @@ export function CreateWarehouseRequisitionForm({ onClose, initialData, isEditing
               </FormItem>
             )}
           />
-          <FormField
-            control={form.control}
-            name="aircraft_id"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Aeronave</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
+        </div>
+        <FormField
+          control={form.control}
+          name="priority"
+          render={({ field }) => {
+            const config = PRIORITY_CONFIG[field.value];
+            const Icon = config.icon;
+            return (
+              <FormItem className="w-[240px] rounded-xl border bg-muted/30 p-4 space-y-3">
+                <FormLabel>Prioridad</FormLabel>
+
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={field.value}
+                    initial={{ opacity: 0, y: -6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 6 }}
+                    transition={{ duration: 0.2 }}
+                    className={cn(
+                      'flex items-center justify-center gap-2 rounded-full border px-3 py-2 text-sm font-semibold',
+                      config.className,
+                    )}
+                  >
+                    <Icon className="h-4 w-4" />
+                    {config.label}
+                  </motion.div>
+                </AnimatePresence>
+
+                <Select value={field.value} onValueChange={field.onChange}>
                   <FormControl>
-                    <SelectTrigger disabled={isAircraftsLoading || isAircraftsError}>
-                      <SelectValue placeholder="Seleccioe la aeronave..." />
+                    <SelectTrigger>
+                      <SelectValue />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    {aircrafts &&
-                      aircrafts.map((aircraft) => (
-                        <SelectItem key={aircraft.id} value={aircraft.id.toString()}>
-                          {aircraft.acronym} - {aircraft.serial}
+                    {Object.entries(PRIORITY_CONFIG).map(([key, cfg]) => {
+                      const Ico = cfg.icon;
+                      return (
+                        <SelectItem key={key} value={key}>
+                          <div className="flex items-center gap-2">
+                            <Ico className="h-4 w-4" />
+                            {cfg.label}
+                          </div>
                         </SelectItem>
-                      ))}
+                      );
+                    })}
                   </SelectContent>
                 </Select>
-                <FormMessage className="text-xs" />
               </FormItem>
-            )}
-          />{' '}
-        </div>
-        <div className="flex flex-wrap gap-4">
-          <FormField
-            control={form.control}
-            name="priority"
-            render={({ field }) => {
-              const config = PRIORITY_CONFIG[field.value];
-              const Icon = config.icon;
-
-              return (
-                <FormItem className="w-[240px] rounded-xl border bg-muted/30 p-4 space-y-3">
-                  <FormLabel>Prioridad</FormLabel>
-
-                  <AnimatePresence mode="wait">
-                    <motion.div
-                      key={field.value}
-                      initial={{ opacity: 0, y: -6 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: 6 }}
-                      transition={{ duration: 0.2 }}
-                      className={cn(
-                        'flex items-center justify-center gap-2 rounded-full border px-3 py-2 text-sm font-semibold',
-                        config.className,
-                      )}
-                    >
-                      <Icon className="h-4 w-4" />
-                      {config.label}
-                    </motion.div>
-                  </AnimatePresence>
-
-                  <Select value={field.value} onValueChange={field.onChange}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {Object.entries(PRIORITY_CONFIG).map(([key, cfg]) => {
-                        const Ico = cfg.icon;
-                        return (
-                          <SelectItem key={key} value={key}>
-                            <div className="flex items-center gap-2">
-                              <Ico className="h-4 w-4" />
-                              {cfg.label}
+            );
+          }}
+        />
+        <FormField
+          control={form.control}
+          name="articles"
+          render={({ field }: { field: any }) => (
+            <FormItem className="flex flex-col">
+              <div className="flex gap-4 items-end">
+                <FormItem className="flex flex-col w-[200px]">
+                  <FormLabel>Artículos</FormLabel>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <FormControl>
+                        <Button
+                          variant="outline"
+                          disabled={isBatchesLoading}
+                          role="combobox"
+                          className={cn('justify-between', selectedBatches.length === 0 && 'text-muted-foreground')}
+                        >
+                          {selectedBatches.length > 0
+                            ? `${selectedBatches.length} reng. seleccionados`
+                            : 'Selec. un renglón...'}
+                          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        </Button>
+                      </FormControl>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-[200px] p-0">
+                      <Command>
+                        <CommandInput placeholder="Buscar..." />
+                        <CommandList>
+                          <CommandEmpty>No existen renglones...</CommandEmpty>
+                          <CommandGroup>
+                            <div className="flex justify-center m-2">
+                              <CreateBatchDialog />
                             </div>
-                          </SelectItem>
-                        );
-                      })}
-                    </SelectContent>
-                  </Select>
+                            {data &&
+                              data.map((batch) => (
+                                <CommandItem
+                                  key={batch.name}
+                                  value={batch.name}
+                                  onSelect={() => handleBatchSelect(batch.name, batch.id.toString(), batch.category)}
+                                >
+                                  <Check
+                                    className={cn(
+                                      '',
+                                      selectedBatches.some((b) => b.batch === batch.id.toString())
+                                        ? 'opacity-100'
+                                        : 'opacity-0',
+                                    )}
+                                  />
+                                  {batch.name}
+                                </CommandItem>
+                              ))}
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
                 </FormItem>
-              );
-            }}
-          />
 
-          <FormField
-            control={form.control}
-            name="is_referred"
-            render={({ field }) => (
-              <FormItem className="flex items-center gap-3 rounded-xl border p-4 bg-background shadow-sm mt-6">
-                <FormControl>
-                  <input
-                    type="checkbox"
-                    checked={field.value}
-                    onChange={(e) => field.onChange(e.target.checked)}
-                    className="h-4 w-4 accent-primary"
-                  />
-                </FormControl>
-                <div className="flex items-center gap-2">
-                  <Link2 className="h-4 w-4 text-muted-foreground" />
-                  <FormLabel className="mb-0">Solicitud referida</FormLabel>
-                </div>
-              </FormItem>
-            )}
-          />
-        </div>
-
-        <div className="mt-4 space-y-4">
-          <AnimatePresence>
-            {selectedBatches.map((batch) => (
-              <motion.div
-                key={batch.batch}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.2 }}
-                className="rounded-xl border bg-background shadow-sm"
-              >
-                {/* ================= HEADER ================= */}
-                <div
-                  className="flex items-center justify-between px-4 py-3 cursor-pointer hover:bg-muted/40"
-                  onClick={() =>
-                    setSelectedBatches((prev) =>
-                      prev.map((b) => (b.batch === batch.batch ? { ...b, _open: !b._open } : b)),
-                    )
-                  }
-                >
-                  <div className="flex items-center gap-3">
-                    <ChevronDown className={cn('h-4 w-4 transition-transform', batch._open && 'rotate-180')} />
-                    <div>
-                      <p className="font-semibold">{batch.batch_name}</p>
-                      <p className="text-xs text-muted-foreground">{batch.batch_articles.length} artículo(s)</p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    <Button
-                      type="button"
-                      size="icon"
-                      variant="ghost"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        addArticle(batch.batch);
-                      }}
-                    >
-                      <PlusCircle className="h-4 w-4" />
-                    </Button>
-
-                    <Button
-                      type="button"
-                      size="icon"
-                      variant="ghost"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        removeBatch(batch.batch);
-                      }}
-                      className="hover:text-red-500"
-                    >
-                      <MinusCircle className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-
-                {/* ================= BODY ================= */}
-                <AnimatePresence>
-                  {batch._open && (
-                    <motion.div
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: 'auto', opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      transition={{ duration: 0.25 }}
-                      className="overflow-hidden border-t"
-                    >
-                      <ScrollArea className={cn('px-4 py-3', batch.batch_articles.length > 3 && 'h-[260px]')}>
-                        <div className="space-y-3">
-                          {batch.batch_articles.map((article, index) => (
-                            <div key={index} className="grid grid-cols-12 gap-3 items-center rounded-lg border p-3">
-                              <Input
-                                className="col-span-3"
-                                placeholder="N° Parte"
-                                onChange={(e) => handleArticleChange(batch.batch, index, 'part_number', e.target.value)}
-                              />
-
-                              <Input
-                                className="col-span-3"
-                                placeholder="N/P Alterno"
-                                onChange={(e) =>
-                                  handleArticleChange(batch.batch, index, 'alt_part_number', e.target.value)
-                                }
-                              />
-
-                              <Select onValueChange={(value) => handleArticleChange(batch.batch, index, 'unit', value)}>
-                                <SelectTrigger className="col-span-2">
-                                  <SelectValue placeholder="Unidad" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  {secondaryUnits?.map((secU) => (
-                                    <SelectItem key={secU.id} value={secU.id.toString()}>
-                                      {secU.secondary_unit}
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
-
-                              <Input
-                                className="col-span-2"
-                                type="number"
-                                placeholder="Cant."
-                                onChange={(e) =>
-                                  handleArticleChange(batch.batch, index, 'quantity', Number(e.target.value))
-                                }
-                              />
-
-                              <Input
-                                className="col-span-1"
-                                type="file"
-                                accept="image/*"
-                                onChange={(e) => handleArticleChange(batch.batch, index, 'image', e.target.files?.[0])}
-                              />
-
-                              <Button
-                                type="button"
-                                size="icon"
-                                variant="ghost"
-                                onClick={() => removeArticleFromBatch(batch.batch, index)}
-                                className="col-span-1 hover:text-red-500"
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          ))}
-                        </div>
-                      </ScrollArea>
-                    </motion.div>
+                <FormField
+                  control={form.control}
+                  name="aircraft_id"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-col w-[200px]">
+                      <FormLabel>Aeronave</FormLabel>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <FormControl>
+                            <Button
+                              disabled={isAircraftsLoading}
+                              variant="outline"
+                              role="combobox"
+                              className={cn('justify-between', !field.value && 'text-muted-foreground')}
+                            >
+                              {isAircraftsLoading && <Loader2 className="size-4 animate-spin mr-2" />}
+                              {field.value
+                                ? aircrafts?.find((aircraft) => aircraft.id.toString() === field.value)?.acronym
+                                : 'Selec. la aeronave...'}
+                              <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                            </Button>
+                          </FormControl>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-[200px] p-0">
+                          <Command>
+                            <CommandInput placeholder="Busque una aeronave..." />
+                            <CommandList>
+                              <CommandEmpty className="text-sm p-2 text-center">
+                                No se ha encontrado ninguna aeronave.
+                              </CommandEmpty>
+                              <CommandGroup>
+                                {aircrafts?.map((aircraft) => (
+                                  <CommandItem
+                                    value={aircraft.id.toString()}
+                                    key={aircraft.id}
+                                    onSelect={() => {
+                                      form.setValue('aircraft_id', aircraft.id.toString());
+                                    }}
+                                  >
+                                    <Check
+                                      className={cn(
+                                        'mr-2 h-4 w-4',
+                                        aircraft.id.toString() === field.value ? 'opacity-100' : 'opacity-0',
+                                      )}
+                                    />
+                                    {aircraft.acronym}
+                                  </CommandItem>
+                                ))}
+                              </CommandGroup>
+                            </CommandList>
+                          </Command>
+                        </PopoverContent>
+                      </Popover>
+                      <FormMessage />
+                    </FormItem>
                   )}
+                />
+              </div>
+              <div className="mt-4 space-y-4">
+                <AnimatePresence>
+                  {selectedBatches.map((batch) => (
+                    <motion.div
+                      key={batch.batch}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      transition={{ duration: 0.2 }}
+                      className="rounded-xl border bg-background shadow-sm"
+                    >
+                      {/* ================= HEADER ================= */}
+                      <div
+                        className="flex items-center justify-between px-4 py-3 cursor-pointer hover:bg-muted/40"
+                        onClick={() =>
+                          setSelectedBatches((prev) =>
+                            prev.map((b) => (b.batch === batch.batch ? { ...b, _open: !b._open } : b)),
+                          )
+                        }
+                      >
+                        <div className="flex items-center gap-3">
+                          <ChevronDown className={cn('h-4 w-4 transition-transform', batch._open && 'rotate-180')} />
+                          <div>
+                            <p className="font-semibold">{batch.batch_name}</p>
+                            <p className="text-xs text-muted-foreground">{batch.batch_articles.length} artículo(s)</p>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          <Button
+                            type="button"
+                            size="icon"
+                            variant="ghost"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              addArticle(batch.batch);
+                            }}
+                          >
+                            <PlusCircle className="h-4 w-4" />
+                          </Button>
+
+                          <Button
+                            type="button"
+                            size="icon"
+                            variant="ghost"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              removeBatch(batch.batch);
+                            }}
+                            className="hover:text-red-500"
+                          >
+                            <MinusCircle className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+
+                      {/* ================= BODY ================= */}
+                      <AnimatePresence>
+                        {batch._open && (
+                          <motion.div
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: 'auto', opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            transition={{ duration: 0.25 }}
+                            className="overflow-hidden border-t"
+                          >
+                            <ScrollArea className={cn('px-4 py-3', batch.batch_articles.length > 3 && 'h-[260px]')}>
+                              <div className="space-y-3">
+                                {batch.batch_articles.map((article, index) => (
+                                  <div
+                                    key={index}
+                                    className="grid grid-cols-12 gap-3 items-center rounded-lg border p-3"
+                                  >
+                                    <Input
+                                      className="col-span-3"
+                                      placeholder="N° Parte"
+                                      onChange={(e) =>
+                                        handleArticleChange(batch.batch, index, 'part_number', e.target.value)
+                                      }
+                                    />
+
+                                    <Input
+                                      className="col-span-3"
+                                      placeholder="N/P Alterno"
+                                      onChange={(e) =>
+                                        handleArticleChange(batch.batch, index, 'alt_part_number', e.target.value)
+                                      }
+                                    />
+
+                                    <Select
+                                      onValueChange={(value) => handleArticleChange(batch.batch, index, 'unit', value)}
+                                    >
+                                      <SelectTrigger className="col-span-2">
+                                        <SelectValue placeholder="Unidad" />
+                                      </SelectTrigger>
+                                      <SelectContent>
+                                        {secondaryUnits?.map((secU) => (
+                                          <SelectItem key={secU.id} value={secU.id.toString()}>
+                                            {secU.secondary_unit}
+                                          </SelectItem>
+                                        ))}
+                                      </SelectContent>
+                                    </Select>
+
+                                    <Input
+                                      className="col-span-2"
+                                      type="number"
+                                      placeholder="Cant."
+                                      onChange={(e) =>
+                                        handleArticleChange(batch.batch, index, 'quantity', Number(e.target.value))
+                                      }
+                                    />
+
+                                    <Input
+                                      className="col-span-1"
+                                      type="file"
+                                      accept="image/*"
+                                      onChange={(e) =>
+                                        handleArticleChange(batch.batch, index, 'image', e.target.files?.[0])
+                                      }
+                                    />
+
+                                    <Button
+                                      type="button"
+                                      size="icon"
+                                      variant="ghost"
+                                      onClick={() => removeArticleFromBatch(batch.batch, index)}
+                                      className="col-span-1 hover:text-red-500"
+                                    >
+                                      <Trash2 className="h-4 w-4" />
+                                    </Button>
+                                  </div>
+                                ))}
+                              </div>
+                            </ScrollArea>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </motion.div>
+                  ))}
                 </AnimatePresence>
-              </motion.div>
-            ))}
-          </AnimatePresence>
-        </div>
+              </div>
+
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
         <FormField
           control={form.control}
@@ -723,7 +801,6 @@ export function CreateWarehouseRequisitionForm({ onClose, initialData, isEditing
             );
           }}
         />
-
         <div className="flex justify-between items-center gap-x-4">
           <Separator className="flex-1" />
           <p className="text-muted-foreground">SIGEAC</p>
