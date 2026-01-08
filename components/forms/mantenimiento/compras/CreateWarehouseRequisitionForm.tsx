@@ -13,7 +13,17 @@ import { cn } from '@/lib/utils';
 import { useCompanyStore } from '@/stores/CompanyStore';
 import { Employee } from '@/types';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Check, ChevronsUpDown, FileText, Loader2, MinusCircle, Trash2, Upload } from 'lucide-react';
+import {
+  Check,
+  ChevronDown,
+  ChevronsUpDown,
+  FileText,
+  Loader2,
+  MinusCircle,
+  PlusCircle,
+  Trash2,
+  Upload,
+} from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -112,6 +122,7 @@ interface Batch {
   category: string;
   batch_name: string;
   batch_articles: Article[];
+  _open?: boolean;
 }
 
 export function CreateWarehouseRequisitionForm({ onClose, initialData, isEditing, id }: FormProps) {
@@ -266,17 +277,16 @@ export function CreateWarehouseRequisitionForm({ onClose, initialData, isEditing
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col space-y-3">
-        <div className="flex gap-2 items-center justify-center">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <FormField
             control={form.control}
             name="work_order"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Justificación</FormLabel>
+                <FormLabel>Nº Orden de Trabajo</FormLabel>
                 <FormControl>
-                  <Input placeholder="Ej: Ingrese orden de trabajo..." {...field} />
+                  <Input {...field} placeholder="Ej: 281025-B1-01" />
                 </FormControl>
-                <FormMessage className="text-xs" />
               </FormItem>
             )}
           />
@@ -337,23 +347,33 @@ export function CreateWarehouseRequisitionForm({ onClose, initialData, isEditing
               </FormItem>
             )}
           />
-
           <FormField
             control={form.control}
-            name="work_order"
+            name="aircraft_id"
             render={({ field }) => (
-              <FormItem className="w-full">
-                <FormLabel>Nº de Orden de Trabajo</FormLabel>
-                <FormControl>
-                  <Input placeholder="Ej: 281025-B1-01" {...field} />
-                </FormControl>
+              <FormItem>
+                <FormLabel>Aeronave</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger disabled={isAircraftsLoading || isAircraftsError}>
+                      <SelectValue placeholder="Seleccioe la aeronave..." />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {aircrafts &&
+                      aircrafts.map((aircraft) => (
+                        <SelectItem key={aircraft.id} value={aircraft.id.toString()}>
+                          {aircraft.acronym} - {aircraft.serial}
+                        </SelectItem>
+                      ))}
+                  </SelectContent>
+                </Select>
                 <FormMessage className="text-xs" />
               </FormItem>
             )}
-          />
+          />{' '}
         </div>
-        <div className="flex flex-wrap gap-4 items-center rounded-lg border p-4 bg-muted/30">
-          {/* PRIORIDAD */}
+        <div className="flex flex-wrap gap-4">
           <FormField
             control={form.control}
             name="priority"
@@ -362,28 +382,29 @@ export function CreateWarehouseRequisitionForm({ onClose, initialData, isEditing
               const Icon = config.icon;
 
               return (
-                <FormItem className="flex flex-col gap-2">
+                <FormItem className="w-[240px] rounded-xl border bg-muted/30 p-4 space-y-3">
                   <FormLabel>Prioridad</FormLabel>
 
-                  {/* Badge animado */}
                   <AnimatePresence mode="wait">
                     <motion.div
                       key={field.value}
-                      initial={{ opacity: 0, scale: 0.9 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.9 }}
+                      initial={{ opacity: 0, y: -6 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 6 }}
                       transition={{ duration: 0.2 }}
-                      className={`inline-flex items-center gap-2 px-3 py-1 rounded-full border text-sm font-medium ${config.className}`}
+                      className={cn(
+                        'flex items-center justify-center gap-2 rounded-full border px-3 py-2 text-sm font-semibold',
+                        config.className,
+                      )}
                     >
                       <Icon className="h-4 w-4" />
                       {config.label}
                     </motion.div>
                   </AnimatePresence>
 
-                  {/* Select */}
-                  <Select onValueChange={field.onChange} value={field.value}>
+                  <Select value={field.value} onValueChange={field.onChange}>
                     <FormControl>
-                      <SelectTrigger className="w-[160px]">
+                      <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
                     </FormControl>
@@ -406,12 +427,11 @@ export function CreateWarehouseRequisitionForm({ onClose, initialData, isEditing
             }}
           />
 
-          {/* REFERIDA */}
           <FormField
             control={form.control}
             name="is_referred"
             render={({ field }) => (
-              <FormItem className="flex items-center gap-3 mt-6 border rounded-md px-4 py-2 bg-background shadow-sm">
+              <FormItem className="flex items-center gap-3 rounded-xl border p-4 bg-background shadow-sm mt-6">
                 <FormControl>
                   <input
                     type="checkbox"
@@ -422,213 +442,147 @@ export function CreateWarehouseRequisitionForm({ onClose, initialData, isEditing
                 </FormControl>
                 <div className="flex items-center gap-2">
                   <Link2 className="h-4 w-4 text-muted-foreground" />
-                  <FormLabel className="mb-0 cursor-pointer">Solicitud referida</FormLabel>
+                  <FormLabel className="mb-0">Solicitud referida</FormLabel>
                 </div>
               </FormItem>
             )}
           />
         </div>
 
-        <FormField
-          control={form.control}
-          name="articles"
-          render={({ field }: { field: any }) => (
-            <FormItem className="flex flex-col">
-              <div className="flex gap-4 items-end">
-                <FormItem className="flex flex-col w-[200px]">
-                  <FormLabel>Artículos</FormLabel>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <FormControl>
-                        <Button
-                          variant="outline"
-                          disabled={isBatchesLoading}
-                          role="combobox"
-                          className={cn('justify-between', selectedBatches.length === 0 && 'text-muted-foreground')}
-                        >
-                          {selectedBatches.length > 0
-                            ? `${selectedBatches.length} reng. seleccionados`
-                            : 'Selec. un renglón...'}
-                          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                        </Button>
-                      </FormControl>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-[200px] p-0">
-                      <Command>
-                        <CommandInput placeholder="Buscar..." />
-                        <CommandList>
-                          <CommandEmpty>No existen renglones...</CommandEmpty>
-                          <CommandGroup>
-                            <div className="flex justify-center m-2">
-                              <CreateBatchDialog />
-                            </div>
-                            {data &&
-                              data.map((batch) => (
-                                <CommandItem
-                                  key={batch.name}
-                                  value={batch.name}
-                                  onSelect={() => handleBatchSelect(batch.name, batch.id.toString(), batch.category)}
-                                >
-                                  <Check
-                                    className={cn(
-                                      '',
-                                      selectedBatches.some((b) => b.batch === batch.id.toString())
-                                        ? 'opacity-100'
-                                        : 'opacity-0',
-                                    )}
-                                  />
-                                  {batch.name}
-                                </CommandItem>
-                              ))}
-                          </CommandGroup>
-                        </CommandList>
-                      </Command>
-                    </PopoverContent>
-                  </Popover>
-                </FormItem>
+        <div className="mt-4 space-y-4">
+          <AnimatePresence>
+            {selectedBatches.map((batch) => (
+              <motion.div
+                key={batch.batch}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.2 }}
+                className="rounded-xl border bg-background shadow-sm"
+              >
+                {/* ================= HEADER ================= */}
+                <div
+                  className="flex items-center justify-between px-4 py-3 cursor-pointer hover:bg-muted/40"
+                  onClick={() =>
+                    setSelectedBatches((prev) =>
+                      prev.map((b) => (b.batch === batch.batch ? { ...b, _open: !b._open } : b)),
+                    )
+                  }
+                >
+                  <div className="flex items-center gap-3">
+                    <ChevronDown className={cn('h-4 w-4 transition-transform', batch._open && 'rotate-180')} />
+                    <div>
+                      <p className="font-semibold">{batch.batch_name}</p>
+                      <p className="text-xs text-muted-foreground">{batch.batch_articles.length} artículo(s)</p>
+                    </div>
+                  </div>
 
-                <FormField
-                  control={form.control}
-                  name="aircraft_id"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-col w-[200px]">
-                      <FormLabel>Aeronave</FormLabel>
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <FormControl>
-                            <Button
-                              disabled={isAircraftsLoading}
-                              variant="outline"
-                              role="combobox"
-                              className={cn('justify-between', !field.value && 'text-muted-foreground')}
-                            >
-                              {isAircraftsLoading && <Loader2 className="size-4 animate-spin mr-2" />}
-                              {field.value
-                                ? aircrafts?.find((aircraft) => aircraft.id.toString() === field.value)?.acronym
-                                : 'Selec. la aeronave...'}
-                              <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                            </Button>
-                          </FormControl>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-[200px] p-0">
-                          <Command>
-                            <CommandInput placeholder="Busque una aeronave..." />
-                            <CommandList>
-                              <CommandEmpty className="text-sm p-2 text-center">
-                                No se ha encontrado ninguna aeronave.
-                              </CommandEmpty>
-                              <CommandGroup>
-                                {aircrafts?.map((aircraft) => (
-                                  <CommandItem
-                                    value={aircraft.id.toString()}
-                                    key={aircraft.id}
-                                    onSelect={() => {
-                                      form.setValue('aircraft_id', aircraft.id.toString());
-                                    }}
-                                  >
-                                    <Check
-                                      className={cn(
-                                        'mr-2 h-4 w-4',
-                                        aircraft.id.toString() === field.value ? 'opacity-100' : 'opacity-0',
-                                      )}
-                                    />
-                                    {aircraft.acronym}
-                                  </CommandItem>
-                                ))}
-                              </CommandGroup>
-                            </CommandList>
-                          </Command>
-                        </PopoverContent>
-                      </Popover>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-              <div className="mt-4 space-y-4">
-                <ScrollArea className={cn('', selectedBatches.length > 2 ? 'h-[300px]' : '')}>
-                  {selectedBatches.map((batch) => (
-                    <div key={batch.batch}>
-                      <div className="flex items-center">
-                        <h4 className="font-semibold">{batch.batch_name}</h4>
-                        <Button variant="ghost" type="button" size="icon" onClick={() => removeBatch(batch.batch)}>
-                          <MinusCircle className="size-4" />
-                        </Button>
-                      </div>
-                      <ScrollArea className={cn('', batch.batch_articles.length > 2 ? 'h-[150px]' : '')}>
-                        {batch.batch_articles.map((article, index) => (
-                          <div key={index} className="flex items-center space-x-4 mt-2">
-                            <Input
-                              placeholder="Número de parte"
-                              onChange={(e) => handleArticleChange(batch.batch, index, 'part_number', e.target.value)}
-                            />
+                  <div className="flex items-center gap-2">
+                    <Button
+                      type="button"
+                      size="icon"
+                      variant="ghost"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        addArticle(batch.batch);
+                      }}
+                    >
+                      <PlusCircle className="h-4 w-4" />
+                    </Button>
 
-                            <Input
-                              placeholder="N/P Alterno"
-                              onChange={(e) =>
-                                handleArticleChange(batch.batch, index, 'alt_part_number', e.target.value)
-                              }
-                            />
-                            <Select
-                              disabled={secondaryUnitLoading}
-                              onValueChange={(value) => handleArticleChange(batch.batch, index, 'unit', value)}
-                            >
-                              <SelectTrigger>
-                                <SelectValue placeholder="Unidad Sec." />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {secondaryUnits &&
-                                  secondaryUnits.map((secU) => (
+                    <Button
+                      type="button"
+                      size="icon"
+                      variant="ghost"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        removeBatch(batch.batch);
+                      }}
+                      className="hover:text-red-500"
+                    >
+                      <MinusCircle className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+
+                {/* ================= BODY ================= */}
+                <AnimatePresence>
+                  {batch._open && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: 'auto', opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.25 }}
+                      className="overflow-hidden border-t"
+                    >
+                      <ScrollArea className={cn('px-4 py-3', batch.batch_articles.length > 3 && 'h-[260px]')}>
+                        <div className="space-y-3">
+                          {batch.batch_articles.map((article, index) => (
+                            <div key={index} className="grid grid-cols-12 gap-3 items-center rounded-lg border p-3">
+                              <Input
+                                className="col-span-3"
+                                placeholder="N° Parte"
+                                onChange={(e) => handleArticleChange(batch.batch, index, 'part_number', e.target.value)}
+                              />
+
+                              <Input
+                                className="col-span-3"
+                                placeholder="N/P Alterno"
+                                onChange={(e) =>
+                                  handleArticleChange(batch.batch, index, 'alt_part_number', e.target.value)
+                                }
+                              />
+
+                              <Select onValueChange={(value) => handleArticleChange(batch.batch, index, 'unit', value)}>
+                                <SelectTrigger className="col-span-2">
+                                  <SelectValue placeholder="Unidad" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {secondaryUnits?.map((secU) => (
                                     <SelectItem key={secU.id} value={secU.id.toString()}>
                                       {secU.secondary_unit}
                                     </SelectItem>
                                   ))}
-                              </SelectContent>
-                            </Select>
-                            {form.formState.errors.articles?.[index]?.batch_articles?.[index]?.unit && (
-                              <p className="text-red-500 text-xs">La unidad es obligatoria para consumibles.</p>
-                            )}
-                            <Input
-                              type="number"
-                              placeholder="Cantidad"
-                              onChange={(e) =>
-                                handleArticleChange(batch.batch, index, 'quantity', Number(e.target.value))
-                              }
-                            />
-                            <Input
-                              type="file"
-                              accept="image/*"
-                              className="cursor-pointer"
-                              onChange={(e) => handleArticleChange(batch.batch, index, 'image', e.target.files?.[0])}
-                            />
-                            <Button
-                              variant="ghost"
-                              type="button"
-                              size="icon"
-                              onClick={() => removeArticleFromBatch(batch.batch, index)}
-                              className="hover:text-red-500"
-                            >
-                              <MinusCircle className="size-4" />
-                            </Button>
-                          </div>
-                        ))}
+                                </SelectContent>
+                              </Select>
+
+                              <Input
+                                className="col-span-2"
+                                type="number"
+                                placeholder="Cant."
+                                onChange={(e) =>
+                                  handleArticleChange(batch.batch, index, 'quantity', Number(e.target.value))
+                                }
+                              />
+
+                              <Input
+                                className="col-span-1"
+                                type="file"
+                                accept="image/*"
+                                onChange={(e) => handleArticleChange(batch.batch, index, 'image', e.target.files?.[0])}
+                              />
+
+                              <Button
+                                type="button"
+                                size="icon"
+                                variant="ghost"
+                                onClick={() => removeArticleFromBatch(batch.batch, index)}
+                                className="col-span-1 hover:text-red-500"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          ))}
+                        </div>
                       </ScrollArea>
-                      <Button
-                        type="button"
-                        variant="link"
-                        onClick={() => addArticle(batch.batch)}
-                        className="mt-2 text-sm"
-                      >
-                        Agregar artículo
-                      </Button>
-                    </div>
-                  ))}
-                </ScrollArea>
-              </div>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </motion.div>
+            ))}
+          </AnimatePresence>
+        </div>
+
         <FormField
           control={form.control}
           name="justification"
@@ -769,6 +723,7 @@ export function CreateWarehouseRequisitionForm({ onClose, initialData, isEditing
             );
           }}
         />
+
         <div className="flex justify-between items-center gap-x-4">
           <Separator className="flex-1" />
           <p className="text-muted-foreground">SIGEAC</p>
