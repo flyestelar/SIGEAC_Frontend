@@ -38,6 +38,24 @@ import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
 import { AnimatePresence, motion } from 'framer-motion';
 
+const PRIORITY_CONFIG = {
+  low: {
+    label: 'Baja',
+    icon: ArrowDown,
+    className: 'bg-green-100 text-green-700 border-green-200',
+  },
+  medium: {
+    label: 'Media',
+    icon: AlertCircle,
+    className: 'bg-yellow-100 text-yellow-700 border-yellow-200',
+  },
+  high: {
+    label: 'Alta',
+    icon: ArrowUp,
+    className: 'bg-red-100 text-red-700 border-red-200',
+  },
+};
+
 const FormSchema = z.object({
   justification: z
     .string({ message: 'La justificación debe ser válida.' })
@@ -104,24 +122,6 @@ interface Batch {
   batch_articles: Article[];
   _open?: boolean;
 }
-
-const PRIORITY_CONFIG = {
-  low: {
-    label: 'Baja',
-    icon: ArrowDown,
-    className: 'bg-green-100 text-green-700 border-green-200',
-  },
-  medium: {
-    label: 'Media',
-    icon: AlertCircle,
-    className: 'bg-yellow-100 text-yellow-700 border-yellow-200',
-  },
-  high: {
-    label: 'Alta',
-    icon: ArrowUp,
-    className: 'bg-red-100 text-red-700 border-red-200',
-  },
-};
 
 export function CreateWarehouseRequisitionForm({ onClose, initialData, isEditing, id }: FormProps) {
   const { user } = useAuth();
