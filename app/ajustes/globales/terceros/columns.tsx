@@ -35,7 +35,6 @@ export const columns: ColumnDef<ThirdParty>[] = [
     meta: { title: 'Rol' },
     cell: ({ row }) => <p className="font-bold text-center">{row.original.third_party_role.label}</p>,
   },
-  ,
   {
     accessorKey: 'status',
     header: ({ column }) => <DataTableColumnHeader filter column={column} title="Estado" />,

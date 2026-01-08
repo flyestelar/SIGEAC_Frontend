@@ -23,11 +23,18 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
+import { motion, AnimatePresence } from 'framer-motion';
+import { ArrowDown, ArrowUp, AlertCircle, Link2 } from 'lucide-react';
 
 const FormSchema = z.object({
   justification: z
     .string({ message: 'La justificación debe ser válida.' })
     .min(2, { message: 'La justificación debe ser válida.' }),
+
+  priority: z.enum(['low', 'medium', 'high'], {
+    required_error: 'Debe seleccionar una prioridad',
+  }),
+  is_referred: z.boolean().optional(),
   aircraft_id: z.string().optional(),
   work_order: z.string().optional(),
   created_by: z.string(),
@@ -65,6 +72,24 @@ const FormSchema = z.object({
       },
     ),
 });
+
+const PRIORITY_CONFIG = {
+  low: {
+    label: 'Baja',
+    icon: ArrowDown,
+    className: 'bg-green-100 text-green-700 border-green-200',
+  },
+  medium: {
+    label: 'Media',
+    icon: AlertCircle,
+    className: 'bg-yellow-100 text-yellow-700 border-yellow-200',
+  },
+  high: {
+    label: 'Alta',
+    icon: ArrowUp,
+    className: 'bg-red-100 text-red-700 border-red-200',
+  },
+};
 
 type FormSchemaType = z.infer<typeof FormSchema>;
 
@@ -120,10 +145,11 @@ export function CreateWarehouseRequisitionForm({ onClose, initialData, isEditing
     resolver: zodResolver(FormSchema),
     defaultValues: {
       articles: [],
+      priority: 'medium',
+      is_referred: false,
     },
   });
-  console.log('ZOD ERRORS:', form.formState.errors);
-  console.log('Valores actuales del formulario:', form.watch());
+
   useEffect(() => {
     if (user && selectedCompany && selectedStation) {
       form.setValue('created_by', user.id.toString());
@@ -245,8 +271,8 @@ export function CreateWarehouseRequisitionForm({ onClose, initialData, isEditing
             control={form.control}
             name="work_order"
             render={({ field }) => (
-              <FormItem className="w-full">
-                <FormLabel>Ord. de Trabajo</FormLabel>
+              <FormItem>
+                <FormLabel>Justificación</FormLabel>
                 <FormControl>
                   <Input placeholder="Ej: Ingrese orden de trabajo..." {...field} />
                 </FormControl>
@@ -311,7 +337,98 @@ export function CreateWarehouseRequisitionForm({ onClose, initialData, isEditing
               </FormItem>
             )}
           />
+
+          <FormField
+            control={form.control}
+            name="work_order"
+            render={({ field }) => (
+              <FormItem className="w-full">
+                <FormLabel>Nº de Orden de Trabajo</FormLabel>
+                <FormControl>
+                  <Input placeholder="Ej: 281025-B1-01" {...field} />
+                </FormControl>
+                <FormMessage className="text-xs" />
+              </FormItem>
+            )}
+          />
         </div>
+        <div className="flex flex-wrap gap-4 items-center rounded-lg border p-4 bg-muted/30">
+          {/* PRIORIDAD */}
+          <FormField
+            control={form.control}
+            name="priority"
+            render={({ field }) => {
+              const config = PRIORITY_CONFIG[field.value];
+              const Icon = config.icon;
+
+              return (
+                <FormItem className="flex flex-col gap-2">
+                  <FormLabel>Prioridad</FormLabel>
+
+                  {/* Badge animado */}
+                  <AnimatePresence mode="wait">
+                    <motion.div
+                      key={field.value}
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.9 }}
+                      transition={{ duration: 0.2 }}
+                      className={`inline-flex items-center gap-2 px-3 py-1 rounded-full border text-sm font-medium ${config.className}`}
+                    >
+                      <Icon className="h-4 w-4" />
+                      {config.label}
+                    </motion.div>
+                  </AnimatePresence>
+
+                  {/* Select */}
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <FormControl>
+                      <SelectTrigger className="w-[160px]">
+                        <SelectValue />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {Object.entries(PRIORITY_CONFIG).map(([key, cfg]) => {
+                        const Ico = cfg.icon;
+                        return (
+                          <SelectItem key={key} value={key}>
+                            <div className="flex items-center gap-2">
+                              <Ico className="h-4 w-4" />
+                              {cfg.label}
+                            </div>
+                          </SelectItem>
+                        );
+                      })}
+                    </SelectContent>
+                  </Select>
+                </FormItem>
+              );
+            }}
+          />
+
+          {/* REFERIDA */}
+          <FormField
+            control={form.control}
+            name="is_referred"
+            render={({ field }) => (
+              <FormItem className="flex items-center gap-3 mt-6 border rounded-md px-4 py-2 bg-background shadow-sm">
+                <FormControl>
+                  <input
+                    type="checkbox"
+                    checked={field.value}
+                    onChange={(e) => field.onChange(e.target.checked)}
+                    className="h-4 w-4 accent-primary"
+                  />
+                </FormControl>
+                <div className="flex items-center gap-2">
+                  <Link2 className="h-4 w-4 text-muted-foreground" />
+                  <FormLabel className="mb-0 cursor-pointer">Solicitud referida</FormLabel>
+                </div>
+              </FormItem>
+            )}
+          />
+        </div>
+
         <FormField
           control={form.control}
           name="articles"
@@ -512,7 +629,6 @@ export function CreateWarehouseRequisitionForm({ onClose, initialData, isEditing
             </FormItem>
           )}
         />
-
         <FormField
           control={form.control}
           name="justification"
