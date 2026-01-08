@@ -680,7 +680,7 @@ export function CreateWarehouseRequisitionForm({ onClose, initialData, isEditing
                                     onChange={(e) =>
                                       handleArticleChange(batch.batch, index, 'part_number', e.target.value)
                                     }
-                                    className="h-9 text-sm"
+                                    className="h-9 text-sm w-full"
                                   />
 
                                   {batch.category === 'consumible' ? (
