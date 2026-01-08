@@ -14,18 +14,17 @@ import { useCompanyStore } from '@/stores/CompanyStore';
 import { Employee } from '@/types';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
-  AlertCircle,
-  ArrowDown,
-  ArrowUp,
   Check,
-  ChevronDown,
   ChevronsUpDown,
   FileText,
   Loader2,
   MinusCircle,
-  PlusCircle,
   Trash2,
   Upload,
+  AlertCircle,
+  Clock,
+  Flag,
+  CircleHelp,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -36,35 +35,20 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
-import { AnimatePresence, motion } from 'framer-motion';
+import { Badge } from '@/components/ui/badge';
+import { Switch } from '@/components/ui/switch';
 
-const PRIORITY_CONFIG = {
-  low: {
-    label: 'Baja',
-    icon: ArrowDown,
-    className: 'bg-green-100 text-green-700 border-green-200',
-  },
-  medium: {
-    label: 'Media',
-    icon: AlertCircle,
-    className: 'bg-yellow-100 text-yellow-700 border-yellow-200',
-  },
-  high: {
-    label: 'Alta',
-    icon: ArrowUp,
-    className: 'bg-red-100 text-red-700 border-red-200',
-  },
-};
-
+// Actualizar el esquema de validación
 const FormSchema = z.object({
   justification: z
     .string({ message: 'La justificación debe ser válida.' })
     .min(2, { message: 'La justificación debe ser válida.' }),
   aircraft_id: z.string().optional(),
   work_order: z.string().optional(),
-  priority: z.enum(['low', 'medium', 'high'], { required_error: 'Debe seleccionar una prioridad.' }),
   created_by: z.string(),
   requested_by: z.string({ message: 'Debe ingresar quien lo solicita.' }),
+  priority: z.enum(['low', 'medium', 'high']).default('medium'),
+  is_referred: z.boolean().default(false),
   document: z
     .array(z.instanceof(File))
     .refine((files) => files.every((file) => file.size <= 5 * 1024 * 1024), 'Cada archivo PDF debe ser menor a 5MB')
@@ -82,7 +66,7 @@ const FormSchema = z.object({
             alt_part_number: z.string().min(1, 'El número de parte es obligatorio').optional(),
             quantity: z.number().min(1, 'Debe ingresar una cantidad válida'),
             image: z.any().optional(),
-            unit: z.string().optional(), // Inicialmente opcional
+            unit: z.string().optional(),
           }),
         ),
       }),
@@ -120,26 +104,48 @@ interface Batch {
   category: string;
   batch_name: string;
   batch_articles: Article[];
-  _open?: boolean;
 }
+
+// Componente de prioridad con iconos
+const PriorityBadge = ({ priority }: { priority: 'low' | 'medium' | 'high' }) => {
+  const config = {
+    low: {
+      label: 'Baja',
+      icon: <Clock className="h-3 w-3" />,
+      className: 'bg-gray-100 text-gray-700 hover:bg-gray-100',
+    },
+    medium: {
+      label: 'Media',
+      icon: <Flag className="h-3 w-3" />,
+      className: 'bg-blue-100 text-blue-700 hover:bg-blue-100',
+    },
+    high: {
+      label: 'Alta',
+      icon: <AlertCircle className="h-3 w-3" />,
+      className: 'bg-red-100 text-red-700 hover:bg-red-100',
+    },
+  };
+
+  const { label, icon, className } = config[priority];
+
+  return (
+    <Badge variant="outline" className={cn('gap-1.5 font-normal', className)}>
+      {icon}
+      {label}
+    </Badge>
+  );
+};
 
 export function CreateWarehouseRequisitionForm({ onClose, initialData, isEditing, id }: FormProps) {
   const { user } = useAuth();
-
   const { mutate, data, isPending: isBatchesLoading } = useGetBatchesByLocationId();
-
   const { selectedCompany, selectedStation } = useCompanyStore();
-
   const { data: secondaryUnits, isLoading: secondaryUnitLoading } = useGetSecondaryUnits();
-
   const { createRequisition } = useCreateRequisition();
-
   const { updateRequisition } = useUpdateRequisition();
 
   const [selectedBatches, setSelectedBatches] = useState<Batch[]>([]);
-
   const [requestBy, setRequestedBy] = useState<Employee | null>(null);
-
   const [openRequestedBy, setOpenRequestedBy] = useState(false);
 
   const {
@@ -154,19 +160,17 @@ export function CreateWarehouseRequisitionForm({ onClose, initialData, isEditing
     resolver: zodResolver(FormSchema),
     defaultValues: {
       articles: [],
+      priority: 'medium',
+      is_referred: false,
     },
   });
-  console.log('ZOD ERRORS:', form.formState.errors);
-  console.log('Valores actuales del formulario:', form.watch());
+
   useEffect(() => {
     if (user && selectedCompany && selectedStation) {
       form.setValue('created_by', user.id.toString());
-      //form.setValue('company', selectedCompany.slug);
-      //form.setValue('location_id', selectedStation);
     }
     if (initialData && selectedCompany) {
-      form.reset(initialData); // Set initial form values
-      //form.setValue('company', selectedCompany.slug);
+      form.reset(initialData);
     }
   }, [user, initialData, form, selectedCompany, selectedStation]);
 
@@ -180,18 +184,12 @@ export function CreateWarehouseRequisitionForm({ onClose, initialData, isEditing
     form.setValue('articles', selectedBatches);
   }, [selectedBatches, form]);
 
-  // Maneja la selección de un lote.
   const handleBatchSelect = (batchName: string, batchId: string, batch_category: string) => {
     setSelectedBatches((prev) => {
-      // Verificar si el batch ya está seleccionado
       const exists = prev.some((b) => b.batch === batchId);
-
       if (exists) {
-        // Si ya existe, lo eliminamos
         return prev.filter((b) => b.batch !== batchId);
       }
-
-      // Si no existe, lo agregamos
       return [
         ...prev,
         {
@@ -204,7 +202,6 @@ export function CreateWarehouseRequisitionForm({ onClose, initialData, isEditing
     });
   };
 
-  // Maneja el cambio en un artículo.
   const handleArticleChange = (
     batchName: string,
     index: number,
@@ -225,7 +222,6 @@ export function CreateWarehouseRequisitionForm({ onClose, initialData, isEditing
     );
   };
 
-  // Agrega un nuevo artículo a un lote.
   const addArticle = (batchName: string) => {
     setSelectedBatches((prev) =>
       prev.map((batch) =>
@@ -273,51 +269,186 @@ export function CreateWarehouseRequisitionForm({ onClose, initialData, isEditing
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col space-y-3">
-        <div className="flex gap-2 items-center justify-center">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col space-y-4">
+        {/* Sección de información básica */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           <FormField
             control={form.control}
             name="work_order"
             render={({ field }) => (
-              <FormItem className="w-full">
-                <FormLabel>Ord. de Trabajo</FormLabel>
+              <FormItem>
+                <FormLabel className="text-sm font-medium">Orden de Trabajo</FormLabel>
                 <FormControl>
-                  <Input placeholder="Ej: Ingrese orden de trabajo..." {...field} />
+                  <Input placeholder="Ej: OT-2024-001" {...field} className="h-9" />
                 </FormControl>
                 <FormMessage className="text-xs" />
               </FormItem>
             )}
           />
+
           <FormField
             control={form.control}
-            name="requested_by"
+            name="aircraft_id"
             render={({ field }) => (
-              <FormItem className="flex flex-col mt-2.5 w-full">
-                <FormLabel>Empleado Responsable</FormLabel>
-                <Popover open={openRequestedBy} onOpenChange={setOpenRequestedBy}>
+              <FormItem>
+                <FormLabel className="text-sm font-medium">Aeronave</FormLabel>
+                <Popover>
                   <PopoverTrigger asChild>
-                    <Button
-                      disabled={employeesLoading || employeesError}
-                      variant="outline"
-                      role="combobox"
-                      aria-expanded={openRequestedBy}
-                      className="justify-between"
-                    >
-                      {requestBy
-                        ? `${requestBy.first_name} ${requestBy.last_name}`
-                        : (() => {
-                            const dni = field.value;
-                            const found = employees?.find((e) => String(e.dni) === String(dni));
-                            return found ? `${found.first_name} ${found.last_name}` : 'Selec. el técnico';
-                          })()}
-                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                    </Button>
+                    <FormControl>
+                      <Button
+                        disabled={isAircraftsLoading}
+                        variant="outline"
+                        role="combobox"
+                        className={cn(
+                          'w-full h-9 justify-between font-normal',
+                          !field.value && 'text-muted-foreground',
+                        )}
+                      >
+                        {isAircraftsLoading && <Loader2 className="size-3.5 animate-spin mr-2" />}
+                        {field.value
+                          ? aircrafts?.find((aircraft) => aircraft.id.toString() === field.value)?.acronym
+                          : 'Seleccionar aeronave'}
+                        <ChevronsUpDown className="ml-2 h-3.5 w-3.5 shrink-0 opacity-50" />
+                      </Button>
+                    </FormControl>
                   </PopoverTrigger>
-                  <PopoverContent className="w-[260px] p-0">
+                  <PopoverContent className="w-[200px] p-0">
                     <Command>
-                      <CommandInput placeholder="Selec. el técnico..." />
+                      <CommandInput placeholder="Buscar aeronave..." className="h-9" />
                       <CommandList>
-                        <CommandEmpty>No se han encontrado técnicos...</CommandEmpty>
+                        <CommandEmpty className="py-2 text-xs text-center">
+                          No se ha encontrado ninguna aeronave.
+                        </CommandEmpty>
+                        <CommandGroup>
+                          {aircrafts?.map((aircraft) => (
+                            <CommandItem
+                              value={aircraft.id.toString()}
+                              key={aircraft.id}
+                              onSelect={() => {
+                                form.setValue('aircraft_id', aircraft.id.toString());
+                              }}
+                              className="py-2 text-sm"
+                            >
+                              <Check
+                                className={cn(
+                                  'mr-2 h-3.5 w-3.5',
+                                  aircraft.id.toString() === field.value ? 'opacity-100' : 'opacity-0',
+                                )}
+                              />
+                              {aircraft.acronym}
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
+                <FormMessage className="text-xs" />
+              </FormItem>
+            )}
+          />
+        </div>
+
+        {/* Sección de prioridad y referido */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <FormField
+            control={form.control}
+            name="priority"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-sm font-medium">Prioridad</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger className="h-9">
+                      <SelectValue>
+                        {field.value ? (
+                          <div className="flex items-center gap-2">
+                            <PriorityBadge priority={field.value} />
+                          </div>
+                        ) : (
+                          'Seleccionar prioridad'
+                        )}
+                      </SelectValue>
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="low">
+                      <div className="flex items-center gap-2 py-1">
+                        <Clock className="h-3.5 w-3.5" />
+                        <span>Baja</span>
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="medium">
+                      <div className="flex items-center gap-2 py-1">
+                        <Flag className="h-3.5 w-3.5" />
+                        <span>Media</span>
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="high">
+                      <div className="flex items-center gap-2 py-1">
+                        <AlertCircle className="h-3.5 w-3.5" />
+                        <span>Alta</span>
+                      </div>
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormMessage className="text-xs" />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="is_referred"
+            render={({ field }) => (
+              <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
+                <div className="space-y-0.5">
+                  <FormLabel className="text-sm font-medium flex items-center gap-2">
+                    <CircleHelp className="h-3.5 w-3.5" />
+                    ¿Es referido?
+                  </FormLabel>
+                  <p className="text-xs text-muted-foreground">Marcar si esta requisición está referida</p>
+                </div>
+                <FormControl>
+                  <Switch checked={field.value} onCheckedChange={field.onChange} />
+                </FormControl>
+              </FormItem>
+            )}
+          />
+        </div>
+
+        {/* Responsable */}
+        <FormField
+          control={form.control}
+          name="requested_by"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="text-sm font-medium">Empleado Responsable</FormLabel>
+              <Popover open={openRequestedBy} onOpenChange={setOpenRequestedBy}>
+                <PopoverTrigger asChild>
+                  <Button
+                    disabled={employeesLoading || employeesError}
+                    variant="outline"
+                    role="combobox"
+                    aria-expanded={openRequestedBy}
+                    className="w-full h-9 justify-between font-normal"
+                  >
+                    {requestBy
+                      ? `${requestBy.first_name} ${requestBy.last_name}`
+                      : (() => {
+                          const dni = field.value;
+                          const found = employees?.find((e) => String(e.dni) === String(dni));
+                          return found ? `${found.first_name} ${found.last_name}` : 'Seleccionar técnico';
+                        })()}
+                    <ChevronsUpDown className="ml-2 h-3.5 w-3.5 shrink-0 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-full p-0">
+                  <Command>
+                    <CommandInput placeholder="Buscar técnico..." className="h-9" />
+                    <CommandList>
+                      <CommandEmpty className="py-2 text-xs text-center">No se han encontrado técnicos...</CommandEmpty>
+                      <CommandGroup>
                         {employees?.map((e) => (
                           <CommandItem
                             value={`${e.first_name} ${e.last_name} ${e.dni}`}
@@ -327,375 +458,222 @@ export function CreateWarehouseRequisitionForm({ onClose, initialData, isEditing
                               form.setValue('requested_by', String(e.dni), { shouldValidate: true, shouldDirty: true });
                               setOpenRequestedBy(false);
                             }}
+                            className="py-2 text-sm"
                           >
                             <Check
                               className={cn(
-                                'mr-2 h-4 w-4',
+                                'mr-2 h-3.5 w-3.5',
                                 String(requestBy?.dni ?? field.value) === String(e.dni) ? 'opacity-100' : 'opacity-0',
                               )}
                             />
                             {`${e.first_name} ${e.last_name}`}
                           </CommandItem>
                         ))}
-                      </CommandList>
-                    </Command>
-                  </PopoverContent>
-                </Popover>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
-        <FormField
-          control={form.control}
-          name="priority"
-          render={({ field }) => {
-            const config = PRIORITY_CONFIG[field.value];
-            const Icon = config.icon;
-            return (
-              <FormItem className="w-[240px] rounded-xl border bg-muted/30 p-4 space-y-3">
-                <FormLabel>Prioridad</FormLabel>
-
-                <AnimatePresence mode="wait">
-                  <motion.div
-                    key={field.value}
-                    initial={{ opacity: 0, y: -6 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 6 }}
-                    transition={{ duration: 0.2 }}
-                    className={cn(
-                      'flex items-center justify-center gap-2 rounded-full border px-3 py-2 text-sm font-semibold',
-                      config.className,
-                    )}
-                  >
-                    <Icon className="h-4 w-4" />
-                    {config.label}
-                  </motion.div>
-                </AnimatePresence>
-
-                <Select value={field.value} onValueChange={field.onChange}>
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {Object.entries(PRIORITY_CONFIG).map(([key, cfg]) => {
-                      const Ico = cfg.icon;
-                      return (
-                        <SelectItem key={key} value={key}>
-                          <div className="flex items-center gap-2">
-                            <Ico className="h-4 w-4" />
-                            {cfg.label}
-                          </div>
-                        </SelectItem>
-                      );
-                    })}
-                  </SelectContent>
-                </Select>
-              </FormItem>
-            );
-          }}
-        />
-        <FormField
-          control={form.control}
-          name="articles"
-          render={({ field }: { field: any }) => (
-            <FormItem className="flex flex-col">
-              <div className="flex gap-4 items-end">
-                <FormItem className="flex flex-col w-[200px]">
-                  <FormLabel>Artículos</FormLabel>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <FormControl>
-                        <Button
-                          variant="outline"
-                          disabled={isBatchesLoading}
-                          role="combobox"
-                          className={cn('justify-between', selectedBatches.length === 0 && 'text-muted-foreground')}
-                        >
-                          {selectedBatches.length > 0
-                            ? `${selectedBatches.length} reng. seleccionados`
-                            : 'Selec. un renglón...'}
-                          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                        </Button>
-                      </FormControl>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-[200px] p-0">
-                      <Command>
-                        <CommandInput placeholder="Buscar..." />
-                        <CommandList>
-                          <CommandEmpty>No existen renglones...</CommandEmpty>
-                          <CommandGroup>
-                            <div className="flex justify-center m-2">
-                              <CreateBatchDialog />
-                            </div>
-                            {data &&
-                              data.map((batch) => (
-                                <CommandItem
-                                  key={batch.name}
-                                  value={batch.name}
-                                  onSelect={() => handleBatchSelect(batch.name, batch.id.toString(), batch.category)}
-                                >
-                                  <Check
-                                    className={cn(
-                                      '',
-                                      selectedBatches.some((b) => b.batch === batch.id.toString())
-                                        ? 'opacity-100'
-                                        : 'opacity-0',
-                                    )}
-                                  />
-                                  {batch.name}
-                                </CommandItem>
-                              ))}
-                          </CommandGroup>
-                        </CommandList>
-                      </Command>
-                    </PopoverContent>
-                  </Popover>
-                </FormItem>
-
-                <FormField
-                  control={form.control}
-                  name="aircraft_id"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-col w-[200px]">
-                      <FormLabel>Aeronave</FormLabel>
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <FormControl>
-                            <Button
-                              disabled={isAircraftsLoading}
-                              variant="outline"
-                              role="combobox"
-                              className={cn('justify-between', !field.value && 'text-muted-foreground')}
-                            >
-                              {isAircraftsLoading && <Loader2 className="size-4 animate-spin mr-2" />}
-                              {field.value
-                                ? aircrafts?.find((aircraft) => aircraft.id.toString() === field.value)?.acronym
-                                : 'Selec. la aeronave...'}
-                              <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                            </Button>
-                          </FormControl>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-[200px] p-0">
-                          <Command>
-                            <CommandInput placeholder="Busque una aeronave..." />
-                            <CommandList>
-                              <CommandEmpty className="text-sm p-2 text-center">
-                                No se ha encontrado ninguna aeronave.
-                              </CommandEmpty>
-                              <CommandGroup>
-                                {aircrafts?.map((aircraft) => (
-                                  <CommandItem
-                                    value={aircraft.id.toString()}
-                                    key={aircraft.id}
-                                    onSelect={() => {
-                                      form.setValue('aircraft_id', aircraft.id.toString());
-                                    }}
-                                  >
-                                    <Check
-                                      className={cn(
-                                        'mr-2 h-4 w-4',
-                                        aircraft.id.toString() === field.value ? 'opacity-100' : 'opacity-0',
-                                      )}
-                                    />
-                                    {aircraft.acronym}
-                                  </CommandItem>
-                                ))}
-                              </CommandGroup>
-                            </CommandList>
-                          </Command>
-                        </PopoverContent>
-                      </Popover>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-              <div className="mt-4 space-y-4">
-                <AnimatePresence>
-                  {selectedBatches.map((batch) => (
-                    <motion.div
-                      key={batch.batch}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -10 }}
-                      transition={{ duration: 0.2 }}
-                      className="rounded-xl border bg-background shadow-sm"
-                    >
-                      {/* ================= HEADER ================= */}
-                      <div
-                        className="flex items-center justify-between px-4 py-3 cursor-pointer hover:bg-muted/40"
-                        onClick={() =>
-                          setSelectedBatches((prev) =>
-                            prev.map((b) => (b.batch === batch.batch ? { ...b, _open: !b._open } : b)),
-                          )
-                        }
-                      >
-                        <div className="flex items-center gap-3">
-                          <ChevronDown className={cn('h-4 w-4 transition-transform', batch._open && 'rotate-180')} />
-                          <div>
-                            <p className="font-semibold">{batch.batch_name}</p>
-                            <p className="text-xs text-muted-foreground">{batch.batch_articles.length} artículo(s)</p>
-                          </div>
-                        </div>
-
-                        <div className="flex items-center gap-2">
-                          <Button
-                            type="button"
-                            size="icon"
-                            variant="ghost"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              addArticle(batch.batch);
-                            }}
-                          >
-                            <PlusCircle className="h-4 w-4" />
-                          </Button>
-
-                          <Button
-                            type="button"
-                            size="icon"
-                            variant="ghost"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              removeBatch(batch.batch);
-                            }}
-                            className="hover:text-red-500"
-                          >
-                            <MinusCircle className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </div>
-
-                      {/* ================= BODY ================= */}
-                      <AnimatePresence>
-                        {batch._open && (
-                          <motion.div
-                            initial={{ height: 0, opacity: 0 }}
-                            animate={{ height: 'auto', opacity: 1 }}
-                            exit={{ height: 0, opacity: 0 }}
-                            transition={{ duration: 0.25 }}
-                            className="overflow-hidden border-t"
-                          >
-                            <ScrollArea className={cn('px-4 py-3', batch.batch_articles.length > 3 && 'h-[260px]')}>
-                              <div className="space-y-3">
-                                {batch.batch_articles.map((article, index) => (
-                                  <div
-                                    key={index}
-                                    className="grid grid-cols-12 gap-3 items-center rounded-lg border p-3"
-                                  >
-                                    <Input
-                                      className="col-span-3"
-                                      placeholder="N° Parte"
-                                      onChange={(e) =>
-                                        handleArticleChange(batch.batch, index, 'part_number', e.target.value)
-                                      }
-                                    />
-
-                                    <Input
-                                      className="col-span-3"
-                                      placeholder="N/P Alterno"
-                                      onChange={(e) =>
-                                        handleArticleChange(batch.batch, index, 'alt_part_number', e.target.value)
-                                      }
-                                    />
-
-                                    <Select
-                                      onValueChange={(value) => handleArticleChange(batch.batch, index, 'unit', value)}
-                                    >
-                                      <SelectTrigger className="col-span-2">
-                                        <SelectValue placeholder="Unidad" />
-                                      </SelectTrigger>
-                                      <SelectContent>
-                                        {secondaryUnits?.map((secU) => (
-                                          <SelectItem key={secU.id} value={secU.id.toString()}>
-                                            {secU.secondary_unit}
-                                          </SelectItem>
-                                        ))}
-                                      </SelectContent>
-                                    </Select>
-
-                                    <Input
-                                      className="col-span-2"
-                                      type="number"
-                                      placeholder="Cant."
-                                      onChange={(e) =>
-                                        handleArticleChange(batch.batch, index, 'quantity', Number(e.target.value))
-                                      }
-                                    />
-
-                                    <Input
-                                      className="col-span-1"
-                                      type="file"
-                                      accept="image/*"
-                                      onChange={(e) =>
-                                        handleArticleChange(batch.batch, index, 'image', e.target.files?.[0])
-                                      }
-                                    />
-
-                                    <Button
-                                      type="button"
-                                      size="icon"
-                                      variant="ghost"
-                                      onClick={() => removeArticleFromBatch(batch.batch, index)}
-                                      className="col-span-1 hover:text-red-500"
-                                    >
-                                      <Trash2 className="h-4 w-4" />
-                                    </Button>
-                                  </div>
-                                ))}
-                              </div>
-                            </ScrollArea>
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
-                    </motion.div>
-                  ))}
-                </AnimatePresence>
-              </div>
-
-              <FormMessage />
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
+              <FormMessage className="text-xs" />
             </FormItem>
           )}
         />
 
+        {/* Artículos */}
+        <FormField
+          control={form.control}
+          name="articles"
+          render={({ field }: { field: any }) => (
+            <FormItem>
+              <div className="flex items-center justify-between mb-2">
+                <FormLabel className="text-sm font-medium">Artículos</FormLabel>
+                <CreateBatchDialog />
+              </div>
+
+              <Popover>
+                <PopoverTrigger asChild>
+                  <FormControl>
+                    <Button
+                      variant="outline"
+                      disabled={isBatchesLoading}
+                      role="combobox"
+                      className={cn(
+                        'w-full h-9 justify-between font-normal',
+                        selectedBatches.length === 0 && 'text-muted-foreground',
+                      )}
+                    >
+                      {selectedBatches.length > 0
+                        ? `${selectedBatches.length} renglón(es) seleccionado(s)`
+                        : 'Seleccionar renglones...'}
+                      <ChevronsUpDown className="ml-2 h-3.5 w-3.5 shrink-0 opacity-50" />
+                    </Button>
+                  </FormControl>
+                </PopoverTrigger>
+                <PopoverContent className="w-full p-0">
+                  <Command>
+                    <CommandInput placeholder="Buscar renglones..." className="h-9" />
+                    <CommandList>
+                      <CommandEmpty className="py-2 text-xs text-center">No existen renglones...</CommandEmpty>
+                      <CommandGroup>
+                        {data?.map((batch) => (
+                          <CommandItem
+                            key={batch.name}
+                            value={batch.name}
+                            onSelect={() => handleBatchSelect(batch.name, batch.id.toString(), batch.category)}
+                            className="py-2 text-sm"
+                          >
+                            <Check
+                              className={cn(
+                                'mr-2 h-3.5 w-3.5',
+                                selectedBatches.some((b) => b.batch === batch.id.toString())
+                                  ? 'opacity-100'
+                                  : 'opacity-0',
+                              )}
+                            />
+                            {batch.name}
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
+
+              {/* Lista de batches seleccionados */}
+              {selectedBatches.length > 0 && (
+                <div className="mt-3 space-y-3">
+                  <ScrollArea className={cn('', selectedBatches.length > 2 ? 'h-[250px]' : '')}>
+                    {selectedBatches.map((batch) => (
+                      <div key={batch.batch} className="mb-3 p-3 border rounded-lg">
+                        <div className="flex items-center justify-between mb-2">
+                          <h4 className="font-medium text-sm">{batch.batch_name}</h4>
+                          <Button
+                            variant="ghost"
+                            type="button"
+                            size="sm"
+                            onClick={() => removeBatch(batch.batch)}
+                            className="h-7 w-7 p-0 hover:bg-red-50 hover:text-red-600"
+                          >
+                            <MinusCircle className="h-3.5 w-3.5" />
+                          </Button>
+                        </div>
+
+                        <div className="space-y-2">
+                          {batch.batch_articles.map((article, index) => (
+                            <div key={index} className="grid grid-cols-1 md:grid-cols-5 gap-2 items-center">
+                              <Input
+                                placeholder="Número de parte"
+                                value={article.part_number}
+                                onChange={(e) => handleArticleChange(batch.batch, index, 'part_number', e.target.value)}
+                                className="h-8 text-sm"
+                              />
+                              {batch.category === 'consumible' && (
+                                <Select
+                                  disabled={secondaryUnitLoading}
+                                  onValueChange={(value) => handleArticleChange(batch.batch, index, 'unit', value)}
+                                  value={article.unit}
+                                >
+                                  <SelectTrigger className="h-8 text-sm">
+                                    <SelectValue placeholder="Unidad Sec." />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    {secondaryUnits?.map((secU) => (
+                                      <SelectItem key={secU.id} value={secU.id.toString()} className="text-sm">
+                                        {secU.secondary_unit}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                              )}
+
+                              <Input
+                                type="number"
+                                placeholder="Cantidad"
+                                value={article.quantity || ''}
+                                onChange={(e) =>
+                                  handleArticleChange(batch.batch, index, 'quantity', Number(e.target.value))
+                                }
+                                className="h-8 text-sm"
+                              />
+
+                              <div className="flex items-center gap-2">
+                                <Input
+                                  type="file"
+                                  accept="image/*"
+                                  className="cursor-pointer h-8 text-xs"
+                                  onChange={(e) =>
+                                    handleArticleChange(batch.batch, index, 'image', e.target.files?.[0])
+                                  }
+                                />
+
+                                <Button
+                                  variant="ghost"
+                                  type="button"
+                                  size="sm"
+                                  onClick={() => removeArticleFromBatch(batch.batch, index)}
+                                  className="h-7 w-7 p-0 hover:bg-red-50 hover:text-red-600"
+                                >
+                                  <MinusCircle className="h-3.5 w-3.5" />
+                                </Button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => addArticle(batch.batch)}
+                          className="mt-2 text-xs h-7"
+                        >
+                          + Agregar artículo
+                        </Button>
+                      </div>
+                    ))}
+                  </ScrollArea>
+                </div>
+              )}
+              <FormMessage className="text-xs" />
+            </FormItem>
+          )}
+        />
+
+        {/* Justificación */}
         <FormField
           control={form.control}
           name="justification"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Justificación</FormLabel>
+              <FormLabel className="text-sm font-medium">Justificación</FormLabel>
               <FormControl>
-                <Textarea placeholder="Ej: Necesidad de la pieza X para instalación..." {...field} />
+                <Textarea
+                  placeholder="Describa la necesidad de los materiales..."
+                  {...field}
+                  className="min-h-[80px] text-sm"
+                />
               </FormControl>
               <FormMessage className="text-xs" />
             </FormItem>
           )}
         />
+
+        {/* Documentos */}
         <FormField
           control={form.control}
           name="document"
           render={({ field }) => {
-            // Asegurarnos de que siempre trabajemos con un array
             const files = field.value || [];
 
-            // Función para manejar la selección con validación
             const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
               const selectedFiles = e.target.files;
               if (selectedFiles) {
                 const fileArray = Array.from(selectedFiles);
-
-                // Validar que sean PDFs
                 const pdfFiles = fileArray.filter(
                   (file) => file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf'),
                 );
-
-                // Validar tamaño (5MB)
                 const validFiles = pdfFiles.filter((file) => file.size <= 5 * 1024 * 1024);
 
-                // Mostrar alertas para archivos inválidos
                 fileArray.forEach((file) => {
                   const isPDF = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
                   const isSizeValid = file.size <= 5 * 1024 * 1024;
@@ -712,70 +690,65 @@ export function CreateWarehouseRequisitionForm({ onClose, initialData, isEditing
                   field.onChange(newFiles);
                 }
               }
-
-              // Limpiar el input para permitir seleccionar el mismo archivo nuevamente
               e.target.value = '';
             };
 
             return (
               <FormItem>
-                <FormLabel>Documentos PDF Adjuntos</FormLabel>
-                <div className="space-y-4">
+                <FormLabel className="text-sm font-medium">Documentos Adjuntos</FormLabel>
+
+                <div className="space-y-3">
                   {/* Área de carga */}
-                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 hover:border-gray-400 transition-colors">
-                    <div className="flex items-center gap-3">
-                      <Upload className="h-5 w-5 text-gray-400" />
-                      <div className="flex-1">
-                        <FormControl>
-                          <Input
-                            type="file"
-                            multiple
-                            accept=".pdf,application/pdf"
-                            onChange={handleFileChange}
-                            className="cursor-pointer"
-                          />
-                        </FormControl>
-                        <p className="text-xs text-gray-500 mt-1">
-                          Arrastra o selecciona archivos PDF (máx. 5MB cada uno)
-                        </p>
+                  <div className="border border-dashed border-gray-200 rounded-lg p-3 hover:border-gray-300 transition-colors">
+                    <label className="cursor-pointer">
+                      <div className="flex items-center gap-2">
+                        <Upload className="h-4 w-4 text-gray-400" />
+                        <div className="flex-1">
+                          <FormControl>
+                            <Input
+                              type="file"
+                              multiple
+                              accept=".pdf,application/pdf"
+                              onChange={handleFileChange}
+                              className="cursor-pointer border-0 h-auto p-0"
+                            />
+                          </FormControl>
+                          <p className="text-xs text-gray-500 mt-1">
+                            Haga clic o arrastre archivos PDF (máx. 5MB cada uno)
+                          </p>
+                        </div>
                       </div>
-                    </div>
+                    </label>
                   </div>
 
                   {/* Lista de archivos */}
                   {files.length > 0 && (
                     <div className="space-y-2">
                       <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium">Archivos seleccionados ({files.length})</span>
+                        <span className="text-sm font-medium">Archivos ({files.length})</span>
                         <Button
                           type="button"
                           variant="ghost"
                           size="sm"
                           onClick={() => field.onChange([])}
-                          className="text-red-500 hover:text-red-700"
+                          className="text-red-600 hover:text-red-700 h-7 text-xs"
                         >
-                          <Trash2 className="h-4 w-4 mr-1" />
-                          Limpiar todos
+                          <Trash2 className="h-3.5 w-3.5 mr-1" />
+                          Limpiar
                         </Button>
                       </div>
 
-                      <div className="space-y-2 max-h-60 overflow-y-auto">
+                      <div className="space-y-1.5 max-h-48 overflow-y-auto">
                         {files.map((file: File, index: number) => (
                           <div
                             key={`${file.name}-${index}`}
-                            className="flex items-center justify-between p-3 border-black rounded-md"
+                            className="flex items-center justify-between p-2 border rounded-md hover:bg-gray-50"
                           >
-                            <div className="flex items-center gap-3">
-                              <div className="bg-red-100 p-2 rounded">
-                                <FileText className="h-4 w-4 text-red-600" />
-                              </div>
-                              <div>
-                                <p className="font-medium text-sm truncate max-w-xs">{file.name}</p>
-                                <div className="flex items-center gap-3 text-xs text-gray-500">
-                                  <span>{(file.size / 1024).toFixed(0)} KB</span>
-                                  <span>•</span>
-                                  <span className="px-1.5 py-0.5 bg-red-100 text-red-700 rounded">PDF</span>
-                                </div>
+                            <div className="flex items-center gap-2 flex-1 min-w-0">
+                              <FileText className="h-4 w-4 text-red-500 flex-shrink-0" />
+                              <div className="min-w-0 flex-1">
+                                <p className="text-sm font-medium truncate">{file.name}</p>
+                                <p className="text-xs text-gray-500">{(file.size / 1024).toFixed(0)} KB • PDF</p>
                               </div>
                             </div>
                             <Button
@@ -786,9 +759,9 @@ export function CreateWarehouseRequisitionForm({ onClose, initialData, isEditing
                                 const updatedFiles = files.filter((_: File, i: number) => i !== index);
                                 field.onChange(updatedFiles);
                               }}
-                              className="h-8 w-8 p-0 hover:bg-red-50"
+                              className="h-6 w-6 p-0 hover:bg-red-50 hover:text-red-600"
                             >
-                              <Trash2 className="h-4 w-4" />
+                              <Trash2 className="h-3.5 w-3.5" />
                             </Button>
                           </div>
                         ))}
@@ -796,18 +769,21 @@ export function CreateWarehouseRequisitionForm({ onClose, initialData, isEditing
                     </div>
                   )}
                 </div>
-                <FormMessage />
+                <FormMessage className="text-xs" />
               </FormItem>
             );
           }}
         />
-        <div className="flex justify-between items-center gap-x-4">
+
+        {/* Separador y botón de envío */}
+        <div className="flex items-center gap-3 pt-2">
           <Separator className="flex-1" />
-          <p className="text-muted-foreground">SIGEAC</p>
+          <span className="text-xs text-muted-foreground">SIGEAC</span>
           <Separator className="flex-1" />
         </div>
-        <Button disabled={createRequisition.isPending || updateRequisition.isPending}>
-          {isEditing ? 'Editar Requisición' : 'Generar Requisición'}
+
+        <Button type="submit" disabled={createRequisition.isPending || updateRequisition.isPending} className="mt-2">
+          {isEditing ? 'Actualizar Requisición' : 'Generar Requisición'}
           {(createRequisition.isPending || updateRequisition.isPending) && (
             <Loader2 className="ml-2 h-4 w-4 animate-spin" />
           )}
