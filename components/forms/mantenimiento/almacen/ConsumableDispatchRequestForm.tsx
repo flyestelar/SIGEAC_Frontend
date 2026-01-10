@@ -14,6 +14,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { useAuth } from '@/contexts/AuthContext';
+import { useGetVendors } from '@/hooks/general/proveedores/useGetVendors';
 import { useGetWarehousesEmployees } from '@/hooks/mantenimiento/almacen/empleados/useGetWarehousesEmployees';
 import { useGetBatchesWithInWarehouseArticles } from '@/hooks/mantenimiento/almacen/renglones/useGetBatchesWithInWarehouseArticles';
 import { useGetMaintenanceAircrafts } from '@/hooks/planificacion/useGetMaintenanceAircrafts';
@@ -21,7 +22,7 @@ import { useGetWorkshopsByLocation } from '@/hooks/sistema/empresas/talleres/use
 import { useGetEmployeesByDepartment } from '@/hooks/sistema/useGetEmployeesByDepartament';
 import { cn } from '@/lib/utils';
 import { useCompanyStore } from '@/stores/CompanyStore';
-import { Batch, Consumable, Employee } from '@/types';
+import { Batch, Consumable, Employee, Vendor } from '@/types';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -32,15 +33,25 @@ import { z } from 'zod';
 
 const FormSchema = z
   .object({
-    requested_by: z.string(),
-    request_number: z.string(),
-    dispatch_type: z.enum(['aircraft', 'workshop'], {
-      message: 'Debe seleccionar si el despacho es para una Aeronave o un Taller.',
+    // 1. Campos base
+    dispatch_type: z.enum(['aircraft', 'workshop', 'loan'], {
+      message: 'Debe seleccionar el tipo de despacho.',
     }),
-    workshop_id: z.string().optional(),
-    delivered_by: z.string(),
-    aircraft_id: z.string().optional(),
+    request_number: z.string().min(1, 'El número de requerimiento es obligatorio'),
     submission_date: z.date({ message: 'Debe ingresar la fecha.' }),
+    delivered_by: z.string().min(1, 'Debe seleccionar quién entrega.'),
+    status: z.string(),
+
+    // 2. Campos condicionales (Todos opcionales inicialmente)
+    requested_by: z.string().optional(),
+    aircraft_id: z.string().optional(),
+    workshop_id: z.string().optional(),
+    vendor_id: z.string().optional(),
+
+    // 3. Justificación (Corregido: .min(1) para que sea obligatorio con mensaje personalizado)
+    justification: z.string().min(1, 'Debe ingresar una justificación de la salida.'),
+
+    // 4. Artículos
     articles: z
       .array(
         z.object({
@@ -48,20 +59,58 @@ const FormSchema = z
           serial: z.string().nullable(),
           quantity: z.number().positive('La cantidad debe ser mayor a 0'),
           batch_id: z.number(),
-          unit: z.enum(['litros', 'mililitros']).optional(), // solo si batch es L
+          unit: z.enum(['litros', 'mililitros']).optional(),
         }),
       )
       .min(1, 'Debe agregar al menos un artículo'),
-    justification: z.string({ message: 'Debe ingresar una justificación de la salida.' }),
-    status: z.string(),
   })
   .superRefine((d, ctx) => {
-    if (!d.aircraft_id && !d.workshop_id) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: 'Seleccione una aeronave o un taller.',
-        path: ['aircraft_id'],
-      });
+    // REGLA PARA AIRCRAFT: Obliga a tener aircraft_id y requested_by
+    if (d.dispatch_type === 'aircraft') {
+      if (!d.aircraft_id) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'Seleccione una aeronave.',
+          path: ['aircraft_id'],
+        });
+      }
+      if (!d.requested_by || d.requested_by.trim() === '') {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'Debe seleccionar el técnico responsable.',
+          path: ['requested_by'],
+        });
+      }
+    }
+
+    // REGLA PARA WORKSHOP: Obliga a tener workshop_id y requested_by
+    if (d.dispatch_type === 'workshop') {
+      if (!d.workshop_id) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'Seleccione un taller.',
+          path: ['workshop_id'],
+        });
+      }
+      if (!d.requested_by || d.requested_by.trim() === '') {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'Debe seleccionar el técnico responsable.',
+          path: ['requested_by'],
+        });
+      }
+    }
+
+    // REGLA PARA LOAN: Obliga a tener vendor_id, pero IGNORA requested_by (es opcional)
+    if (d.dispatch_type === 'loan') {
+      if (!d.vendor_id || d.vendor_id.trim() === '') {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'Debe seleccionar la empresa para el préstamo.',
+          path: ['vendor_id'],
+        });
+      }
+      // Aquí no validamos requested_by, por lo tanto queda como opcional/nullable.
     }
   });
 
@@ -79,6 +128,9 @@ export function ConsumableDispatchForm({ onClose }: FormProps) {
   const [requestBy, setRequestedBy] = useState<Employee>();
 
   const { createDispatchRequest } = useCreateDispatchRequest();
+
+  const { data: vendors, isLoading: isVendorsLoading, isError: isVendorsError } = useGetVendors(selectedCompany?.slug);
+
   const {
     data: aircrafts,
     isLoading: isAircraftsLoading,
@@ -218,6 +270,15 @@ export function ConsumableDispatchForm({ onClose }: FormProps) {
                         onChange={() => field.onChange('workshop')}
                       />
                       <span>Taller</span>
+                    </label>
+                    <label className="flex items-center space-x-2">
+                      <input
+                        type="radio"
+                        value="loan"
+                        checked={field.value === 'loan'}
+                        onChange={() => field.onChange('loan')}
+                      />
+                      <span>Prestamo</span>
                     </label>
                   </div>
                 </FormControl>
@@ -396,92 +457,165 @@ export function ConsumableDispatchForm({ onClose }: FormProps) {
 
         {/* Entregado / Recibe */}
         <div className="grid grid-cols-2 gap-2">
-          <FormField
-            control={form.control}
-            name="delivered_by"
-            render={({ field }) => (
-              <FormItem className="w-full">
-                <FormLabel>Entregado por:</FormLabel>
-                <Select onValueChange={field.onChange} value={field.value}>
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Seleccione el responsable..." />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {warehouseEmployeesLoading && <Loader2 className="size-4 animate-spin mx-2 my-1" />}
-                    {warehouseEmployeesError && (
-                      <div className="px-2 py-1 text-destructive text-sm">Error cargando personal de almacén</div>
-                    )}
-                    {warehouseEmployees?.map((employee) => (
-                      <SelectItem key={employee.dni} value={`${employee.dni}`}>
-                        {employee.first_name} {employee.last_name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          {
+            <FormField
+              control={form.control}
+              name="delivered_by"
+              render={({ field }) => (
+                <FormItem className="w-full">
+                  <FormLabel>Entregado por:</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Seleccione el responsable..." />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {warehouseEmployeesLoading && <Loader2 className="size-4 animate-spin mx-2 my-1" />}
+                      {warehouseEmployeesError && (
+                        <div className="px-2 py-1 text-destructive text-sm">Error cargando personal de almacén</div>
+                      )}
+                      {warehouseEmployees?.map((employee) => (
+                        <SelectItem key={employee.dni} value={`${employee.dni}`}>
+                          {employee.first_name} {employee.last_name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          }
 
-          <FormField
-            control={form.control}
-            name="requested_by"
-            render={({ field }) => (
-              <FormItem className="flex flex-col mt-2.5 w-full">
-                <FormLabel>Empleado Responsable</FormLabel>
-                <Popover open={openRequestedBy} onOpenChange={setOpenRequestedBy}>
-                  <PopoverTrigger asChild>
-                    <Button
-                      disabled={employeesLoading || employeesError}
-                      variant="outline"
-                      role="combobox"
-                      aria-expanded={openRequestedBy}
-                      className="justify-between"
-                    >
-                      {requestBy
-                        ? `${requestBy.first_name} ${requestBy.last_name}`
-                        : (() => {
-                            const dni = field.value;
-                            const found = employees?.find((e) => String(e.dni) === String(dni));
-                            return found ? `${found.first_name} ${found.last_name}` : 'Selec. el técnico';
-                          })()}
-                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-[260px] p-0">
-                    <Command>
-                      <CommandInput placeholder="Selec. el técnico..." />
-                      <CommandList>
-                        <CommandEmpty>No se han encontrado técnicos...</CommandEmpty>
-                        {employees?.map((e) => (
-                          <CommandItem
-                            value={`${e.first_name} ${e.last_name} ${e.dni}`}
-                            key={e.id}
-                            onSelect={() => {
-                              setRequestedBy(e);
-                              form.setValue('requested_by', String(e.dni), { shouldValidate: true, shouldDirty: true });
-                              setOpenRequestedBy(false);
-                            }}
-                          >
-                            <Check
-                              className={cn(
-                                'mr-2 h-4 w-4',
-                                String(requestBy?.dni ?? field.value) === String(e.dni) ? 'opacity-100' : 'opacity-0',
-                              )}
-                            />
-                            {`${e.first_name} ${e.last_name}`}
-                          </CommandItem>
-                        ))}
-                      </CommandList>
-                    </Command>
-                  </PopoverContent>
-                </Popover>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          {form.watch('dispatch_type') === 'loan' && (
+            <FormField
+              control={form.control}
+              name="vendor_id"
+              render={({ field }) => (
+                <FormItem className="flex flex-col space-y-3 mt-1.5 w-full">
+                  <FormLabel>Empresa del Préstamo</FormLabel>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <FormControl>
+                        <Button
+                          disabled={isVendorsLoading || isVendorsError}
+                          variant="outline"
+                          role="combobox"
+                          className={cn('justify-between', !field.value && 'text-muted-foreground')}
+                        >
+                          {isVendorsLoading && <Loader2 className="size-4 animate-spin mr-2" />}
+                          {field.value
+                            ? // Buscamos el vendor por ID para mostrar su nombre en el botón
+                              vendors?.find((v: Vendor) => `${v.id}` === `${field.value}`)?.name
+                            : 'Seleccione la empresa...'}
+                          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        </Button>
+                      </FormControl>
+                    </PopoverTrigger>
+                    <PopoverContent className="p-0" align="start">
+                      <Command>
+                        <CommandInput placeholder="Buscar empresa..." />
+                        <CommandList>
+                          <CommandEmpty className="text-xs p-2 text-center">
+                            {isVendorsError ? 'Error al cargar proveedores.' : 'No se encontraron resultados.'}
+                          </CommandEmpty>
+                          <CommandGroup>
+                            {vendors?.map((vendor: Vendor) => (
+                              <CommandItem
+                                key={vendor.id}
+                                value={vendor.name}
+                                onSelect={() => {
+                                  form.setValue('vendor_id', vendor.id.toString(), {
+                                    shouldValidate: true,
+                                  });
+                                }}
+                              >
+                                <Check
+                                  className={cn(
+                                    'mr-2 h-4 w-4',
+                                    `${vendor.id}` === `${field.value}` ? 'opacity-100' : 'opacity-0',
+                                  )}
+                                />
+                                <div className="flex flex-col">
+                                  <span>{vendor.name}</span>
+                                  <span className="text-[10px] text-muted-foreground uppercase">{vendor.type}</span>
+                                </div>
+                              </CommandItem>
+                            ))}
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          )}
+
+          {form.watch('dispatch_type') !== 'loan' && (
+            <FormField
+              control={form.control}
+              name="requested_by"
+              render={({ field }) => (
+                <FormItem className="flex flex-col mt-2.5 w-full">
+                  <FormLabel>Empleado Responsable</FormLabel>
+                  <Popover open={openRequestedBy} onOpenChange={setOpenRequestedBy}>
+                    <PopoverTrigger asChild>
+                      <Button
+                        disabled={employeesLoading || employeesError}
+                        variant="outline"
+                        role="combobox"
+                        aria-expanded={openRequestedBy}
+                        className="justify-between"
+                      >
+                        {requestBy
+                          ? `${requestBy.first_name} ${requestBy.last_name}`
+                          : (() => {
+                              const dni = field.value;
+                              const found = employees?.find((e) => String(e.dni) === String(dni));
+                              return found ? `${found.first_name} ${found.last_name}` : 'Selec. el técnico';
+                            })()}
+                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-[260px] p-0">
+                      <Command>
+                        <CommandInput placeholder="Selec. el técnico..." />
+                        <CommandList>
+                          <CommandEmpty>No se han encontrado técnicos...</CommandEmpty>
+                          {employees?.map((e) => (
+                            <CommandItem
+                              value={`${e.first_name} ${e.last_name} ${e.dni}`}
+                              key={e.id}
+                              onSelect={() => {
+                                setRequestedBy(e);
+                                form.setValue('requested_by', String(e.dni), {
+                                  shouldValidate: true,
+                                  shouldDirty: true,
+                                });
+                                setOpenRequestedBy(false);
+                              }}
+                            >
+                              <Check
+                                className={cn(
+                                  'mr-2 h-4 w-4',
+                                  String(requestBy?.dni ?? field.value) === String(e.dni) ? 'opacity-100' : 'opacity-0',
+                                )}
+                              />
+                              {`${e.first_name} ${e.last_name}`}
+                            </CommandItem>
+                          ))}
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          )}
         </div>
 
         {/* Lista de artículos */}

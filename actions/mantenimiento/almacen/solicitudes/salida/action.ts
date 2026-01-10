@@ -6,11 +6,12 @@ import { toast } from 'sonner';
 
 interface IDispatchRequestAction {
   aircraft_id?: string;
+  responsible_company?: string;
   request_number: string;
   justification?: string;
   submission_date: string;
   created_by: string;
-  requested_by: string;
+  requested_by?: string; // its optional because it may not be required for certain dispatch types
   category: string;
   articles: {
     article_id: number;
