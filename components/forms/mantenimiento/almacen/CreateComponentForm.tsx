@@ -282,7 +282,7 @@ const CreateComponentForm = ({ initialData, isEditing }: { initialData?: Editing
               name="reception_date"
               render={() => (
                 <FormItem className="flex flex-col p-0 mt-2.5 w-full">
-                  <FormLabel>Fecha de incoming</FormLabel>
+                  <FormLabel>Fecha de Ingreso</FormLabel>
                   <Popover>
                     <PopoverTrigger asChild>
                       <FormControl>

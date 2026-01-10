@@ -204,7 +204,7 @@ export default function CreateThirdPartyForm({ onClose, defaultStatus = 'ACTIVE'
                 <FormLabel>Rol(es)</FormLabel>
                 <Popover open={openRoles} onOpenChange={setOpenRoles}>
                   <PopoverTrigger asChild>
-                    <Button variant="outline" className="justify-between">
+                    <Button disabled={rolesLoading || rolesError} variant="outline" className="justify-between">
                       {selectedRoles?.length > 0 && (
                         <>
                           <Separator orientation="vertical" className="mx-2 h-4" />
@@ -236,7 +236,7 @@ export default function CreateThirdPartyForm({ onClose, defaultStatus = 'ACTIVE'
                     <Command>
                       <CommandInput placeholder="Buscar rol..." />
                       <CommandList>
-                        <CommandEmpty>No company found.</CommandEmpty>
+                        <CommandEmpty>No se han encontrado roles...</CommandEmpty>
                         <CommandGroup>
                           {rolesLoading && <Loader2 className="animate-spin size-4" />}
                           {roles?.map((role) => (
