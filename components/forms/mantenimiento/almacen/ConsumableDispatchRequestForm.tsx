@@ -265,7 +265,7 @@ export function ConsumableDispatchForm({ onClose }: FormProps) {
                           <CommandGroup>
                             {aircrafts?.map((aircraft) => (
                               <CommandItem
-                                value={`${aircraft.acronym} ${aircraft.manufacturer.name}`}
+                                value={`${aircraft.acronym}`}
                                 key={aircraft.id}
                                 onSelect={() => {
                                   form.setValue('aircraft_id', aircraft.id.toString(), { shouldValidate: true });

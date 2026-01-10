@@ -292,7 +292,7 @@ export function ComponentDispatchForm({ onClose }: FormProps) {
                         <CommandGroup>
                           {aircrafts?.map((aircraft) => (
                             <CommandItem
-                              value={`${aircraft.acronym} ${aircraft.manufacturer.name}`}
+                              value={`${aircraft.acronym}`}
                               key={aircraft.id}
                               onSelect={() => {
                                 form.setValue('aircraft_id', aircraft.id.toString(), { shouldValidate: true });
@@ -305,9 +305,7 @@ export function ComponentDispatchForm({ onClose }: FormProps) {
                                   `${aircraft.id}` === field.value ? 'opacity-100' : 'opacity-0',
                                 )}
                               />
-                              <p>
-                                {aircraft.acronym} - {aircraft.manufacturer.name}
-                              </p>
+                              <p>{aircraft.acronym}</p>
                             </CommandItem>
                           ))}
                         </CommandGroup>
