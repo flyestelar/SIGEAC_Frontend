@@ -151,7 +151,6 @@ export function ConsumableDispatchForm({ onClose }: FormProps) {
       return;
     }
 
-
     if (value <= 0) {
       setError(`articles.${rowIndex}.quantity`, { type: 'manual', message: 'La cantidad debe ser mayor a 0' });
       return;
@@ -278,9 +277,7 @@ export function ConsumableDispatchForm({ onClose }: FormProps) {
                                     `${aircraft.id}` === field.value ? 'opacity-100' : 'opacity-0',
                                   )}
                                 />
-                                <p>
-                                  {aircraft.acronym} - {aircraft.manufacturer.name}
-                                </p>
+                                <p>{aircraft.acronym}</p>
                               </CommandItem>
                             ))}
                           </CommandGroup>

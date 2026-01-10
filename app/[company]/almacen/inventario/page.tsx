@@ -22,7 +22,6 @@ import { Loader2, Package2, PaintBucket, Wrench, X } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { FaFilePdf } from 'react-icons/fa';
 import { RiFileExcel2Fill } from 'react-icons/ri';
-import { toast } from 'sonner';
 import { flattenArticles, getColumnsByCategory, IArticleSimple } from './columns';
 import { DataTable } from './data-table';
 

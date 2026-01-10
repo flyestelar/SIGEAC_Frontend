@@ -13,7 +13,7 @@ import {
 } from '@tanstack/react-table';
 
 import { ListRestart, Search, X } from 'lucide-react';
-import { useState } from 'react';
+import { Children, ReactNode, useState } from 'react';
 
 import { DataTablePagination } from '@/components/tables/DataTablePagination';
 import { DataTableViewOptions } from '@/components/tables/DataTableViewOptions';
@@ -32,9 +32,15 @@ interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
   title?: string;
+  dialog?: ReactNode | ReactNode[];
 }
 
-export function DataTable<TData, TValue>({ columns, data, title = 'Listado' }: DataTableProps<TData, TValue>) {
+export function GeneralDataTable<TData, TValue>({
+  columns,
+  data,
+  title = 'Listado',
+  dialog,
+}: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [globalFilter, setGlobalFilter] = useState('');
@@ -70,7 +76,8 @@ export function DataTable<TData, TValue>({ columns, data, title = 'Listado' }: D
           </div>
 
           <div className="flex items-center gap-2">
-            <CreateThirdPartyDialog />
+            {/* <CreateThirdPartyDialog /> */}
+            {Children.toArray(dialog)}
             <DataTableViewOptions table={table} />
           </div>
         </div>
