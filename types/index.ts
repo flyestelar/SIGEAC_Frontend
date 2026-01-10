@@ -1146,10 +1146,10 @@ export type ThirdParty = {
   email: string;
   phone: string;
   status: 'ACTIVE' | 'INACTIVE' | 'BLOCKED';
-  party_roles: ThirPartyRole;
+  third_party_role: ThirdPartyRole;
 };
 
-export type ThirPartyRole = {
+export type ThirdPartyRole = {
   id: number;
   value: string;
   label: string;
