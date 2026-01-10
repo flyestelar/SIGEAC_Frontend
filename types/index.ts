@@ -1146,7 +1146,7 @@ export type ThirdParty = {
   email: string;
   phone: string;
   status: 'ACTIVE' | 'INACTIVE' | 'BLOCKED';
-  third_party_role: ThirdPartyRole;
+  party_roles: ThirdPartyRole;
 };
 
 export type ThirdPartyRole = {
