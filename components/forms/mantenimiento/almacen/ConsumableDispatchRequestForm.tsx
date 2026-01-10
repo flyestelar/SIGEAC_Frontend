@@ -14,7 +14,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { useAuth } from '@/contexts/AuthContext';
-import { useGetVendors } from '@/hooks/general/proveedores/useGetVendors';
+import { useGetThirdParties } from '@/hooks/ajustes/globales/terceros/useGetThirdParties';
 import { useGetWarehousesEmployees } from '@/hooks/mantenimiento/almacen/empleados/useGetWarehousesEmployees';
 import { useGetBatchesWithInWarehouseArticles } from '@/hooks/mantenimiento/almacen/renglones/useGetBatchesWithInWarehouseArticles';
 import { useGetMaintenanceAircrafts } from '@/hooks/planificacion/useGetMaintenanceAircrafts';
@@ -22,7 +22,7 @@ import { useGetWorkshopsByLocation } from '@/hooks/sistema/empresas/talleres/use
 import { useGetEmployeesByDepartment } from '@/hooks/sistema/useGetEmployeesByDepartament';
 import { cn } from '@/lib/utils';
 import { useCompanyStore } from '@/stores/CompanyStore';
-import { Batch, Consumable, Employee, Vendor } from '@/types';
+import { Batch, Consumable, Employee, ThirdParty, Vendor } from '@/types';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -46,7 +46,7 @@ const FormSchema = z
     requested_by: z.string().optional(),
     aircraft_id: z.string().optional(),
     workshop_id: z.string().optional(),
-    vendor_id: z.string().optional(),
+    third_party_id: z.string().optional(),
 
     // 3. Justificación (Corregido: .min(1) para que sea obligatorio con mensaje personalizado)
     justification: z.string().min(1, 'Debe ingresar una justificación de la salida.'),
@@ -101,13 +101,13 @@ const FormSchema = z
       }
     }
 
-    // REGLA PARA LOAN: Obliga a tener vendor_id, pero IGNORA requested_by (es opcional)
+    // REGLA PARA LOAN: Obliga a tener third_party_id, pero IGNORA requested_by (es opcional)
     if (d.dispatch_type === 'loan') {
-      if (!d.vendor_id || d.vendor_id.trim() === '') {
+      if (!d.third_party_id || d.third_party_id.trim() === '') {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           message: 'Debe seleccionar la empresa para el préstamo.',
-          path: ['vendor_id'],
+          path: ['third_party_id'],
         });
       }
       // Aquí no validamos requested_by, por lo tanto queda como opcional/nullable.
@@ -129,7 +129,7 @@ export function ConsumableDispatchForm({ onClose }: FormProps) {
 
   const { createDispatchRequest } = useCreateDispatchRequest();
 
-  const { data: vendors, isLoading: isVendorsLoading, isError: isVendorsError } = useGetVendors(selectedCompany?.slug);
+  const { data: thirdParty, isLoading: isThirdPartyLoading, isError: isThirdPartyError } = useGetThirdParties();
 
   const {
     data: aircrafts,
@@ -491,7 +491,7 @@ export function ConsumableDispatchForm({ onClose }: FormProps) {
           {form.watch('dispatch_type') === 'loan' && (
             <FormField
               control={form.control}
-              name="vendor_id"
+              name="third_party_id"
               render={({ field }) => (
                 <FormItem className="flex flex-col space-y-3 mt-1.5 w-full">
                   <FormLabel>Empresa del Préstamo</FormLabel>
@@ -499,15 +499,15 @@ export function ConsumableDispatchForm({ onClose }: FormProps) {
                     <PopoverTrigger asChild>
                       <FormControl>
                         <Button
-                          disabled={isVendorsLoading || isVendorsError}
+                          disabled={isThirdPartyLoading || isThirdPartyError}
                           variant="outline"
                           role="combobox"
                           className={cn('justify-between', !field.value && 'text-muted-foreground')}
                         >
-                          {isVendorsLoading && <Loader2 className="size-4 animate-spin mr-2" />}
+                          {isThirdPartyLoading && <Loader2 className="size-4 animate-spin mr-2" />}
                           {field.value
                             ? // Buscamos el vendor por ID para mostrar su nombre en el botón
-                              vendors?.find((v: Vendor) => `${v.id}` === `${field.value}`)?.name
+                              thirdParty?.find((t: ThirdParty) => `${t.id}` === `${field.value}`)?.name
                             : 'Seleccione la empresa...'}
                           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                         </Button>
@@ -518,15 +518,15 @@ export function ConsumableDispatchForm({ onClose }: FormProps) {
                         <CommandInput placeholder="Buscar empresa..." />
                         <CommandList>
                           <CommandEmpty className="text-xs p-2 text-center">
-                            {isVendorsError ? 'Error al cargar proveedores.' : 'No se encontraron resultados.'}
+                            {isThirdPartyError ? 'Error al cargar empresas.' : 'No se encontraron resultados.'}
                           </CommandEmpty>
                           <CommandGroup>
-                            {vendors?.map((vendor: Vendor) => (
+                            {thirdParty?.map((t: ThirdParty) => (
                               <CommandItem
-                                key={vendor.id}
-                                value={vendor.name}
+                                key={t.id}
+                                value={t.name}
                                 onSelect={() => {
-                                  form.setValue('vendor_id', vendor.id.toString(), {
+                                  form.setValue('third_party_id', t.id.toString(), {
                                     shouldValidate: true,
                                   });
                                 }}
@@ -534,12 +534,14 @@ export function ConsumableDispatchForm({ onClose }: FormProps) {
                                 <Check
                                   className={cn(
                                     'mr-2 h-4 w-4',
-                                    `${vendor.id}` === `${field.value}` ? 'opacity-100' : 'opacity-0',
+                                    `${t.id}` === `${field.value}` ? 'opacity-100' : 'opacity-0',
                                   )}
                                 />
                                 <div className="flex flex-col">
-                                  <span>{vendor.name}</span>
-                                  <span className="text-[10px] text-muted-foreground uppercase">{vendor.type}</span>
+                                  <span>{t.name}</span>
+                                  <span className="text-[10px] text-muted-foreground uppercase">
+                                    {t.party_roles.map((role) => role.label).join(', ')}
+                                  </span>
                                 </div>
                               </CommandItem>
                             ))}
