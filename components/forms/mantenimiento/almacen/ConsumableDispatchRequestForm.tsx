@@ -751,25 +751,14 @@ export function ConsumableDispatchForm({ onClose }: FormProps) {
                                             handleArticleSelectAtRow(idx, a.id!, a.serial ?? null, b.batch_id);
                                           }}
                                           className={cn(
-                                            'flex items-center justify-between gap-3',
+                                            'flex items-center justify-between gap-2 py-2',
                                             Number(a.quantity ?? 0) <= 0 && 'opacity-60 cursor-not-allowed',
                                           )}
                                         >
-                                          <div className="flex flex-col min-w-0">
-                                            <span className="text-sm font-medium truncate">{a.part_number}</span>
-                                            <span className="text-xs text-muted-foreground truncate">
-                                              Serial: {a.serial ?? 'N/A'}
-                                            </span>
-                                          </div>
-
-                                          <Badge
-                                            variant={Number(a.quantity ?? 0) > 0 ? 'secondary' : 'outline'}
-                                            className={cn(
-                                              Number(a.quantity ?? 0) <= 0 && 'text-destructive border-destructive',
-                                            )}
-                                          >
-                                            {Number(a.quantity ?? 0) > 0 ? `Disp: ${a.quantity} u` : 'Sin stock'}
-                                          </Badge>
+                                          <span className="truncate text-sm">{a.part_number}</span>
+                                          <span className="shrink-0 text-[11px] tabular-nums text-muted-foreground">
+                                            {Math.max(0, Number(a.quantity ?? 0))} u
+                                          </span>
                                         </CommandItem>
                                       ))}
                                     </CommandGroup>
