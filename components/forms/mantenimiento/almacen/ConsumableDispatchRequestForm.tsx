@@ -184,21 +184,25 @@ export function ConsumableDispatchForm({ onClose }: FormProps) {
     clearErrors([`articles.${rowIndex}.quantity`, `articles.${rowIndex}.unit`]);
   }
 
-  function validateQuantityAtRow(rowIndex: number, raw: string, article_id: number) {
-    // 1. Manejar cadena vacía o espacios en blanco
-    const trimmedRaw = raw.trim(); // Opcional: limpiar espacios
-    if (trimmedRaw === '') {
+  function validateQuantityAtRow(rowIndex: number, raw: string, article_id?: number) {
+    // Si no hay artículo seleccionado, no validamos
+    if (!article_id) return;
+
+    const trimmed = raw.trim();
+
+    // Vacío => 0 (sin error)
+    if (trimmed === '') {
       setValue(`articles.${rowIndex}.quantity`, 0, { shouldValidate: true, shouldDirty: true });
       clearErrors(`articles.${rowIndex}.quantity`);
-      return; // Detener la ejecución
+      return;
     }
 
     const art = findArticleById(article_id);
-    const qt = art!.quantity;
-    const str = trimmedRaw.replace(',', '.'); // Usar trimmedRaw
-    const value = parseFloat(str);
+    if (!art) return;
 
-    if (isNaN(value)) {
+    const value = Number(trimmed.replace(',', '.'));
+
+    if (Number.isNaN(value)) {
       setError(`articles.${rowIndex}.quantity`, { type: 'manual', message: 'Formato de número inválido' });
       return;
     }
@@ -208,11 +212,44 @@ export function ConsumableDispatchForm({ onClose }: FormProps) {
       return;
     }
 
+    // Si son unidades, normalmente debe ser entero.
+    // Si quieres permitir decimales, elimina este bloque.
+    if (!Number.isInteger(value)) {
+      setError(`articles.${rowIndex}.quantity`, { type: 'manual', message: 'La cantidad debe ser un número entero' });
+      return;
+    }
+
+    const available = Number(art.quantity ?? 0);
+
+    if (value > available) {
+      setError(`articles.${rowIndex}.quantity`, {
+        type: 'manual',
+        message: `La cantidad solicitada supera el disponible (${available}).`,
+      });
+      return;
+    }
+
     clearErrors(`articles.${rowIndex}.quantity`);
     setValue(`articles.${rowIndex}.quantity`, value, { shouldValidate: true, shouldDirty: true });
   }
 
   const onSubmit = async (data: FormSchemaType) => {
+    for (let i = 0; i < data.articles.length; i++) {
+      const row = data.articles[i];
+      const art = findArticleById(row.article_id);
+      if (!art) continue;
+
+      const available = Number(art.quantity ?? 0);
+
+      if (row.quantity > available) {
+        setError(`articles.${i}.quantity`, {
+          type: 'manual',
+          message: `La cantidad solicitada supera el disponible (${available}).`,
+        });
+        return;
+      }
+    }
+
     const payload = {
       ...data,
       created_by: user!.username,
@@ -641,6 +678,7 @@ export function ConsumableDispatchForm({ onClose }: FormProps) {
                 const unitType = currentBatch?.unit?.value?.toUpperCase(); // 'U' | 'L' | undefined
                 const selectedArticleId = watch(`articles.${idx}.article_id`);
                 const selectedArticle = selectedArticleId ? findArticleById(selectedArticleId) : undefined;
+                const available = Number(selectedArticle?.quantity ?? 0);
 
                 return (
                   <div key={field.id} className="border rounded-lg p-3 flex gap-2">
@@ -664,40 +702,74 @@ export function ConsumableDispatchForm({ onClose }: FormProps) {
                                     <Loader2 className="size-4 animate-spin" /> Cargando consumibles...
                                   </div>
                                 ) : selectedArticle ? (
-                                  <div>
-                                    <Badge variant="secondary">{currentBatch?.name}</Badge>{' '}
-                                    {selectedArticle.part_number} / {selectedArticle.serial ?? 'S/N'}
+                                  <div className="flex w-full items-center justify-between gap-2">
+                                    <div className="min-w-0">
+                                      <div className="flex items-center gap-2">
+                                        <Badge variant="secondary" className="shrink-0">
+                                          {currentBatch?.name}
+                                        </Badge>
+                                        <span className="truncate text-sm font-medium">
+                                          {selectedArticle.part_number}
+                                        </span>
+                                      </div>
+                                      <p className="truncate text-xs text-muted-foreground">
+                                        Serial: {selectedArticle.serial ?? 'N/A'}
+                                      </p>
+                                    </div>
+
+                                    <Badge
+                                      variant={available > 0 ? 'secondary' : 'outline'}
+                                      className={cn(
+                                        'shrink-0',
+                                        available <= 0 && 'text-destructive border-destructive',
+                                      )}
+                                    >
+                                      Disp: {available} u
+                                    </Badge>
                                   </div>
                                 ) : (
                                   'Selec. el consumible'
                                 )}
+
                                 <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                               </Button>
                             </PopoverTrigger>
                             <PopoverContent className="w-[360px] p-0">
                               <Command>
-                                <CommandInput placeholder="Buscar consumible..." />
+                                <CommandInput placeholder="Buscar por P/N o serial..." />
                                 <CommandList>
                                   <CommandEmpty>No se han encontrado consumibles...</CommandEmpty>
                                   {consumableBatches?.map((b) => (
                                     <CommandGroup key={b.batch_id} heading={`${b.name} · ${b.unit?.label ?? ''}`}>
                                       {b.articles.map((a) => (
                                         <CommandItem
-                                          value={`${a.part_number}-${a.id}`}
+                                          value={`${a.part_number} ${a.serial ?? ''} ${a.id}`}
                                           key={a.id}
-                                          onSelect={() =>
-                                            handleArticleSelectAtRow(idx, a.id!, a.serial ?? null, b.batch_id)
-                                          }
+                                          disabled={Number(a.quantity ?? 0) <= 0}
+                                          onSelect={() => {
+                                            if (Number(a.quantity ?? 0) <= 0) return;
+                                            handleArticleSelectAtRow(idx, a.id!, a.serial ?? null, b.batch_id);
+                                          }}
+                                          className={cn(
+                                            'flex items-center justify-between gap-3',
+                                            Number(a.quantity ?? 0) <= 0 && 'opacity-60 cursor-not-allowed',
+                                          )}
                                         >
-                                          <div className="flex flex-col">
-                                            <span className="text-sm font-medium">{a.part_number}</span>
-                                            <span className="text-xs text-muted-foreground font-bold">
-                                              Cant: {a.quantity! ?? '-'}
-                                            </span>
-                                            <span className="text-xs text-muted-foreground">
+                                          <div className="flex flex-col min-w-0">
+                                            <span className="text-sm font-medium truncate">{a.part_number}</span>
+                                            <span className="text-xs text-muted-foreground truncate">
                                               Serial: {a.serial ?? 'N/A'}
                                             </span>
                                           </div>
+
+                                          <Badge
+                                            variant={Number(a.quantity ?? 0) > 0 ? 'secondary' : 'outline'}
+                                            className={cn(
+                                              Number(a.quantity ?? 0) <= 0 && 'text-destructive border-destructive',
+                                            )}
+                                          >
+                                            {Number(a.quantity ?? 0) > 0 ? `Disp: ${a.quantity} u` : 'Sin stock'}
+                                          </Badge>
                                         </CommandItem>
                                       ))}
                                     </CommandGroup>
@@ -720,12 +792,21 @@ export function ConsumableDispatchForm({ onClose }: FormProps) {
                           <FormItem className="w-full">
                             <FormLabel>Cantidad</FormLabel>
                             <FormControl>
-                              <Input
-                                value={field.value ?? ''}
-                                onChange={(e) => validateQuantityAtRow(idx, e.target.value, selectedArticle!.id)}
-                                disabled={!selectedArticle}
-                                placeholder={unitType === 'U' ? 'Ej: 1, 2, 3...' : 'Ej: 0.5, 1, 2...'}
-                              />
+                              <div className="relative w-[220px]">
+                                <Input
+                                  className="pr-20"
+                                  inputMode="numeric"
+                                  placeholder={!selectedArticle ? 'Seleccione un consumible' : 'Ej: 1, 2, 3...'}
+                                  value={field.value ?? ''}
+                                  disabled={!selectedArticle}
+                                  onChange={(e) => validateQuantityAtRow(idx, e.target.value, selectedArticle?.id)}
+                                />
+                                <div className="absolute inset-y-0 right-2 flex items-center gap-2">
+                                  <Badge variant="secondary" className="px-2">
+                                    {selectedArticle ? `Disp: ${available}` : 'Disp: -'} u
+                                  </Badge>
+                                </div>
+                              </div>
                             </FormControl>
                             <FormMessage />
                           </FormItem>
