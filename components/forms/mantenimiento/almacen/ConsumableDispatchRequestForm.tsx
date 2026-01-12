@@ -704,15 +704,18 @@ export function ConsumableDispatchForm({ onClose }: FormProps) {
                                   </div>
                                 ) : selectedArticle ? (
                                   <div className="flex w-full items-center justify-between gap-2">
-                                    <span className="min-w-0 truncate text-sm">
-                                      {selectedArticle.part_number}
-                                      {selectedArticle.serial ? (
-                                        <span className="text-xs text-muted-foreground">
-                                          {' '}
-                                          · {selectedArticle.serial}
-                                        </span>
-                                      ) : null}
-                                    </span>
+                                    <div className="flex flex-col justify-center items-center gap-1">
+                                      <Badge>{selectedArticle.batch?.description}</Badge>
+                                      <span className="min-w-0 truncate text-sm">
+                                        {selectedArticle.part_number}
+                                        {selectedArticle.serial ? (
+                                          <span className="text-xs text-muted-foreground">
+                                            {' '}
+                                            · {selectedArticle.serial}
+                                          </span>
+                                        ) : null}
+                                      </span>
+                                    </div>
 
                                     <span
                                       className={cn(
