@@ -48,11 +48,8 @@ const fileMaxBytes = 10_000_000; // 10 MB
 
 const formSchema = z
   .object({
-    inspector: z
-      .string({ message: 'Debe indicar el inspector.' })
-      .min(2, 'El inspector debe tener al menos 2 caracteres.')
-      .optional(),
-    reception_date: z.string({ message: 'Debe indicar la fecha de incoming.' }).min(1, 'Campo requerido').optional(),
+    inspector: z.string().optional(),
+    reception_date: z.string().optional(),
     serial: z.string().min(2, { message: 'El serial debe contener al menos 2 caracteres.' }).optional(),
     part_number: z
       .string({ message: 'Debe seleccionar un número de parte.' })
