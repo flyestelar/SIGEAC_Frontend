@@ -49,7 +49,7 @@ const FormSchema = z
     third_party_id: z.string().optional(),
 
     // 3. Justificación (Corregido: .min(1) para que sea obligatorio con mensaje personalizado)
-    justification: z.string().min(1, 'Debe ingresar una justificación de la salida.'),
+    justification: z.string().optional(),
 
     // 4. Artículos
     articles: z
