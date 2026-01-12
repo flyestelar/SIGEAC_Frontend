@@ -699,36 +699,32 @@ export function ConsumableDispatchForm({ onClose }: FormProps) {
                               >
                                 {isBatchesLoading ? (
                                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                    <Loader2 className="size-4 animate-spin" /> Cargando consumibles...
+                                    <Loader2 className="size-4 animate-spin" />
+                                    <span className="truncate">Cargando…</span>
                                   </div>
                                 ) : selectedArticle ? (
                                   <div className="flex w-full items-center justify-between gap-2">
-                                    <div className="min-w-0">
-                                      <div className="flex items-center gap-2">
-                                        <Badge variant="secondary" className="shrink-0">
-                                          {currentBatch?.name}
-                                        </Badge>
-                                        <span className="truncate text-sm font-medium">
-                                          {selectedArticle.part_number}
+                                    <span className="min-w-0 truncate text-sm">
+                                      {selectedArticle.part_number}
+                                      {selectedArticle.serial ? (
+                                        <span className="text-xs text-muted-foreground">
+                                          {' '}
+                                          · {selectedArticle.serial}
                                         </span>
-                                      </div>
-                                      <p className="truncate text-xs text-muted-foreground">
-                                        Serial: {selectedArticle.serial ?? 'N/A'}
-                                      </p>
-                                    </div>
+                                      ) : null}
+                                    </span>
 
-                                    <Badge
-                                      variant={available > 0 ? 'secondary' : 'outline'}
+                                    <span
                                       className={cn(
-                                        'shrink-0',
-                                        available <= 0 && 'text-destructive border-destructive',
+                                        'shrink-0 text-xs tabular-nums',
+                                        available > 0 ? 'text-muted-foreground' : 'text-destructive',
                                       )}
                                     >
-                                      Disp: {available} u
-                                    </Badge>
+                                      {available} u
+                                    </span>
                                   </div>
                                 ) : (
-                                  'Selec. el consumible'
+                                  <span className="text-muted-foreground">Selec. el consumible</span>
                                 )}
 
                                 <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -751,14 +747,25 @@ export function ConsumableDispatchForm({ onClose }: FormProps) {
                                             handleArticleSelectAtRow(idx, a.id!, a.serial ?? null, b.batch_id);
                                           }}
                                           className={cn(
-                                            'flex items-center justify-between gap-2 py-2',
+                                            'flex items-center justify-between gap-3',
                                             Number(a.quantity ?? 0) <= 0 && 'opacity-60 cursor-not-allowed',
                                           )}
                                         >
-                                          <span className="truncate text-sm">{a.part_number}</span>
-                                          <span className="shrink-0 text-[11px] tabular-nums text-muted-foreground">
-                                            {Math.max(0, Number(a.quantity ?? 0))} u
-                                          </span>
+                                          <div className="flex flex-col min-w-0">
+                                            <span className="text-sm font-medium truncate">{a.part_number}</span>
+                                            <span className="text-xs text-muted-foreground truncate">
+                                              Serial: {a.serial ?? 'N/A'}
+                                            </span>
+                                          </div>
+
+                                          <Badge
+                                            variant={Number(a.quantity ?? 0) > 0 ? 'secondary' : 'outline'}
+                                            className={cn(
+                                              Number(a.quantity ?? 0) <= 0 && 'text-destructive border-destructive',
+                                            )}
+                                          >
+                                            {Number(a.quantity ?? 0) > 0 ? `Disp: ${a.quantity} u` : 'Sin stock'}
+                                          </Badge>
                                         </CommandItem>
                                       ))}
                                     </CommandGroup>
