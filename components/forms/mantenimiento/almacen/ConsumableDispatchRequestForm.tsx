@@ -704,7 +704,7 @@ export function ConsumableDispatchForm({ onClose }: FormProps) {
                                   </div>
                                 ) : selectedArticle ? (
                                   <div className="flex w-full items-center justify-between gap-2">
-                                    <div className="flex flex-col justify-center items-center gap-1">
+                                    <div className="flex flex-col justify-center items-center">
                                       <span className="text-muted-foreground font-bold text-xs">
                                         {currentBatch?.name}
                                       </span>
