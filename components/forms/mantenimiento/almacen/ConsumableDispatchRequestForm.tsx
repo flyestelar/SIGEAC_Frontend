@@ -705,7 +705,9 @@ export function ConsumableDispatchForm({ onClose }: FormProps) {
                                 ) : selectedArticle ? (
                                   <div className="flex w-full items-center justify-between gap-2">
                                     <div className="flex flex-col justify-center items-center gap-1">
-                                      <Badge>{currentBatch?.name}</Badge>
+                                      <span className="text-muted-foreground font-bold text-xs">
+                                        {currentBatch?.name}
+                                      </span>
                                       <span className="min-w-0 truncate text-sm">
                                         {selectedArticle.part_number}
                                         {selectedArticle.serial ? (
