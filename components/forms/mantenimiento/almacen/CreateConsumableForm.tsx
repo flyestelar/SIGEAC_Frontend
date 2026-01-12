@@ -55,10 +55,12 @@ const formSchema = z.object({
   lot_number: z.string().optional(),
   inspector: z
     .string({ message: 'Debe ingresar el inspector de ingreso.' })
-    .min(1, 'Debe ingresar el inspector de ingreso.'),
+    .min(1, 'Debe ingresar el inspector de ingreso.')
+    .optional(),
   reception_date: z
     .string({ message: 'Debe ingresar la fecha de recepción.' })
-    .min(1, 'Debe ingresar la fecha de recepción.'),
+    .min(1, 'Debe ingresar la fecha de recepción.')
+    .optional(),
   alternative_part_number: z
     .array(z.string().min(2, { message: 'Cada número de parte alterno debe contener al menos 2 caracteres.' }))
     .optional(),
