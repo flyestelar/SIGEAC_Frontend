@@ -9,7 +9,7 @@ interface ArticleData {
   part_number: string;
   article_type: string;
   lot_number?: string;
-  inspector: string;
+  inspector?: string;
   reception_date?: string;
   alternative_part_number?: string[];
   description?: string;
