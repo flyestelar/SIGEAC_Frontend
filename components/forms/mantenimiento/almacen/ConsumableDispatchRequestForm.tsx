@@ -769,7 +769,7 @@ export function ConsumableDispatchForm({ onClose }: FormProps) {
                                               Number(a.quantity ?? 0) <= 0 && 'text-destructive border-destructive',
                                             )}
                                           >
-                                            {Number(a.quantity ?? 0) > 0 ? `Disp: ${a.quantity} u` : 'Sin stock'}
+                                            {Number(a.quantity ?? 0) > 0 ? `Disp: ${a.quantity}` : 'Sin stock'}
                                           </Badge>
                                         </CommandItem>
                                       ))}
