@@ -180,7 +180,7 @@ const InventarioArticulosPage = () => {
                       type="button"
                       onClick={() => exportPdf(common)}
                       disabled={exporting.pdf}
-                      className="disabled:opacity-50"
+                      className="disabled:opacity-50 hidden"
                       aria-label="Descargar PDF"
                     >
                       {exporting.pdf ? (
