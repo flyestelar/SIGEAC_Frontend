@@ -24,6 +24,7 @@ import { FaFilePdf } from 'react-icons/fa';
 import { RiFileExcel2Fill } from 'react-icons/ri';
 import { flattenArticles, getColumnsByCategory, IArticleSimple } from './columns';
 import { DataTable } from './data-table';
+import { useAuth } from '@/contexts/AuthContext';
 
 const EXPORT_PDF_ENDPOINT = '/api/inventory/export/pdf';
 const EXPORT_XLSX_ENDPOINT = '/api/inventory/export/excel';
@@ -104,6 +105,15 @@ const InventarioArticulosPage = () => {
 
   const handleClearSearch = () => setPartNumberSearch('');
 
+  const { user } = useAuth();
+
+    const userRoles = user?.roles?.map((role) => role.name) || [];
+
+    const shouldEnableField = userRoles.some((role) =>
+      ["SUPERUSER"].includes(role)
+    );
+
+
   return (
     <ContentLayout title="Inventario">
       <TooltipProvider>
@@ -174,26 +184,28 @@ const InventarioArticulosPage = () => {
 
               <div className="flex gap-4 items-center">
                 {/* PDF */}
-                <Tooltip delayDuration={100}>
-                  <TooltipTrigger asChild>
-                    <button
-                      type="button"
-                      onClick={() => exportPdf(common)}
-                      disabled={exporting.pdf}
-                      className="disabled:opacity-50 hidden"
-                      aria-label="Descargar PDF"
-                    >
-                      {exporting.pdf ? (
-                        <Loader2 className="size-5 animate-spin" />
-                      ) : (
-                        <FaFilePdf className="size-5 text-red-500/80 hover:scale-125 transition-transform" />
-                      )}
-                    </button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    Descargar PDF <TooltipArrow />
-                  </TooltipContent>
-                </Tooltip>
+                {shouldEnableField && (
+                  <Tooltip delayDuration={100}>
+                    <TooltipTrigger asChild>
+                      <button
+                        type="button"
+                        onClick={() => exportPdf(common)}
+                        disabled={exporting.pdf}
+                        className="disabled:opacity-50"
+                        aria-label="Descargar PDF"
+                      >
+                        {exporting.pdf ? (
+                          <Loader2 className="size-5 animate-spin" />
+                        ) : (
+                          <FaFilePdf className="size-5 text-red-500/80 transition-transform" />
+                        )}
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      Descargar PDF <TooltipArrow />
+                    </TooltipContent>
+                  </Tooltip>
+                )}
 
                 {/* Excel */}
                 <Tooltip delayDuration={100}>

@@ -107,7 +107,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const status = axiosError.response?.status;
 
       const errorMessage = status === 401 ? 'Credenciales incorrectas' : axiosError.response?.data?.message || axiosError.message || 'Ocurrió un error inesperado';
-      
+
       setError(errorMessage);
       toast.error('Error al iniciar sesión', {  description: errorMessage,  position: 'bottom-center' });
     },
