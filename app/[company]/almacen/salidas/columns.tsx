@@ -1,4 +1,5 @@
 import DispatchArticlesDialog from '@/components/dialogs/mantenimiento/almacen/DispatchArticlesDialog';
+import DispatchRequestDropdownActions from '@/components/dropdowns/mantenimiento/almacen/DispatchRequestDropdownActions';
 import { DataTableColumnHeader } from '@/components/tables/DataTableHeader';
 import { Button } from '@/components/ui/button';
 import { ColumnDef } from '@tanstack/react-table';
@@ -55,6 +56,15 @@ export const columns: ColumnDef<DispatchGroupRow>[] = [
     cell: ({ row }) => (
       <div className="flex justify-center">
         <DispatchArticlesDialog requested_by={row.original.requested_by} created_by={row.original.created_by} />
+      </div>
+    ),
+  },
+  {
+    id: 'actions',
+    header: () => <p className="text-center">Acciones</p>,
+    cell: ({ row }) => (
+      <div className="flex justify-center">
+        <DispatchRequestDropdownActions id={row.original.dispatchId} />
       </div>
     ),
   },

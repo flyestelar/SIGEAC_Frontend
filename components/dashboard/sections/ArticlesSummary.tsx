@@ -1,22 +1,26 @@
-'use client'
+'use client';
 
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts'
-import { WarehouseDashboard } from '@/types'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
+import { WarehouseDashboard } from '@/types';
 
-interface Props { data?: WarehouseDashboard; isLoading: boolean; isError: boolean }
+interface Props {
+  data?: WarehouseDashboard;
+  isLoading: boolean;
+  isError: boolean;
+}
 
-export default function  ArticlesSummary({ data, isLoading, isError }: Props) {
-  if (isLoading) return <div className="text-center text-blue-600 py-8">Cargando información...</div>
-  if (isError || !data) return <div className="text-center text-red-500 py-8">Error al cargar información.</div>
+export default function ArticlesSummary({ data, isLoading, isError }: Props) {
+  if (isLoading) return <div className="text-center text-blue-600 py-8">Cargando información...</div>;
+  if (isError || !data) return <div className="text-center text-red-500 py-8">Error al cargar información.</div>;
 
   // Configuración de datos para gráfico con colores y nombres completos
   const chartData = [
     { name: 'Salidas\n Totales', value: data.dispatchCount, color: '#2563eb' },
     { name: 'Salidas a\n Aeronaves', value: data.dispatchAircraftCount, color: '#e90e3dff' },
     { name: 'Salidas a\n Taller', value: data.dispatchWorkshopCount, color: '#f59e0b' },
-  ]
+  ];
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -26,14 +30,28 @@ export default function  ArticlesSummary({ data, isLoading, isError }: Props) {
         <Card className="rounded-xl border shadow-sm">
           <CardHeader className="pb-2 text-center">
             <CardTitle className="text-2xl font-semibold">Resumen de Materiales</CardTitle>
-            <CardDescription className="text-gray-500">Datos generales de inventario activo (Esta semana)</CardDescription>
+            <CardDescription className="text-gray-500">
+              Datos generales de inventario activo (Esta semana)
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6 text-center">
-              <div><div className="text-3xl font-bold text-blue-600">{data.storedCount ?? 0}%</div><p className="text-sm text-gray-600">Materiales Activos</p></div>
-              <div><div className="text-3xl font-bold text-emerald-600">{data.dispatchCount ?? 0}</div><p className="text-sm text-gray-600">Salidas Totales</p></div>
-              <div><div className="text-3xl font-bold text-cyan-600">{data.dispatchAircraftCount ?? 0}</div><p className="text-sm text-gray-600">Salidas a Aeronaves</p></div>
-              <div><div className="text-3xl font-bold text-amber-600">{data.dispatchWorkshopCount ?? 0}</div><p className="text-sm text-gray-600">Salidas a Taller</p></div>
+              <div>
+                <div className="text-3xl font-bold text-blue-600">{data.storedCount ?? 0}%</div>
+                <p className="text-sm text-gray-600">Materiales Activos</p>
+              </div>
+              <div>
+                <div className="text-3xl font-bold text-emerald-600">{data.dispatchCount ?? 0}</div>
+                <p className="text-sm text-gray-600">Salidas Totales</p>
+              </div>
+              <div>
+                <div className="text-3xl font-bold text-cyan-600">{data.dispatchAircraftCount ?? 0}</div>
+                <p className="text-sm text-gray-600">Salidas a Aeronaves</p>
+              </div>
+              <div>
+                <div className="text-3xl font-bold text-amber-600">{data.dispatchWorkshopCount ?? 0}</div>
+                <p className="text-sm text-gray-600">Salidas a Taller</p>
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -43,7 +61,8 @@ export default function  ArticlesSummary({ data, isLoading, isError }: Props) {
           <CardHeader className="pb-2 text-center">
             <CardTitle className="text-2xl font-semibold">Materiales Fuera de Stock</CardTitle>
             <CardDescription className="text-gray-500">
-              Listado de materiales sin disponibilidad<br />
+              Listado de materiales sin disponibilidad
+              <br />
               Cantidad de materiales por reabastecer: {data.restockCount ?? 0}
             </CardDescription>
           </CardHeader>
@@ -58,15 +77,19 @@ export default function  ArticlesSummary({ data, isLoading, isError }: Props) {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {data.articlesOutOfStock?.length ? data.articlesOutOfStock.map(item => (
-                    <TableRow key={item.id}>
-                      <TableCell className="max-w-[180px] truncate text-center">{item.description}</TableCell>
-                      <TableCell className="text-center">{item.part_number}</TableCell>
-                      <TableCell className="text-center">{item.category}</TableCell>
-                    </TableRow>
-                  )) : (
+                  {data.articlesOutOfStock?.length ? (
+                    data.articlesOutOfStock.map((item) => (
+                      <TableRow key={item.id}>
+                        <TableCell className="max-w-[180px] truncate text-center">{item.description}</TableCell>
+                        <TableCell className="text-center">{item.part_number}</TableCell>
+                        <TableCell className="text-center">{item.category}</TableCell>
+                      </TableRow>
+                    ))
+                  ) : (
                     <TableRow>
-                      <TableCell colSpan={3} className="text-center text-gray-500 py-4">No hay materiales fuera de stock</TableCell>
+                      <TableCell colSpan={3} className="text-center text-gray-500 py-4">
+                        No hay materiales fuera de stock
+                      </TableCell>
                     </TableRow>
                   )}
                 </TableBody>
@@ -86,19 +109,24 @@ export default function  ArticlesSummary({ data, isLoading, isError }: Props) {
           <CardContent className="flex justify-center items-center h-80">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-            <XAxis dataKey="name"
-              tick={({ x, y, payload }) => (
-                <text x={x} y={y + 10} textAnchor="middle" fontSize={12}>
-                  {payload.value.split('\n').map((line: string, i: number) => (
-                    <tspan key={i} x={x} dy={i === 0 ? 0 : 12}>{line}</tspan>
-                  ))}
-                </text>
-              )}
-            />
-            <YAxis />
+                <XAxis
+                  dataKey="name"
+                  tick={({ x, y, payload }) => (
+                    <text x={x} y={y + 10} textAnchor="middle" fontSize={12}>
+                      {payload.value.split('\n').map((line: string, i: number) => (
+                        <tspan key={i} x={x} dy={i === 0 ? 0 : 12}>
+                          {line}
+                        </tspan>
+                      ))}
+                    </text>
+                  )}
+                />
+                <YAxis />
                 <Tooltip />
                 <Bar dataKey="value" name="Cantidad" radius={[6, 6, 0, 0]}>
-                  {chartData.map((entry, idx) => <Cell key={`cell-${idx}`} fill={entry.color} />)}
+                  {chartData.map((entry, idx) => (
+                    <Cell key={`cell-${idx}`} fill={entry.color} />
+                  ))}
                 </Bar>
               </BarChart>
             </ResponsiveContainer>
@@ -106,5 +134,5 @@ export default function  ArticlesSummary({ data, isLoading, isError }: Props) {
         </Card>
       </div>
     </div>
-  )
+  );
 }
