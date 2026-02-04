@@ -114,7 +114,7 @@ const RequisitionPage = () => {
                             <h3 className="font-semibold text-lg flex items-center gap-2">
                               <FileText className="h-5 w-5" /> Artículo {index + 1}
                             </h3>
-                            <div className="grid grid-cols-2 gap-2">
+                            <div className="grid grid-cols-1 gap-2">
                               <div>
                                 <p className="text-sm text-muted-foreground">N° Parte:</p>
                                 <p className="font-medium">{article.article_part_number || 'N/A'}</p>
