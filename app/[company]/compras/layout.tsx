@@ -1,14 +1,12 @@
-import ProtectedLayout from '@/components/layout/ProtectedLayout'
-import React from 'react'
+import ProtectedLayout from '@/components/layout/ProtectedLayout';
+import React from 'react';
 
-const PurchaseLayout = ({ children }: {
-  children: React.ReactNode
-}) => {
+const PurchaseLayout = ({ children }: { children: React.ReactNode }) => {
   return (
-    <ProtectedLayout roles={["ANALISTA_COMPRAS", "JEFE_ALMACEN", "SUPERUSER", "REGULAR"]}>
+    <ProtectedLayout roles={['ANALISTA_COMPRAS', 'JEFE_ALMACEN', 'SUPERUSER', 'REGULAR', 'JEFE_COMPRAS']}>
       {children}
     </ProtectedLayout>
-  )
-}
+  );
+};
 
-export default PurchaseLayout
+export default PurchaseLayout;
