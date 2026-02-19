@@ -46,9 +46,7 @@ const MAX_PDF_MB = 5;
 const MAX_PDF_BYTES = MAX_PDF_MB * 1024 * 1024;
 
 const FormSchema = z.object({
-  justification: z
-    .string({ message: 'La justificación debe ser válida.' })
-    .min(2, { message: 'La justificación debe ser válida.' }),
+  justification: z.string().optional(),
   aircraft_id: z.string().optional(),
   work_order: z.string().optional(),
   created_by: z.string(),
