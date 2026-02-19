@@ -675,7 +675,7 @@ export function CreateWarehouseRequisitionForm({ onClose, initialData, isEditing
                                   className="grid grid-cols-1 gap-2 md:grid-cols-5 md:items-center"
                                 >
                                   <Input
-                                    placeholder="Número de parte"
+                                    placeholder="PN"
                                     value={article.part_number}
                                     onChange={(e) =>
                                       handleArticleChange(batch.batch, index, 'part_number', e.target.value)
@@ -684,7 +684,7 @@ export function CreateWarehouseRequisitionForm({ onClose, initialData, isEditing
                                   />
                                   <Input
                                     placeholder="Alt. PN"
-                                    value={article.part_number}
+                                    value={article.alt_part_number || ''}
                                     onChange={(e) =>
                                       handleArticleChange(batch.batch, index, 'alt_part_number', e.target.value)
                                     }
