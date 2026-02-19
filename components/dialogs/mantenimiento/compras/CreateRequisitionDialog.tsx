@@ -33,7 +33,7 @@ export function CreateRequisitionDialog() {
         <DialogHeader>
           <DialogTitle>Solicitud de Material Faltante</DialogTitle>
           <DialogDescription>
-            Genere una solicitud de material faltante mediante el siguiente formulario.
+              Genere una solicitud de material faltante mediante el siguiente formulario.
           </DialogDescription>
         </DialogHeader>
 

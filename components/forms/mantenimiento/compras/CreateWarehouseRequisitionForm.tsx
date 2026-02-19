@@ -497,8 +497,8 @@ export function CreateWarehouseRequisitionForm({ onClose, initialData, isEditing
               render={({ field }) => (
                 <FormItem className="flex flex-row items-center justify-between rounded-xl border p-3">
                   <div className="space-y-0.5">
-                    <FormLabel className="text-sm font-medium">¿Es referido?</FormLabel>
-                    <p className="text-xs text-muted-foreground">Actívalo si la requisición tiene referencia previa.</p>
+                    <FormLabel className="text-sm font-medium">¿Es diferido?</FormLabel>
+                    <p className="text-xs text-muted-foreground">Actívalo si la requisición puede ser diferida.</p>
                   </div>
                   <FormControl>
                     <Switch checked={field.value} onCheckedChange={field.onChange} />
@@ -679,6 +679,14 @@ export function CreateWarehouseRequisitionForm({ onClose, initialData, isEditing
                                     value={article.part_number}
                                     onChange={(e) =>
                                       handleArticleChange(batch.batch, index, 'part_number', e.target.value)
+                                    }
+                                    className="h-9 text-sm w-full"
+                                  />
+                                  <Input
+                                    placeholder="Alt. PN"
+                                    value={article.part_number}
+                                    onChange={(e) =>
+                                      handleArticleChange(batch.batch, index, 'alt_part_number', e.target.value)
                                     }
                                     className="h-9 text-sm w-full"
                                   />
