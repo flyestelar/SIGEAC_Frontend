@@ -33,7 +33,7 @@ export interface IArticleSimple {
   };
 }
 
-export const getStatusBadge = (status: string | null | undefined) => {
+export const getStatusBadge = (status: string | null | undefined , quantity?: number) => {
   if (!status) {
     return (
       <Badge variant="outline" className="flex items-center gap-1 w-fit">
@@ -43,6 +43,15 @@ export const getStatusBadge = (status: string | null | undefined) => {
     );
   }
 
+  if (status === 'STORED' && quantity === 0) {
+    return (
+      <Badge variant="destructive" className="flex items-center gap-1 w-fit">
+        <XCircle className="h-3 w-3" />
+        Sin Stock
+      </Badge>
+    );
+  }
+  
   const statusConfig: Record<
     string,
     { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' | 'warning'; icon: any }
@@ -77,8 +86,7 @@ export const flattenArticles = (data: WarehouseResponse | undefined): IArticleSi
       description: article.description,
       zone: article.zone,
       // Normalizar cantidad: 0, null o undefined -> 1
-      quantity:
-        article.quantity === 0 || article.quantity === null || article.quantity === undefined ? 1 : article.quantity,
+      quantity: article.quantity === null || article.quantity === undefined ? 1 : article.quantity,
       status: article.status,
       condition: article.condition ? article.condition.name : 'N/A',
       article_type: article.article_type ?? 'N/A',
@@ -146,7 +154,7 @@ const baseCols: ColumnDef<IArticleSimple>[] = [
       return (
         <div className="flex justify-center">
           <Badge
-            variant={q > 5 ? 'default' : q > 0 ? 'secondary' : 'destructive'}
+            variant={q > 5 ? 'default' : q > 0 ? 'secondary' : 'secondary'}
             className="text-base font-bold px-3 py-1"
           >
             {q}
@@ -163,7 +171,7 @@ const baseCols: ColumnDef<IArticleSimple>[] = [
       const descalibrated = row.original.tool?.status === 'VENCIDO';
       return (
         <div className="flex flex-col justify-center items-center space-y-2">
-          {!calibrating && !descalibrated && getStatusBadge(row.original.status?.toUpperCase())}
+          {!calibrating && !descalibrated && getStatusBadge(row.original.status?.toUpperCase(), row.original.quantity)}
           {row.original.tool && <StatusCellWithPopover tool={row.original} globalStatus={'hola'} />}
         </div>
       );
