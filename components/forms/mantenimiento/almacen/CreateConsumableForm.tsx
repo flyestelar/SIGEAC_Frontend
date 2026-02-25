@@ -56,7 +56,21 @@ const formSchema = z.object({
   inspector: z.string().optional(),
   reception_date: z.string().optional(),
   alternative_part_number: z
-    .array(z.string().min(2, { message: 'Cada número de parte alterno debe contener al menos 2 caracteres.' }))
+    .preprocess(
+      (val) => {
+        if (val === '' || val == null) return [];
+        if (Array.isArray(val)) return val;
+        if (typeof val === 'string') {
+          // si algún día llega "A, B", también lo soporta
+          return val
+            .split(/[\n,;]+/g)
+            .map((s) => s.trim())
+            .filter(Boolean);
+        }
+        return [];
+      },
+      z.array(z.string().min(2, { message: 'Cada número de parte alterno debe contener al menos 2 caracteres.' })),
+    )
     .optional(),
   description: z.string().optional(),
   zone: z.string().optional(),
@@ -124,7 +138,8 @@ const CreateConsumableForm = ({ initialData, isEditing }: { initialData?: Editin
       part_number: initialData?.part_number || '',
       inspector: (initialData as any)?.inspector || '',
       reception_date: (initialData as any)?.reception_date || '',
-      alternative_part_number: initialData?.alternative_part_number || [],
+      alternative_part_number:
+        typeof initialData?.alternative_part_number === 'string' ? [] : (initialData?.alternative_part_number ?? []),
       batch_id: initialData?.batches?.id?.toString() || '',
       manufacturer_id: initialData?.manufacturer?.id?.toString() || '',
       condition_id: initialData?.condition?.id?.toString() || '',
@@ -147,7 +162,8 @@ const CreateConsumableForm = ({ initialData, isEditing }: { initialData?: Editin
       part_number: initialData.part_number ?? '',
       inspector: (initialData as any)?.inspector ?? '',
       reception_date: (initialData as any)?.reception_date ?? '',
-      alternative_part_number: initialData.alternative_part_number ?? [],
+      alternative_part_number:
+        typeof initialData?.alternative_part_number === 'string' ? [] : (initialData?.alternative_part_number ?? []),
       batch_id: initialData.batches?.id?.toString() ?? '',
       manufacturer_id: initialData.manufacturer?.id?.toString() ?? '',
       condition_id: initialData.condition?.id?.toString() ?? '',

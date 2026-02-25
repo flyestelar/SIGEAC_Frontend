@@ -123,14 +123,10 @@ interface FormProps {
 export function ConsumableDispatchForm({ onClose }: FormProps) {
   const { user } = useAuth();
   const { selectedCompany } = useCompanyStore();
-
   const [openRequestedBy, setOpenRequestedBy] = useState(false);
   const [requestBy, setRequestedBy] = useState<Employee>();
-
   const { createDispatchRequest } = useCreateDispatchRequest();
-
   const { data: thirdParty, isLoading: isThirdPartyLoading, isError: isThirdPartyError } = useGetThirdParties();
-
   const {
     data: aircrafts,
     isLoading: isAircraftsLoading,
