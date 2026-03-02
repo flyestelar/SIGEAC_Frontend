@@ -211,7 +211,7 @@ export function CreateWarehouseRequisitionForm({ onClose, initialData, isEditing
     const dni = form.getValues('requested_by');
     if (requestedByObj) return `${requestedByObj.first_name} ${requestedByObj.last_name}`;
     const found = employees?.find((e) => String(e.dni) === String(dni));
-    return found ? `${found.first_name} ${found.last_name}` : 'Seleccionar técnico';
+    return found ? `${found.first_name} ${found.last_name}` : 'Selec. técnico...';
   }, [employees, form, requestedByObj]);
 
   const batchesButtonLabel = useMemo(() => {
