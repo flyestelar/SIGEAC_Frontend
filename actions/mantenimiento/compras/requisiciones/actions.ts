@@ -1,6 +1,7 @@
-import axiosInstance from "@/lib/axios"
-import { useMutation, useQueryClient } from "@tanstack/react-query"
-import { toast } from "sonner"
+import axiosInstance from '@/lib/axios';
+import { useCompanyStore } from '@/stores/CompanyStore';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
 
 interface CreateRequisitionData {
   justification?: string;
@@ -12,8 +13,6 @@ interface CreateRequisitionData {
   type: string;
   //image?: File;
   document?: File[];
-  location_id: number | string;
-  company: string;
   articles: {
     batch: string;
     batch_name: string;
@@ -29,121 +28,119 @@ interface CreateRequisitionData {
 }
 
 export const useCreateRequisition = () => {
-
-  const queryClient = useQueryClient()
+  const queryClient = useQueryClient();
+  const { selectedCompany } = useCompanyStore();
 
   const createMutation = useMutation({
-    mutationFn: async ({ data, company }: { data: CreateRequisitionData, company: string }) => {
-      await axiosInstance.post(`/${company}/requisition-order`, data,
-        {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-          }
-        })
+    mutationFn: async ({ data }: { data: CreateRequisitionData }) => {
+      await axiosInstance.post(`/${selectedCompany?.slug}/requisition-order`, data, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['requisitions-orders'] })
-      queryClient.invalidateQueries({ queryKey: ['requisitions-order'], exact: false })
+      queryClient.invalidateQueries({ queryKey: ['requisitions-orders'] });
+      queryClient.invalidateQueries({ queryKey: ['requisitions-order'], exact: false });
 
-      toast.success("¡Creado!", {
-        description: `La requisicion ha sido creada correctamente.`
-      })
+      toast.success('¡Creado!', {
+        description: `La requisicion ha sido creada correctamente.`,
+      });
     },
     onError: (error) => {
       toast.error('Oops!', {
-        description: 'No se pudo crear la requisicion...'
-      })
-      console.log(error)
+        description: 'No se pudo crear la requisicion...',
+      });
+      console.log(error);
     },
-  }
-  )
+  });
   return {
     createRequisition: createMutation,
-  }
-}
+  };
+};
 
 export const useUpdateRequisition = () => {
-
-  const queryClient = useQueryClient()
-
+  const queryClient = useQueryClient();
+  const { selectedCompany } = useCompanyStore();
   const updateMutation = useMutation({
-    mutationFn: async ({ data, id, company }: { id: string | number, data: CreateRequisitionData, company: string }) => {
-      await axiosInstance.put(`/${company}/requisition-order/${id}`, data)
+    mutationFn: async ({ data, id }: { id: string; data: CreateRequisitionData }) => {
+      await axiosInstance.put(`/${selectedCompany?.slug}/requisition-order/${id}`, data);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['requisitions-orders'] })
-      toast.success("¡Actualizada!", {
-        description: `La requisicion ha sido actualizada correctamente.`
-      })
+      queryClient.invalidateQueries({ queryKey: ['requisitions-orders'] });
+      toast.success('¡Actualizada!', {
+        description: `La requisicion ha sido actualizada correctamente.`,
+      });
     },
     onError: (error) => {
       toast.error('Oops!', {
-        description: 'No se pudo actualizar la requisicion...'
-      })
-      console.log(error)
+        description: 'No se pudo actualizar la requisicion...',
+      });
+      console.log(error);
     },
-  }
-  )
+  });
   return {
     updateRequisition: updateMutation,
-  }
-}
+  };
+};
 
 export const useDeleteRequisition = () => {
-
-  const queryClient = useQueryClient()
+  const queryClient = useQueryClient();
 
   const deleteMutation = useMutation({
-    mutationFn: async ({ id, company }: { id: number, company: string }) => {
-      await axiosInstance.delete(`/${company}/delete-requisition-order/${id}`)
+    mutationFn: async ({ id, company }: { id: number; company: string }) => {
+      await axiosInstance.delete(`/${company}/delete-requisition-order/${id}`);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['requisitions-orders'] })
-      toast.success("¡Eliminado!", {
-        description: `¡La requisición ha sido eliminada correctamente!`
-      })
+      queryClient.invalidateQueries({ queryKey: ['requisitions-orders'] });
+      toast.success('¡Eliminado!', {
+        description: `¡La requisición ha sido eliminada correctamente!`,
+      });
     },
     onError: (e) => {
-      toast.error("Oops!", {
-        description: "¡Hubo un error al eliminar la requisición!"
-      })
+      toast.error('Oops!', {
+        description: '¡Hubo un error al eliminar la requisición!',
+      });
     },
-  }
-  )
+  });
 
   return {
     deleteRequisition: deleteMutation,
-  }
-}
+  };
+};
 
 export const useUpdateRequisitionStatus = () => {
-
-  const queryClient = useQueryClient()
+  const queryClient = useQueryClient();
 
   const updateStatusMutation = useMutation({
-    mutationFn: async ({ id, data, company }: {
-      id: number, data: {
-        status: string,
-        updated_by: string,
-      }, company: string
+    mutationFn: async ({
+      id,
+      data,
+      company,
+    }: {
+      id: number;
+      data: {
+        status: string;
+        updated_by: string;
+      };
+      company: string;
     }) => {
-      await axiosInstance.put(`/${company}/requisition-order-update-status/${id}`, data)
+      await axiosInstance.put(`/${company}/requisition-order-update-status/${id}`, data);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['requisitions-orders'] })
-      toast.success("¡Confirmada!", {
-        description: `¡La requisición ha sido confirmada correctamente!`
-      })
+      queryClient.invalidateQueries({ queryKey: ['requisitions-orders'] });
+      toast.success('¡Confirmada!', {
+        description: `¡La requisición ha sido confirmada correctamente!`,
+      });
     },
     onError: (e) => {
-      toast.error("Oops!", {
-        description: "¡Hubo un error al confirmar la requisición!"
-      })
+      toast.error('Oops!', {
+        description: '¡Hubo un error al confirmar la requisición!',
+      });
     },
-  }
-  )
+  });
 
   return {
     updateStatusRequisition: updateStatusMutation,
-  }
-}
+  };
+};

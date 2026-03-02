@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -30,8 +31,14 @@ import {
   Clock,
   FileText,
   Flag,
+  ImageIcon,
+  ListChecks,
   Loader2,
+  Minus,
   MinusCircle,
+  PackageSearch,
+  Plus,
+  Tag,
   Trash2,
   Upload,
 } from 'lucide-react';
@@ -39,11 +46,16 @@ import React, { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
-/* =========================
-  Schema
-========================= */
+const isPdf = (file: File) => file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
 const MAX_PDF_MB = 5;
 const MAX_PDF_BYTES = MAX_PDF_MB * 1024 * 1024;
+const MAX_IMG_MB = 5;
+const MAX_IMG_BYTES = MAX_IMG_MB * 1024 * 1024;
+
+const isImage = (file: File) => file.type.startsWith('image/');
+const isAllowedDoc = (file: File) => isPdf(file) || isImage(file);
+const docSizeOk = (file: File) =>
+  isPdf(file) ? file.size <= MAX_PDF_BYTES : isImage(file) ? file.size <= MAX_IMG_BYTES : false;
 
 const FormSchema = z.object({
   justification: z.string().optional(),
@@ -55,11 +67,11 @@ const FormSchema = z.object({
   is_referred: z.boolean().default(false),
   document: z
     .array(z.instanceof(File))
+    .refine((files) => files.every(isAllowedDoc), 'Solo se permiten archivos PDF e imágenes.')
     .refine(
-      (files) => files.every((file) => file.size <= MAX_PDF_BYTES),
-      `Cada archivo PDF debe ser menor a ${MAX_PDF_MB}MB`,
+      (files) => files.every(docSizeOk),
+      `Cada PDF debe ser menor a ${MAX_PDF_MB}MB. Cada imagen debe ser menor a ${MAX_IMG_MB}MB.`,
     )
-    .refine((files) => files.every((file) => file.type === 'application/pdf'), 'Solo se permiten archivos PDF')
     .optional(),
   articles: z
     .array(
@@ -89,9 +101,6 @@ const FormSchema = z.object({
 
 type FormSchemaType = z.infer<typeof FormSchema>;
 
-/* =========================
-  Local types
-========================= */
 type Priority = 'low' | 'medium' | 'high';
 
 interface Article {
@@ -112,13 +121,9 @@ interface Batch {
 interface FormProps {
   onClose: () => void;
   initialData?: FormSchemaType;
-  id?: number | string;
+  id?: string;
   isEditing?: boolean;
 }
-
-/* =========================
-  UI atoms
-========================= */
 const PriorityBadge = memo(({ priority }: { priority: Priority }) => {
   const config = {
     low: { label: 'Baja', icon: <Clock className="h-3 w-3" />, className: 'bg-muted text-foreground' },
@@ -144,7 +149,6 @@ const PriorityBadge = memo(({ priority }: { priority: Priority }) => {
   );
 });
 PriorityBadge.displayName = 'PriorityBadge';
-
 const Section = ({ title, hint, children }: { title: string; hint?: string; children: React.ReactNode }) => {
   return (
     <Card className="rounded-2xl shadow-sm">
@@ -156,15 +160,8 @@ const Section = ({ title, hint, children }: { title: string; hint?: string; chil
     </Card>
   );
 };
-
-const formatKB = (bytes: number) => `${Math.round(bytes / 1024)} KB`;
-const isPdf = (file: File) => file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
-
 const emptyArticle = (): Article => ({ part_number: '', quantity: 1 });
 
-/* =========================
-  Main
-========================= */
 export function CreateWarehouseRequisitionForm({ onClose, initialData, isEditing, id }: FormProps) {
   const { user } = useAuth();
   const { mutate, data: batches, isPending: isBatchesLoading } = useGetBatchesByLocationId();
@@ -203,12 +200,12 @@ export function CreateWarehouseRequisitionForm({ onClose, initialData, isEditing
   const isSubmitting = createRequisition.isPending || updateRequisition.isPending;
 
   /* ---------- Derived labels ---------- */
+  const aircraftId = form.watch('aircraft_id');
   const aircraftLabel = useMemo(() => {
-    const id = form.getValues('aircraft_id');
-    if (!id) return 'Seleccionar aeronave';
-    const found = aircrafts?.find((a) => String(a.id) === String(id));
+    if (!aircraftId) return 'Seleccionar aeronave';
+    const found = aircrafts?.find((a) => String(a.id) === String(aircraftId));
     return found?.acronym ?? 'Seleccionar aeronave';
-  }, [aircrafts, form]);
+  }, [aircrafts, aircraftId]);
 
   const requestedByLabel = useMemo(() => {
     const dni = form.getValues('requested_by');
@@ -320,9 +317,9 @@ export function CreateWarehouseRequisitionForm({ onClose, initialData, isEditing
 
       try {
         if (isEditing) {
-          await updateRequisition.mutateAsync({ id: id!, data: formattedData, company: selectedCompany.slug });
+          await updateRequisition.mutateAsync({ id: id!, data: formattedData });
         } else {
-          await createRequisition.mutateAsync({ data: formattedData, company: selectedCompany.slug });
+          await createRequisition.mutateAsync({ data: formattedData });
         }
         onClose();
       } catch (e) {
@@ -333,6 +330,13 @@ export function CreateWarehouseRequisitionForm({ onClose, initialData, isEditing
     [selectedCompany?.slug, selectedStation, isEditing, id, updateRequisition, createRequisition, onClose],
   );
 
+  const formatSize = (bytes: number) => {
+    const kb = bytes / 1024;
+    if (kb < 1024) return `${Math.round(kb)} KB`;
+    const mb = kb / 1024;
+    return `${mb.toFixed(1)} MB`;
+  };
+
   /* ---------- Documents field helper ---------- */
   const handleDocumentsPick = useCallback(
     (incomingFiles: FileList | null, currentFiles: File[], onChange: (files: File[]) => void) => {
@@ -342,9 +346,9 @@ export function CreateWarehouseRequisitionForm({ onClose, initialData, isEditing
 
       const rejected: string[] = [];
       const accepted = fileArray.filter((file) => {
-        const okType = isPdf(file);
-        const okSize = file.size <= MAX_PDF_BYTES;
-        if (!okType) rejected.push(`"${file.name}" no es PDF.`);
+        const okType = isPdf(file) || isImage(file);
+        const okSize = file.size <= MAX_PDF_BYTES || file.size <= MAX_IMG_BYTES;
+        if (!okType) rejected.push(`"${file.name}" no es PDF o una imágen.`);
         else if (!okSize) rejected.push(`"${file.name}" excede ${MAX_PDF_MB}MB.`);
         return okType && okSize;
       });
@@ -423,9 +427,7 @@ export function CreateWarehouseRequisitionForm({ onClose, initialData, isEditing
                               <CommandItem
                                 value={String(aircraft.id)}
                                 key={aircraft.id}
-                                onSelect={() =>
-                                  form.setValue('aircraft_id', String(aircraft.id), { shouldDirty: true })
-                                }
+                                onSelect={() => field.onChange(String(aircraft.id))}
                                 className="py-2 text-sm"
                               >
                                 <Check
@@ -636,126 +638,139 @@ export function CreateWarehouseRequisitionForm({ onClose, initialData, isEditing
                 </Popover>
 
                 {selectedBatches.length > 0 ? (
-                  <div className="mt-3 space-y-3">
-                    <ScrollArea className={cn(selectedBatches.length > 2 ? 'h-[270px]' : '')}>
-                      <div className="space-y-3 pr-3">
+                  <div className="mt-4">
+                    <ScrollArea className={cn(selectedBatches.length > 2 ? 'h-[300px]' : '')}>
+                      <div className="space-y-4 pr-3">
                         {selectedBatches.map((batch) => (
-                          <div key={batch.batch} className="rounded-2xl border bg-card p-3">
-                            <div className="flex items-start justify-between gap-3">
+                          <div key={batch.batch} className="rounded-2xl border bg-background/60 shadow-sm">
+                            {/* Header */}
+                            <div className="flex items-start justify-between gap-3 px-4 py-3">
                               <div className="min-w-0">
                                 <div className="flex items-center gap-2">
-                                  <h4 className="truncate text-sm font-semibold">{batch.batch_name}</h4>
-                                  <Badge variant="outline" className="text-[11px] font-normal">
-                                    {batch.category}
-                                  </Badge>
-                                  <span className="text-xs text-muted-foreground">
-                                    {batch.batch_articles.length} item(s)
-                                  </span>
+                                  {/* Icon */}
+                                  <div className="flex h-8 w-8 items-center justify-center rounded-xl border bg-muted/40">
+                                    <PackageSearch className="h-4 w-4 text-muted-foreground" />
+                                  </div>
+
+                                  <div className="min-w-0">
+                                    <h4 className="truncate text-sm font-semibold leading-5">{batch.batch_name}</h4>
+
+                                    <div className="mt-0.5 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                                      <span className="inline-flex items-center gap-1">
+                                        <Tag className="h-3.5 w-3.5" />
+                                        {batch.category}
+                                      </span>
+
+                                      <span className="text-muted-foreground/60">•</span>
+
+                                      <span className="inline-flex items-center gap-1">
+                                        <ListChecks className="h-3.5 w-3.5" />
+                                        {batch.batch_articles.length} item(s)
+                                      </span>
+                                    </div>
+                                  </div>
                                 </div>
                               </div>
 
+                              {/* Remove batch */}
                               <Button
                                 variant="ghost"
                                 type="button"
                                 size="sm"
                                 onClick={() => removeBatch(batch.batch)}
-                                className="h-8 w-8 p-0 hover:bg-red-50 hover:text-red-600"
+                                className="h-8 w-8 p-0 text-muted-foreground hover:bg-red-50 hover:text-red-600"
                                 aria-label="Eliminar renglón"
                               >
-                                <MinusCircle className="h-4 w-4" />
+                                <Trash2 className="h-4 w-4" />
                               </Button>
                             </div>
 
-                            <div className="mt-3 space-y-2">
-                              {batch.batch_articles.map((article, index) => (
-                                <div
-                                  key={`${batch.batch}-${index}`}
-                                  className="grid grid-cols-1 gap-2 md:grid-cols-5 md:items-center"
-                                >
-                                  <Input
-                                    placeholder="PN"
-                                    value={article.part_number}
-                                    onChange={(e) =>
-                                      handleArticleChange(batch.batch, index, 'part_number', e.target.value)
-                                    }
-                                    className="h-9 text-sm w-full"
-                                  />
-                                  <Input
-                                    placeholder="Alt. PN"
-                                    value={article.alt_part_number || ''}
-                                    onChange={(e) =>
-                                      handleArticleChange(batch.batch, index, 'alt_part_number', e.target.value)
-                                    }
-                                    className="h-9 text-sm w-full"
-                                  />
+                            <Separator />
 
-                                  {batch.category === 'consumible' ? (
-                                    <Select
-                                      disabled={secondaryUnitLoading}
-                                      onValueChange={(value) => handleArticleChange(batch.batch, index, 'unit', value)}
-                                      value={article.unit}
-                                    >
-                                      <SelectTrigger className="h-9 text-sm">
-                                        <SelectValue placeholder="Unidad sec." />
-                                      </SelectTrigger>
-                                      <SelectContent>
-                                        {secondaryUnits?.map((secU) => (
-                                          <SelectItem key={secU.id} value={String(secU.id)} className="text-sm">
-                                            {secU.secondary_unit}
-                                          </SelectItem>
-                                        ))}
-                                      </SelectContent>
-                                    </Select>
-                                  ) : (
-                                    <div className="hidden md:block" />
-                                  )}
+                            {/* Articles */}
+                            <div className="px-4 py-3">
+                              <div className="space-y-2">
+                                {batch.batch_articles.map((article, index) => (
+                                  <div
+                                    key={`${batch.batch}-${index}`}
+                                    className="rounded-xl border bg-background px-3 py-3 transition-colors hover:bg-muted/30"
+                                  >
+                                    <div className="flex justify-between gap-2">
+                                      {/* PN */}
+                                      <div className="md:col-span-3">
+                                        <Label className="mb-1 block text-[11px] text-muted-foreground">PN</Label>
+                                        <Input
+                                          placeholder="PN"
+                                          value={article.part_number}
+                                          onChange={(e) =>
+                                            handleArticleChange(batch.batch, index, 'part_number', e.target.value)
+                                          }
+                                          className="h-9 text-sm"
+                                        />
+                                      </div>
 
-                                  <Input
-                                    type="number"
-                                    min={1}
-                                    placeholder="Cantidad"
-                                    value={article.quantity || ''}
-                                    onChange={(e) => {
-                                      const raw = e.target.value;
-                                      const qty = raw === '' ? 0 : Number(raw);
-                                      handleArticleChange(batch.batch, index, 'quantity', qty);
-                                    }}
-                                    className="h-9 text-sm"
-                                  />
+                                      {/* Alt PN */}
+                                      <div className="md:col-span-3">
+                                        <Label className="mb-1 block text-[11px] text-muted-foreground">Alt. PN</Label>
+                                        <Input
+                                          placeholder="Alt. PN"
+                                          value={article.alt_part_number || ''}
+                                          onChange={(e) =>
+                                            handleArticleChange(batch.batch, index, 'alt_part_number', e.target.value)
+                                          }
+                                          className="h-9 text-sm"
+                                        />
+                                      </div>
+                                      {/* Qty */}
+                                      <div className="md:col-span-2">
+                                        <Label className="mb-1 block text-[11px] text-muted-foreground">Cantidad</Label>
+                                        <Input
+                                          type="number"
+                                          min={1}
+                                          placeholder="Cantidad"
+                                          value={article.quantity || ''}
+                                          onChange={(e) => {
+                                            const raw = e.target.value;
+                                            const qty = raw === '' ? 0 : Number(raw);
+                                            handleArticleChange(batch.batch, index, 'quantity', qty);
+                                          }}
+                                          className="h-9 text-sm"
+                                        />
+                                      </div>
 
-                                  <div className="flex items-center gap-2 md:col-span-2">
-                                    <Input
-                                      type="file"
-                                      accept="image/*"
-                                      className="h-9 cursor-pointer text-xs"
-                                      onChange={(e) =>
-                                        handleArticleChange(batch.batch, index, 'image', e.target.files?.[0])
-                                      }
-                                    />
-                                    <Button
-                                      variant="ghost"
-                                      type="button"
-                                      size="sm"
-                                      onClick={() => removeArticleFromBatch(batch.batch, index)}
-                                      className="h-9 w-9 p-0 hover:bg-red-50 hover:text-red-600"
-                                      aria-label="Eliminar artículo"
-                                    >
-                                      <Trash2 className="h-4 w-4" />
-                                    </Button>
+                                      {/* Attachment + actions */}
+                                      <div className="md:col-span-2">
+                                        <div className="flex items-center gap-2">
+                                          {/* Remove article */}
+                                          <Button
+                                            variant="ghost"
+                                            type="button"
+                                            size="sm"
+                                            onClick={() => removeArticleFromBatch(batch.batch, index)}
+                                            className="h-9 w-9 p-0 text-muted-foreground hover:bg-red-50 hover:text-red-600"
+                                            aria-label="Eliminar artículo"
+                                          >
+                                            <Trash2 className="h-4 w-4" />
+                                          </Button>
+                                        </div>
+                                      </div>
+                                    </div>
                                   </div>
-                                </div>
-                              ))}
-                            </div>
+                                ))}
+                              </div>
 
-                            <Button
-                              type="button"
-                              variant="secondary"
-                              size="sm"
-                              onClick={() => addArticle(batch.batch)}
-                              className="mt-3 h-9 text-xs"
-                            >
-                              + Agregar artículo
-                            </Button>
+                              {/* Add article */}
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => addArticle(batch.batch)}
+                                className="mt-3 h-9 w-full justify-center gap-2 rounded-xl border bg-background text-xs hover:bg-muted/30 md:w-auto md:justify-start"
+                              >
+                                <Plus className="h-4 w-4" />
+                                Agregar artículo
+                              </Button>
+                            </div>
                           </div>
                         ))}
                       </div>
@@ -798,7 +813,7 @@ export function CreateWarehouseRequisitionForm({ onClose, initialData, isEditing
 
               return (
                 <FormItem>
-                  <FormLabel className="text-sm font-medium">Adjuntar PDFs</FormLabel>
+                  <FormLabel className="text-sm font-medium">Adjuntar documentos</FormLabel>
 
                   <div className="space-y-3">
                     <div className="rounded-2xl border border-dashed p-3 transition-colors hover:border-muted-foreground/40">
@@ -813,7 +828,7 @@ export function CreateWarehouseRequisitionForm({ onClose, initialData, isEditing
                               <Input
                                 type="file"
                                 multiple
-                                accept=".pdf,application/pdf"
+                                accept=".pdf,application/pdf,image/*"
                                 onChange={(e) => {
                                   handleDocumentsPick(e.target.files, files, field.onChange);
                                   e.target.value = '';
@@ -850,10 +865,16 @@ export function CreateWarehouseRequisitionForm({ onClose, initialData, isEditing
                               className="flex items-center justify-between rounded-xl border p-2 hover:bg-muted/30"
                             >
                               <div className="flex min-w-0 flex-1 items-center gap-2">
-                                <FileText className="h-4 w-4 flex-shrink-0 text-red-500" />
+                                {isPdf(file) ? (
+                                  <FileText className="h-4 w-4 flex-shrink-0 text-red-500" />
+                                ) : (
+                                  <ImageIcon className="h-4 w-4 flex-shrink-0 text-blue-500" />
+                                )}
                                 <div className="min-w-0 flex-1">
                                   <p className="truncate text-sm font-medium">{file.name}</p>
-                                  <p className="text-xs text-muted-foreground">{formatKB(file.size)} • PDF</p>
+                                  <p className="text-xs text-muted-foreground">
+                                    {formatSize(file.size)} • {isPdf(file) ? 'PDF' : 'IMG'}
+                                  </p>
                                 </div>
                               </div>
 

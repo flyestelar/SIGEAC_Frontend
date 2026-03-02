@@ -28,7 +28,6 @@ export function DataTable<TData, TValue>({ columns, data }: DataTableProps<TData
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
 
-
   const table = useReactTable({
     data,
     columns,
@@ -43,10 +42,6 @@ export function DataTable<TData, TValue>({ columns, data }: DataTableProps<TData
       columnFilters,
     },
   });
-
-  const router = useRouter();
-
-  const isFiltered = table.getState().columnFilters.length > 0;
 
   return (
     <div>
