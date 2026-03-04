@@ -103,7 +103,7 @@ const FormSchema = z.object({
   work_order: z.string().optional(),
   created_by: z.string(),
   requested_by: z.string({ message: 'Debe ingresar quien lo solicita.' }),
-  priority: z.enum(['low', 'medium', 'high']).default('medium'),
+  priority: z.enum(['LOW', 'MEDIUM', 'HIGH']).default('MEDIUM'),
   is_referred: z.boolean().default(false),
   document: z
     .array(z.instanceof(File))
@@ -141,7 +141,7 @@ const FormSchema = z.object({
 
 type FormSchemaType = z.infer<typeof FormSchema>;
 
-type Priority = 'low' | 'medium' | 'high';
+type Priority = 'LOW' | 'MEDIUM' | 'HIGH';
 
 interface Article {
   part_number: string;
@@ -166,13 +166,13 @@ interface FormProps {
 }
 const PriorityBadge = memo(({ priority }: { priority: Priority }) => {
   const config = {
-    low: { label: 'Baja', icon: <Clock className="h-3 w-3" />, className: 'bg-muted text-foreground' },
-    medium: {
+    LOW: { label: 'Baja', icon: <Clock className="h-3 w-3" />, className: 'bg-muted text-foreground' },
+    MEDIUM: {
       label: 'Media',
       icon: <Flag className="h-3 w-3" />,
       className: 'bg-blue-50 text-blue-700 border-blue-200',
     },
-    high: {
+    HIGH: {
       label: 'Alta',
       icon: <AlertCircle className="h-3 w-3" />,
       className: 'bg-red-50 text-red-700 border-red-200',
@@ -228,7 +228,7 @@ export function CreateWarehouseRequisitionForm({ onClose, initialData, isEditing
       justification: '',
       created_by: '',
       requested_by: '',
-      priority: 'medium',
+      priority: 'MEDIUM',
       is_referred: false,
       articles: [],
       document: [],
@@ -505,19 +505,19 @@ export function CreateWarehouseRequisitionForm({ onClose, initialData, isEditing
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="low">
+                      <SelectItem value="LOW">
                         <div className="flex items-center gap-2 py-1">
                           <Clock className="h-3.5 w-3.5" />
                           <span>Baja</span>
                         </div>
                       </SelectItem>
-                      <SelectItem value="medium">
+                      <SelectItem value="MEDIUM">
                         <div className="flex items-center gap-2 py-1">
                           <Flag className="h-3.5 w-3.5" />
                           <span>Media</span>
                         </div>
                       </SelectItem>
-                      <SelectItem value="high">
+                      <SelectItem value="HIGH">
                         <div className="flex items-center gap-2 py-1">
                           <AlertCircle className="h-3.5 w-3.5" />
                           <span>Alta</span>

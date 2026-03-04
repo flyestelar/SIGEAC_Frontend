@@ -12,16 +12,7 @@ import { cn } from '@/lib/utils';
 import { useCompanyStore } from '@/stores/CompanyStore';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale/es';
-import {
-  ClipboardCheck,
-  ExternalLink,
-  FileText,
-  Flag,
-  Image as ImageIcon,
-  Paperclip,
-  Plane,
-  User
-} from 'lucide-react';
+import { ClipboardCheck, ExternalLink, FileText, Flag, Image as ImageIcon, Paperclip, Plane, User } from 'lucide-react';
 import Image from 'next/image';
 import { useParams, useRouter } from 'next/navigation';
 import React, { useMemo, useState } from 'react';
@@ -247,7 +238,7 @@ const RequisitionPage = () => {
                     <Plane className="h-4 w-4 text-muted-foreground" />
                     Aeronave
                   </div>
-                  <p className="mt-2 text-sm">{data.aircraft?.acronym || 'N/A'}</p>
+                  <p className="mt-2 text-sm font-semibold">{data.aircraft?.acronym || 'N/A'}</p>
                 </div>
 
                 {/* OT */}
@@ -267,7 +258,15 @@ const RequisitionPage = () => {
                   </div>
                   <div className="mt-2">
                     {data.priority ? (
-                      <Badge variant="secondary" className="rounded-xl">
+                      <Badge
+                        variant="secondary"
+                        className={cn(
+                          data.priority === 'MEDIUM' || data.priority === 'LOW'
+                            ? 'bg-yellow-500'
+                            : 'bg-red-600 text-white',
+                          'text-white',
+                        )}
+                      >
                         {String(data.priority).toUpperCase()}
                       </Badge>
                     ) : (
