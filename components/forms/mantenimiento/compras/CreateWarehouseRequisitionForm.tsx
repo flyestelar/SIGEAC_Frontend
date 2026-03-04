@@ -804,7 +804,7 @@ export function CreateWarehouseRequisitionForm({ onClose, initialData, isEditing
           />
         </Section>
 
-        <Section title="Documentos adjuntos" hint={`Solo PDF, máximo ${MAX_PDF_MB}MB por archivo.`}>
+        <Section title="Documentos adjuntos" hint={`Solo PDF e imágenes, máximo ${MAX_PDF_MB}MB por archivo.`}>
           <FormField
             control={form.control}
             name="document"

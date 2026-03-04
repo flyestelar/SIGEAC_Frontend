@@ -61,7 +61,9 @@ export const columns: ColumnDef<Requisition>[] = [
     header: ({ column }) => <DataTableColumnHeader column={column} title="Justificación" />,
     meta: { title: 'Justificación' },
     cell: ({ row }) => (
-      <p className="text-center flex justify-center text-muted-foreground italic">{row.original.justification}</p>
+      <p className="text-center flex justify-center text-muted-foreground italic">
+        {row.original.justification ?? '-'}
+      </p>
     ),
   },
   {
