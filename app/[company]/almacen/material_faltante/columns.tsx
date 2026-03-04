@@ -96,12 +96,6 @@ export const columns: ColumnDef<Requisition>[] = [
     cell: ({ row }) => <p className="text-center">{format(row.original.submission_date, 'PPP', { locale: es })}</p>,
   },
   {
-    accessorKey: 'type',
-    header: ({ column }) => <DataTableColumnHeader column={column} title="Tipo de Req." />,
-    meta: { title: 'Fecha de c.' },
-    cell: ({ row }) => <p className="text-center">{row.original.type}</p>,
-  },
-  {
     accessorKey: 'aircraft.acronym',
     header: ({ column }) => <DataTableColumnHeader column={column} title="Aeronave" />,
     cell: ({ row }) => (
