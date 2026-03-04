@@ -5,15 +5,23 @@ import { ContentLayout } from '@/components/layout/ContentLayout';
 import LoadingPage from '@/components/misc/LoadingPage';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { useGetRequisitionByOrderNumber } from '@/hooks/mantenimiento/compras/useGetRequisitionByOrderNumber';
 import { cn } from '@/lib/utils';
 import { useCompanyStore } from '@/stores/CompanyStore';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale/es';
-import { ExternalLink, FileText, Image as ImageIcon, Loader2, Paperclip, Trash2, User } from 'lucide-react';
+import {
+  ClipboardCheck,
+  ExternalLink,
+  FileText,
+  Flag,
+  Image as ImageIcon,
+  Paperclip,
+  Plane,
+  User
+} from 'lucide-react';
 import Image from 'next/image';
 import { useParams, useRouter } from 'next/navigation';
 import React, { useMemo, useState } from 'react';
@@ -222,11 +230,51 @@ const RequisitionPage = () => {
           <Card className="md:col-span-7 rounded-2xl border-muted/50 bg-background/60">
             <CardHeader className="pb-3">
               <CardTitle className="text-lg">Resumen</CardTitle>
+
               <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-                <InfoRow
-                  label="Fecha de creación"
-                  value={format(data.submission_date, 'PPP', { locale: es }) || 'N/A'}
-                />
+                {/* Fecha */}
+                <div className="rounded-2xl border bg-background p-4">
+                  <div className="flex items-center gap-2 text-sm font-semibold">
+                    <FileText className="h-4 w-4 text-muted-foreground" />
+                    Fecha de creación
+                  </div>
+                  <p className="mt-2 text-sm">{format(data.submission_date, 'PPP', { locale: es }) || 'N/A'}</p>
+                </div>
+
+                {/* Aeronave */}
+                <div className="rounded-2xl border bg-background p-4">
+                  <div className="flex items-center gap-2 text-sm font-semibold">
+                    <Plane className="h-4 w-4 text-muted-foreground" />
+                    Aeronave
+                  </div>
+                  <p className="mt-2 text-sm">{data.aircraft?.acronym || 'N/A'}</p>
+                </div>
+
+                {/* OT */}
+                <div className="rounded-2xl border bg-background p-4">
+                  <div className="flex items-center gap-2 text-sm font-semibold">
+                    <ClipboardCheck className="h-4 w-4 text-muted-foreground" />
+                    Orden de trabajo
+                  </div>
+                  <p className="mt-2 text-sm">{data.work_order ?? 'N/A'}</p>
+                </div>
+
+                {/* Prioridad */}
+                <div className="rounded-2xl border bg-background p-4">
+                  <div className="flex items-center gap-2 text-sm font-semibold">
+                    <Flag className="h-4 w-4 text-muted-foreground" />
+                    Prioridad
+                  </div>
+                  <div className="mt-2">
+                    {data.priority ? (
+                      <Badge variant="secondary" className="rounded-xl">
+                        {String(data.priority).toUpperCase()}
+                      </Badge>
+                    ) : (
+                      <span className="text-sm">N/A</span>
+                    )}
+                  </div>
+                </div>
               </div>
             </CardHeader>
             <CardContent className="space-y-4">

@@ -34,8 +34,6 @@ import {
   ImageIcon,
   ListChecks,
   Loader2,
-  Minus,
-  MinusCircle,
   PackageSearch,
   Plus,
   Tag,
@@ -44,8 +42,50 @@ import {
 } from 'lucide-react';
 import React, { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
+import { FaFileExcel } from 'react-icons/fa';
 import { z } from 'zod';
 
+const EXCEL_EXTS = new Set([
+  'xls',
+  'xlsx',
+  'xlsm',
+  'xlsb',
+  'xlt',
+  'xltx',
+  'xltm',
+  'xla',
+  'xlam',
+  'csv', // si también lo quieres como “Excel-compatible”
+  'ods', // opcional: LibreOffice/Excel lo abre
+]);
+
+const EXCEL_MIMES = new Set([
+  'application/vnd.ms-excel', // .xls
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', // .xlsx
+  'application/vnd.ms-excel.sheet.macroenabled.12', // .xlsm
+  'application/vnd.ms-excel.sheet.binary.macroenabled.12', // .xlsb
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.template', // .xltx
+  'application/vnd.ms-excel.template.macroenabled.12', // .xltm
+  'application/vnd.ms-excel.addin.macroenabled.12', // .xlam
+  'text/csv',
+  'application/csv',
+  'application/vnd.oasis.opendocument.spreadsheet', // .ods
+]);
+
+const getExt = (name: string) => {
+  const clean = name.split('?')[0].split('#')[0];
+  const i = clean.lastIndexOf('.');
+  return i >= 0 ? clean.slice(i + 1).toLowerCase() : '';
+};
+
+export const isExcel = (file: File) => {
+  const ext = getExt(file.name);
+  const byExt = EXCEL_EXTS.has(ext);
+  const byMime = file.type ? EXCEL_MIMES.has(file.type) : false;
+
+  // Extensión manda; MIME es “bonus” cuando existe
+  return byExt || byMime;
+};
 const isPdf = (file: File) => file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
 const MAX_PDF_MB = 5;
 const MAX_PDF_BYTES = MAX_PDF_MB * 1024 * 1024;
@@ -53,9 +93,9 @@ const MAX_IMG_MB = 5;
 const MAX_IMG_BYTES = MAX_IMG_MB * 1024 * 1024;
 
 const isImage = (file: File) => file.type.startsWith('image/');
-const isAllowedDoc = (file: File) => isPdf(file) || isImage(file);
+const isAllowedDoc = (file: File) => isPdf(file) || isImage(file) || isExcel(file);
 const docSizeOk = (file: File) =>
-  isPdf(file) ? file.size <= MAX_PDF_BYTES : isImage(file) ? file.size <= MAX_IMG_BYTES : false;
+  isPdf(file) || isExcel(file) ? file.size <= MAX_PDF_BYTES : isImage(file) ? file.size <= MAX_IMG_BYTES : false;
 
 const FormSchema = z.object({
   justification: z.string().optional(),
@@ -166,7 +206,6 @@ export function CreateWarehouseRequisitionForm({ onClose, initialData, isEditing
   const { user } = useAuth();
   const { mutate, data: batches, isPending: isBatchesLoading } = useGetBatchesByLocationId();
   const { selectedCompany, selectedStation } = useCompanyStore();
-  const { data: secondaryUnits, isLoading: secondaryUnitLoading } = useGetSecondaryUnits();
   const { createRequisition } = useCreateRequisition();
   const { updateRequisition } = useUpdateRequisition();
 
@@ -346,7 +385,7 @@ export function CreateWarehouseRequisitionForm({ onClose, initialData, isEditing
 
       const rejected: string[] = [];
       const accepted = fileArray.filter((file) => {
-        const okType = isPdf(file) || isImage(file);
+        const okType = isPdf(file) || isImage(file) || isExcel(file);
         const okSize = file.size <= MAX_PDF_BYTES || file.size <= MAX_IMG_BYTES;
         if (!okType) rejected.push(`"${file.name}" no es PDF o una imágen.`);
         else if (!okSize) rejected.push(`"${file.name}" excede ${MAX_PDF_MB}MB.`);
@@ -828,7 +867,7 @@ export function CreateWarehouseRequisitionForm({ onClose, initialData, isEditing
                               <Input
                                 type="file"
                                 multiple
-                                accept=".pdf,application/pdf,image/*"
+                                accept=".pdf,image/*,.xls,.xlsx,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
                                 onChange={(e) => {
                                   handleDocumentsPick(e.target.files, files, field.onChange);
                                   e.target.value = '';
@@ -867,6 +906,8 @@ export function CreateWarehouseRequisitionForm({ onClose, initialData, isEditing
                               <div className="flex min-w-0 flex-1 items-center gap-2">
                                 {isPdf(file) ? (
                                   <FileText className="h-4 w-4 flex-shrink-0 text-red-500" />
+                                ) : isExcel(file) ? (
+                                  <FaFileExcel className="text-green-600" />
                                 ) : (
                                   <ImageIcon className="h-4 w-4 flex-shrink-0 text-blue-500" />
                                 )}

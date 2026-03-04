@@ -1,5 +1,5 @@
 import axios from '@/lib/axios';
-import { AdministrationRequisition, Convertion, User } from '@/types';
+import { AdministrationRequisition, Convertion, MaintenanceAircraft, User } from '@/types';
 import { useQuery } from '@tanstack/react-query';
 
 interface Requisition {
@@ -8,6 +8,7 @@ interface Requisition {
   id: number;
   status: string;
   created_by: User;
+  priority: string;
   requested_by: string;
   received_by: string;
   document?: string[];
@@ -15,6 +16,8 @@ interface Requisition {
   justification: string;
   arrival_date: Date;
   submitted_date: Date;
+  aircraft?: MaintenanceAircraft;
+  work_order?: string;
   batch: {
     id: number;
     name: string;
