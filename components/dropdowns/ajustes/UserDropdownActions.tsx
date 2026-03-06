@@ -2,29 +2,32 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuTrigger
-} from "@/components/ui/dropdown-menu"
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
+import { useDeleteUser } from '@/actions/aerolinea/usuarios/actions';
+import { EditUserDialog } from '@/components/dialogs/ajustes/EditUserDialog';
+import { User } from '@/types';
+import { Loader2, MoreHorizontal, Trash2 } from 'lucide-react';
+import { useState } from 'react';
+import { Button } from '../../ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '../../ui/dialog';
 
-import { useDeleteUser } from "@/actions/aerolinea/usuarios/actions"
-import { EyeIcon, Loader2, MoreHorizontal, Trash2 } from "lucide-react"
-import { useRouter } from "next/navigation"
-import { useState } from "react"
-import { Button } from "../../ui/button"
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "../../ui/dialog"
-
-const UserDropdownActions = ({ id, companies }: { id: number | string, companies: { id: number, name: string }[] }) => {
-
-  const [open, setOpen] = useState<boolean>(false)
-
-  const router = useRouter()
-
-  const { deleteUser } = useDeleteUser()
-
-  const handleDelete = async (id: number | string, companies: { id: number, name: string }[]) => {
-    await deleteUser.mutateAsync({ id, companies });
+const UserDropdownActions = ({ user, companies }: { user: User; companies: { id: number; name: string }[] }) => {
+  const [open, setOpen] = useState<boolean>(false);
+  const { deleteUser } = useDeleteUser();
+  const handleDelete = async (id: number | string, companies: { id: number; name: string }[]) => {
+    await deleteUser.mutateAsync({ id: user.id, companies });
     setOpen(false);
-  }
+  };
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DropdownMenu>
@@ -37,14 +40,10 @@ const UserDropdownActions = ({ id, companies }: { id: number | string, companies
         <DropdownMenuContent align="center" className="flex gap-2 justify-center">
           <DialogTrigger asChild>
             <DropdownMenuItem>
-              <Trash2 className='size-5 text-red-500' />
+              <Trash2 className="size-5 text-red-500" />
             </DropdownMenuItem>
           </DialogTrigger>
-          <DropdownMenuItem onClick={() => {
-            router.push(`/administracion/usuarios_permisos/usuarios/${id}`)
-          }}>
-            <EyeIcon className="size-5" />
-          </DropdownMenuItem>
+          <EditUserDialog user={user} />
         </DropdownMenuContent>
       </DropdownMenu>
       <DialogContent>
@@ -55,14 +54,24 @@ const UserDropdownActions = ({ id, companies }: { id: number | string, companies
           </DialogDescription>
         </DialogHeader>
         <DialogFooter className="flex flex-col gap-2 md:gap-0">
-          <Button className="bg-rose-400 hover:bg-white hover:text-black hover:border hover:border-black" onClick={() => setOpen(false)} type="submit">Cancelar</Button>
-          <Button disabled={deleteUser.isPending} className="hover:bg-white hover:text-black hover:border hover:border-black transition-all" onClick={() => handleDelete(id, companies)}>{deleteUser.isPending ? <Loader2 className="size-4 animate-spin" /> : <p>Confirmar</p>}</Button>
+          <Button
+            className="bg-rose-400 hover:bg-white hover:text-black hover:border hover:border-black"
+            onClick={() => setOpen(false)}
+            type="submit"
+          >
+            Cancelar
+          </Button>
+          <Button
+            disabled={deleteUser.isPending}
+            className="hover:bg-white hover:text-black hover:border hover:border-black transition-all"
+            onClick={() => handleDelete(user.id, companies)}
+          >
+            {deleteUser.isPending ? <Loader2 className="size-4 animate-spin" /> : <p>Confirmar</p>}
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
+  );
+};
 
-
-  )
-}
-
-export default UserDropdownActions
+export default UserDropdownActions;

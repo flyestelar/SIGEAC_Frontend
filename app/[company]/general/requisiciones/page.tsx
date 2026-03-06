@@ -2,7 +2,14 @@
 
 import { ContentLayout } from '@/components/layout/ContentLayout';
 import LoadingPage from '@/components/misc/LoadingPage';
-import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb';
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from '@/components/ui/breadcrumb';
 import { useAuth } from '@/contexts/AuthContext';
 import { useGetRequisition } from '@/hooks/mantenimiento/compras/useGetRequisitions';
 import { useCompanyStore } from '@/stores/CompanyStore';
@@ -14,10 +21,11 @@ import { Requisition } from '@/types';
 const RequisitionsPage = () => {
   const { user } = useAuth();
   const { selectedCompany, selectedStation } = useCompanyStore();
-  const { data: requisitions, isLoading, isError } = useGetRequisition(
-    selectedCompany?.slug,
-    selectedStation ?? undefined
-  );
+  const {
+    data: requisitions,
+    isLoading,
+    isError,
+  } = useGetRequisition(selectedCompany?.slug, selectedStation ?? undefined);
 
   const [filteredRequisitions, setFilteredRequisitions] = useState<Requisition[]>([]);
 
@@ -26,12 +34,12 @@ const RequisitionsPage = () => {
       setFilteredRequisitions([]);
       return;
     }
-    const fullAccessRoles = ['SUPERUSER', 'ANALISTA_COMPRAS', "JEFE_COMPRAS"];
-    const hasFullAccess = user?.roles?.some(role => fullAccessRoles.includes(role.name)) ?? false;
+    const fullAccessRoles = ['SUPERUSER', 'ANALISTA_COMPRAS', 'JEFE_COMPRAS'];
+    const hasFullAccess = user?.roles?.some((role) => fullAccessRoles.includes(role.name)) ?? false;
     if (hasFullAccess) {
       setFilteredRequisitions(requisitions);
     } else {
-      setFilteredRequisitions(requisitions.filter(req => req.created_by?.id === user?.id));
+      setFilteredRequisitions(requisitions.filter((req) => req.created_by?.id === user?.id));
     }
   }, [requisitions, user]);
 
@@ -55,16 +63,19 @@ const RequisitionsPage = () => {
             </BreadcrumbItem>
           </BreadcrumbList>
         </Breadcrumb>
-        <h1 className="text-4xl font-bold text-center">Solicitudes de Compra</h1>
+        <h1 className="text-4xl font-bold text-center">Solicitudes de Compraaaa </h1>
         <p className="text-sm text-muted-foreground text-center italic">
-          Aquí puede observar todas las solicitudes de compra generales. <br />Filtre y/o busque si desea una en específico.
+          Aquí puede observar todas las solicitudes de compra generales. <br />
+          Filtre y/o busque si desea una en específico.
         </p>
         {filteredRequisitions.length > 0 ? (
           <DataTable columns={columns} data={filteredRequisitions} />
         ) : (
           <DataTable columns={columns} data={[]} />
         )}
-        {isError && <p className="text-muted-foreground italic">Ha ocurrido un error al cargar las solicitudes de compra...</p>}
+        {isError && (
+          <p className="text-muted-foreground italic">Ha ocurrido un error al cargar las solicitudes de compra...</p>
+        )}
       </div>
     </ContentLayout>
   );

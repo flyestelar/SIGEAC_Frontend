@@ -36,7 +36,6 @@ export function CreateRequisitionDialog() {
             Genere una solicitud de material faltante mediante el siguiente formulario.
           </DialogDescription>
         </DialogHeader>
-
         <CreateWarehouseRequisitionForm isEditing={false} onClose={() => setOpen(false)} />
       </DialogContent>
     </Dialog>

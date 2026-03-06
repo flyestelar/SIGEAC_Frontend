@@ -17,8 +17,8 @@ import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import { useAuth } from '@/contexts/AuthContext';
 import { useGetAircrafts } from '@/hooks/aerolinea/aeronaves/useGetAircrafts';
-import { useGetSecondaryUnits } from '@/hooks/general/unidades/useGetSecondaryUnits';
 import { useGetBatchesByLocationId } from '@/hooks/mantenimiento/almacen/renglones/useGetBatchesByLocationId';
+import { useGetSecondaryUnits } from '@/hooks/general/unidades/useGetSecondaryUnits';
 import { useGetEmployeesByDepartment } from '@/hooks/sistema/useGetEmployeesByDepartament';
 import { cn } from '@/lib/utils';
 import { useCompanyStore } from '@/stores/CompanyStore';
@@ -32,18 +32,24 @@ import {
   FileText,
   Flag,
   ImageIcon,
+  Info,
   ListChecks,
   Loader2,
   PackageSearch,
+  Paperclip,
+  Plane,
   Plus,
+  Ruler,
   Tag,
   Trash2,
   Upload,
+  User,
+  Wrench,
 } from 'lucide-react';
-import React, { memo, useCallback, useEffect, useMemo, useState } from 'react';
-import { useForm } from 'react-hook-form';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { FaFileExcel } from 'react-icons/fa';
 import { z } from 'zod';
+import { useForm } from 'react-hook-form';
 
 const EXCEL_EXTS = new Set([
   'xls',
@@ -141,8 +147,6 @@ const FormSchema = z.object({
 
 type FormSchemaType = z.infer<typeof FormSchema>;
 
-type Priority = 'LOW' | 'MEDIUM' | 'HIGH';
-
 interface Article {
   part_number: string;
   alt_part_number?: string;
@@ -164,36 +168,29 @@ interface FormProps {
   id?: string;
   isEditing?: boolean;
 }
-const PriorityBadge = memo(({ priority }: { priority: Priority }) => {
-  const config = {
-    LOW: { label: 'Baja', icon: <Clock className="h-3 w-3" />, className: 'bg-muted text-foreground' },
-    MEDIUM: {
-      label: 'Media',
-      icon: <Flag className="h-3 w-3" />,
-      className: 'bg-blue-50 text-blue-700 border-blue-200',
-    },
-    HIGH: {
-      label: 'Alta',
-      icon: <AlertCircle className="h-3 w-3" />,
-      className: 'bg-red-50 text-red-700 border-red-200',
-    },
-  } satisfies Record<Priority, { label: string; icon: React.ReactNode; className: string }>;
 
-  const { label, icon, className } = config[priority];
-
-  return (
-    <Badge variant="outline" className={cn('gap-1.5 font-normal', className)}>
-      {icon}
-      {label}
-    </Badge>
-  );
-});
-PriorityBadge.displayName = 'PriorityBadge';
-const Section = ({ title, hint, children }: { title: string; hint?: string; children: React.ReactNode }) => {
+const Section = ({
+  title,
+  hint,
+  icon,
+  children,
+}: {
+  title: string;
+  hint?: string;
+  icon?: React.ReactNode;
+  children: React.ReactNode;
+}) => {
   return (
     <Card className="rounded-2xl shadow-sm">
       <CardHeader className="pb-3">
-        <CardTitle className="text-base">{title}</CardTitle>
+        <CardTitle className="flex items-center gap-2 text-base">
+          {icon ? (
+            <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary/10 text-primary">
+              {icon}
+            </span>
+          ) : null}
+          {title}
+        </CardTitle>
         {hint ? <p className="text-xs text-muted-foreground">{hint}</p> : null}
       </CardHeader>
       <CardContent className="space-y-4">{children}</CardContent>
@@ -208,6 +205,7 @@ export function CreateWarehouseRequisitionForm({ onClose, initialData, isEditing
   const { selectedCompany, selectedStation } = useCompanyStore();
   const { createRequisition } = useCreateRequisition();
   const { updateRequisition } = useUpdateRequisition();
+  const { data: secondaryUnits } = useGetSecondaryUnits();
 
   const [selectedBatches, setSelectedBatches] = useState<Batch[]>([]);
   const [openRequestedBy, setOpenRequestedBy] = useState(false);
@@ -403,18 +401,25 @@ export function CreateWarehouseRequisitionForm({ onClose, initialData, isEditing
     [form],
   );
 
+  const isConsumable = (category: string) => category.toLowerCase() === 'consumible';
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-        {/* Estado de carga / error sutil */}
         {(isAircraftsError || employeesError) && (
-          <div className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+          <div className="flex items-center gap-2 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+            <AlertCircle className="h-4 w-4 flex-shrink-0" />
             Hubo un problema cargando catálogos. Intenta recargar o verifica tu conexión.
           </div>
         )}
 
-        <Section title="Información básica" hint="Completa lo mínimo necesario para identificar la requisición.">
-          <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+        {/* ── Información básica ── */}
+        <Section
+          title="Información básica"
+          hint="Completa lo mínimo necesario para identificar la requisición."
+          icon={<Wrench className="h-3.5 w-3.5" />}
+        >
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <FormField
               control={form.control}
               name="work_order"
@@ -447,13 +452,16 @@ export function CreateWarehouseRequisitionForm({ onClose, initialData, isEditing
                             !field.value && 'text-muted-foreground',
                           )}
                         >
-                          {isAircraftsLoading ? <Loader2 className="mr-2 size-3.5 animate-spin" /> : null}
+                          {isAircraftsLoading ? (
+                            <Loader2 className="mr-2 size-3.5 animate-spin" />
+                          ) : (
+                            <Plane className="mr-2 h-3.5 w-3.5 opacity-50" />
+                          )}
                           {aircraftLabel}
                           <ChevronsUpDown className="ml-2 h-3.5 w-3.5 shrink-0 opacity-50" />
                         </Button>
                       </FormControl>
                     </PopoverTrigger>
-
                     <PopoverContent className="w-[260px] p-0" align="start">
                       <Command>
                         <CommandInput placeholder="Buscar aeronave..." className="h-9" />
@@ -490,8 +498,13 @@ export function CreateWarehouseRequisitionForm({ onClose, initialData, isEditing
           </div>
         </Section>
 
-        <Section title="Prioridad y referencia" hint="Ajusta la urgencia y marca si aplica un flujo referido.">
-          <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+        {/* ── Prioridad y referencia ── */}
+        <Section
+          title="Prioridad y referencia"
+          hint="Ajusta la urgencia y marca si aplica un flujo diferido."
+          icon={<Flag className="h-3.5 w-3.5" />}
+        >
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <FormField
               control={form.control}
               name="priority"
@@ -506,20 +519,20 @@ export function CreateWarehouseRequisitionForm({ onClose, initialData, isEditing
                     </FormControl>
                     <SelectContent>
                       <SelectItem value="LOW">
-                        <div className="flex items-center gap-2 py-1">
-                          <Clock className="h-3.5 w-3.5" />
+                        <div className="flex items-center gap-2 py-0.5">
+                          <Clock className="h-3.5 w-3.5 text-muted-foreground" />
                           <span>Baja</span>
                         </div>
                       </SelectItem>
                       <SelectItem value="MEDIUM">
-                        <div className="flex items-center gap-2 py-1">
-                          <Flag className="h-3.5 w-3.5" />
+                        <div className="flex items-center gap-2 py-0.5">
+                          <Flag className="h-3.5 w-3.5 text-blue-500" />
                           <span>Media</span>
                         </div>
                       </SelectItem>
                       <SelectItem value="HIGH">
-                        <div className="flex items-center gap-2 py-1">
-                          <AlertCircle className="h-3.5 w-3.5" />
+                        <div className="flex items-center gap-2 py-0.5">
+                          <AlertCircle className="h-3.5 w-3.5 text-red-500" />
                           <span>Alta</span>
                         </div>
                       </SelectItem>
@@ -548,7 +561,12 @@ export function CreateWarehouseRequisitionForm({ onClose, initialData, isEditing
           </div>
         </Section>
 
-        <Section title="Responsable" hint="Selecciona el técnico responsable de la solicitud.">
+        {/* ── Responsable ── */}
+        <Section
+          title="Responsable"
+          hint="Selecciona el técnico responsable de la solicitud."
+          icon={<User className="h-3.5 w-3.5" />}
+        >
           <FormField
             control={form.control}
             name="requested_by"
@@ -564,11 +582,13 @@ export function CreateWarehouseRequisitionForm({ onClose, initialData, isEditing
                       aria-expanded={openRequestedBy}
                       className="h-9 w-full justify-between font-normal"
                     >
-                      {requestedByLabel}
+                      <div className="flex items-center gap-2 truncate">
+                        <User className="h-3.5 w-3.5 flex-shrink-0 opacity-50" />
+                        <span className="truncate">{requestedByLabel}</span>
+                      </div>
                       <ChevronsUpDown className="ml-2 h-3.5 w-3.5 shrink-0 opacity-50" />
                     </Button>
                   </PopoverTrigger>
-
                   <PopoverContent className="w-full p-0" align="start">
                     <Command>
                       <CommandInput placeholder="Buscar técnico..." className="h-9" />
@@ -614,9 +634,11 @@ export function CreateWarehouseRequisitionForm({ onClose, initialData, isEditing
           />
         </Section>
 
+        {/* ── Artículos ── */}
         <Section
           title="Artículos"
           hint="Selecciona renglones y registra los artículos. Consumibles requieren unidad secundaria."
+          icon={<PackageSearch className="h-3.5 w-3.5" />}
         >
           <FormField
             control={form.control}
@@ -646,7 +668,6 @@ export function CreateWarehouseRequisitionForm({ onClose, initialData, isEditing
                       </Button>
                     </FormControl>
                   </PopoverTrigger>
-
                   <PopoverContent className="w-full p-0" align="start">
                     <Command>
                       <CommandInput placeholder="Buscar renglones..." className="h-9" />
@@ -676,137 +697,153 @@ export function CreateWarehouseRequisitionForm({ onClose, initialData, isEditing
                   </PopoverContent>
                 </Popover>
 
-                {selectedBatches.length > 0 ? (
-                  <div className="mt-4">
-                    <ScrollArea className={cn(selectedBatches.length > 2 ? 'h-[300px]' : '')}>
+                {selectedBatches.length > 0 && (
+                  <div className="mt-3">
+                    <ScrollArea className={cn(selectedBatches.length > 2 ? 'h-[340px]' : '')}>
                       <div className="space-y-4 pr-3">
                         {selectedBatches.map((batch) => (
-                          <div key={batch.batch} className="rounded-2xl border bg-background/60 shadow-sm">
-                            {/* Header */}
-                            <div className="flex items-start justify-between gap-3 px-4 py-3">
-                              <div className="min-w-0">
-                                <div className="flex items-center gap-2">
-                                  {/* Icon */}
-                                  <div className="flex h-8 w-8 items-center justify-center rounded-xl border bg-muted/40">
-                                    <PackageSearch className="h-4 w-4 text-muted-foreground" />
-                                  </div>
-
-                                  <div className="min-w-0">
-                                    <h4 className="truncate text-sm font-semibold leading-5">{batch.batch_name}</h4>
-
-                                    <div className="mt-0.5 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-                                      <span className="inline-flex items-center gap-1">
-                                        <Tag className="h-3.5 w-3.5" />
-                                        {batch.category}
-                                      </span>
-
-                                      <span className="text-muted-foreground/60">•</span>
-
-                                      <span className="inline-flex items-center gap-1">
-                                        <ListChecks className="h-3.5 w-3.5" />
-                                        {batch.batch_articles.length} item(s)
-                                      </span>
-                                    </div>
+                          <div key={batch.batch} className="overflow-hidden rounded-2xl border bg-background/60 shadow-sm">
+                            {/* Batch header */}
+                            <div className="flex items-center justify-between gap-3 bg-muted/30 px-4 py-2.5">
+                              <div className="flex min-w-0 items-center gap-2.5">
+                                <div className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-lg border bg-background">
+                                  <PackageSearch className="h-3.5 w-3.5 text-muted-foreground" />
+                                </div>
+                                <div className="min-w-0">
+                                  <h4 className="truncate text-sm font-semibold leading-tight">{batch.batch_name}</h4>
+                                  <div className="mt-0.5 flex items-center gap-1.5 text-[11px] text-muted-foreground">
+                                    <Tag className="h-3 w-3" />
+                                    <span>{batch.category}</span>
+                                    <span className="text-muted-foreground/50">·</span>
+                                    <ListChecks className="h-3 w-3" />
+                                    <span>{batch.batch_articles.length} artículo(s)</span>
                                   </div>
                                 </div>
                               </div>
-
-                              {/* Remove batch */}
                               <Button
                                 variant="ghost"
                                 type="button"
                                 size="sm"
                                 onClick={() => removeBatch(batch.batch)}
-                                className="h-8 w-8 p-0 text-muted-foreground hover:bg-red-50 hover:text-red-600"
+                                className="h-7 w-7 flex-shrink-0 p-0 text-muted-foreground hover:bg-red-50 hover:text-red-600"
                                 aria-label="Eliminar renglón"
                               >
-                                <Trash2 className="h-4 w-4" />
+                                <Trash2 className="h-3.5 w-3.5" />
                               </Button>
                             </div>
 
                             <Separator />
 
-                            {/* Articles */}
-                            <div className="px-4 py-3">
+                            {/* Articles list */}
+                            <div className="p-3">
                               <div className="space-y-2">
                                 {batch.batch_articles.map((article, index) => (
                                   <div
                                     key={`${batch.batch}-${index}`}
-                                    className="rounded-xl border bg-background px-3 py-3 transition-colors hover:bg-muted/30"
+                                    className="rounded-xl border bg-background p-3 transition-colors hover:bg-muted/20"
                                   >
-                                    <div className="flex justify-between gap-2">
-                                      {/* PN */}
-                                      <div className="md:col-span-3">
-                                        <Label className="mb-1 block text-[11px] text-muted-foreground">PN</Label>
+                                    <div className="grid grid-cols-2 gap-2 sm:grid-cols-[1fr_1fr_auto] md:grid-cols-[2fr_2fr_1fr_auto]">
+                                      {/* Part Number */}
+                                      <div className="col-span-1">
+                                        <Label className="mb-1 block text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+                                          Nro. de Parte
+                                        </Label>
                                         <Input
-                                          placeholder="PN"
+                                          placeholder="PN-XXXX"
                                           value={article.part_number}
                                           onChange={(e) =>
                                             handleArticleChange(batch.batch, index, 'part_number', e.target.value)
                                           }
-                                          className="h-9 text-sm"
+                                          className="h-8 text-sm"
                                         />
                                       </div>
 
-                                      {/* Alt PN */}
-                                      <div className="md:col-span-3">
-                                        <Label className="mb-1 block text-[11px] text-muted-foreground">Alt. PN</Label>
+                                      {/* Alt Part Number */}
+                                      <div className="col-span-1">
+                                        <Label className="mb-1 block text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+                                          Alt. PN
+                                        </Label>
                                         <Input
                                           placeholder="Alt. PN"
                                           value={article.alt_part_number || ''}
                                           onChange={(e) =>
                                             handleArticleChange(batch.batch, index, 'alt_part_number', e.target.value)
                                           }
-                                          className="h-9 text-sm"
-                                        />
-                                      </div>
-                                      {/* Qty */}
-                                      <div className="md:col-span-2">
-                                        <Label className="mb-1 block text-[11px] text-muted-foreground">Cantidad</Label>
-                                        <Input
-                                          type="number"
-                                          min={1}
-                                          placeholder="Cantidad"
-                                          value={article.quantity || ''}
-                                          onChange={(e) => {
-                                            const raw = e.target.value;
-                                            const qty = raw === '' ? 0 : Number(raw);
-                                            handleArticleChange(batch.batch, index, 'quantity', qty);
-                                          }}
-                                          className="h-9 text-sm"
+                                          className="h-8 text-sm"
                                         />
                                       </div>
 
-                                      {/* Attachment + actions */}
-                                      <div className="md:col-span-2">
-                                        <div className="flex items-center gap-2">
-                                          {/* Remove article */}
-                                          <Button
-                                            variant="ghost"
-                                            type="button"
-                                            size="sm"
-                                            onClick={() => removeArticleFromBatch(batch.batch, index)}
-                                            className="h-9 w-9 p-0 text-muted-foreground hover:bg-red-50 hover:text-red-600"
-                                            aria-label="Eliminar artículo"
-                                          >
-                                            <Trash2 className="h-4 w-4" />
-                                          </Button>
-                                        </div>
+                                      {/* Quantity */}
+                                      <div className="col-span-1 sm:col-auto">
+                                        <Label className="mb-1 block text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+                                          Cantidad
+                                        </Label>
+                                        <Input
+                                          type="number"
+                                          min={1}
+                                          placeholder="1"
+                                          value={article.quantity || ''}
+                                          onChange={(e) => {
+                                            const qty = e.target.value === '' ? 0 : Number(e.target.value);
+                                            handleArticleChange(batch.batch, index, 'quantity', qty);
+                                          }}
+                                          className="h-8 text-sm"
+                                        />
+                                      </div>
+
+                                      {/* Remove button */}
+                                      <div className="col-span-1 flex items-end sm:col-auto">
+                                        <Button
+                                          variant="ghost"
+                                          type="button"
+                                          size="sm"
+                                          onClick={() => removeArticleFromBatch(batch.batch, index)}
+                                          className="h-8 w-8 p-0 text-muted-foreground hover:bg-red-50 hover:text-red-600"
+                                          aria-label="Eliminar artículo"
+                                        >
+                                          <Trash2 className="h-3.5 w-3.5" />
+                                        </Button>
                                       </div>
                                     </div>
+
+                                    {/* Unit — solo para consumibles */}
+                                    {isConsumable(batch.category) && (
+                                      <div className="mt-2">
+                                        <Label className="mb-1 flex items-center gap-1 text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+                                          <Ruler className="h-3 w-3" />
+                                          Unidad secundaria
+                                        </Label>
+                                        <Select
+                                          value={article.unit ?? ''}
+                                          onValueChange={(val) =>
+                                            handleArticleChange(batch.batch, index, 'unit', val)
+                                          }
+                                        >
+                                          <SelectTrigger className="h-8 text-sm">
+                                            <SelectValue placeholder="Seleccionar unidad..." />
+                                          </SelectTrigger>
+                                          <SelectContent>
+                                            {secondaryUnits?.map((u) => (
+                                              <SelectItem key={u.id} value={String(u.id)}>
+                                                {u.secondary_unit}
+                                              </SelectItem>
+                                            ))}
+                                          </SelectContent>
+                                        </Select>
+                                      </div>
+                                    )}
                                   </div>
                                 ))}
                               </div>
 
-                              {/* Add article */}
                               <Button
                                 type="button"
                                 variant="ghost"
                                 size="sm"
                                 onClick={() => addArticle(batch.batch)}
-                                className="mt-3 h-9 w-full justify-center gap-2 rounded-xl border bg-background text-xs hover:bg-muted/30 md:w-auto md:justify-start"
+                                className="mt-2 h-8 w-full justify-center gap-1.5 rounded-xl border border-dashed text-xs hover:bg-muted/30"
                               >
-                                <Plus className="h-4 w-4" />
+                                <Plus className="h-3.5 w-3.5" />
                                 Agregar artículo
                               </Button>
                             </div>
@@ -815,7 +852,7 @@ export function CreateWarehouseRequisitionForm({ onClose, initialData, isEditing
                       </div>
                     </ScrollArea>
                   </div>
-                ) : null}
+                )}
 
                 <FormMessage className="text-xs" />
               </FormItem>
@@ -823,7 +860,12 @@ export function CreateWarehouseRequisitionForm({ onClose, initialData, isEditing
           />
         </Section>
 
-        <Section title="Justificación" hint="Explica el motivo con el contexto mínimo necesario.">
+        {/* ── Justificación ── */}
+        <Section
+          title="Justificación"
+          hint="Explica el motivo con el contexto mínimo necesario."
+          icon={<Info className="h-3.5 w-3.5" />}
+        >
           <FormField
             control={form.control}
             name="justification"
@@ -834,7 +876,7 @@ export function CreateWarehouseRequisitionForm({ onClose, initialData, isEditing
                   <Textarea
                     placeholder="Describa la necesidad de los materiales..."
                     {...field}
-                    className="min-h-[92px] text-sm"
+                    className="min-h-[92px] resize-none text-sm"
                   />
                 </FormControl>
                 <FormMessage className="text-xs" />
@@ -843,99 +885,100 @@ export function CreateWarehouseRequisitionForm({ onClose, initialData, isEditing
           />
         </Section>
 
-        <Section title="Documentos adjuntos" hint={`Solo PDF e imágenes, máximo ${MAX_PDF_MB}MB por archivo.`}>
+        {/* ── Documentos adjuntos ── */}
+        <Section
+          title="Documentos adjuntos"
+          hint={`PDF, imágenes o Excel. Máximo ${MAX_PDF_MB} MB por archivo.`}
+          icon={<Paperclip className="h-3.5 w-3.5" />}
+        >
           <FormField
             control={form.control}
             name="document"
             render={({ field }) => {
               const files = field.value || [];
-
               return (
                 <FormItem>
-                  <FormLabel className="text-sm font-medium">Adjuntar documentos</FormLabel>
-
                   <div className="space-y-3">
-                    <div className="rounded-2xl border border-dashed p-3 transition-colors hover:border-muted-foreground/40">
-                      <label className="cursor-pointer">
-                        <div className="flex items-start gap-3">
-                          <div className="mt-0.5 rounded-xl border bg-muted/30 p-2">
-                            <Upload className="h-4 w-4 text-muted-foreground" />
-                          </div>
-
-                          <div className="flex-1">
-                            <FormControl>
-                              <Input
-                                type="file"
-                                multiple
-                                accept=".pdf,image/*,.xls,.xlsx,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-                                onChange={(e) => {
-                                  handleDocumentsPick(e.target.files, files, field.onChange);
-                                  e.target.value = '';
-                                }}
-                                className="cursor-pointer border-0 p-0"
-                              />
-                            </FormControl>
-                            <p className="mt-1 text-xs text-muted-foreground">Selecciona uno o más archivos.</p>
-                          </div>
+                    <label className="block cursor-pointer">
+                      <div className="flex items-center gap-3 rounded-2xl border border-dashed p-4 transition-colors hover:border-muted-foreground/40 hover:bg-muted/20">
+                        <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl border bg-muted/40">
+                          <Upload className="h-4 w-4 text-muted-foreground" />
                         </div>
-                      </label>
-                    </div>
+                        <div className="flex-1">
+                          <p className="text-sm font-medium">Seleccionar archivos</p>
+                          <p className="text-xs text-muted-foreground">PDF, imágenes, XLS/XLSX · máx. {MAX_PDF_MB} MB</p>
+                        </div>
+                        <FormControl>
+                          <Input
+                            type="file"
+                            multiple
+                            accept=".pdf,image/*,.xls,.xlsx,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                            onChange={(e) => {
+                              handleDocumentsPick(e.target.files, files, field.onChange);
+                              e.target.value = '';
+                            }}
+                            className="hidden"
+                          />
+                        </FormControl>
+                      </div>
+                    </label>
 
-                    {files.length > 0 ? (
-                      <div className="space-y-2">
+                    {files.length > 0 && (
+                      <div className="space-y-1.5">
                         <div className="flex items-center justify-between">
-                          <span className="text-sm font-medium">Archivos ({files.length})</span>
+                          <span className="text-xs font-medium text-muted-foreground">
+                            {files.length} archivo(s) adjunto(s)
+                          </span>
                           <Button
                             type="button"
                             variant="ghost"
                             size="sm"
                             onClick={() => field.onChange([])}
-                            className="h-8 text-xs text-red-600 hover:text-red-700"
+                            className="h-7 text-xs text-red-600 hover:text-red-700"
                           >
-                            <Trash2 className="mr-2 h-4 w-4" />
-                            Limpiar
+                            <Trash2 className="mr-1.5 h-3.5 w-3.5" />
+                            Limpiar todo
                           </Button>
                         </div>
 
-                        <div className="max-h-52 space-y-1.5 overflow-y-auto pr-1">
+                        <div className="max-h-48 space-y-1.5 overflow-y-auto">
                           {files.map((file: File, index: number) => (
                             <div
                               key={`${file.name}-${index}`}
-                              className="flex items-center justify-between rounded-xl border p-2 hover:bg-muted/30"
+                              className="flex items-center gap-2 rounded-xl border p-2 hover:bg-muted/30"
                             >
-                              <div className="flex min-w-0 flex-1 items-center gap-2">
+                              <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg border bg-muted/30">
                                 {isPdf(file) ? (
-                                  <FileText className="h-4 w-4 flex-shrink-0 text-red-500" />
+                                  <FileText className="h-4 w-4 text-red-500" />
                                 ) : isExcel(file) ? (
-                                  <FaFileExcel className="text-green-600" />
+                                  <FaFileExcel className="h-4 w-4 text-green-600" />
                                 ) : (
-                                  <ImageIcon className="h-4 w-4 flex-shrink-0 text-blue-500" />
+                                  <ImageIcon className="h-4 w-4 text-blue-500" />
                                 )}
-                                <div className="min-w-0 flex-1">
-                                  <p className="truncate text-sm font-medium">{file.name}</p>
-                                  <p className="text-xs text-muted-foreground">
-                                    {formatSize(file.size)} • {isPdf(file) ? 'PDF' : 'IMG'}
-                                  </p>
-                                </div>
                               </div>
-
+                              <div className="min-w-0 flex-1">
+                                <p className="truncate text-xs font-medium">{file.name}</p>
+                                <p className="text-[10px] text-muted-foreground">
+                                  {formatSize(file.size)} ·{' '}
+                                  {isPdf(file) ? 'PDF' : isExcel(file) ? 'Excel' : 'Imagen'}
+                                </p>
+                              </div>
                               <Button
                                 type="button"
                                 variant="ghost"
                                 size="sm"
                                 onClick={() => field.onChange(files.filter((_, i) => i !== index))}
-                                className="h-8 w-8 p-0 hover:bg-red-50 hover:text-red-600"
+                                className="h-7 w-7 flex-shrink-0 p-0 hover:bg-red-50 hover:text-red-600"
                                 aria-label="Eliminar archivo"
                               >
-                                <Trash2 className="h-4 w-4" />
+                                <Trash2 className="h-3.5 w-3.5" />
                               </Button>
                             </div>
                           ))}
                         </div>
                       </div>
-                    ) : null}
+                    )}
                   </div>
-
                   <FormMessage className="text-xs" />
                 </FormItem>
               );
@@ -954,10 +997,9 @@ export function CreateWarehouseRequisitionForm({ onClose, initialData, isEditing
             <Button type="button" variant="ghost" onClick={onClose} className="h-9" disabled={isSubmitting}>
               Cancelar
             </Button>
-
             <Button type="submit" disabled={isSubmitting} className="h-9">
               {isEditing ? 'Actualizar requisición' : 'Generar requisición'}
-              {isSubmitting ? <Loader2 className="ml-2 h-4 w-4 animate-spin" /> : null}
+              {isSubmitting && <Loader2 className="ml-2 h-4 w-4 animate-spin" />}
             </Button>
           </div>
         </div>
