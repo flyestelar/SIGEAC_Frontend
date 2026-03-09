@@ -13,8 +13,6 @@ import {
 import { useAuth } from '@/contexts/AuthContext';
 import { useGetRequisition } from '@/hooks/mantenimiento/compras/useGetRequisitions';
 import { useCompanyStore } from '@/stores/CompanyStore';
-import { Requisition } from '@/types';
-import { useEffect, useState } from 'react';
 import { columns } from './columns';
 import { DataTable } from './data-table';
 
@@ -26,22 +24,6 @@ const RequisitionsPage = () => {
     isLoading,
     isError,
   } = useGetRequisition(selectedCompany?.slug, selectedStation ?? undefined);
-
-  const [filteredRequisitions, setFilteredRequisitions] = useState<Requisition[]>([]);
-
-  useEffect(() => {
-    if (!requisitions) {
-      setFilteredRequisitions([]);
-      return;
-    }
-    const fullAccessRoles = ['SUPERUSER', 'ANALISTA_COMPRAS', 'JEFE_COMPRAS'];
-    const hasFullAccess = user?.roles?.some((role) => fullAccessRoles.includes(role.name)) ?? false;
-    if (hasFullAccess) {
-      setFilteredRequisitions(requisitions);
-    } else {
-      setFilteredRequisitions(requisitions.filter((req) => req.created_by?.id === user?.id));
-    }
-  }, [requisitions, user]);
 
   if (isLoading) {
     return <LoadingPage />;
@@ -68,11 +50,7 @@ const RequisitionsPage = () => {
           Aquí puede observar todas las solicitudes de material faltante. <br />
           Filtre y/o busque si desea una en específico.
         </p>
-        {filteredRequisitions.length > 0 ? (
-          <DataTable columns={columns} data={filteredRequisitions} />
-        ) : (
-          <DataTable columns={columns} data={[]} />
-        )}
+        {requisitions ? <DataTable columns={columns} data={requisitions} /> : <DataTable columns={columns} data={[]} />}
         {isError && (
           <p className="text-muted-foreground italic">
             Ha ocurrido un error al cargar las solicitudes de material faltante...

@@ -116,7 +116,7 @@ export function Menu({ isOpen }: MenuProps) {
 
   const menuList = useMemo(() => {
     return getMenuList(pathname, selectedCompany, userRoles);
-  }, [pathname, selectedCompany, rolesKey]);
+  }, [pathname, selectedCompany, userRoles]);
 
   // Tailwind no puede compilar min-h dinámico -> style
   const minHeight = useMemo(() => {
