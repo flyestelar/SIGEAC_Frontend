@@ -4,14 +4,14 @@ import { ContentLayout } from '@/components/layout/ContentLayout';
 import LoadingPage from '@/components/misc/LoadingPage';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ScrollArea } from '@/components/ui/scroll-area';
+import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { useGetRequisitionByOrderNumber } from '@/hooks/mantenimiento/compras/useGetRequisitionByOrderNumber';
 import { cn } from '@/lib/utils';
 import { useCompanyStore } from '@/stores/CompanyStore';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale/es';
-import { ArrowLeft, ExternalLink, FileText, Image as ImageIcon, Layers, Plane, Wrench } from 'lucide-react';
+import { ArrowLeft, Download, ExternalLink, File, FileSpreadsheet, FileText, Image as ImageIcon, Layers, Plane, Wrench } from 'lucide-react';
 import Image from 'next/image';
 import { useParams, useRouter } from 'next/navigation';
 import React, { useMemo } from 'react';
@@ -28,12 +28,31 @@ const joinUrl = (base: string, path: string) => {
   return `${base?.replace(/\/$/, '') || ''}/${path.replace(/^\//, '')}`;
 };
 
-const fileExt = (p: string) => (p.split('.').pop() || '').toLowerCase();
+const fileExt = (p: string) => (p.split('?')[0].split('.').pop() || '').toLowerCase();
 const isPdf = (p: string) => fileExt(p) === 'pdf';
-const isImg = (p: string) => ['png', 'jpg', 'jpeg', 'webp', 'gif'].includes(fileExt(p));
+const isImg = (p: string) => ['png', 'jpg', 'jpeg', 'webp', 'gif', 'bmp', 'svg'].includes(fileExt(p));
+const isExcel = (p: string) => ['xlsx', 'xls', 'csv'].includes(fileExt(p));
+const isWord = (p: string) => ['docx', 'doc'].includes(fileExt(p));
+const canEmbed = (p: string) => isPdf(p) || isImg(p);
+
+const getFileLabel = (p: string) => {
+  if (isPdf(p)) return 'PDF';
+  if (isImg(p)) return 'IMG';
+  if (isExcel(p)) return 'EXCEL';
+  if (isWord(p)) return 'WORD';
+  return fileExt(p).toUpperCase() || 'FILE';
+};
+
+const getFileIcon = (p: string) => {
+  if (isPdf(p)) return FileText;
+  if (isImg(p)) return ImageIcon;
+  if (isExcel(p)) return FileSpreadsheet;
+  return File;
+};
+
 const niceName = (path: string) => {
   try {
-    return decodeURIComponent(path.split('/').pop() || path);
+    return decodeURIComponent(path.split('?')[0].split('/').pop() || path);
   } catch {
     return path.split('/').pop() || path;
   }
@@ -136,19 +155,19 @@ function InfoCell({ label, value, mono = false }: { label: string; value: React.
 function DocPreview({ path }: { path: string }) {
   const url = useMemo(() => joinUrl(DOC_BASE_URL, path), [path]);
   const name = useMemo(() => niceName(path), [path]);
+  const FileIcon = getFileIcon(path);
+  const typeLabel = getFileLabel(path);
+  const embeddable = canEmbed(path);
 
   return (
     <div className="overflow-hidden rounded-md border bg-background">
+      {/* Header bar */}
       <div className="flex items-center justify-between gap-2 border-b bg-muted/20 px-3 py-2">
         <div className="flex min-w-0 items-center gap-2">
-          {isPdf(path) ? (
-            <FileText className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-          ) : (
-            <ImageIcon className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-          )}
+          <FileIcon className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
           <span className="truncate text-xs font-medium">{name}</span>
           <span className="shrink-0 rounded border px-1 py-0 text-[10px] font-medium uppercase text-muted-foreground">
-            {isPdf(path) ? 'PDF' : 'IMG'}
+            {typeLabel}
           </span>
         </div>
         <Button
@@ -162,24 +181,47 @@ function DocPreview({ path }: { path: string }) {
           <ExternalLink className="h-3 w-3" />
         </Button>
       </div>
-      <div className="h-[240px] overflow-hidden">
-        {isPdf(path) ? (
-          <iframe
-            src={url}
-            className="h-full w-full"
-            title={name}
-            sandbox="allow-same-origin allow-scripts allow-forms"
-          />
-        ) : isImg(path) ? (
-          <div className="relative h-full w-full bg-muted/10">
-            <Image src={url} alt={name} fill className="object-contain" unoptimized />
+
+      {/* Preview area */}
+      {embeddable ? (
+        <div className="h-[240px] overflow-hidden">
+          {isPdf(path) ? (
+            <iframe
+              src={url}
+              className="h-full w-full"
+              title={name}
+              sandbox="allow-same-origin allow-scripts allow-forms allow-downloads allow-popups"
+            />
+          ) : (
+            <div className="relative h-full w-full bg-muted/10">
+              <Image src={url} alt={name} fill className="object-contain" unoptimized />
+            </div>
+          )}
+        </div>
+      ) : (
+        /* Non-embeddable: Excel, Word, etc. */
+        <div className="flex flex-col items-center justify-center gap-3 py-8">
+          <div className="flex h-12 w-12 items-center justify-center rounded-lg border bg-muted/20">
+            <FileIcon className="h-6 w-6 text-muted-foreground" />
           </div>
-        ) : (
-          <div className="flex h-full items-center justify-center p-4 text-center text-xs text-muted-foreground">
-            No se puede previsualizar. Usa el botón para abrir.
+          <div className="text-center">
+            <p className="text-xs font-medium">{name}</p>
+            <p className="mt-0.5 text-[11px] text-muted-foreground">
+              Los archivos {typeLabel} no se pueden previsualizar
+            </p>
           </div>
-        )}
-      </div>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="h-7 gap-1.5 text-xs"
+            onClick={() => window.open(url, '_blank', 'noopener,noreferrer')}
+          >
+            <Download className="h-3 w-3" />
+            Descargar
+          </Button>
+        </div>
+      )}
     </div>
   );
 }
@@ -374,7 +416,8 @@ const RequisitionPage = () => {
             {data.batch?.length > 0 && (
               <div className="space-y-3">
                 <FieldLabel>Artículos solicitados</FieldLabel>
-                <ScrollArea>
+                <ScrollArea className="h-[600px] pr-1">
+                  <div className="space-y-3">
                   {data.batch.map((batch: any) => (
                     <div key={batch.id} className="overflow-hidden rounded-lg border bg-background">
                       {/* Batch header */}
@@ -458,6 +501,8 @@ const RequisitionPage = () => {
                       </div>
                     </div>
                   ))}
+                  </div>
+                  <ScrollBar orientation="vertical" />
                 </ScrollArea>
               </div>
             )}
