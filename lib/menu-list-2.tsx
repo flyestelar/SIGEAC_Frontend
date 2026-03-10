@@ -424,9 +424,9 @@ export function getMenuList(pathname: string, currentCompany: Company | null, us
       moduleValue: 'purchases',
       menus: [
         {
-          href: `/${currentCompany?.slug}/compras/requisiciones`,
+          href: `/${currentCompany?.slug}/compras/solicitudes_material_faltante`,
           label: 'Sol. de Material Faltante',
-          active: pathname.includes(`/${currentCompany?.slug}/compras/requisiciones`),
+          active: pathname.includes(`/${currentCompany?.slug}/compras/solicitudes_material_faltante`),
           icon: ClipboardList,
           roles: ['ANALISTA_COMPRAS', 'JEFE_COMPRAS', 'SUPERUSER'],
           submenus: [],
