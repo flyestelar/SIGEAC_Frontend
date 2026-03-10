@@ -4,21 +4,14 @@ import { ContentLayout } from '@/components/layout/ContentLayout';
 import LoadingPage from '@/components/misc/LoadingPage';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { useGetRequisitionByOrderNumber } from '@/hooks/mantenimiento/compras/useGetRequisitionByOrderNumber';
 import { cn } from '@/lib/utils';
 import { useCompanyStore } from '@/stores/CompanyStore';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale/es';
-import {
-  ArrowLeft,
-  ExternalLink,
-  FileText,
-  Image as ImageIcon,
-  Layers,
-  Plane,
-  Wrench,
-} from 'lucide-react';
+import { ArrowLeft, ExternalLink, FileText, Image as ImageIcon, Layers, Plane, Wrench } from 'lucide-react';
 import Image from 'next/image';
 import { useParams, useRouter } from 'next/navigation';
 import React, { useMemo } from 'react';
@@ -52,26 +45,38 @@ const normalizeStatus = (s?: string) => (s ?? '').toString().trim().toLowerCase(
 const resolveStatus = (status?: string) => {
   const s = normalizeStatus(status);
   if (s.includes('aprob'))
-    return { label: (status ?? '').toUpperCase(), className: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' };
+    return {
+      label: (status ?? '').toUpperCase(),
+      className: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400',
+    };
   if (s.includes('rech'))
-    return { label: (status ?? '').toUpperCase(), className: 'border-red-500/30 bg-red-500/10 text-red-600 dark:text-red-400' };
-  return { label: (status ?? 'EN PROCESO').toUpperCase(), className: 'border-amber-500/30 bg-amber-500/10 text-amber-600 dark:text-amber-400' };
+    return {
+      label: (status ?? '').toUpperCase(),
+      className: 'border-red-500/30 bg-red-500/10 text-red-600 dark:text-red-400',
+    };
+  return {
+    label: (status ?? 'EN PROCESO').toUpperCase(),
+    className: 'border-amber-500/30 bg-amber-500/10 text-amber-600 dark:text-amber-400',
+  };
 };
 
 // ─── Requisition Target ───────────────────────────────────────────────────────
 
 type RequisitionTarget = 'AIRCRAFT' | 'FLEET' | 'WORKSHOP';
 
-const TARGET_CONFIG: Record<RequisitionTarget, {
-  Icon: React.ElementType;
-  label: string;
-  iconBg: string;
-  iconText: string;
-  iconBorder: string;
-  stripBg: string;
-  stripBorder: string;
-  accentText: string;
-}> = {
+const TARGET_CONFIG: Record<
+  RequisitionTarget,
+  {
+    Icon: React.ElementType;
+    label: string;
+    iconBg: string;
+    iconText: string;
+    iconBorder: string;
+    stripBg: string;
+    stripBorder: string;
+    accentText: string;
+  }
+> = {
   AIRCRAFT: {
     Icon: Plane,
     label: 'Aeronave',
@@ -114,9 +119,7 @@ const getUnitLabel = (unit?: { secondary_unit?: string; unit?: { label?: string;
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
 function FieldLabel({ children }: { children: React.ReactNode }) {
-  return (
-    <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">{children}</p>
-  );
+  return <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">{children}</p>;
 }
 
 function InfoCell({ label, value, mono = false }: { label: string; value: React.ReactNode; mono?: boolean }) {
@@ -161,7 +164,12 @@ function DocPreview({ path }: { path: string }) {
       </div>
       <div className="h-[240px] overflow-hidden">
         {isPdf(path) ? (
-          <iframe src={url} className="h-full w-full" title={name} sandbox="allow-same-origin allow-scripts allow-forms" />
+          <iframe
+            src={url}
+            className="h-full w-full"
+            title={name}
+            sandbox="allow-same-origin allow-scripts allow-forms"
+          />
         ) : isImg(path) ? (
           <div className="relative h-full w-full bg-muted/10">
             <Image src={url} alt={name} fill className="object-contain" unoptimized />
@@ -223,10 +231,8 @@ const RequisitionPage = () => {
   return (
     <ContentLayout title="Almacén">
       <div className="mx-auto max-w-7xl space-y-4">
-
         {/* ── Header ─────────────────────────────────────────────────────────── */}
         <div className="overflow-hidden rounded-lg border bg-background">
-
           {/* Top bar */}
           <div className="flex items-center justify-between gap-4 px-5 py-3.5">
             <div className="flex items-center gap-3">
@@ -245,17 +251,16 @@ const RequisitionPage = () => {
                 <span className="font-mono text-base font-semibold tracking-tight">#{data.order_number}</span>
               </div>
             </div>
-            <Badge
-              variant="outline"
-              className={cn('px-2.5 py-0.5 text-xs font-semibold', status.className)}
-            >
+            <Badge variant="outline" className={cn('px-2.5 py-0.5 text-xs font-semibold', status.className)}>
               {status.label}
             </Badge>
           </div>
 
           {/* Context strip — signature element */}
           <div className={cn('flex items-center gap-3 border-t px-5 py-2.5', tCfg.stripBg, tCfg.stripBorder)}>
-            <div className={cn('flex h-6 w-6 items-center justify-center rounded border', tCfg.iconBg, tCfg.iconBorder)}>
+            <div
+              className={cn('flex h-6 w-6 items-center justify-center rounded border', tCfg.iconBg, tCfg.iconBorder)}
+            >
               <TargetIcon className={cn('h-3 w-3', tCfg.iconText)} />
             </div>
             <div className="flex items-center gap-2">
@@ -286,17 +291,14 @@ const RequisitionPage = () => {
 
         {/* ── Body ───────────────────────────────────────────────────────────── */}
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
-
           {/* ── Left column ── */}
           <div className="space-y-4 lg:col-span-8">
-
             {/* Summary */}
             <div className="rounded-lg border bg-background">
               <div className="border-b px-5 py-3">
                 <FieldLabel>Resumen</FieldLabel>
               </div>
               <div className="space-y-5 p-5">
-
                 {/* Primary grid */}
                 <div className="grid grid-cols-2 gap-x-6 gap-y-4 sm:grid-cols-4">
                   <InfoCell
@@ -326,9 +328,7 @@ const RequisitionPage = () => {
                     <InfoCell
                       label="Target"
                       value={
-                        <span className={cn('text-xs font-bold uppercase tracking-wide', tCfg.accentText)}>
-                          Taller
-                        </span>
+                        <span className={cn('text-xs font-bold uppercase tracking-wide', tCfg.accentText)}>Taller</span>
                       }
                     />
                   ) : (
@@ -344,7 +344,9 @@ const RequisitionPage = () => {
                     label="Creado por"
                     value={
                       <div>
-                        <p>{data.created_by?.first_name} {data.created_by?.last_name}</p>
+                        <p>
+                          {data.created_by?.first_name} {data.created_by?.last_name}
+                        </p>
                         {data.created_by?.email && (
                           <p className="mt-0.5 text-xs font-normal text-muted-foreground">{data.created_by.email}</p>
                         )}
@@ -372,98 +374,91 @@ const RequisitionPage = () => {
             {data.batch?.length > 0 && (
               <div className="space-y-3">
                 <FieldLabel>Artículos solicitados</FieldLabel>
-                {data.batch.map((batch: any) => (
-                  <div key={batch.id} className="overflow-hidden rounded-lg border bg-background">
+                <ScrollArea>
+                  {data.batch.map((batch: any) => (
+                    <div key={batch.id} className="overflow-hidden rounded-lg border bg-background">
+                      {/* Batch header */}
+                      <div className="flex items-center justify-between gap-3 border-b bg-muted/20 px-5 py-3">
+                        <span className="text-sm font-semibold">{batch.name}</span>
+                        <span className="text-xs text-muted-foreground">
+                          {batch.batch_articles?.length ?? 0} artículo{batch.batch_articles?.length !== 1 ? 's' : ''}
+                        </span>
+                      </div>
 
-                    {/* Batch header */}
-                    <div className="flex items-center justify-between gap-3 border-b bg-muted/20 px-5 py-3">
-                      <span className="text-sm font-semibold">{batch.name}</span>
-                      <span className="text-xs text-muted-foreground">
-                        {batch.batch_articles?.length ?? 0} artículo{batch.batch_articles?.length !== 1 ? 's' : ''}
-                      </span>
-                    </div>
+                      {/* Articles */}
+                      <div className="divide-y">
+                        {batch.batch_articles?.map((article: any, idx: number) => {
+                          const certs: string[] = Array.isArray(article.certificates)
+                            ? article.certificates
+                            : typeof article.certificates === 'string' && article.certificates
+                              ? [article.certificates]
+                              : [];
+                          const articleDocs = [...(article.image ? [article.image] : []), ...certs];
+                          const unitLabel = getUnitLabel(article.unit);
 
-                    {/* Articles */}
-                    <div className="divide-y">
-                      {batch.batch_articles?.map((article: any, idx: number) => {
-                        const certs: string[] = Array.isArray(article.certificates)
-                          ? article.certificates
-                          : typeof article.certificates === 'string' && article.certificates
-                            ? [article.certificates]
-                            : [];
-                        const articleDocs = [...(article.image ? [article.image] : []), ...certs];
-                        const unitLabel = getUnitLabel(article.unit);
-
-                        return (
-                          <div key={`${article.article_part_number}-${idx}`} className="p-5">
-                            <div className="flex flex-col gap-5 lg:flex-row">
-
-                              {/* Article info */}
-                              <div className="flex-1 space-y-4">
-
-                                {/* Identity row */}
-                                <div className="flex items-start gap-3">
-                                  <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded border bg-muted/30">
-                                    <FileText className="h-3.5 w-3.5 text-muted-foreground" />
+                          return (
+                            <div key={`${article.article_part_number}-${idx}`} className="p-5">
+                              <div className="flex flex-col gap-5 lg:flex-row">
+                                {/* Article info */}
+                                <div className="flex-1 space-y-4">
+                                  {/* Identity row */}
+                                  <div className="flex items-start gap-3">
+                                    <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded border bg-muted/30">
+                                      <FileText className="h-3.5 w-3.5 text-muted-foreground" />
+                                    </div>
+                                    <div>
+                                      <p className="font-mono text-sm font-semibold">
+                                        {article.article_part_number || `Artículo ${idx + 1}`}
+                                      </p>
+                                      <p className="mt-0.5 text-xs text-muted-foreground">
+                                        Cantidad:{' '}
+                                        <span className="font-semibold text-foreground">{article.quantity}</span>
+                                        {unitLabel && <> · {unitLabel}</>}
+                                      </p>
+                                    </div>
                                   </div>
-                                  <div>
-                                    <p className="font-mono text-sm font-semibold">
-                                      {article.article_part_number || `Artículo ${idx + 1}`}
-                                    </p>
-                                    <p className="mt-0.5 text-xs text-muted-foreground">
-                                      Cantidad:{' '}
-                                      <span className="font-semibold text-foreground">{article.quantity}</span>
-                                      {unitLabel && <> · {unitLabel}</>}
-                                    </p>
+
+                                  {/* Fields grid */}
+                                  <div className="grid grid-cols-2 gap-x-6 gap-y-3 sm:grid-cols-3">
+                                    {article.article_part_number && (
+                                      <InfoCell label="N° Parte" value={article.article_part_number} mono />
+                                    )}
+                                    {article.article_alt_part_number && (
+                                      <InfoCell label="N° Parte Alt." value={article.article_alt_part_number} mono />
+                                    )}
+                                    {article.aircraft && <InfoCell label="Aeronave" value={article.aircraft} mono />}
+                                    {article.manual && <InfoCell label="Manual" value={article.manual} mono />}
+                                    {article.reference_cod && (
+                                      <InfoCell label="Cód. Referencia" value={article.reference_cod} mono />
+                                    )}
+                                    {article.pma && <InfoCell label="PMA" value={article.pma} />}
                                   </div>
+
+                                  {article.justification && (
+                                    <div className="space-y-1">
+                                      <FieldLabel>Justificación del artículo</FieldLabel>
+                                      <p className="text-sm text-muted-foreground">{article.justification}</p>
+                                    </div>
+                                  )}
                                 </div>
 
-                                {/* Fields grid */}
-                                <div className="grid grid-cols-2 gap-x-6 gap-y-3 sm:grid-cols-3">
-                                  {article.article_part_number && (
-                                    <InfoCell label="N° Parte" value={article.article_part_number} mono />
-                                  )}
-                                  {article.article_alt_part_number && (
-                                    <InfoCell label="N° Parte Alt." value={article.article_alt_part_number} mono />
-                                  )}
-                                  {article.aircraft && (
-                                    <InfoCell label="Aeronave" value={article.aircraft} mono />
-                                  )}
-                                  {article.manual && (
-                                    <InfoCell label="Manual" value={article.manual} mono />
-                                  )}
-                                  {article.reference_cod && (
-                                    <InfoCell label="Cód. Referencia" value={article.reference_cod} mono />
-                                  )}
-                                  {article.pma && (
-                                    <InfoCell label="PMA" value={article.pma} />
-                                  )}
-                                </div>
-
-                                {article.justification && (
-                                  <div className="space-y-1">
-                                    <FieldLabel>Justificación del artículo</FieldLabel>
-                                    <p className="text-sm text-muted-foreground">{article.justification}</p>
+                                {/* Article docs */}
+                                {articleDocs.length > 0 && (
+                                  <div className="w-full shrink-0 space-y-2 lg:w-52">
+                                    <FieldLabel>Docs. del artículo</FieldLabel>
+                                    {articleDocs.map((d, i) => (
+                                      <DocPreview key={`${d}-${i}`} path={d} />
+                                    ))}
                                   </div>
                                 )}
                               </div>
-
-                              {/* Article docs */}
-                              {articleDocs.length > 0 && (
-                                <div className="w-full shrink-0 space-y-2 lg:w-52">
-                                  <FieldLabel>Docs. del artículo</FieldLabel>
-                                  {articleDocs.map((d, i) => (
-                                    <DocPreview key={`${d}-${i}`} path={d} />
-                                  ))}
-                                </div>
-                              )}
                             </div>
-                          </div>
-                        );
-                      })}
+                          );
+                        })}
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
+                </ScrollArea>
               </div>
             )}
           </div>
@@ -481,9 +476,7 @@ const RequisitionPage = () => {
               </div>
               <div className="space-y-3 p-4">
                 {requisitionDocs.length > 0 ? (
-                  requisitionDocs.map((d, idx) => (
-                    <DocPreview key={`${d}-${idx}`} path={d} />
-                  ))
+                  requisitionDocs.map((d, idx) => <DocPreview key={`${d}-${idx}`} path={d} />)
                 ) : (
                   <div className="flex flex-col items-center justify-center gap-2 py-10 text-center">
                     <div className="flex h-10 w-10 items-center justify-center rounded-full border bg-muted/20">
@@ -495,7 +488,6 @@ const RequisitionPage = () => {
               </div>
             </div>
           </div>
-
         </div>
       </div>
     </ContentLayout>
