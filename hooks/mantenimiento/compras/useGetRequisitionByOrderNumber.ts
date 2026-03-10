@@ -18,6 +18,7 @@ interface Requisition {
   submitted_date: Date;
   aircraft?: MaintenanceAircraft;
   work_order?: string;
+  requisition_target?: 'AIRCRAFT' | 'FLEET' | 'WORKSHOP';
   batch: {
     id: number;
     name: string;
