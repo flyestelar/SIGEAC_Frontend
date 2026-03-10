@@ -55,6 +55,14 @@ const statusBadge = (status?: string) => {
   return { label: (status ?? 'PROCESO').toUpperCase(), cls: 'bg-amber-600 hover:bg-amber-600' };
 };
 
+const getUnitLabel = (unit?: {
+  secondary_unit?: string;
+  unit?: { label?: string; value?: string };
+}) => {
+  if (!unit) return 'N/A';
+  return unit.secondary_unit || unit.unit?.label || unit.unit?.value || 'N/A';
+};
+
 /* =========================
    Preview components
 ========================= */
@@ -363,7 +371,7 @@ const RequisitionPage = () => {
                                 <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
                                   <InfoRow label="N° Parte" value={article.article_part_number || 'N/A'} />
                                   <InfoRow label="N° Parte Alt" value={article.article_alt_part_number || 'N/A'} />
-                                  <InfoRow label="Unidad" value={article.unit || 'N/A'} />
+                                  <InfoRow label="Unidad" value={getUnitLabel(article.unit)} />
                                   <InfoRow label="Aeronave" value={article.aircraft || 'N/A'} />
 
                                   {article.manual ? <InfoRow label="Manual" value={article.manual} /> : null}
