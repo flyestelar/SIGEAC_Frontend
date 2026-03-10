@@ -19,6 +19,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useGetAircrafts } from '@/hooks/aerolinea/aeronaves/useGetAircrafts';
 import { useGetBatchesByLocationId } from '@/hooks/mantenimiento/almacen/renglones/useGetBatchesByLocationId';
 import { useGetSecondaryUnits } from '@/hooks/general/unidades/useGetSecondaryUnits';
+import { useGetWorkshopsByLocation } from '@/hooks/sistema/empresas/talleres/useGetWorkshopsByLocation';
 import { useGetEmployeesByDepartment } from '@/hooks/sistema/useGetEmployeesByDepartament';
 import { cn } from '@/lib/utils';
 import { useCompanyStore } from '@/stores/CompanyStore';
@@ -103,47 +104,67 @@ const isAllowedDoc = (file: File) => isPdf(file) || isImage(file) || isExcel(fil
 const docSizeOk = (file: File) =>
   isPdf(file) || isExcel(file) ? file.size <= MAX_PDF_BYTES : isImage(file) ? file.size <= MAX_IMG_BYTES : false;
 
-const FormSchema = z.object({
-  justification: z.string().optional(),
-  aircraft_id: z.string().optional(),
-  work_order: z.string().optional(),
-  created_by: z.string(),
-  requested_by: z.string({ message: 'Debe ingresar quien lo solicita.' }),
-  priority: z.enum(['LOW', 'MEDIUM', 'HIGH']).default('MEDIUM'),
-  is_referred: z.boolean().default(false),
-  document: z
-    .array(z.instanceof(File))
-    .refine((files) => files.every(isAllowedDoc), 'Solo se permiten archivos PDF e imágenes.')
-    .refine(
-      (files) => files.every(docSizeOk),
-      `Cada PDF debe ser menor a ${MAX_PDF_MB}MB. Cada imagen debe ser menor a ${MAX_IMG_MB}MB.`,
-    )
-    .optional(),
-  articles: z
-    .array(
-      z.object({
-        batch: z.string(),
-        batch_name: z.string(),
-        category: z.string(),
-        batch_articles: z.array(
-          z.object({
-            part_number: z.string().min(1, 'El número de parte es obligatorio'),
-            alt_part_number: z.string().min(1, 'El número de parte es obligatorio').optional(),
-            quantity: z.number().min(1, 'Debe ingresar una cantidad válida'),
-            image: z.any().optional(),
-            unit: z.string().optional(),
-          }),
-        ),
-      }),
-    )
-    .refine(
-      (articles) =>
-        articles.every((batch) =>
-          batch.batch_articles.every((article) => batch.category !== 'consumible' || article.unit),
-        ),
-      { message: 'La unidad secundaria es obligatoria para consumibles', path: ['articles'] },
-    ),
-});
+const FormSchema = z
+  .object({
+    justification: z.string().optional(),
+    requisition_target: z.enum(['AIRCRAFT', 'FLEET', 'WORKSHOP']).default('AIRCRAFT'),
+    aircraft_id: z.string().optional(),
+    workshop_id: z.string().optional(),
+    work_order: z.string().optional(),
+    created_by: z.string(),
+    requested_by: z.string({ message: 'Debe ingresar quien lo solicita.' }),
+    priority: z.enum(['LOW', 'MEDIUM', 'HIGH']).default('MEDIUM'),
+    is_referred: z.boolean().default(false),
+    document: z
+      .array(z.instanceof(File))
+      .refine((files) => files.every(isAllowedDoc), 'Solo se permiten archivos PDF e imágenes.')
+      .refine(
+        (files) => files.every(docSizeOk),
+        `Cada PDF debe ser menor a ${MAX_PDF_MB}MB. Cada imagen debe ser menor a ${MAX_IMG_MB}MB.`,
+      )
+      .optional(),
+    articles: z
+      .array(
+        z.object({
+          batch: z.string(),
+          batch_name: z.string(),
+          category: z.string(),
+          batch_articles: z.array(
+            z.object({
+              part_number: z.string().min(1, 'El número de parte es obligatorio'),
+              alt_part_number: z.string().min(1, 'El número de parte es obligatorio').optional(),
+              quantity: z.number().min(1, 'Debe ingresar una cantidad válida'),
+              image: z.any().optional(),
+              unit: z.string().optional(),
+            }),
+          ),
+        }),
+      )
+      .refine(
+        (articles) =>
+          articles.every((batch) =>
+            batch.batch_articles.every((article) => batch.category !== 'consumible' || article.unit),
+          ),
+        { message: 'La unidad secundaria es obligatoria para consumibles', path: ['articles'] },
+      ),
+  })
+  .superRefine((data, ctx) => {
+    if (data.requisition_target === 'AIRCRAFT' && !data.aircraft_id) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Debe seleccionar una aeronave.',
+        path: ['aircraft_id'],
+      });
+    }
+
+    if (data.requisition_target === 'WORKSHOP' && !data.workshop_id) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Debe seleccionar un taller.',
+        path: ['workshop_id'],
+      });
+    }
+  });
 
 type FormSchemaType = z.infer<typeof FormSchema>;
 
@@ -206,6 +227,7 @@ export function CreateWarehouseRequisitionForm({ onClose, initialData, isEditing
   const { createRequisition } = useCreateRequisition();
   const { updateRequisition } = useUpdateRequisition();
   const { data: secondaryUnits } = useGetSecondaryUnits();
+  const { data: workshops, isLoading: isWorkshopsLoading, isError: isWorkshopsError } = useGetWorkshopsByLocation();
 
   const [selectedBatches, setSelectedBatches] = useState<Batch[]>([]);
   const [openRequestedBy, setOpenRequestedBy] = useState(false);
@@ -222,7 +244,9 @@ export function CreateWarehouseRequisitionForm({ onClose, initialData, isEditing
     resolver: zodResolver(FormSchema),
     defaultValues: {
       work_order: '',
+      requisition_target: 'AIRCRAFT',
       aircraft_id: undefined,
+      workshop_id: undefined,
       justification: '',
       created_by: '',
       requested_by: '',
@@ -237,12 +261,19 @@ export function CreateWarehouseRequisitionForm({ onClose, initialData, isEditing
   const isSubmitting = createRequisition.isPending || updateRequisition.isPending;
 
   /* ---------- Derived labels ---------- */
+  const requisitionTarget = form.watch('requisition_target');
   const aircraftId = form.watch('aircraft_id');
+  const workshopId = form.watch('workshop_id');
   const aircraftLabel = useMemo(() => {
     if (!aircraftId) return 'Seleccionar aeronave';
     const found = aircrafts?.find((a) => String(a.id) === String(aircraftId));
     return found?.acronym ?? 'Seleccionar aeronave';
   }, [aircrafts, aircraftId]);
+  const workshopLabel = useMemo(() => {
+    if (!workshopId) return 'Seleccionar taller';
+    const found = workshops?.find((w) => String(w.id) === String(workshopId));
+    return found?.name ?? 'Seleccionar taller';
+  }, [workshopId, workshops]);
 
   const requestedByLabel = useMemo(() => {
     const dni = form.getValues('requested_by');
@@ -253,7 +284,7 @@ export function CreateWarehouseRequisitionForm({ onClose, initialData, isEditing
 
   const batchesButtonLabel = useMemo(() => {
     if (selectedBatches.length === 0) return 'Seleccionar renglones...';
-    return `${selectedBatches.length} renglón(es) seleccionado(s)`;
+    return `${selectedBatches.length} descripcion(es) seleccionada(s)`;
   }, [selectedBatches.length]);
 
   /* ---------- Effects ---------- */
@@ -273,15 +304,41 @@ export function CreateWarehouseRequisitionForm({ onClose, initialData, isEditing
   useEffect(() => {
     if (!initialData) return;
 
-    form.reset(initialData);
-    const incoming = (initialData.articles ?? []) as unknown as Batch[];
+    const normalizedInitialData = {
+      ...initialData,
+      requisition_target: initialData.requisition_target
+        ? initialData.requisition_target
+        : initialData.workshop_id
+          ? 'WORKSHOP'
+          : initialData.aircraft_id
+            ? 'AIRCRAFT'
+            : 'FLEET',
+    };
+
+    form.reset(normalizedInitialData);
+    const incoming = (normalizedInitialData.articles ?? []) as unknown as Batch[];
     setSelectedBatches(incoming);
 
     // Intentar hidratar el empleado seleccionado cuando llegue employees
-    const dni = initialData.requested_by;
+    const dni = normalizedInitialData.requested_by;
     const found = employees?.find((e) => String(e.dni) === String(dni));
     if (found) setRequestedByObj(found);
   }, [initialData, form, employees]);
+
+  useEffect(() => {
+    if (requisitionTarget === 'AIRCRAFT') {
+      form.setValue('workshop_id', undefined, { shouldValidate: true });
+    }
+
+    if (requisitionTarget === 'WORKSHOP') {
+      form.setValue('aircraft_id', undefined, { shouldValidate: true });
+    }
+
+    if (requisitionTarget === 'FLEET') {
+      form.setValue('aircraft_id', undefined, { shouldValidate: true });
+      form.setValue('workshop_id', undefined, { shouldValidate: true });
+    }
+  }, [requisitionTarget, form]);
 
   /* ---------- Handlers ---------- */
   const handleBatchSelect = useCallback((batchName: string, batchId: string, batchCategory: string) => {
@@ -406,7 +463,7 @@ export function CreateWarehouseRequisitionForm({ onClose, initialData, isEditing
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-        {(isAircraftsError || employeesError) && (
+        {(isAircraftsError || isWorkshopsError || employeesError) && (
           <div className="flex items-center gap-2 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">
             <AlertCircle className="h-4 w-4 flex-shrink-0" />
             Hubo un problema cargando catálogos. Intenta recargar o verifica tu conexión.
@@ -434,6 +491,31 @@ export function CreateWarehouseRequisitionForm({ onClose, initialData, isEditing
               )}
             />
 
+            <FormField
+              control={form.control}
+              name="requisition_target"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-sm font-medium">Destino</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <FormControl>
+                      <SelectTrigger className="h-9">
+                        <SelectValue placeholder="Seleccionar destino" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="AIRCRAFT">Aeronave</SelectItem>
+                      <SelectItem value="FLEET">Flota</SelectItem>
+                      <SelectItem value="WORKSHOP">Talleres</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage className="text-xs" />
+                </FormItem>
+              )}
+            />
+          </div>
+
+          {requisitionTarget === 'AIRCRAFT' && (
             <FormField
               control={form.control}
               name="aircraft_id"
@@ -495,7 +577,77 @@ export function CreateWarehouseRequisitionForm({ onClose, initialData, isEditing
                 </FormItem>
               )}
             />
-          </div>
+          )}
+
+          {requisitionTarget === 'WORKSHOP' && (
+            <FormField
+              control={form.control}
+              name="workshop_id"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-sm font-medium">Taller</FormLabel>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <FormControl>
+                        <Button
+                          disabled={isWorkshopsLoading}
+                          variant="outline"
+                          role="combobox"
+                          className={cn(
+                            'h-9 w-full justify-between font-normal',
+                            !field.value && 'text-muted-foreground',
+                          )}
+                        >
+                          {isWorkshopsLoading ? (
+                            <Loader2 className="mr-2 size-3.5 animate-spin" />
+                          ) : (
+                            <Wrench className="mr-2 h-3.5 w-3.5 opacity-50" />
+                          )}
+                          {workshopLabel}
+                          <ChevronsUpDown className="ml-2 h-3.5 w-3.5 shrink-0 opacity-50" />
+                        </Button>
+                      </FormControl>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-[260px] p-0" align="start">
+                      <Command>
+                        <CommandInput placeholder="Buscar taller..." className="h-9" />
+                        <CommandList>
+                          <CommandEmpty className="py-2 text-center text-xs">
+                            No se ha encontrado ningÃºn taller.
+                          </CommandEmpty>
+                          <CommandGroup>
+                            {workshops?.map((workshop) => (
+                              <CommandItem
+                                value={String(workshop.id)}
+                                key={workshop.id}
+                                onSelect={() => field.onChange(String(workshop.id))}
+                                className="py-2 text-sm"
+                              >
+                                <Check
+                                  className={cn(
+                                    'mr-2 h-3.5 w-3.5',
+                                    String(workshop.id) === field.value ? 'opacity-100' : 'opacity-0',
+                                  )}
+                                />
+                                {workshop.name}
+                              </CommandItem>
+                            ))}
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
+                  <FormMessage className="text-xs" />
+                </FormItem>
+              )}
+            />
+          )}
+
+          {requisitionTarget === 'FLEET' && (
+            <div className="rounded-xl border bg-muted/20 px-3 py-2 text-sm text-muted-foreground">
+              La requisiciÃ³n se registrarÃ¡ para la flota completa, sin asociar una aeronave o taller especÃ­fico.
+            </div>
+          )}
         </Section>
 
         {/* ── Prioridad y referencia ── */}
@@ -702,7 +854,10 @@ export function CreateWarehouseRequisitionForm({ onClose, initialData, isEditing
                     <ScrollArea className={cn(selectedBatches.length > 2 ? 'h-[340px]' : '')}>
                       <div className="space-y-4 pr-3">
                         {selectedBatches.map((batch) => (
-                          <div key={batch.batch} className="overflow-hidden rounded-2xl border bg-background/60 shadow-sm">
+                          <div
+                            key={batch.batch}
+                            className="overflow-hidden rounded-2xl border bg-background/60 shadow-sm"
+                          >
                             {/* Batch header */}
                             <div className="flex items-center justify-between gap-3 bg-muted/30 px-4 py-2.5">
                               <div className="flex min-w-0 items-center gap-2.5">
@@ -815,9 +970,7 @@ export function CreateWarehouseRequisitionForm({ onClose, initialData, isEditing
                                         </Label>
                                         <Select
                                           value={article.unit ?? ''}
-                                          onValueChange={(val) =>
-                                            handleArticleChange(batch.batch, index, 'unit', val)
-                                          }
+                                          onValueChange={(val) => handleArticleChange(batch.batch, index, 'unit', val)}
                                         >
                                           <SelectTrigger className="h-8 text-sm">
                                             <SelectValue placeholder="Seleccionar unidad..." />
@@ -906,7 +1059,9 @@ export function CreateWarehouseRequisitionForm({ onClose, initialData, isEditing
                         </div>
                         <div className="flex-1">
                           <p className="text-sm font-medium">Seleccionar archivos</p>
-                          <p className="text-xs text-muted-foreground">PDF, imágenes, XLS/XLSX · máx. {MAX_PDF_MB} MB</p>
+                          <p className="text-xs text-muted-foreground">
+                            PDF, imágenes, XLS/XLSX · máx. {MAX_PDF_MB} MB
+                          </p>
                         </div>
                         <FormControl>
                           <Input
@@ -959,8 +1114,7 @@ export function CreateWarehouseRequisitionForm({ onClose, initialData, isEditing
                               <div className="min-w-0 flex-1">
                                 <p className="truncate text-xs font-medium">{file.name}</p>
                                 <p className="text-[10px] text-muted-foreground">
-                                  {formatSize(file.size)} ·{' '}
-                                  {isPdf(file) ? 'PDF' : isExcel(file) ? 'Excel' : 'Imagen'}
+                                  {formatSize(file.size)} · {isPdf(file) ? 'PDF' : isExcel(file) ? 'Excel' : 'Imagen'}
                                 </p>
                               </div>
                               <Button

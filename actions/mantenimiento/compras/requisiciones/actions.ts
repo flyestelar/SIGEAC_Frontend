@@ -7,7 +7,9 @@ interface CreateRequisitionData {
   justification?: string;
   requested_by: string;
   created_by: number | string;
+  requisition_target?: 'AIRCRAFT' | 'FLEET' | 'WORKSHOP';
   aircraft_id?: string;
+  workshop_id?: string;
   work_order_id?: string;
   work_order?: string; // ESTE ES EL NOMBRE COMO STRING DE LA WO , TEMPORALMENTE HASTA TENER CARGADAS LAS WO EN LA BD
   type: string;
