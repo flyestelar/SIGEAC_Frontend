@@ -1,74 +1,46 @@
-"use client";
-import { useCreateQuote } from "@/actions/mantenimiento/compras/cotizaciones/actions";
-import { useUpdateRequisitionStatus } from "@/actions/mantenimiento/compras/requisiciones/actions";
-import { Button } from "@/components/ui/button";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { useAuth } from "@/contexts/AuthContext";
-import { useGetVendors } from "@/hooks/general/proveedores/useGetVendors";
-import { useGetSecondaryUnits } from "@/hooks/general/unidades/useGetSecondaryUnits";
-import { useGetLocationsByCompanyId } from "@/hooks/sistema/useGetLocationsByCompanyId";
-import { cn } from "@/lib/utils";
-import { useCompanyStore } from "@/stores/CompanyStore";
-import { Requisition } from "@/types";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { format } from "date-fns";
-import { es } from "date-fns/locale";
-import { CalendarIcon, Check, ChevronsUpDown, Loader2 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
-import { useFieldArray, useForm, useWatch } from "react-hook-form";
-import { z } from "zod";
-import { AmountInput } from "../../../misc/AmountInput";
-import { Calendar } from "../../../ui/calendar";
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from "../../../ui/command";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "../../../ui/dialog";
-import { Popover, PopoverContent, PopoverTrigger } from "../../../ui/popover";
-import { ScrollArea } from "../../../ui/scroll-area";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "../../../ui/select";
-import CreateVendorForm from "../../general/CreateVendorForm";
+'use client';
+import { useCreateQuote } from '@/actions/mantenimiento/compras/cotizaciones/actions';
+import { useUpdateRequisitionStatus } from '@/actions/mantenimiento/compras/requisiciones/actions';
+import { Button } from '@/components/ui/button';
+import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { useAuth } from '@/contexts/AuthContext';
+import { useGetVendors } from '@/hooks/general/proveedores/useGetVendors';
+import { useGetSecondaryUnits } from '@/hooks/general/unidades/useGetSecondaryUnits';
+import { useGetLocationsByCompanyId } from '@/hooks/sistema/useGetLocationsByCompanyId';
+import { cn } from '@/lib/utils';
+import { useCompanyStore } from '@/stores/CompanyStore';
+import { Requisition } from '@/types';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { format } from 'date-fns';
+import { es } from 'date-fns/locale';
+import { CalendarIcon, Check, ChevronsUpDown, Loader2 } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
+import { useFieldArray, useForm, useWatch } from 'react-hook-form';
+import { z } from 'zod';
+import { AmountInput } from '../../../misc/AmountInput';
+import { Calendar } from '../../../ui/calendar';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '../../../ui/command';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '../../../ui/dialog';
+import { Popover, PopoverContent, PopoverTrigger } from '../../../ui/popover';
+import { ScrollArea } from '../../../ui/scroll-area';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../ui/select';
+import CreateVendorForm from '../../general/CreateVendorForm';
 
 const FormSchema = z.object({
-  justification: z.string({ message: "Debe ingresar una justificacion." }),
+  justification: z.string({ message: 'Debe ingresar una justificacion.' }),
   articles: z.array(
     z.object({
       part_number: z.string(),
-      quantity: z.number().min(1, { message: "Debe ingresar al menos 1." }),
-      unit: z.string().optional(),
-      unit_price: z
-        .string()
-        .min(0, { message: "El precio no puede ser negativo." }),
-    })
+      quantity: z.number().min(1, { message: 'Debe ingresar al menos 1.' }),
+      unit_price: z.string().min(0, { message: 'El precio no puede ser negativo.' }),
+      condition: z.string({ message: 'Debe elegir la condición.' }),
+    }),
   ),
-  vendor_id: z.string({ message: "Debe seleccionar un proveedor." }),
-  location_id: z.string({ message: "Debe ingresar una ubicacion destino." }),
-  quote_date: z.date({ message: "Debe ingresar una fecha de cotizacion." }),
+  vendor_id: z.string({ message: 'Debe seleccionar un proveedor.' }),
+  location_id: z.string({ message: 'Debe ingresar una ubicacion destino.' }),
+  quote_date: z.date({ message: 'Debe ingresar una fecha de cotizacion.' }),
 });
 
 type FormSchemaType = z.infer<typeof FormSchema>;
@@ -100,41 +72,30 @@ export function CreateQuoteForm({
         unit: batchArticle.unit ? batchArticle.unit.id.toString() : undefined,
         unit_price: 0,
         image: batchArticle.image,
-      }))
+      })),
     ) || [];
 
   const form = useForm<FormSchemaType>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
-      justification: initialData?.justification || "",
+      justification: initialData?.justification || '',
       articles: transformedArticles,
     },
   });
 
   const { control, handleSubmit } = form;
 
-  const { fields } = useFieldArray({ control, name: "articles" });
+  const { fields } = useFieldArray({ control, name: 'articles' });
 
-  const calculateTotal = (articles: FormSchemaType["articles"]) =>
-    articles.reduce(
-      (sum, article) => sum + (article.quantity * Number(article.unit_price) || 0),
-      0
-    );
+  const calculateTotal = (articles: FormSchemaType['articles']) =>
+    articles.reduce((sum, article) => sum + (article.quantity * Number(article.unit_price) || 0), 0);
 
-  const articles = useWatch({ control, name: "articles" });
+  const articles = useWatch({ control, name: 'articles' });
   const total = useMemo(() => calculateTotal(articles), [articles]);
 
-  const {
-    data: vendors,
-    isLoading: isVendorsLoading,
-    isError: isVendorsErros,
-  } = useGetVendors(selectedCompany?.slug);
+  const { data: vendors, isLoading: isVendorsLoading, isError: isVendorsErros } = useGetVendors(selectedCompany?.slug);
 
-  const {
-    mutate,
-    data: locations,
-    isPending: isLocationsPending,
-  } = useGetLocationsByCompanyId();
+  const { mutate, data: locations, isPending: isLocationsPending } = useGetLocationsByCompanyId();
 
   useEffect(() => {
     if (selectedCompany) mutate(Number(2));
@@ -150,7 +111,7 @@ export function CreateQuoteForm({
       company: selectedCompany!.slug,
       requisition_order_id: req.id,
       vendor_id: Number(data.vendor_id),
-      articles: data.articles.map((article: any) => ({
+      articles: data.articles.map((article) => ({
         ...article,
         amount: Number(article.unit_price) * Number(article.quantity),
       })),
@@ -159,7 +120,7 @@ export function CreateQuoteForm({
     await updateStatusRequisition.mutateAsync({
       id: req.id,
       data: {
-        status: "COTIZADO",
+        status: 'COTIZADO',
         updated_by: `${user?.first_name} ${user?.last_name}`,
       },
       company: selectedCompany!.slug,
@@ -167,15 +128,13 @@ export function CreateQuoteForm({
     onClose();
   };
 
-  const fieldLabel = "text-[11px] font-semibold uppercase tracking-widest text-muted-foreground";
+  const fieldLabel = 'text-[11px] font-semibold uppercase tracking-widest text-muted-foreground';
 
   return (
     <Form {...form}>
       <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-5">
-
         {/* Cabecera: fecha · proveedor · destino */}
         <div className="grid grid-cols-3 gap-4">
-
           {/* Fecha */}
           <FormField
             control={form.control}
@@ -189,14 +148,12 @@ export function CreateQuoteForm({
                       <Button
                         variant="outline"
                         className={cn(
-                          "w-full justify-start pl-3 text-left font-normal",
-                          !field.value && "text-muted-foreground"
+                          'w-full justify-start pl-3 text-left font-normal',
+                          !field.value && 'text-muted-foreground',
                         )}
                       >
                         <CalendarIcon className="mr-2 h-4 w-4 opacity-50" />
-                        {field.value
-                          ? format(field.value, "PPP", { locale: es })
-                          : "Seleccione la fecha"}
+                        {field.value ? format(field.value, 'PPP', { locale: es }) : 'Seleccione la fecha'}
                       </Button>
                     </FormControl>
                   </PopoverTrigger>
@@ -206,9 +163,7 @@ export function CreateQuoteForm({
                       selected={field.value}
                       onSelect={field.onChange}
                       locale={es}
-                      disabled={(date) =>
-                        date > new Date() || date < new Date("1900-01-01")
-                      }
+                      disabled={(date) => date > new Date() || date < new Date('1900-01-01')}
                       initialFocus
                     />
                   </PopoverContent>
@@ -232,17 +187,14 @@ export function CreateQuoteForm({
                         disabled={isVendorsLoading}
                         variant="outline"
                         role="combobox"
-                        className={cn(
-                          "w-full justify-between",
-                          !field.value && "text-muted-foreground"
-                        )}
+                        className={cn('w-full justify-between', !field.value && 'text-muted-foreground')}
                       >
                         {isVendorsLoading ? (
                           <Loader2 className="size-4 animate-spin" />
                         ) : field.value ? (
                           vendors?.find((v) => v.id.toString() === field.value)?.name
                         ) : (
-                          "Elige al proveedor..."
+                          'Elige al proveedor...'
                         )}
                         <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                       </Button>
@@ -281,14 +233,14 @@ export function CreateQuoteForm({
                               value={vendor.name}
                               key={vendor.id.toString()}
                               onSelect={() => {
-                                form.setValue("vendor_id", vendor.id.toString());
+                                form.setValue('vendor_id', vendor.id.toString());
                                 setOpenVendor(false);
                               }}
                             >
                               <Check
                                 className={cn(
-                                  "mr-2 h-4 w-4",
-                                  vendor.id.toString() === field.value ? "opacity-100" : "opacity-0"
+                                  'mr-2 h-4 w-4',
+                                  vendor.id.toString() === field.value ? 'opacity-100' : 'opacity-0',
                                 )}
                               />
                               {vendor.name}
@@ -304,32 +256,6 @@ export function CreateQuoteForm({
                     </Command>
                   </PopoverContent>
                 </Popover>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          {/* Destino */}
-          <FormField
-            control={form.control}
-            name="location_id"
-            render={({ field }) => (
-              <FormItem className="flex flex-col space-y-1.5">
-                <p className={fieldLabel}>Destino</p>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                  <FormControl>
-                    <SelectTrigger disabled={isLocationsPending}>
-                      <SelectValue placeholder="Seleccione la ubicación" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {locations?.map((location) => (
-                      <SelectItem key={location.id} value={location.id.toString()}>
-                        {location.address} — {location.type}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
                 <FormMessage />
               </FormItem>
             )}
@@ -358,31 +284,25 @@ export function CreateQuoteForm({
 
         {/* Artículos */}
         <div className="overflow-hidden rounded-lg border bg-background">
-
           {/* Header de sección */}
           <div className="flex items-center justify-between border-b bg-muted/20 px-5 py-3">
             <span className={fieldLabel}>Artículos</span>
             <span className="text-[11px] font-semibold tabular-nums text-muted-foreground">
-              {fields.length} {fields.length === 1 ? "ítem" : "ítems"}
+              {fields.length} {fields.length === 1 ? 'ítem' : 'ítems'}
             </span>
           </div>
 
           {/* Cabecera de columnas */}
           <div className="grid grid-cols-[minmax(0,1.5fr)_64px_84px_148px_108px] gap-3 border-b bg-muted/10 px-5 py-2">
-            {(["# Parte", "Cant.", "Unidad", "Precio Unit.", "Total"] as const).map(
-              (col, i) => (
-                <span
-                  key={col}
-                  className={cn(fieldLabel, i === 4 && "text-right")}
-                >
-                  {col}
-                </span>
-              )
-            )}
+            {(['# Parte', 'Cant.', 'Unidad', 'Precio Unit.', 'Total'] as const).map((col, i) => (
+              <span key={col} className={cn(fieldLabel, i === 4 && 'text-right')}>
+                {col}
+              </span>
+            ))}
           </div>
 
           {/* Filas */}
-          <ScrollArea className={cn(fields.length > 4 && "h-[260px]")}>
+          <ScrollArea className={cn(fields.length > 4 && 'h-[260px]')}>
             <div className="divide-y">
               {fields.map((field, index) => (
                 <div
@@ -424,23 +344,28 @@ export function CreateQuoteForm({
                     )}
                   />
 
-                  {/* Unidad */}
-                  {articles[index]?.unit ? (
-                    <Select value={articles[index].unit!.toString()} disabled>
-                      <SelectTrigger className="h-8 text-xs">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {secondaryUnits?.map((unit) => (
-                          <SelectItem key={unit.id} value={unit.id.toString()}>
-                            {unit.secondary_unit}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  ) : (
-                    <span className="pl-2 text-xs text-muted-foreground/50">—</span>
-                  )}
+                  {/* Condición */}
+                  <FormField
+                    control={control}
+                    name={`articles.${index}.condition`}
+                    render={({ field, fieldState }) => (
+                      <FormItem className="space-y-0">
+                        <FormControl>
+                          <Select {...field}>
+                            <SelectTrigger aria-invalid={fieldState.invalid} className="min-w-[120px]">
+                              <SelectValue placeholder="Seleccione..." />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="OH">OH</SelectItem>
+                              <SelectItem value="SV">SV</SelectItem>
+                              <SelectItem value="NE">NE</SelectItem>
+                              <SelectItem value="NS">NS</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
 
                   {/* Precio Unitario */}
                   <FormField
@@ -458,13 +383,10 @@ export function CreateQuoteForm({
 
                   {/* Total por artículo */}
                   <p className="text-right text-sm font-semibold tabular-nums">
-                    {new Intl.NumberFormat("es-AR", {
-                      style: "currency",
-                      currency: "ARS",
-                    }).format(
-                      (articles[index]?.quantity || 0) *
-                        (Number(articles[index]?.unit_price) || 0)
-                    )}
+                    {new Intl.NumberFormat('es-AR', {
+                      style: 'currency',
+                      currency: 'ARS',
+                    }).format((articles[index]?.quantity || 0) * (Number(articles[index]?.unit_price) || 0))}
                   </p>
                 </div>
               ))}
@@ -475,26 +397,20 @@ export function CreateQuoteForm({
           <div className="flex items-center justify-between border-t bg-muted/20 px-5 py-3">
             <span className={fieldLabel}>Total General</span>
             <span className="text-base font-bold tabular-nums">
-              {new Intl.NumberFormat("es-AR", {
-                style: "currency",
-                currency: "ARS",
+              {new Intl.NumberFormat('es-AR', {
+                style: 'currency',
+                currency: 'ARS',
               }).format(total)}
             </span>
           </div>
         </div>
 
         {/* Enviar */}
-        <Button
-          disabled={createQuote.isPending || updateStatusRequisition.isPending}
-          type="submit"
-          className="w-full"
-        >
+        <Button disabled={createQuote.isPending || updateStatusRequisition.isPending} type="submit" className="w-full">
           {createQuote.isPending || updateStatusRequisition.isPending ? (
             <Loader2 className="mr-2 size-4 animate-spin" />
           ) : null}
-          {createQuote.isPending || updateStatusRequisition.isPending
-            ? "Procesando..."
-            : "Crear Cotización"}
+          {createQuote.isPending || updateStatusRequisition.isPending ? 'Procesando...' : 'Crear Cotización'}
         </Button>
       </form>
     </Form>

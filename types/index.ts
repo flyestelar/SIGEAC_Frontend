@@ -600,6 +600,7 @@ export type Quote = {
     article_part_number: string;
     quantity: number;
     unit_price: string;
+    condition: 'NE' | 'NS' | 'OH' | 'SV';
     unit?: Convertion;
     image: string;
   }[];
