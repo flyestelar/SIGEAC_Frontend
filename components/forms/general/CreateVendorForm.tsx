@@ -1,74 +1,62 @@
 'use client';
-import { useCreateVendor } from "@/actions/general/proveedores/actions";
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
+import { useCreateVendor } from '@/actions/general/proveedores/actions';
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
-import { Input } from "@/components/ui/input";
-import { useCompanyStore } from "@/stores/CompanyStore";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2 } from "lucide-react";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-import { Button } from "../../ui/button";
-
+import { Input } from '@/components/ui/input';
+import { useCompanyStore } from '@/stores/CompanyStore';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Loader2 } from 'lucide-react';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
+import { Button } from '../../ui/button';
 
 const formSchema = z.object({
   name: z.string().min(3, {
-    message: "El nombre debe tener al menos 3 carácters.",
+    message: 'El nombre debe tener al menos 3 carácters.',
   }),
   email: z.string().email().optional(),
   phone: z.string().optional(),
   address: z.string().optional(),
-  type: z.enum(["PROVEEDOR", "BENEFICIARIO"]).optional(),
-})
-
+  type: z.enum(['PROVEEDOR', 'BENEFICIARIO']).optional(),
+});
 
 interface FormProps {
-  onClose: () => void,
+  onClose: () => void;
 }
 
 export default function CreateVendorForm({ onClose }: FormProps) {
-  const { createVendor } = useCreateVendor()
-  const { selectedCompany } = useCompanyStore()
+  const { createVendor } = useCreateVendor();
+  const { selectedCompany } = useCompanyStore();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      name: "",
-      phone: "",
-      address: "",
-      email: "",
+      name: '',
+      phone: '',
+      address: '',
+      email: '',
     },
-  })
+  });
 
-  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+  const onSubmit = async (values: z.infer<typeof formSchema>, event?: React.BaseSyntheticEvent) => {
     try {
       await createVendor.mutateAsync({
         ...values,
         company: selectedCompany!.slug,
-      })
+      });
       console.log('Vendor created with values:', selectedCompany!.slug);
-    } catch (error) {
-    }
-    onClose()
-  }
+    } catch (error) {}
+    onClose();
+  };
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)}>
+      <form
+        onSubmit={(event) => {
+          event?.stopPropagation();
+          form.handleSubmit(onSubmit)(event);
+        }}
+      >
         <div className="flex flex-col gap-2 justify-center">
           <div className="flex gap-2 items-center">
             <FormField
@@ -150,10 +138,14 @@ export default function CreateVendorForm({ onClose }: FormProps) {
             )}
           />
         </div>
-        <Button className="bg-primary mt-2 text-white hover:bg-blue-900 disabled:bg-primary/70" disabled={createVendor?.isPending} type="submit">
+        <Button
+          className="bg-primary mt-2 text-white hover:bg-blue-900 disabled:bg-primary/70"
+          disabled={createVendor?.isPending}
+          type="submit"
+        >
           {createVendor?.isPending ? <Loader2 className="size-4 animate-spin" /> : <p>Crear Proveedor</p>}
         </Button>
       </form>
     </Form>
-  )
+  );
 }

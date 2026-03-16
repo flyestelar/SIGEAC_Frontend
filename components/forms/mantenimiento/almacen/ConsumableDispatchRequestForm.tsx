@@ -160,6 +160,7 @@ export function ConsumableDispatchForm({ onClose }: FormProps) {
 
   const { control, watch, setValue, setError, clearErrors } = form;
   const { fields, append, remove, update } = useFieldArray({ control, name: 'articles' });
+  const dispatchType = watch('dispatch_type');
 
   const findBatchById = (batch_id: number): Batch | null =>
     consumableBatches.find((b) => b.batch_id === batch_id) ?? null;
@@ -323,7 +324,7 @@ export function ConsumableDispatchForm({ onClose }: FormProps) {
 
         <div className="flex gap-2">
           {/* Aeronave */}
-          {form.watch('dispatch_type') === 'aircraft' && (
+          {dispatchType === 'aircraft' && (
             <FormField
               control={form.control}
               name="aircraft_id"
@@ -386,7 +387,7 @@ export function ConsumableDispatchForm({ onClose }: FormProps) {
           )}
 
           {/* Taller */}
-          {form.watch('dispatch_type') === 'workshop' && (
+          {dispatchType === 'workshop' && (
             <FormField
               control={form.control}
               name="workshop_id"
@@ -521,7 +522,7 @@ export function ConsumableDispatchForm({ onClose }: FormProps) {
             />
           }
 
-          {form.watch('dispatch_type') === 'loan' && (
+          {dispatchType === 'loan' && (
             <FormField
               control={form.control}
               name="third_party_id"
@@ -589,7 +590,7 @@ export function ConsumableDispatchForm({ onClose }: FormProps) {
             />
           )}
 
-          {form.watch('dispatch_type') !== 'loan' && (
+          {dispatchType !== 'loan' && (
             <FormField
               control={form.control}
               name="requested_by"

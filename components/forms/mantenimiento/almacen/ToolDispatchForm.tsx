@@ -3,10 +3,14 @@
 import { useCreateDispatchRequest } from '@/actions/mantenimiento/almacen/solicitudes/salida/action';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Calendar } from '@/components/ui/calendar';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
 import { useAuth } from '@/contexts/AuthContext';
 import { useGetThirdParties } from '@/hooks/ajustes/globales/terceros/useGetThirdParties';
 import { useGetWarehousesEmployees } from '@/hooks/mantenimiento/almacen/empleados/useGetWarehousesEmployees';
@@ -21,20 +25,16 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { CalendarIcon, Check, ChevronsUpDown, Loader2, Trash2 } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
-import { Calendar } from '../../../ui/calendar';
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '../../../ui/command';
-import { Popover, PopoverContent, PopoverTrigger } from '../../../ui/popover';
-import { Textarea } from '../../../ui/textarea';
 
 const FormSchema = z
   .object({
     dispatch_type: z.enum(['aircraft', 'workshop', 'loan'], {
       message: 'Debe seleccionar si el despacho es para una Aeronave, un Taller o un préstamo.',
     }),
-    request_number: z.string(),
+    request_number: z.string().min(1, 'El número de requerimiento es obligatorio'),
     requested_by: z.string().optional(),
     third_party_id: z.string().optional(),
     delivered_by: z.string().min(1, 'Debe seleccionar el responsable de almacén.'),
@@ -91,15 +91,6 @@ const FormSchema = z
         path: ['workshop_id'],
       });
     }
-    if (!!data.dispatch_type) {
-      const types = ['aircraft', 'workshop', 'loan'];
-      if (!types.includes(data.dispatch_type)) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: 'El tipo de despacho seleccionado no es válido.',
-        });
-      }
-    }
   });
 
 type FormSchemaType = z.infer<typeof FormSchema>;
@@ -121,15 +112,14 @@ interface FormProps {
 export function ToolDispatchForm({ onClose }: FormProps) {
   const { user } = useAuth();
   const { selectedCompany } = useCompanyStore();
+  const { createDispatchRequest } = useCreateDispatchRequest();
 
-  // UI states
   const [openTools, setOpenTools] = useState(false);
   const [openRequestedBy, setOpenRequestedBy] = useState(false);
   const [requestBy, setRequestedBy] = useState<Employee>();
-  const [selectedAircraft, setSelectedAircraft] = useState<string>('');
-  //Vendors data
+  const [selectedTools, setSelectedTools] = useState<ToolPick[]>([]);
+
   const { data: thirdParty, isLoading: isThirdPartyLoading, isError: isThirdPartyError } = useGetThirdParties();
-  // Remote data
   const {
     data: batches,
     isLoading: isBatchesLoading,
@@ -147,45 +137,29 @@ export function ToolDispatchForm({ onClose }: FormProps) {
     isError: isAircraftsError,
   } = useGetMaintenanceAircrafts(selectedCompany?.slug);
   const { data: workshops, isLoading: isWorkshopsLoading, isError: isWorkshopsError } = useGetWorkshopsByLocation();
-  const { createDispatchRequest } = useCreateDispatchRequest();
-  // Filtrar SOLO herramientas
+
   const toolBatches = useMemo(() => (batches ?? []).filter((b) => b.category === 'HERRAMIENTA'), [batches]);
 
-  // RHF
   const form = useForm<FormSchemaType>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
       articles: [],
       justification: '',
+      submission_date: new Date(),
       requested_by: user?.employee?.[0]?.dni ? String(user.employee[0].dni) : '',
     },
   });
 
-  // Selecciones múltiples en UI, sincronizadas con RHF
-  const [selectedTools, setSelectedTools] = useState<ToolPick[]>([]);
+  const dispatchType = form.watch('dispatch_type');
 
-  useEffect(() => {
-    // Sync selectedTools -> form.articles
-    form.setValue(
-      'articles',
-      selectedTools.map((t) => ({
-        article_id: t.id,
-        serial: t.serial,
-        quantity: t.is_serialized ? 1 : t.quantity,
-        batch_id: t.batch_id,
-        batch: t.batch,
-      })),
-      { shouldValidate: true },
-    );
-  }, [selectedTools, form]);
-
-  // Resolver nombre en el botón si hay DNI por default
-  useEffect(() => {
-    if (!requestBy && employees && form.getValues('requested_by')) {
-      const found = employees.find((e) => String(e.dni) === form.getValues('requested_by'));
-      if (found) setRequestedBy(found);
-    }
-  }, [employees, form, requestBy]);
+  const toArticles = (tools: ToolPick[]) =>
+    tools.map((t) => ({
+      article_id: t.id,
+      serial: t.serial,
+      quantity: t.is_serialized ? 1 : t.quantity,
+      batch_id: t.batch_id,
+      batch: t.batch,
+    }));
 
   const addOrRemoveTool = (tool: {
     id: number;
@@ -194,37 +168,24 @@ export function ToolDispatchForm({ onClose }: FormProps) {
     batch_id: number;
     batch: string;
   }) => {
-    setSelectedTools((prev) => {
-      const exists = prev.find((t) => t.id === tool.id);
-      if (exists) {
-        // quitar si ya está
-        return prev.filter((t) => t.id !== tool.id);
-      }
-      // agregar
-      const is_serialized = !!tool.serial;
-      return [
-        ...prev,
-        {
-          id: tool.id,
-          serial: tool.serial,
-          part_number: tool.part_number,
-          batch_id: tool.batch_id,
-          batch: tool.batch,
-          is_serialized,
-          quantity: 1,
-        },
-      ];
-    });
+    const exists = selectedTools.find((t) => t.id === tool.id);
+    const next = exists
+      ? selectedTools.filter((t) => t.id !== tool.id)
+      : [...selectedTools, { ...tool, is_serialized: !!tool.serial, quantity: 1 }];
+    setSelectedTools(next);
+    form.setValue('articles', toArticles(next), { shouldValidate: true });
   };
 
   const updateQuantity = (id: number, qty: number) => {
-    setSelectedTools((prev) =>
-      prev.map((t) => (t.id === id ? { ...t, quantity: Math.max(1, Math.floor(qty || 1)) } : t)),
-    );
+    const next = selectedTools.map((t) => (t.id === id ? { ...t, quantity: Math.max(1, Math.floor(qty || 1)) } : t));
+    setSelectedTools(next);
+    form.setValue('articles', toArticles(next), { shouldValidate: true });
   };
 
   const removeTool = (id: number) => {
-    setSelectedTools((prev) => prev.filter((t) => t.id !== id));
+    const next = selectedTools.filter((t) => t.id !== id);
+    setSelectedTools(next);
+    form.setValue('articles', toArticles(next), { shouldValidate: true });
   };
 
   const onSubmit = async (data: FormSchemaType) => {
@@ -256,12 +217,13 @@ export function ToolDispatchForm({ onClose }: FormProps) {
             <FormItem>
               <FormLabel>Número de Solicitud</FormLabel>
               <FormControl>
-                <Input {...field} />
+                <Input placeholder="Ingrese el número de solicitud" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
+
         {/* Tipo de Despacho */}
         <FormField
           control={form.control}
@@ -306,7 +268,7 @@ export function ToolDispatchForm({ onClose }: FormProps) {
         />
 
         {/* Aeronave */}
-        {form.watch('dispatch_type') === 'aircraft' && (
+        {dispatchType === 'aircraft' && (
           <FormField
             control={form.control}
             name="aircraft_id"
@@ -346,7 +308,6 @@ export function ToolDispatchForm({ onClose }: FormProps) {
                               key={aircraft.id}
                               onSelect={() => {
                                 form.setValue('aircraft_id', aircraft.id.toString(), { shouldValidate: true });
-                                setSelectedAircraft(aircraft.manufacturer.id.toString());
                               }}
                             >
                               <Check
@@ -370,7 +331,7 @@ export function ToolDispatchForm({ onClose }: FormProps) {
         )}
 
         {/* Taller */}
-        {form.watch('dispatch_type') === 'workshop' && (
+        {dispatchType === 'workshop' && (
           <FormField
             control={form.control}
             name="workshop_id"
@@ -432,8 +393,8 @@ export function ToolDispatchForm({ onClose }: FormProps) {
           />
         )}
 
-        {/* Veendor a quieo se esta prestando en caso de dispatch como loan */}
-        {form.watch('dispatch_type') === 'loan' && (
+        {/* Empresa del Préstamo */}
+        {dispatchType === 'loan' && (
           <FormField
             control={form.control}
             name="third_party_id"
@@ -451,8 +412,7 @@ export function ToolDispatchForm({ onClose }: FormProps) {
                       >
                         {isThirdPartyLoading && <Loader2 className="size-4 animate-spin mr-2" />}
                         {field.value
-                          ? // Buscamos el vendor por ID para mostrar su nombre en el botón
-                            thirdParty?.find((t: ThirdParty) => `${t.id}` === `${field.value}`)?.name
+                          ? thirdParty?.find((t: ThirdParty) => `${t.id}` === `${field.value}`)?.name
                           : 'Seleccione la empresa...'}
                         <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                       </Button>
@@ -471,9 +431,7 @@ export function ToolDispatchForm({ onClose }: FormProps) {
                               key={t.id}
                               value={t.name}
                               onSelect={() => {
-                                form.setValue('third_party_id', t.id.toString(), {
-                                  shouldValidate: true,
-                                });
+                                form.setValue('third_party_id', t.id.toString(), { shouldValidate: true });
                               }}
                             >
                               <Check
@@ -501,11 +459,10 @@ export function ToolDispatchForm({ onClose }: FormProps) {
           />
         )}
 
-        {/* Herramientas: selector (Command) + lista de seleccionadas */}
+        {/* Herramientas: selector + lista */}
         <FormItem className="flex flex-col mt-2.5 w-full">
           <FormLabel>Herramientas a Retirar</FormLabel>
 
-          {/* Selector */}
           <Popover open={openTools} onOpenChange={setOpenTools}>
             <PopoverTrigger asChild>
               <Button
@@ -556,7 +513,6 @@ export function ToolDispatchForm({ onClose }: FormProps) {
             </PopoverContent>
           </Popover>
 
-          {/* Lista de seleccionadas */}
           <div className="mt-3 rounded-lg border p-3">
             {selectedTools.length === 0 ? (
               <p className="text-sm text-muted-foreground">No hay herramientas seleccionadas.</p>
@@ -572,12 +528,8 @@ export function ToolDispatchForm({ onClose }: FormProps) {
                             {t.part_number} / {t.serial ?? 'S/N'}
                           </span>
                         </div>
-                        <div className="text-xs text-muted-foreground">
-                          ID: {t.id} · BatchID: {t.batch_id}
-                        </div>
                       </div>
 
-                      {/* Cantidad */}
                       {t.is_serialized ? (
                         <Badge>1</Badge>
                       ) : (
@@ -593,7 +545,6 @@ export function ToolDispatchForm({ onClose }: FormProps) {
                         </div>
                       )}
 
-                      {/* Quitar */}
                       <Button type="button" variant="ghost" size="icon" onClick={() => removeTool(t.id)} title="Quitar">
                         <Trash2 className="h-4 w-4" />
                       </Button>
@@ -605,7 +556,7 @@ export function ToolDispatchForm({ onClose }: FormProps) {
           </div>
         </FormItem>
 
-        {/* delivered_by / requested_by */}
+        {/* Entregado por / Responsable */}
         <div className="flex gap-2">
           <FormField
             control={form.control}
@@ -636,7 +587,7 @@ export function ToolDispatchForm({ onClose }: FormProps) {
             )}
           />
 
-          {form.watch('dispatch_type') !== 'loan' && (
+          {dispatchType !== 'loan' && (
             <FormField
               control={form.control}
               name="requested_by"
@@ -655,8 +606,7 @@ export function ToolDispatchForm({ onClose }: FormProps) {
                         {requestBy
                           ? `${requestBy.first_name} ${requestBy.last_name}`
                           : (() => {
-                              const dni = form.getValues('requested_by');
-                              const found = employees?.find((e) => String(e.dni) === String(dni));
+                              const found = employees?.find((e) => String(e.dni) === String(field.value));
                               return found ? `${found.first_name} ${found.last_name}` : 'Selec. el técnico';
                             })()}
                         <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -683,9 +633,7 @@ export function ToolDispatchForm({ onClose }: FormProps) {
                               <Check
                                 className={cn(
                                   'mr-2 h-4 w-4',
-                                  String(requestBy?.dni ?? form.getValues('requested_by')) === String(e.dni)
-                                    ? 'opacity-100'
-                                    : 'opacity-0',
+                                  String(requestBy?.dni ?? field.value) === String(e.dni) ? 'opacity-100' : 'opacity-0',
                                 )}
                               />
                               {`${e.first_name} ${e.last_name}`}
@@ -754,14 +702,10 @@ export function ToolDispatchForm({ onClose }: FormProps) {
         {/* Submit */}
         <Button
           className="bg-primary mt-2 text-white hover:bg-blue-900 disabled:bg-primary/70"
-          disabled={useCreateDispatchRequest().createDispatchRequest?.isPending}
+          disabled={createDispatchRequest.isPending}
           type="submit"
         >
-          {useCreateDispatchRequest().createDispatchRequest?.isPending ? (
-            <Loader2 className="size-4 animate-spin" />
-          ) : (
-            <p>Crear</p>
-          )}
+          {createDispatchRequest.isPending ? <Loader2 className="size-4 animate-spin" /> : <p>Crear</p>}
         </Button>
       </form>
     </Form>

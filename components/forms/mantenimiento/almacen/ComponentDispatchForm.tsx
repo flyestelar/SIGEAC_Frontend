@@ -25,7 +25,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { CalendarIcon, Check, ChevronsUpDown, Loader2, Trash2 } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
@@ -34,8 +34,8 @@ const FormSchema = z
     dispatch_type: z.enum(['aircraft', 'workshop', 'loan'], {
       message: 'Debe seleccionar si el despacho es para una Aeronave, Taller o Préstamo.',
     }),
-    request_number: z.string(),
-    third_party_id: z.string().optional(), // Se mantiene opcional aquí
+    request_number: z.string().min(1, 'El número de requerimiento es obligatorio'),
+    third_party_id: z.string().optional(),
     requested_by: z.string().optional(),
     delivered_by: z.string().min(1, 'Debe seleccionar el responsable de almacén.'),
     aircraft_id: z.string().optional(),
@@ -113,14 +113,12 @@ export function ComponentDispatchForm({ onClose }: FormProps) {
   const { selectedCompany } = useCompanyStore();
   const { createDispatchRequest } = useCreateDispatchRequest();
 
-  // UI states
   const [openComponents, setOpenComponents] = useState(false);
   const [openRequestedBy, setOpenRequestedBy] = useState(false);
   const [requestBy, setRequestedBy] = useState<Employee>();
-  const [selectedAircraft, setSelectedAircraft] = useState<string>('');
+  const [selectedComponents, setSelectedComponents] = useState<PickedComponent[]>([]);
 
-  const { data: third_party, isLoading: isThirdPartyLoading, isError: isThirdPartyError } = useGetThirdParties();
-  // Remote data
+  const { data: thirdParty, isLoading: isThirdPartyLoading, isError: isThirdPartyError } = useGetThirdParties();
   const {
     data: batches,
     isLoading: isBatchesLoading,
@@ -139,46 +137,31 @@ export function ComponentDispatchForm({ onClose }: FormProps) {
   } = useGetMaintenanceAircrafts(selectedCompany?.slug);
   const { data: workshops, isLoading: isWorkshopsLoading, isError: isWorkshopsError } = useGetWorkshopsByLocation();
 
-  // Filtrar SOLO componentes (si tu API categoriza)
-  const componentBatches = useMemo(() => {
-    return (batches ?? []).filter((b) => b.category === 'COMPONENTE' || !b.category);
-  }, [batches]);
+  const componentBatches = useMemo(
+    () => (batches ?? []).filter((b) => b.category === 'COMPONENTE' || !b.category),
+    [batches],
+  );
 
-  // RHF
   const form = useForm<FormSchemaType>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
       articles: [],
       justification: '',
+      submission_date: new Date(),
       requested_by: user?.employee?.[0]?.dni ? String(user.employee[0].dni) : '',
     },
   });
 
-  // Selección múltiple
-  const [selectedComponents, setSelectedComponents] = useState<PickedComponent[]>([]);
+  const dispatchType = form.watch('dispatch_type');
 
-  // Sync UI → form
-  useEffect(() => {
-    form.setValue(
-      'articles',
-      selectedComponents.map((c) => ({
-        article_id: c.id,
-        serial: c.serial,
-        quantity: c.is_serialized ? 1 : c.quantity,
-        batch_id: c.batch_id,
-        batch: c.batch,
-      })),
-      { shouldValidate: true },
-    );
-  }, [selectedComponents, form]);
-
-  // Resolver nombre del técnico si hay DNI por defecto
-  useEffect(() => {
-    if (!requestBy && employees && form.getValues('requested_by')) {
-      const found = employees.find((e) => String(e.dni) === form.getValues('requested_by'));
-      if (found) setRequestedBy(found);
-    }
-  }, [employees, form, requestBy]);
+  const toArticles = (components: PickedComponent[]) =>
+    components.map((c) => ({
+      article_id: c.id,
+      serial: c.serial,
+      quantity: c.is_serialized ? 1 : c.quantity,
+      batch_id: c.batch_id,
+      batch: c.batch,
+    }));
 
   const addOrRemoveComponent = (item: {
     id: number;
@@ -187,35 +170,26 @@ export function ComponentDispatchForm({ onClose }: FormProps) {
     batch_id: number;
     batch: string;
   }) => {
-    setSelectedComponents((prev) => {
-      const exists = prev.find((c) => c.id === item.id);
-      if (exists) {
-        return prev.filter((c) => c.id !== item.id);
-      }
-      const is_serialized = !!item.serial;
-      return [
-        ...prev,
-        {
-          id: item.id,
-          serial: item.serial,
-          part_number: item.part_number,
-          batch_id: item.batch_id,
-          batch: item.batch,
-          is_serialized,
-          quantity: 1,
-        },
-      ];
-    });
+    const exists = selectedComponents.find((c) => c.id === item.id);
+    const next = exists
+      ? selectedComponents.filter((c) => c.id !== item.id)
+      : [...selectedComponents, { ...item, is_serialized: !!item.serial, quantity: 1 }];
+    setSelectedComponents(next);
+    form.setValue('articles', toArticles(next), { shouldValidate: true });
   };
 
   const updateQuantity = (id: number, qty: number) => {
-    setSelectedComponents((prev) =>
-      prev.map((c) => (c.id === id ? { ...c, quantity: Math.max(1, Math.floor(qty || 1)) } : c)),
+    const next = selectedComponents.map((c) =>
+      c.id === id ? { ...c, quantity: Math.max(1, Math.floor(qty || 1)) } : c,
     );
+    setSelectedComponents(next);
+    form.setValue('articles', toArticles(next), { shouldValidate: true });
   };
 
   const removeComponent = (id: number) => {
-    setSelectedComponents((prev) => prev.filter((c) => c.id !== id));
+    const next = selectedComponents.filter((c) => c.id !== id);
+    setSelectedComponents(next);
+    form.setValue('articles', toArticles(next), { shouldValidate: true });
   };
 
   const onSubmit = async (data: FormSchemaType) => {
@@ -233,7 +207,6 @@ export function ComponentDispatchForm({ onClose }: FormProps) {
       data: formattedData,
       company: selectedCompany!.slug,
     });
-    console.log('Dispatch Request Data:', formattedData);
     onClose();
   };
 
@@ -283,7 +256,7 @@ export function ComponentDispatchForm({ onClose }: FormProps) {
                 </FormItem>
               )}
             />
-            {form.watch('dispatch_type') !== 'loan' && (
+            {dispatchType !== 'loan' && (
               <FormField
                 control={form.control}
                 name="requested_by"
@@ -302,8 +275,7 @@ export function ComponentDispatchForm({ onClose }: FormProps) {
                           {requestBy
                             ? `${requestBy.first_name} ${requestBy.last_name}`
                             : (() => {
-                                const dni = form.getValues('requested_by');
-                                const found = employees?.find((e) => String(e.dni) === String(dni));
+                                const found = employees?.find((e) => String(e.dni) === String(field.value));
                                 return found ? `${found.first_name} ${found.last_name}` : 'Selec. el técnico';
                               })()}
                           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -330,7 +302,7 @@ export function ComponentDispatchForm({ onClose }: FormProps) {
                                 <Check
                                   className={cn(
                                     'mr-2 h-4 w-4',
-                                    String(requestBy?.dni ?? form.getValues('requested_by')) === String(e.dni)
+                                    String(requestBy?.dni ?? field.value) === String(e.dni)
                                       ? 'opacity-100'
                                       : 'opacity-0',
                                   )}
@@ -349,6 +321,7 @@ export function ComponentDispatchForm({ onClose }: FormProps) {
             )}
           </div>
         </div>
+
         {/* Tipo de Despacho */}
         <FormField
           control={form.control}
@@ -376,7 +349,6 @@ export function ComponentDispatchForm({ onClose }: FormProps) {
                     />
                     <span>Taller</span>
                   </label>
-
                   <label className="flex items-center space-x-2">
                     <input
                       type="radio"
@@ -394,7 +366,7 @@ export function ComponentDispatchForm({ onClose }: FormProps) {
         />
 
         {/* Aeronave */}
-        {form.watch('dispatch_type') === 'aircraft' && (
+        {dispatchType === 'aircraft' && (
           <FormField
             control={form.control}
             name="aircraft_id"
@@ -434,7 +406,6 @@ export function ComponentDispatchForm({ onClose }: FormProps) {
                               key={aircraft.id}
                               onSelect={() => {
                                 form.setValue('aircraft_id', aircraft.id.toString(), { shouldValidate: true });
-                                setSelectedAircraft(aircraft.manufacturer.id.toString());
                               }}
                             >
                               <Check
@@ -458,7 +429,7 @@ export function ComponentDispatchForm({ onClose }: FormProps) {
         )}
 
         {/* Taller */}
-        {form.watch('dispatch_type') === 'workshop' && (
+        {dispatchType === 'workshop' && (
           <FormField
             control={form.control}
             name="workshop_id"
@@ -520,8 +491,8 @@ export function ComponentDispatchForm({ onClose }: FormProps) {
           />
         )}
 
-        {/* Veendor a quieo se esta prestando en caso de dispatch como loan */}
-        {form.watch('dispatch_type') === 'loan' && (
+        {/* Empresa del Préstamo */}
+        {dispatchType === 'loan' && (
           <FormField
             control={form.control}
             name="third_party_id"
@@ -539,8 +510,7 @@ export function ComponentDispatchForm({ onClose }: FormProps) {
                       >
                         {isThirdPartyLoading && <Loader2 className="size-4 animate-spin mr-2" />}
                         {field.value
-                          ? // Buscamos el vendor por ID para mostrar su nombre en el botón
-                            third_party?.find((v: ThirdParty) => `${v.id}` === `${field.value}`)?.name
+                          ? thirdParty?.find((t: ThirdParty) => `${t.id}` === `${field.value}`)?.name
                           : 'Seleccione la empresa...'}
                         <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                       </Button>
@@ -551,29 +521,27 @@ export function ComponentDispatchForm({ onClose }: FormProps) {
                       <CommandInput placeholder="Buscar empresa..." />
                       <CommandList>
                         <CommandEmpty className="text-xs p-2 text-center">
-                          {isThirdPartyLoading ? 'Error al cargar proveedores.' : 'No se encontraron resultados.'}
+                          {isThirdPartyError ? 'Error al cargar empresas.' : 'No se encontraron resultados.'}
                         </CommandEmpty>
                         <CommandGroup>
-                          {third_party?.map((third_party: ThirdParty) => (
+                          {thirdParty?.map((t: ThirdParty) => (
                             <CommandItem
-                              key={third_party.id}
-                              value={third_party.name}
+                              key={t.id}
+                              value={t.name}
                               onSelect={() => {
-                                form.setValue('third_party_id', third_party.id.toString(), {
-                                  shouldValidate: true,
-                                });
+                                form.setValue('third_party_id', t.id.toString(), { shouldValidate: true });
                               }}
                             >
                               <Check
                                 className={cn(
                                   'mr-2 h-4 w-4',
-                                  `${third_party.id}` === `${field.value}` ? 'opacity-100' : 'opacity-0',
+                                  `${t.id}` === `${field.value}` ? 'opacity-100' : 'opacity-0',
                                 )}
                               />
                               <div className="flex flex-col">
-                                <span>{third_party.name}</span>
+                                <span>{t.name}</span>
                                 <span className="text-[10px] text-muted-foreground uppercase">
-                                  {third_party.party_roles.map((role) => role.label).join(', ')}
+                                  {t.party_roles.map((role) => role.label).join(', ')}
                                 </span>
                               </div>
                             </CommandItem>
@@ -589,11 +557,10 @@ export function ComponentDispatchForm({ onClose }: FormProps) {
           />
         )}
 
-        {/* Componentes: selector (Command) + lista de seleccionados */}
+        {/* Componentes: selector + lista */}
         <FormItem className="flex flex-col mt-2.5 w-full">
           <FormLabel>Componentes a Retirar</FormLabel>
 
-          {/* Selector */}
           <Popover open={openComponents} onOpenChange={setOpenComponents}>
             <PopoverTrigger asChild>
               <Button
@@ -644,13 +611,12 @@ export function ComponentDispatchForm({ onClose }: FormProps) {
             </PopoverContent>
           </Popover>
 
-          {/* Lista de seleccionados */}
           <div className="mt-3 rounded-lg border p-3">
             {selectedComponents.length === 0 ? (
               <p className="text-sm text-muted-foreground">No hay componentes seleccionados.</p>
             ) : (
               <ScrollArea className={selectedComponents.length > 2 ? 'h-32' : ''}>
-                <div className="space-y-2 overflow-auto">
+                <div className="space-y-2">
                   {selectedComponents.map((c) => (
                     <div key={c.id} className="flex items-center gap-3 rounded-md border p-2">
                       <div className="flex-1 min-w-0">
@@ -662,7 +628,6 @@ export function ComponentDispatchForm({ onClose }: FormProps) {
                         </div>
                       </div>
 
-                      {/* Cantidad */}
                       {c.is_serialized ? (
                         <Badge>1</Badge>
                       ) : (
@@ -678,7 +643,6 @@ export function ComponentDispatchForm({ onClose }: FormProps) {
                         </div>
                       )}
 
-                      {/* Quitar */}
                       <Button
                         type="button"
                         variant="ghost"
@@ -696,7 +660,6 @@ export function ComponentDispatchForm({ onClose }: FormProps) {
           </div>
         </FormItem>
 
-        {/* Entregado por / Responsable */}
         {/* Fecha */}
         <FormField
           control={form.control}
@@ -749,10 +712,10 @@ export function ComponentDispatchForm({ onClose }: FormProps) {
         {/* Submit */}
         <Button
           className="bg-primary mt-2 text-white hover:bg-blue-900 disabled:bg-primary/70"
-          disabled={createDispatchRequest?.isPending}
+          disabled={createDispatchRequest.isPending}
           type="submit"
         >
-          {createDispatchRequest?.isPending ? <Loader2 className="size-4 animate-spin" /> : <p>Crear</p>}
+          {createDispatchRequest.isPending ? <Loader2 className="size-4 animate-spin" /> : <p>Crear</p>}
         </Button>
       </form>
     </Form>

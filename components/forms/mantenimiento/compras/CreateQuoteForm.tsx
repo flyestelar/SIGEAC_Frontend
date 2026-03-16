@@ -7,12 +7,9 @@ import {
   FormControl,
   FormField,
   FormItem,
-  FormLabel,
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/contexts/AuthContext";
 import { useGetVendors } from "@/hooks/general/proveedores/useGetVendors";
@@ -88,15 +85,11 @@ export function CreateQuoteForm({
   const { selectedCompany } = useCompanyStore();
 
   const [openVendor, setOpenVendor] = useState(false);
-
   const [openVendorDialog, setOpenVendorDialog] = useState(false);
 
   const { updateStatusRequisition } = useUpdateRequisitionStatus();
-
   const { data: secondaryUnits } = useGetSecondaryUnits();
-
   const { createQuote } = useCreateQuote();
-
   const { user } = useAuth();
 
   const transformedArticles =
@@ -120,24 +113,15 @@ export function CreateQuoteForm({
 
   const { control, handleSubmit } = form;
 
-  const { fields } = useFieldArray({
-    control,
-    name: "articles",
-  });
-  const calculateTotal = (articles: FormSchemaType["articles"]) => {
-    const articlesTotal = articles.reduce(
-      (sum, article) =>
-        sum + (article.quantity * Number(article.unit_price) || 0),
+  const { fields } = useFieldArray({ control, name: "articles" });
+
+  const calculateTotal = (articles: FormSchemaType["articles"]) =>
+    articles.reduce(
+      (sum, article) => sum + (article.quantity * Number(article.unit_price) || 0),
       0
     );
-    return articlesTotal;
-  };
 
-  const articles = useWatch({
-    control,
-    name: "articles",
-  });
-
+  const articles = useWatch({ control, name: "articles" });
   const total = useMemo(() => calculateTotal(articles), [articles]);
 
   const {
@@ -153,9 +137,7 @@ export function CreateQuoteForm({
   } = useGetLocationsByCompanyId();
 
   useEffect(() => {
-    if (selectedCompany) {
-      mutate(Number(2));
-    }
+    if (selectedCompany) mutate(Number(2));
   }, [selectedCompany, mutate]);
 
   const onSubmit = async (data: FormSchemaType) => {
@@ -185,35 +167,36 @@ export function CreateQuoteForm({
     onClose();
   };
 
+  const fieldLabel = "text-[11px] font-semibold uppercase tracking-widest text-muted-foreground";
+
   return (
     <Form {...form}>
-      <form
-        onSubmit={handleSubmit(onSubmit)}
-        className="flex flex-col space-y-4"
-      >
-        <div className="flex gap-2 items-center">
+      <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-5">
+
+        {/* Cabecera: fecha · proveedor · destino */}
+        <div className="grid grid-cols-3 gap-4">
+
+          {/* Fecha */}
           <FormField
             control={form.control}
             name="quote_date"
             render={({ field }) => (
-              <FormItem className="flex flex-col mt-1.5">
-                <FormLabel>Fecha de Cotizacion</FormLabel>
+              <FormItem className="flex flex-col space-y-1.5">
+                <p className={fieldLabel}>Fecha de Cotización</p>
                 <Popover>
                   <PopoverTrigger asChild>
                     <FormControl>
                       <Button
-                        variant={"outline"}
+                        variant="outline"
                         className={cn(
-                          "w-[240px] pl-3 text-left font-normal",
+                          "w-full justify-start pl-3 text-left font-normal",
                           !field.value && "text-muted-foreground"
                         )}
                       >
-                        {field.value ? (
-                          format(field.value, "PPP", { locale: es })
-                        ) : (
-                          <span>Seleccione la fecha</span>
-                        )}
-                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                        <CalendarIcon className="mr-2 h-4 w-4 opacity-50" />
+                        {field.value
+                          ? format(field.value, "PPP", { locale: es })
+                          : "Seleccione la fecha"}
                       </Button>
                     </FormControl>
                   </PopoverTrigger>
@@ -234,13 +217,14 @@ export function CreateQuoteForm({
               </FormItem>
             )}
           />
+
           {/* Proveedor */}
           <FormField
             control={form.control}
             name="vendor_id"
             render={({ field }) => (
-              <FormItem className="w-full flex flex-col mt-1 space-y-3">
-                <FormLabel>Proveedor</FormLabel>
+              <FormItem className="flex flex-col space-y-1.5">
+                <p className={fieldLabel}>Proveedor</p>
                 <Popover open={openVendor} onOpenChange={setOpenVendor}>
                   <PopoverTrigger asChild>
                     <FormControl>
@@ -249,21 +233,14 @@ export function CreateQuoteForm({
                         variant="outline"
                         role="combobox"
                         className={cn(
-                          "justify-between",
+                          "w-full justify-between",
                           !field.value && "text-muted-foreground"
                         )}
                       >
-                        {isVendorsLoading && (
-                          <Loader2 className="size-4 animate-spin mr-2" />
-                        )}
-                        {field.value ? (
-                          <p>
-                            {
-                              vendors?.find(
-                                (vendor) => vendor.id.toString() === field.value
-                              )?.name
-                            }
-                          </p>
+                        {isVendorsLoading ? (
+                          <Loader2 className="size-4 animate-spin" />
+                        ) : field.value ? (
+                          vendors?.find((v) => v.id.toString() === field.value)?.name
                         ) : (
                           "Elige al proveedor..."
                         )}
@@ -271,26 +248,21 @@ export function CreateQuoteForm({
                       </Button>
                     </FormControl>
                   </PopoverTrigger>
-                  <PopoverContent className="w-[200px] p-0">
+                  <PopoverContent className="w-[260px] p-0">
                     <Command>
                       <CommandInput placeholder="Busque un proveedor..." />
                       <CommandList>
-                        <CommandEmpty>
-                          No se ha encontrado un proveedor.
-                        </CommandEmpty>
+                        <CommandEmpty>No se ha encontrado un proveedor.</CommandEmpty>
                         <CommandGroup>
-                          <Dialog
-                            open={openVendorDialog}
-                            onOpenChange={setOpenVendorDialog}
-                          >
+                          <Dialog open={openVendorDialog} onOpenChange={setOpenVendorDialog}>
                             <DialogTrigger asChild>
-                              <div className="flex justify-center">
+                              <div className="flex justify-center p-1">
                                 <Button
-                                  variant={"ghost"}
-                                  className="w-[130px] h-[30px] m-1"
+                                  variant="ghost"
+                                  className="w-full h-8 text-xs"
                                   onClick={() => setOpenVendorDialog(true)}
                                 >
-                                  Crear Proveedor
+                                  + Crear Proveedor
                                 </Button>
                               </div>
                             </DialogTrigger>
@@ -298,13 +270,10 @@ export function CreateQuoteForm({
                               <DialogHeader>
                                 <DialogTitle>Creación de Proveedor</DialogTitle>
                                 <DialogDescription>
-                                  Cree un proveedor rellenando la información
-                                  necesaria.
+                                  Cree un proveedor rellenando la información necesaria.
                                 </DialogDescription>
                               </DialogHeader>
-                              <CreateVendorForm
-                                onClose={() => setOpenVendorDialog(false)}
-                              />
+                              <CreateVendorForm onClose={() => setOpenVendorDialog(false)} />
                             </DialogContent>
                           </Dialog>
                           {vendors?.map((vendor) => (
@@ -312,26 +281,21 @@ export function CreateQuoteForm({
                               value={vendor.name}
                               key={vendor.id.toString()}
                               onSelect={() => {
-                                form.setValue(
-                                  "vendor_id",
-                                  vendor.id.toString()
-                                );
+                                form.setValue("vendor_id", vendor.id.toString());
                                 setOpenVendor(false);
                               }}
                             >
                               <Check
                                 className={cn(
                                   "mr-2 h-4 w-4",
-                                  vendor.id === field.value
-                                    ? "opacity-100"
-                                    : "opacity-0"
+                                  vendor.id.toString() === field.value ? "opacity-100" : "opacity-0"
                                 )}
                               />
-                              {<p>{vendor.name}</p>}
+                              {vendor.name}
                             </CommandItem>
                           ))}
                           {isVendorsErros && (
-                            <p className="text-sm text-muted-foreground">
+                            <p className="p-2 text-xs text-muted-foreground">
                               Ha ocurrido un error al cargar los datos...
                             </p>
                           )}
@@ -344,28 +308,24 @@ export function CreateQuoteForm({
               </FormItem>
             )}
           />
+
+          {/* Destino */}
           <FormField
             control={form.control}
             name="location_id"
             render={({ field }) => (
-              <FormItem className="w-full">
-                <FormLabel>Destino</FormLabel>
-                <Select
-                  onValueChange={field.onChange}
-                  defaultValue={field.value}
-                >
+              <FormItem className="flex flex-col space-y-1.5">
+                <p className={fieldLabel}>Destino</p>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
                   <FormControl>
                     <SelectTrigger disabled={isLocationsPending}>
-                      <SelectValue placeholder="Seleccione la ubicacion" />
+                      <SelectValue placeholder="Seleccione la ubicación" />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
                     {locations?.map((location) => (
-                      <SelectItem
-                        key={location.id}
-                        value={location.id.toString()}
-                      >
-                        {location.address} - {location.type}
+                      <SelectItem key={location.id} value={location.id.toString()}>
+                        {location.address} — {location.type}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -375,16 +335,19 @@ export function CreateQuoteForm({
             )}
           />
         </div>
+
         {/* Justificación */}
         <FormField
           control={control}
           name="justification"
           render={({ field }) => (
-            <FormItem className="w-full">
-              <FormLabel>Justificación</FormLabel>
+            <FormItem className="space-y-1.5">
+              <p className={fieldLabel}>Justificación</p>
               <FormControl>
                 <Textarea
                   placeholder="Ej: Necesidad de la pieza X para instalación..."
+                  className="resize-none"
+                  rows={3}
                   {...field}
                 />
               </FormControl>
@@ -394,131 +357,144 @@ export function CreateQuoteForm({
         />
 
         {/* Artículos */}
-        <div className="space-y-4">
-          <h3 className="text-lg font-bold">Artículos</h3>
-          <ScrollArea className={cn("", fields.length > 3 && "h-[280px]")}>
-            {fields.map((field, index) => (
-              <div key={field.id} className="flex gap-4 items-end p-2 border-b">
-                {/* Número de parte */}
-                <FormField
-                  control={control}
-                  name={`articles.${index}.part_number`}
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel htmlFor={`part-number-${index}`}>
-                        # Parte
-                      </FormLabel>
-                      <FormControl>
-                        <Input
-                          id={`part-number-${index}`}
-                          disabled
-                          className="disabled:opacity-85 disabled:cursor-default font-semibold"
-                          placeholder="Ej: ABC123"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+        <div className="overflow-hidden rounded-lg border bg-background">
 
-                {/* Cantidad y Unidad */}
-                <div className="flex gap-2 items-end">
+          {/* Header de sección */}
+          <div className="flex items-center justify-between border-b bg-muted/20 px-5 py-3">
+            <span className={fieldLabel}>Artículos</span>
+            <span className="text-[11px] font-semibold tabular-nums text-muted-foreground">
+              {fields.length} {fields.length === 1 ? "ítem" : "ítems"}
+            </span>
+          </div>
+
+          {/* Cabecera de columnas */}
+          <div className="grid grid-cols-[minmax(0,1.5fr)_64px_84px_148px_108px] gap-3 border-b bg-muted/10 px-5 py-2">
+            {(["# Parte", "Cant.", "Unidad", "Precio Unit.", "Total"] as const).map(
+              (col, i) => (
+                <span
+                  key={col}
+                  className={cn(fieldLabel, i === 4 && "text-right")}
+                >
+                  {col}
+                </span>
+              )
+            )}
+          </div>
+
+          {/* Filas */}
+          <ScrollArea className={cn(fields.length > 4 && "h-[260px]")}>
+            <div className="divide-y">
+              {fields.map((field, index) => (
+                <div
+                  key={field.id}
+                  className="grid grid-cols-[minmax(0,1.5fr)_64px_84px_148px_108px] items-center gap-3 px-5 py-3"
+                >
+                  {/* P/N */}
+                  <FormField
+                    control={control}
+                    name={`articles.${index}.part_number`}
+                    render={({ field }) => (
+                      <FormItem className="space-y-0">
+                        <FormControl>
+                          <Input
+                            disabled
+                            className="disabled:opacity-90 disabled:cursor-default h-8 font-mono text-xs"
+                            {...field}
+                          />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+
+                  {/* Cantidad */}
                   <FormField
                     control={control}
                     name={`articles.${index}.quantity`}
                     render={({ field }) => (
-                      <FormItem className="flex-1">
-                        <FormLabel htmlFor={`quantity-${index}`}>
-                          Cantidad
-                        </FormLabel>
+                      <FormItem className="space-y-0">
                         <FormControl>
                           <Input
-                            id={`quantity-${index}`}
                             disabled
-                            className="disabled:opacity-85 font-semibold"
+                            className="disabled:opacity-90 disabled:cursor-default h-8 text-center text-sm font-semibold"
                             type="number"
-                            min={1}
                             {...field}
                           />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+
+                  {/* Unidad */}
+                  {articles[index]?.unit ? (
+                    <Select value={articles[index].unit!.toString()} disabled>
+                      <SelectTrigger className="h-8 text-xs">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {secondaryUnits?.map((unit) => (
+                          <SelectItem key={unit.id} value={unit.id.toString()}>
+                            {unit.secondary_unit}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  ) : (
+                    <span className="pl-2 text-xs text-muted-foreground/50">—</span>
+                  )}
+
+                  {/* Precio Unitario */}
+                  <FormField
+                    control={control}
+                    name={`articles.${index}.unit_price`}
+                    render={({ field }) => (
+                      <FormItem className="space-y-0">
+                        <FormControl>
+                          <AmountInput {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
 
-                  {articles[index]?.unit && (
-                    <FormItem className="flex-1">
-                      <FormLabel htmlFor={`unit-${index}`}>Unidad</FormLabel>
-                      <Select value={articles[index].unit.toString()} disabled>
-                        <SelectTrigger id={`unit-${index}`}>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {secondaryUnits?.map((unit) => (
-                            <SelectItem
-                              key={unit.id}
-                              value={unit.id.toString()}
-                            >
-                              {unit.secondary_unit}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </FormItem>
-                  )}
-                </div>
-
-                {/* Precio Unitario */}
-                <FormField
-                  control={control}
-                  name={`articles.${index}.unit_price`}
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel htmlFor={`unit-price-${index}`}>
-                        Precio Unitario
-                      </FormLabel>
-                      <FormControl>
-                        <AmountInput {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                {/* Total del Artículo */}
-                <div className="flex flex-col">
-                  <Label className="mb-2">Total</Label>
-                  <p className="text-base font-bold p-2 rounded-md">
+                  {/* Total por artículo */}
+                  <p className="text-right text-sm font-semibold tabular-nums">
                     {new Intl.NumberFormat("es-AR", {
                       style: "currency",
                       currency: "ARS",
                     }).format(
                       (articles[index]?.quantity || 0) *
-                      (Number(articles[index]?.unit_price) || 0)
+                        (Number(articles[index]?.unit_price) || 0)
                     )}
                   </p>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </ScrollArea>
+
+          {/* Total general */}
+          <div className="flex items-center justify-between border-t bg-muted/20 px-5 py-3">
+            <span className={fieldLabel}>Total General</span>
+            <span className="text-base font-bold tabular-nums">
+              {new Intl.NumberFormat("es-AR", {
+                style: "currency",
+                currency: "ARS",
+              }).format(total)}
+            </span>
+          </div>
         </div>
 
-        {/* Total general */}
-        <div className=" font-bold text-lg">
-          Total General: ${total.toFixed(2)}
-        </div>
-        <Separator />
-        {/* Botón para enviar */}
+        {/* Enviar */}
         <Button
           disabled={createQuote.isPending || updateStatusRequisition.isPending}
           type="submit"
+          className="w-full"
         >
           {createQuote.isPending || updateStatusRequisition.isPending ? (
-            <Loader2 className="size-4 animate-spin" />
-          ) : (
-            "Crear Cotizacion"
-          )}
+            <Loader2 className="mr-2 size-4 animate-spin" />
+          ) : null}
+          {createQuote.isPending || updateStatusRequisition.isPending
+            ? "Procesando..."
+            : "Crear Cotización"}
         </Button>
       </form>
     </Form>
