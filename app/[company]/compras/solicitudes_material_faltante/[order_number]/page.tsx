@@ -195,7 +195,10 @@ function DocPreview({ path }: { path: string }) {
 
       {/* Preview area */}
       {embeddable ? (
-        <div className="h-[240px] overflow-hidden">
+        <div
+          className="h-[240px] overflow-hidden cursor-pointer"
+          onClick={() => window.open(url, '_blank', 'noopener,noreferrer')}
+        >
           {isPdf(path) ? (
             <iframe
               src={url}
