@@ -61,7 +61,9 @@ export const columns: ColumnDef<Requisition>[] = [
     header: ({ column }) => <DataTableColumnHeader column={column} title="Justificación" />,
     meta: { title: 'Justificación' },
     cell: ({ row }) => (
-      <p className="text-center flex justify-center text-muted-foreground italic">{row.original.justification}</p>
+      <p className="text-center flex justify-center text-muted-foreground italic">
+        {row.original.justification ?? '-'}
+      </p>
     ),
   },
   {
@@ -92,12 +94,6 @@ export const columns: ColumnDef<Requisition>[] = [
     header: ({ column }) => <DataTableColumnHeader column={column} title="Fecha de Creación" />,
     meta: { title: 'Fecha de c.' },
     cell: ({ row }) => <p className="text-center">{format(row.original.submission_date, 'PPP', { locale: es })}</p>,
-  },
-  {
-    accessorKey: 'type',
-    header: ({ column }) => <DataTableColumnHeader column={column} title="Tipo de Req." />,
-    meta: { title: 'Fecha de c.' },
-    cell: ({ row }) => <p className="text-center">{row.original.type}</p>,
   },
   {
     accessorKey: 'actions',
