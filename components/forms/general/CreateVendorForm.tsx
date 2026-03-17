@@ -15,7 +15,7 @@ const formSchema = z.object({
   name: z.string().min(3, {
     message: 'El nombre debe tener al menos 3 carácters.',
   }),
-  email: z.string().email().optional(),
+  email: z.string().optional(),
   phone: z.string().optional(),
   address: z.string().optional(),
   type: z.enum(['PROVEEDOR', 'BENEFICIARIO']).optional(),
