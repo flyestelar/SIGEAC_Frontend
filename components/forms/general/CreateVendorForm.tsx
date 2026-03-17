@@ -45,7 +45,7 @@ export default function CreateVendorForm({ onClose }: FormProps) {
         company: selectedCompany!.slug,
       });
       console.log('Vendor created with values:', selectedCompany!.slug);
-    } catch (error) {}
+    } catch (error) { }
     onClose();
   };
 

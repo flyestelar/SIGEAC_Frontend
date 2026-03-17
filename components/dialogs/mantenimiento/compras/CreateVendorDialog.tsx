@@ -1,5 +1,6 @@
 'use client'
 
+import CreateVendorForm from "@/components/forms/general/CreateVendorForm";
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -10,7 +11,6 @@ import {
   DialogTrigger
 } from "@/components/ui/dialog"
 import { useState } from "react"
-import { CreateAdministrationVendorForm } from "@/components/forms/aerolinea/administracion/CreateAdministrationVendorForm"
 
 export function CreateVendorDialog() {
   const [open, setOpen] = useState(false);
@@ -26,7 +26,7 @@ export function CreateVendorDialog() {
             Cree un proveedor rellenando la información necesaria.
           </DialogDescription>
         </DialogHeader>
-        <CreateAdministrationVendorForm onClose={() => setOpen(false)} />
+        <CreateVendorForm onClose={() => setOpen(false)} />
       </DialogContent>
     </Dialog>
   )
