@@ -353,7 +353,7 @@ export function CreateQuoteForm({
                         <FormControl>
                           <Select {...field}>
                             <SelectTrigger aria-invalid={fieldState.invalid} className="min-w-[120px]">
-                              <SelectValue placeholder="Seleccione..." />
+                              <SelectValue placeholder="Selec..." />
                             </SelectTrigger>
                             <SelectContent>
                               <SelectItem value="OH">OH</SelectItem>
