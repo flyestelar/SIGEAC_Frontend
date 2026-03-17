@@ -5,7 +5,7 @@ import { ColumnDef } from "@tanstack/react-table"
 import { DataTableColumnHeader } from "@/components/tables/DataTableHeader"
 
 import { Checkbox } from "@/components/ui/checkbox"
-import { Manufacturer, Vendor } from "@/types"
+import { Vendor } from "@/types"
 
 export const columns: ColumnDef<Vendor>[] = [
   {
@@ -39,39 +39,6 @@ export const columns: ColumnDef<Vendor>[] = [
     cell: ({ row }) =>
       <div className="flex justify-center">
         <span className='font-bold text-center'>{row.original.name ?? "N/A"}</span>
-      </div>
-  },
-  {
-    accessorKey: "email",
-    header: ({ column }) => (
-      <DataTableColumnHeader filter column={column} title="Email" />
-    ),
-    meta: { title: 'Email' },
-    cell: ({ row }) =>
-      <div className="flex justify-center">
-        <span className='text-muted-foreground italic'>{row.original.email}</span>
-      </div>
-  },
-  {
-    accessorKey: "phone",
-    header: ({ column }) => (
-      <DataTableColumnHeader filter column={column} title="Nro. TLF" />
-    ),
-    meta: { title: 'Nro. TLF' },
-    cell: ({ row }) =>
-      <div className="flex justify-center">
-        <span className='text-muted-foreground italic'>{row.original.email}</span>
-      </div>
-  },
-  {
-    accessorKey: "address",
-    header: ({ column }) => (
-      <DataTableColumnHeader filter column={column} title="Ubicacion" />
-    ),
-    meta: { title: 'Ubicacion' },
-    cell: ({ row }) =>
-      <div className="flex justify-center">
-        <span className='text-muted-foreground italic'>{row.original.address}</span>
       </div>
   },
 ]
