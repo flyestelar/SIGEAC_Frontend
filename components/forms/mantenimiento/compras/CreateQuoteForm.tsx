@@ -307,7 +307,7 @@ export function CreateQuoteForm({
               {fields.map((field, index) => (
                 <div
                   key={field.id}
-                  className="grid grid-cols-[minmax(0,1.5fr)_64px_84px_148px_108px] items-center gap-3 px-5 py-3"
+                  className="grid grid-cols-[minmax(0,1.5fr)_64px_84px_132px_108px] items-center gap-3 px-5 py-3"
                 >
                   {/* P/N */}
                   <FormField
