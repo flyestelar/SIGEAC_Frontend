@@ -102,14 +102,4 @@ export const columns: ColumnDef<Requisition>[] = [
       <p className="text-center italic text-muted-foreground">{row.original?.aircraft?.acronym || 'N/A'}</p>
     ),
   },
-  {
-    accessorKey: 'actions',
-    header: ({ column }) => <DataTableColumnHeader column={column} title="Acciones" />,
-    meta: { title: 'Acciones' },
-    cell: ({ row }) => (
-      <div className="flex justify-center">
-        <RequisitionsDropdownActions req={row.original} />
-      </div>
-    ),
-  },
 ];

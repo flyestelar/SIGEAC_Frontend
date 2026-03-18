@@ -69,7 +69,8 @@ export function CreateQuoteForm({
         part_number: batchArticle.part_number,
         quantity: batchArticle.quantity,
         unit: batchArticle.unit ? batchArticle.unit.id.toString() : undefined,
-        unit_price: 0,
+        unit_price: '',
+        condition: '',
         image: batchArticle.image,
       })),
     ) || [];
@@ -345,7 +346,7 @@ export function CreateQuoteForm({
                     render={({ field, fieldState }) => (
                       <FormItem className="space-y-0">
                         <FormControl>
-                          <Select {...field}>
+                          <Select value={field.value} onValueChange={field.onChange}>
                             <SelectTrigger aria-invalid={fieldState.invalid} className="min-w-[120px]">
                               <SelectValue placeholder="Selec..." />
                             </SelectTrigger>
