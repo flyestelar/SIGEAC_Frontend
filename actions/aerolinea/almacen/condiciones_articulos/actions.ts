@@ -22,7 +22,7 @@ export const useCreateCondition = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['conditions'] })
       toast("¡Creado!", {
-        description: `¡La condición se ha creado correctamente!`
+        description: `¡La condición fue creada correctamente!`
       })
     },
     onError: (error) => {
