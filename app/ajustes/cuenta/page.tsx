@@ -15,7 +15,7 @@ const AccountPage = () => {
   return (
     <ContentLayout title='Cuenta'>
       <div className='space-y-3 mb-12'>
-        <h1 className='text-center text-5xl font-bold'>Ajustes de Cuenta</h1>
+        <h1 className='text-center text-5xl font-bold'>Ajuste de Cuenta</h1>
         <p className='text-sm text-muted-foreground text-center'>Aquí puede ajustar la información de su cuenta, su nombre de usuario, contraseña, etc.</p>
       </div>
       <div className='flex flex-col md:flex-row items-center justify-center gap-12'>
