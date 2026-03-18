@@ -7,6 +7,7 @@ interface CreateQuoteData {
   articles: {
     part_number: string;
     quantity: number;
+    condition?: string;
     unit?: string;
     unit_price: string;
   }[];
@@ -14,7 +15,6 @@ interface CreateQuoteData {
   total: number;
   vendor_id: number;
   requisition_order_id: number;
-  location_id: number;
   quote_date: Date;
   created_by: string;
   company: string;

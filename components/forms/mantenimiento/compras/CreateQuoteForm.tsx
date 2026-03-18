@@ -39,7 +39,6 @@ const FormSchema = z.object({
     }),
   ),
   vendor_id: z.string({ message: 'Debe seleccionar un proveedor.' }),
-  location_id: z.string({ message: 'Debe ingresar una ubicacion destino.' }),
   quote_date: z.date({ message: 'Debe ingresar una fecha de cotizacion.' }),
 });
 
@@ -95,11 +94,6 @@ export function CreateQuoteForm({
 
   const { data: vendors, isLoading: isVendorsLoading, isError: isVendorsErros } = useGetVendors(selectedCompany?.slug);
 
-  const { mutate, data: locations, isPending: isLocationsPending } = useGetLocationsByCompanyId();
-
-  useEffect(() => {
-    if (selectedCompany) mutate(Number(2));
-  }, [selectedCompany, mutate]);
 
   const onSubmit = async (data: FormSchemaType) => {
     const formattedData = {
@@ -107,12 +101,12 @@ export function CreateQuoteForm({
       created_by: `${user?.id}`,
       sub_total: total,
       total: total,
-      location_id: Number(data.location_id),
       company: selectedCompany!.slug,
       requisition_order_id: req.id,
       vendor_id: Number(data.vendor_id),
       articles: data.articles.map((article) => ({
         ...article,
+        quantity: article.quantity,
         amount: Number(article.unit_price) * Number(article.quantity),
       })),
     };
@@ -294,7 +288,7 @@ export function CreateQuoteForm({
 
           {/* Cabecera de columnas */}
           <div className="grid grid-cols-[minmax(0,1.5fr)_64px_84px_148px_108px] gap-3 border-b bg-muted/10 px-5 py-2">
-            {(['# Parte', 'Cant.', 'Unidad', 'Precio Unit.', 'Total'] as const).map((col, i) => (
+            {(['# Parte', 'Cant.', 'Condición', 'Precio Unit.', 'Total'] as const).map((col, i) => (
               <span key={col} className={cn(fieldLabel, i === 4 && 'text-right')}>
                 {col}
               </span>
