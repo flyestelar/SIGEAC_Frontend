@@ -62,7 +62,7 @@ export const useDeleteInformationSource = () => {
       });
     },
     onError: (e) => {
-      toast.error("Oops!", {
+      toast.error("Ooops!", {
         description: "¡Hubo un error al eliminar la fuente!",
       });
     },
