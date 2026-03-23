@@ -6,6 +6,7 @@ interface CreateQuoteData {
   justification: string;
   articles: {
     part_number: string;
+    alternate_part_number?: string;
     quantity: number;
     condition?: string;
     unit?: string;

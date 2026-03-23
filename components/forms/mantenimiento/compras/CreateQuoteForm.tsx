@@ -7,16 +7,14 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useAuth } from '@/contexts/AuthContext';
 import { useGetVendors } from '@/hooks/general/proveedores/useGetVendors';
-import { useGetSecondaryUnits } from '@/hooks/general/unidades/useGetSecondaryUnits';
-import { useGetLocationsByCompanyId } from '@/hooks/sistema/useGetLocationsByCompanyId';
 import { cn } from '@/lib/utils';
 import { useCompanyStore } from '@/stores/CompanyStore';
 import { Requisition } from '@/types';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { CalendarIcon, Check, ChevronsUpDown, Loader2 } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import { CalendarIcon, Check, ChevronsUpDown, Loader2, Package2 } from 'lucide-react';
+import { useMemo, useState } from 'react';
 import { useFieldArray, useForm, useWatch } from 'react-hook-form';
 import { z } from 'zod';
 import { AmountInput } from '../../../misc/AmountInput';
@@ -33,6 +31,7 @@ const FormSchema = z.object({
   articles: z.array(
     z.object({
       part_number: z.string(),
+      alternate_part_number: z.string().optional(),
       quantity: z.number().min(1, { message: 'Debe ingresar al menos 1.' }),
       unit_price: z.string().min(0, { message: 'El precio no puede ser negativo.' }),
       condition: z.string({ message: 'Debe elegir la condición.' }),
@@ -59,7 +58,6 @@ export function CreateQuoteForm({
   const [openVendorDialog, setOpenVendorDialog] = useState(false);
 
   const { updateStatusRequisition } = useUpdateRequisitionStatus();
-  const { data: secondaryUnits } = useGetSecondaryUnits();
   const { createQuote } = useCreateQuote();
   const { user } = useAuth();
 
@@ -67,6 +65,7 @@ export function CreateQuoteForm({
     initialData?.articles?.flatMap((article: any) =>
       article.batch_articles.map((batchArticle: any) => ({
         part_number: batchArticle.part_number,
+        alternate_part_number: batchArticle.alternate_part_number || '',
         quantity: batchArticle.quantity,
         unit: batchArticle.unit ? batchArticle.unit.id.toString() : undefined,
         unit_price: '',
@@ -94,7 +93,6 @@ export function CreateQuoteForm({
   const total = useMemo(() => calculateTotal(articles), [articles]);
 
   const { data: vendors, isLoading: isVendorsLoading, isError: isVendorsErros } = useGetVendors(selectedCompany?.slug);
-
 
   const onSubmit = async (data: FormSchemaType) => {
     const formattedData = {
@@ -129,7 +127,7 @@ export function CreateQuoteForm({
     <Form {...form}>
       <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-5">
         {/* Cabecera: fecha · proveedor · destino */}
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid gap-4 md:grid-cols-2">
           {/* Fecha */}
           <FormField
             control={form.control}
@@ -278,120 +276,168 @@ export function CreateQuoteForm({
         />
 
         {/* Artículos */}
-        <div className="overflow-hidden rounded-lg border bg-background">
+        <div className="overflow-hidden rounded-2xl border border-border/70 bg-gradient-to-b from-background to-muted/10 shadow-sm">
           {/* Header de sección */}
-          <div className="flex items-center justify-between border-b bg-muted/20 px-5 py-3">
-            <span className={fieldLabel}>Artículos</span>
-            <span className="text-[11px] font-semibold tabular-nums text-muted-foreground">
+          <div className="flex flex-col gap-3 border-b border-border/70 bg-muted/20 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-start gap-3">
+              <span className="mt-0.5 flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                <Package2 className="h-4 w-4" />
+              </span>
+              <div className="space-y-1">
+                <p className={fieldLabel}>Artículos</p>
+                <p className="text-sm text-muted-foreground">
+                  El número de parte alterno se precarga desde la requisición cuando exista y puede ajustarse aquí.
+                </p>
+              </div>
+            </div>
+            <span className="inline-flex w-fit rounded-full border border-border/80 bg-background px-3 py-1 text-[11px] font-semibold tabular-nums text-muted-foreground">
               {fields.length} {fields.length === 1 ? 'ítem' : 'ítems'}
             </span>
           </div>
 
-          {/* Cabecera de columnas */}
-          <div className="grid grid-cols-[minmax(0,1.5fr)_64px_84px_148px_108px] gap-3 border-b bg-muted/10 px-5 py-2">
-            {(['# Parte', 'Cant.', 'Condición', 'Precio Unit.', 'Total'] as const).map((col, i) => (
-              <span key={col} className={cn(fieldLabel, i === 4 && 'text-right')}>
-                {col}
-              </span>
-            ))}
+          <div className="hidden border-b border-border/70 bg-muted/10 px-5 py-3 lg:block">
+            <div className="grid grid-cols-[minmax(0,1.2fr)_minmax(0,1.2fr)_72px_120px_148px_108px] items-center gap-3">
+              {(['Nro. Parte', 'Nro. Parte Alterno', 'Cant.', 'Condición', 'Precio Unit.', 'Total'] as const).map(
+                (col, i) => (
+                  <span key={col} className={cn(fieldLabel, i === 5 && 'text-right')}>
+                    {col}
+                  </span>
+                ),
+              )}
+            </div>
           </div>
 
           {/* Filas */}
-          <ScrollArea className={cn(fields.length > 4 && 'h-[260px]')}>
+          <ScrollArea className={cn(fields.length > 4 && 'h-[420px]')}>
             <div className="divide-y">
               {fields.map((field, index) => (
-                <div
-                  key={field.id}
-                  className="grid grid-cols-[minmax(0,1.5fr)_64px_84px_132px_108px] items-center gap-3 px-5 py-3"
-                >
-                  {/* P/N */}
-                  <FormField
-                    control={control}
-                    name={`articles.${index}.part_number`}
-                    render={({ field }) => (
-                      <FormItem className="space-y-0">
-                        <FormControl>
-                          <Input
-                            disabled
-                            className="disabled:opacity-90 disabled:cursor-default h-8 font-mono text-xs"
-                            {...field}
-                          />
-                        </FormControl>
-                      </FormItem>
-                    )}
-                  />
+                <div key={field.id} className="px-5 py-4">
+                  <div className="mb-3 flex items-center justify-between lg:hidden">
+                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+                      Artículo {index + 1}
+                    </p>
+                    <p className="text-sm font-semibold tabular-nums text-foreground">
+                      {new Intl.NumberFormat('es-AR', {
+                        style: 'currency',
+                        currency: 'ARS',
+                      }).format((articles[index]?.quantity || 0) * (Number(articles[index]?.unit_price) || 0))}
+                    </p>
+                  </div>
 
-                  {/* Cantidad */}
-                  <FormField
-                    control={control}
-                    name={`articles.${index}.quantity`}
-                    render={({ field }) => (
-                      <FormItem className="space-y-0">
-                        <FormControl>
-                          <Input
-                            disabled
-                            className="disabled:opacity-90 disabled:cursor-default h-8 text-center text-sm font-semibold"
-                            type="number"
-                            {...field}
-                          />
-                        </FormControl>
-                      </FormItem>
-                    )}
-                  />
+                  <div className="grid gap-3 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1.2fr)_72px_120px_148px_108px] lg:items-start">
+                    <FormField
+                      control={control}
+                      name={`articles.${index}.part_number`}
+                      render={({ field }) => (
+                        <FormItem className="space-y-1.5">
+                          <p className={cn(fieldLabel, 'lg:hidden')}>Nro. Parte</p>
+                          <FormControl>
+                            <Input
+                              disabled
+                              className="h-10 border-border/70 bg-muted/30 font-mono text-xs disabled:cursor-default disabled:opacity-100"
+                              {...field}
+                            />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
 
-                  {/* Condición */}
-                  <FormField
-                    control={control}
-                    name={`articles.${index}.condition`}
-                    render={({ field, fieldState }) => (
-                      <FormItem className="space-y-0">
-                        <FormControl>
-                          <Select value={field.value} onValueChange={field.onChange}>
-                            <SelectTrigger aria-invalid={fieldState.invalid} className="min-w-[120px]">
-                              <SelectValue placeholder="Selec..." />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="OH">OH</SelectItem>
-                              <SelectItem value="SV">SV</SelectItem>
-                              <SelectItem value="NE">NE</SelectItem>
-                              <SelectItem value="NS">NS</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </FormControl>
-                      </FormItem>
-                    )}
-                  />
+                    <FormField
+                      control={control}
+                      name={`articles.${index}.alternate_part_number`}
+                      render={({ field }) => (
+                        <FormItem className="space-y-1.5">
+                          <p className={cn(fieldLabel, 'lg:hidden')}>Nro. Parte Alterno</p>
+                          <FormControl>
+                            <Input
+                              placeholder="Ingrese un número alterno"
+                              className="h-10 border-border/70 bg-background font-mono text-xs"
+                              {...field}
+                              value={field.value || ''}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
 
-                  {/* Precio Unitario */}
-                  <FormField
-                    control={control}
-                    name={`articles.${index}.unit_price`}
-                    render={({ field }) => (
-                      <FormItem className="space-y-0">
-                        <FormControl>
-                          <AmountInput {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                    <FormField
+                      control={control}
+                      name={`articles.${index}.quantity`}
+                      render={({ field }) => (
+                        <FormItem className="space-y-1.5">
+                          <p className={cn(fieldLabel, 'lg:hidden')}>Cantidad</p>
+                          <FormControl>
+                            <Input
+                              disabled
+                              className="h-10 border-border/70 bg-muted/30 text-center text-sm font-semibold disabled:cursor-default disabled:opacity-100"
+                              type="number"
+                              {...field}
+                            />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
 
-                  {/* Total por artículo */}
-                  <p className="text-right text-sm font-semibold tabular-nums">
-                    {new Intl.NumberFormat('es-AR', {
-                      style: 'currency',
-                      currency: 'ARS',
-                    }).format((articles[index]?.quantity || 0) * (Number(articles[index]?.unit_price) || 0))}
-                  </p>
+                    <FormField
+                      control={control}
+                      name={`articles.${index}.condition`}
+                      render={({ field, fieldState }) => (
+                        <FormItem className="space-y-1.5">
+                          <p className={cn(fieldLabel, 'lg:hidden')}>Condición</p>
+                          <FormControl>
+                            <Select value={field.value} onValueChange={field.onChange}>
+                              <SelectTrigger
+                                aria-invalid={fieldState.invalid}
+                                className="h-10 min-w-[120px] border-border/70"
+                              >
+                                <SelectValue placeholder="Selec..." />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="OH">OH</SelectItem>
+                                <SelectItem value="SV">SV</SelectItem>
+                                <SelectItem value="NE">NE</SelectItem>
+                                <SelectItem value="NS">NS</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={control}
+                      name={`articles.${index}.unit_price`}
+                      render={({ field }) => (
+                        <FormItem className="space-y-1.5">
+                          <p className={cn(fieldLabel, 'lg:hidden')}>Precio Unitario</p>
+                          <FormControl>
+                            <AmountInput {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <div className="hidden h-10 items-center justify-end rounded-xl bg-muted/30 px-3 lg:flex">
+                      <p className="text-right text-sm font-semibold tabular-nums">
+                        {new Intl.NumberFormat('es-AR', {
+                          style: 'currency',
+                          currency: 'ARS',
+                        }).format((articles[index]?.quantity || 0) * (Number(articles[index]?.unit_price) || 0))}
+                      </p>
+                    </div>
+                  </div>
                 </div>
               ))}
             </div>
           </ScrollArea>
 
           {/* Total general */}
-          <div className="flex items-center justify-between border-t bg-muted/20 px-5 py-3">
+          <div className="flex items-center justify-between border-t border-border/70 bg-muted/20 px-5 py-4">
             <span className={fieldLabel}>Total General</span>
-            <span className="text-base font-bold tabular-nums">
+            <span className="text-lg font-bold tabular-nums">
               {new Intl.NumberFormat('es-AR', {
                 style: 'currency',
                 currency: 'ARS',
