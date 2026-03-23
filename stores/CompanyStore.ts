@@ -18,7 +18,6 @@ interface CompanyState {
 interface CompanyActions {
   setSelectedCompany: (company: Company) => void;
   setSelectedStation: (station: string) => void;
-  initFromLocalStorage: () => void;
   reset: () => void;
 }
 
@@ -27,47 +26,25 @@ const initialState: CompanyState = {
   selectedStation: null,
 };
 
-export const useCompanyStore = create<CompanyState & CompanyActions>((set) => ({
-  ...initialState,
+export const useCompanyStore = create<CompanyState & CompanyActions>()(
+  persist(
+    (set) => ({
+      ...initialState,
 
-  setSelectedCompany: (company) => {
-    set({ selectedCompany: company });
-    // Guardamos el objeto como JSON en localStorage
-    localStorage.setItem('selectedCompany', JSON.stringify(company));
-  },
+      setSelectedCompany: (company) => {
+        set({ selectedCompany: company });
+      },
 
-  setSelectedStation: (station) => {
-    set({ selectedStation: station });
-    localStorage.setItem('selectedStation', station);
-  },
+      setSelectedStation: (station) => {
+        set({ selectedStation: station });
+      },
 
-  initFromLocalStorage: () => {
-    const savedSelectedCompany = localStorage.getItem('selectedCompany');
-    if (savedSelectedCompany) {
-      try {
-        // Parseamos el JSON guardado
-        const companyObj: Company = JSON.parse(savedSelectedCompany);
-        set({ selectedCompany: companyObj });
-      } catch (error) {
-        console.error('Error parsing saved company', error);
-        // Si hay error, limpiamos el valor inválido
-        localStorage.removeItem('selectedCompany');
-      }
-    }
-
-    const savedSelectedStation = localStorage.getItem('selectedStation');
-    if (savedSelectedStation) {
-      set({ selectedStation: savedSelectedStation });
-    }
-  },
-
-  reset: () => {
-    set(initialState);
-    localStorage.removeItem('selectedCompany');
-    localStorage.removeItem('selectedStation');
-  },
-}));
-
-export function getSelectedCompany(): Company | null {
-  return useCompanyStore.getState().selectedCompany;
-}
+      reset: () => {
+        set(initialState);
+      },
+    }),
+    {
+      name: 'company-storage',
+    },
+  ),
+);

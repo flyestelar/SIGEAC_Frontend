@@ -10,55 +10,24 @@ import { useGetUserLocationsByCompanyId } from "@/hooks/sistema/usuario/useGetUs
 import { useCompanyStore } from "@/stores/CompanyStore";
 import { Company } from "@/types";
 import { Loader2 } from "lucide-react";
-import { useEffect, useState } from "react";
 
 const CompanySelect = () => {
   // Hooks y estados
   const { user, loading: userLoading } = useAuth();
-  const [stationAddress, setStationAddress] = useState<string | null>(null);
-  const [isInitialized, setIsInitialized] = useState(false);
 
+  const { selectedCompany, selectedStation, setSelectedCompany, setSelectedStation } = useCompanyStore();
+  
   const {
-    mutate,
     data: locations,
     isPending: locationsLoading,
     isError,
-  } = useGetUserLocationsByCompanyId();
+  } = useGetUserLocationsByCompanyId(selectedCompany?.id);
 
-  const {
-    selectedCompany,
-    selectedStation,
-    setSelectedCompany,
-    setSelectedStation,
-    initFromLocalStorage,
-  } = useCompanyStore();
+  const selectedLocation = selectedStation
+    ? locations?.find((location) => location.id.toString() === selectedStation)
+    : null;
 
-  // Efectos
-  useEffect(() => {
-    if (!isInitialized) {
-      initFromLocalStorage();
-      setIsInitialized(true);
-    }
-  }, [initFromLocalStorage, isInitialized]);
-
-  useEffect(() => {
-    if (isInitialized && selectedCompany) {
-      mutate(selectedCompany.id);
-    }
-  }, [selectedCompany, isInitialized, mutate, selectedStation, setSelectedStation]);
-
-  useEffect(() => {
-    if (selectedStation && locations) {
-      const selectedLocation = locations.find(
-        (location) => location.id.toString() === selectedStation
-      );
-      setStationAddress(
-        selectedLocation
-          ? `${selectedLocation.cod_iata} - ${selectedLocation.type}`
-          : null
-      );
-    }
-  }, [selectedStation, locations]);
+    const stationAddress = selectedLocation ? `${selectedLocation.cod_iata} - ${selectedLocation.type}` : null;
 
   // Handlers
   const handleCompanySelect = (companyId: string) => {

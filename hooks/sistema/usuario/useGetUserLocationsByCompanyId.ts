@@ -1,6 +1,5 @@
-import axiosInstance from "@/lib/axios";
-import axios from "@/lib/axios";
-import { useMutation } from "@tanstack/react-query";
+import axiosInstance from '@/lib/axios';
+import { useQuery } from '@tanstack/react-query';
 
 interface locationsByCompanyId {
   id: number;
@@ -9,19 +8,25 @@ interface locationsByCompanyId {
   cod_iata: string;
   isMainBase: boolean;
 }
-[];
 
 const fetchUserLocationsByCompanyId = async (
-  company_id: number
+  company_id: number,
+  signal?: AbortSignal,
 ): Promise<locationsByCompanyId[]> => {
-  const response = await axiosInstance.post(`/user-locations-by-company-id`, {
-    company_id,
-  });
+  const response = await axiosInstance.post(
+    `/user-locations-by-company-id`,
+    {
+      company_id,
+    },
+    { signal },
+  );
   return response.data;
 };
 
-export const useGetUserLocationsByCompanyId = () => {
-  return useMutation<locationsByCompanyId[], Error, number>({
-    mutationFn: fetchUserLocationsByCompanyId,
+export const useGetUserLocationsByCompanyId = (companyId: number | undefined) => {
+  return useQuery({
+    queryKey: ['user-locations-by-company-id', companyId],
+    queryFn: ({ signal }) => fetchUserLocationsByCompanyId(companyId!, signal),
+    enabled: !!companyId,
   });
 };
