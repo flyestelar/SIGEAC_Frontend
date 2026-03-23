@@ -577,6 +577,11 @@ export function getMenuList(pathname: string, currentCompany: Company | null, us
               label: 'Gestión de Aeronaves',
               active: isCompanyPath('/planificacion/aeronaves'),
             },
+            {
+              href: companyPath('/planificacion/aeronaves/tipos'),
+              label: 'Gestión de Tipos de Aeronave',
+              active: isCompanyPath('/planificacion/aeronaves/tipos'),
+            },
             // {
             //   href: `/${currentCompany?.slug}/planificacion/aeronaves/partes`,
             //   label: 'Gestión de Partes',

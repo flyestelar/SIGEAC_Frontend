@@ -521,6 +521,41 @@ export type Manufacturer = {
   description: string;
 };
 
+export type PaginatedResponse<T> = {
+  data: T[];
+  links: {
+    first: string | null;
+    last: string | null;
+    prev: string | null;
+    next: string | null;
+  };
+  meta: {
+    current_page: number;
+    from: number | null;
+    last_page: number;
+    links: {
+      url: string | null;
+      label: string;
+      active: boolean;
+    }[];
+    path: string;
+    per_page: number;
+    to: number | null;
+    total: number;
+  };
+};
+
+export type AircraftType = {
+  id: number;
+  manufacturer: Manufacturer;
+  family: string;
+  series: string;
+  iata_code: string | null;
+  type_certificate: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
 export type Vendor = {
   id: string | number;
   name: string;
