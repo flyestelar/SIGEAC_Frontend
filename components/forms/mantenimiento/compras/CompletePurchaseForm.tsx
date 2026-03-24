@@ -46,11 +46,11 @@ const FormSchema = z.object({
   invoice: z.instanceof(File).optional(),
   articles_purchase_orders: z.array(
     z.object({
-      article_part_number: z.string().optional(),
-      article_purchase_order_id: z.number().optional(),
+      article_part_number: z.string(),
+      article_purchase_order_id: z.number(),
       usa_tracking: z.string().optional(),
       ock_tracking: z.string().optional(),
-      article_location: z.string().optional(),
+      article_location: z.string(),
     })
   ),
 });
@@ -85,8 +85,9 @@ export function CompletePurchaseForm({ onClose, po }: FormProps) {
       articles_purchase_orders: po.article_purchase_order.map((article) => ({
         article_part_number: article.article_part_number,
         article_purchase_order_id: article.id,
-        usa_tracking: "", // Inicializando campos para evitar errores
+        usa_tracking: "",
         ock_tracking: "",
+        article_location: "",
       })),
     },
   });
@@ -113,8 +114,14 @@ export function CompletePurchaseForm({ onClose, po }: FormProps) {
       Number(data.handling_fee || 0) +
       Number(data.usa_shipping || 0) +
       Number(data.ock_shipping || 0);
+    const toMonetary = (v?: string) => (v?.trim() || "0");
     const finalData = {
       ...data,
+      tax: toMonetary(data.tax),
+      wire_fee: toMonetary(data.wire_fee),
+      handling_fee: toMonetary(data.handling_fee),
+      usa_shipping: toMonetary(data.usa_shipping),
+      ock_shipping: toMonetary(data.ock_shipping),
       articles_purchase_orders: data.articles_purchase_orders.map(
         (article) => ({
           article_part_number: article.article_part_number,
