@@ -5,9 +5,16 @@ import { toast } from "sonner"
 interface POArticles {
   article_part_number: string,
   article_purchase_order_id: number,
-  usa_tracking: string,
-  ock_tracking: string,
-  article_location: string,
+}
+
+interface CompletePurchaseData {
+  freight?: string,
+  hazmat?: string,
+  total: number,
+  updated_by?: string,
+  company?: string,
+  invoice?: File,
+  articles_purchase_orders: POArticles[]
 }
 
 interface CreatePurchaseOrderData {
@@ -63,21 +70,27 @@ export const useCompletePurchase = () => {
 
   const completePurchaseMutation = useMutation({
     mutationFn: async ({ id, data, company }: {
-      id: number, data: {
-        tax?: string,
-        wire_fee?: string,
-        total: number,
-        handling_fee?: string,
-        payment_method?: string,
-        ock_shipping?: string,
-        usa_shipping?: string,
-        observation?: string,
-        bank_account_id?: string,
-        card_id?: string,
-        invoice?: File,
-        articles_purchase_orders: POArticles[]
-      }, company: string
+      id: number, data: CompletePurchaseData, company: string
     }) => {
+      if (data.invoice) {
+        const formData = new FormData()
+
+        formData.append('freight', data.freight || '0')
+        formData.append('hazmat', data.hazmat || '0')
+        formData.append('total', String(data.total))
+        formData.append('updated_by', data.updated_by || '')
+        formData.append('company', data.company || company)
+        formData.append('invoice', data.invoice)
+        formData.append('articles_purchase_orders', JSON.stringify(data.articles_purchase_orders))
+
+        await axiosInstance.put(`/${company}/purchase-order/${id}`, formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        })
+        return
+      }
+
       await axiosInstance.put(`/${company}/purchase-order/${id}`, data)
     },
     onSuccess: () => {
@@ -97,6 +110,29 @@ export const useCompletePurchase = () => {
   return {
     completePurchase: completePurchaseMutation,
   }
+}
+
+export const useDeletePurchaseOrder = () => {
+  const queryClient = useQueryClient()
+
+  const deleteMutation = useMutation({
+    mutationFn: async ({ id, company }: { id: number; company: string }) => {
+      await axiosInstance.delete(`/${company}/delete-purchase-order/${id}`)
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['purchase-orders'] })
+      toast.success('¡Eliminada!', {
+        description: '¡La orden de compra ha sido eliminada correctamente!',
+      })
+    },
+    onError: () => {
+      toast.error('Oops!', {
+        description: '¡Hubo un error al eliminar la orden de compra!',
+      })
+    },
+  })
+
+  return { deletePurchaseOrder: deleteMutation }
 }
 
 export const useDeleteQuote = () => {

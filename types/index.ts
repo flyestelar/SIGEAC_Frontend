@@ -562,6 +562,7 @@ export type PurchaseOrder = {
     };
     id: number;
     article_part_number: string;
+    article_alt_part_number?: string;
     quantity: number;
     unit_price: string;
     article_tax: number;
@@ -581,6 +582,9 @@ export type PurchaseOrder = {
   usa_shipping: number;
   sub_total: number;
   total: number;
+  freight?: number;
+  hazmat?: number;
+  invoice?: string;
   vendor: Vendor;
   requisition_order: Requisition;
   quote_order: Quote;

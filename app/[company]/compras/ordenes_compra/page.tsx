@@ -12,11 +12,11 @@ const PurchaseOrdersPage = () => {
     selectedStation || null);
 
   if (isLoading) {
-    <LoadingPage />
+    return <LoadingPage />;
   }
 
   return (
-    <ContentLayout title='Cotizaciones'>
+    <ContentLayout title='Órdenes de Compra'>
       <div className='flex flex-col gap-y-2'>
         {
           po && (
