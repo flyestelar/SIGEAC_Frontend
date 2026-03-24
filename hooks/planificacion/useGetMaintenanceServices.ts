@@ -1,15 +1,22 @@
 import axios from '@/lib/axios';
-import { MaintenanceService } from '@/types';
+import { PaginatedResponse } from '@/types';
+import { MaintenanceProgramService } from '@/types/services';
 import { useQuery } from '@tanstack/react-query';
 
-const fetchServices = async (company?: string): Promise<MaintenanceService[]> => {
-  const {data} = await axios.get(`/${company}/service-task`);
-  return data;
+const fetchServices = async (
+  company?: string,
+  signal?: AbortSignal,
+): Promise<PaginatedResponse<MaintenanceProgramService>> => {
+  const response = await axios.get<PaginatedResponse<MaintenanceProgramService>>(`/${company}/maintenance-service`, {
+    signal,
+  });
+  return response.data;
 };
 
 export const useGetMaintenanceServices = (company?: string) => {
-  return useQuery<MaintenanceService[], Error>({
-    queryKey: ["maintenance-services", company],
-    queryFn: () => fetchServices(company),
+  return useQuery({
+    queryKey: ['maintenance-services', company],
+    queryFn: ({ signal }) => fetchServices(company, signal),
+    enabled: !!company,
   });
 };

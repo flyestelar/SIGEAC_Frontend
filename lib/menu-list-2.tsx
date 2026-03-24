@@ -624,7 +624,18 @@ export function getMenuList(pathname: string, currentCompany: Company | null, us
           active: isCompanyPath('/planificacion/servicios', 'includes'),
           icon: Drill,
           roles: ['ANALISTA_ADMINISTRACION', 'JEFE_PLANIFICACION', 'SUPERUSER'],
-          submenus: [],
+          submenus: [
+            {
+              href: companyPath('/planificacion/servicios'),
+              label: 'Gestión de Servicios',
+              active: isCompanyPath('/planificacion/servicios'),
+            },
+            {
+              href: companyPath('/planificacion/servicios/crear'),
+              label: 'Crear Servicio',
+              active: isCompanyPath('/planificacion/servicios/crear'),
+            },
+          ],
         },
       ],
     },

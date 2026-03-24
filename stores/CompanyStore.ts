@@ -1,3 +1,5 @@
+'use client';
+
 import { Company } from '@/types';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
