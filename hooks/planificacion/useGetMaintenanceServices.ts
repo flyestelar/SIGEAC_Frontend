@@ -1,6 +1,6 @@
 import axios from '@/lib/axios';
 import { PaginatedResponse } from '@/types';
-import { MaintenanceProgramService } from '@/types/services';
+import { MaintenanceProgramService } from '@/types/planification';
 import { useQuery } from '@tanstack/react-query';
 
 const fetchServices = async (

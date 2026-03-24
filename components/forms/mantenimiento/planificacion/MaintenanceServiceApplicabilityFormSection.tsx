@@ -29,9 +29,7 @@ const MaintenanceServiceApplicabilityFormSection: React.FC<Props> = () => {
   const aircraftOptions = aircraftData?.data;
 
   const [isAircraftPopoverOpen, setIsAircraftPopoverOpen] = useState(false);
-  const [aircraftCommandInput, setAircraftCommandInput] = useDebouncedInput('', (value) => {
-    setAircraftSearch(value);
-  });
+  const [aircraftCommandInput, setAircraftCommandInput] = useDebouncedInput('', setAircraftSearch);
 
   const { control, setValue } = useFormContext<ServiceFormValues>();
 

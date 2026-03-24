@@ -10,11 +10,19 @@ export type MaintenanceProgramService = {
   repeat_fh: number | null;
   repeat_fc: number | null;
   repeat_days: number | null;
-  task_cards?: Array<unknown>;
+  task_cards?: Array<TaskCard>;
   applicable_aircraft_types?: Array<unknown>;
   parts_applicabilities?: Array<unknown>;
 
   part_numbers_count?: number;
   applicable_aircraft_types_count?: number;
   task_cards_count?: number;
+};
+
+export type TaskCard = {
+  id: number;
+  code: string;
+  old_code?: string | null;
+  title?: string | null;
+  description?: string | null;
 };

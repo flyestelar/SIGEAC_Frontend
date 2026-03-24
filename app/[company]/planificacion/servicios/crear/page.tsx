@@ -1,8 +1,7 @@
 'use client';
 
-import { useCallback, useEffect } from 'react';
-
-import MaintenanceServiceApplicabilityFormSection from '@/components/forms/MaintenanceServiceApplicabilityFormSection';
+import MaintenanceServiceApplicabilityFormSection from '@/components/forms/mantenimiento/planificacion/MaintenanceServiceApplicabilityFormSection';
+import MaintenanceServiceTasksSection from '@/components/forms/mantenimiento/planificacion/MaintenanceServiceTasksSection';
 import { ContentLayout } from '@/components/layout/ContentLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -11,11 +10,11 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import axiosInstance from '@/lib/axios';
 import { useCompanyStore } from '@/stores/CompanyStore';
-import { MaintenanceProgramService } from '@/types/services';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation } from '@tanstack/react-query';
 import { Loader2, Save } from 'lucide-react';
 import { useForm } from 'react-hook-form';
+import { NumericFormat } from 'react-number-format';
 import { toast } from 'sonner';
 import { z } from 'zod';
 
@@ -34,6 +33,17 @@ const serviceSchema = z
     repeat_days: z.coerce.number().nullable(),
     aircraftTypeIds: z.array(z.number()).optional(),
     partNumbers: z.array(z.string().min(1)).optional(),
+    tasks: z
+      .array(
+        z.object({
+          id: z.number(),
+          code: z.string(),
+          old_code: z.string().nullish(),
+          title: z.string().nullish(),
+          description: z.string().nullish(),
+        }),
+      )
+      .optional(),
   })
   .superRefine((values, ctx) => {
     const hasAircraft = (values.aircraftTypeIds?.length ?? 0) > 0;
@@ -81,6 +91,7 @@ type ServicePayload = {
   repeat_days: number | null;
   aircraft_type_ids: number[];
   part_numbers: string[];
+  task_ids: number[];
 };
 
 const toNullableNumber = (value?: string | number | null) => {
@@ -105,6 +116,7 @@ const toPayload = (values: ServiceFormValues): ServicePayload => {
     repeat_days: toNullableNumber(values.repeat_days),
     aircraft_type_ids: values.aircraftTypeIds ?? [],
     part_numbers: (values.partNumbers ?? []).map((part) => part.trim()).filter((part) => part.length > 0),
+    task_ids: values.tasks?.map((task) => task.id) ?? [],
   };
 };
 
@@ -120,59 +132,10 @@ const defaultValues: ServiceFormValues = {
   repeat_days: null,
   aircraftTypeIds: [],
   partNumbers: [],
+  tasks: [],
 };
 
-
-const resolveAircraftTypeId = (entry: unknown): number | null => {
-  if (!entry) return null;
-  if (typeof entry === 'number') return entry;
-  if (typeof entry !== 'object') return null;
-  const typed = entry as Record<string, unknown>;
-  const candidate = typed.aircraft_type_id ?? typed.id;
-  return typeof candidate === 'number' ? candidate : null;
-};
-
-const resolvePartNumber = (entry: unknown): string | null => {
-  if (!entry) return null;
-  if (typeof entry === 'string') return entry;
-  if (typeof entry !== 'object') return null;
-  const typed = entry as Record<string, unknown>;
-  const candidate =
-    typeof typed.part_number === 'string'
-      ? typed.part_number
-      : typeof typed.article_part_number === 'string'
-        ? typed.article_part_number
-        : null;
-  return typeof candidate === 'string' ? candidate : null;
-};
-
-const mapServiceToForm = (service: MaintenanceProgramService): ServiceFormValues => {
-  const aircraftTypeIds =
-    service.applicable_aircraft_types
-      ?.map(resolveAircraftTypeId)
-      .filter((value): value is number => typeof value === 'number') ?? [];
-
-  const partNumbers =
-    service.parts_applicabilities
-      ?.map(resolvePartNumber)
-      .filter((value): value is string => typeof value === 'string') ?? [];
-
-  return {
-    title: service.title ?? '',
-    description: service.description ?? '',
-    nro_ata: service.nro_ata ?? '',
-    threshold_fh: service.threshold_fh ?? null,
-    threshold_fc: service.threshold_fc ?? null,
-    threshold_days: service.threshold_days ?? null,
-    repeat_fh: service.repeat_fh ?? null,
-    repeat_fc: service.repeat_fc ?? null,
-    repeat_days: service.repeat_days ?? null,
-    aircraftTypeIds,
-    partNumbers,
-  };
-};
-
-const MaintenanceServiceCrudPage = () => {
+const MaintenanceServiceCreatePage = () => {
   const { selectedCompany } = useCompanyStore();
   const companySlug = selectedCompany?.slug;
 
@@ -180,8 +143,8 @@ const MaintenanceServiceCrudPage = () => {
     resolver: zodResolver(serviceSchema),
     defaultValues,
   });
-  const { control } = form;
 
+  const { control } = form;
 
   const resetFormState = () => {
     form.reset(defaultValues);
@@ -220,7 +183,9 @@ const MaintenanceServiceCrudPage = () => {
     <ContentLayout title="Servicios de Mantenimiento">
       <div className="flex flex-col text-center justify-center gap-2">
         <h1 className="font-bold text-5xl">Crear Servicio</h1>
-        <p className="text-muted-foreground italic text-sm">Registro de la entidad maintenance_services.</p>
+        <p className="text-muted-foreground italic text-sm">
+          Define las tareas, modelos de aeronaves y partes asociadas a este servicio de mantenimiento.
+        </p>
       </div>
 
       <Card className="mt-6 max-w-4xl mx-auto">
@@ -287,12 +252,18 @@ const MaintenanceServiceCrudPage = () => {
                       <FormItem>
                         <FormLabel>Threshold FH</FormLabel>
                         <FormControl>
-                          <Input
-                            type="number"
-                            min="0"
+                          <NumericFormat
+                            customInput={Input}
+                            min={0}
                             placeholder="0"
                             value={field.value ?? ''}
-                            onChange={(e) => field.onChange(e.target.value === '' ? null : Number(e.target.value))}
+                            onValueChange={(values, { source }) => {
+                              if (source !== 'event') return;
+                              const { floatValue } = values;
+                              field.onChange(floatValue ?? null);
+                            }}
+                            thousandSeparator=""
+                            decimalScale={0}
                           />
                         </FormControl>
                         <FormMessage />
@@ -307,12 +278,18 @@ const MaintenanceServiceCrudPage = () => {
                       <FormItem>
                         <FormLabel>Threshold FC</FormLabel>
                         <FormControl>
-                          <Input
-                            type="number"
-                            min="0"
+                          <NumericFormat
+                            customInput={Input}
+                            min={0}
                             placeholder="0"
                             value={field.value ?? ''}
-                            onChange={(e) => field.onChange(e.target.value === '' ? null : Number(e.target.value))}
+                            onValueChange={(values, { source }) => {
+                              if (source !== 'event') return;
+                              const { floatValue } = values;
+                              field.onChange(floatValue ?? null);
+                            }}
+                            thousandSeparator=""
+                            decimalScale={0}
                           />
                         </FormControl>
                         <FormMessage />
@@ -327,12 +304,18 @@ const MaintenanceServiceCrudPage = () => {
                       <FormItem>
                         <FormLabel>Threshold Dias</FormLabel>
                         <FormControl>
-                          <Input
-                            type="number"
-                            min="0"
+                          <NumericFormat
+                            customInput={Input}
+                            min={0}
                             placeholder="0"
                             value={field.value ?? ''}
-                            onChange={(e) => field.onChange(e.target.value === '' ? null : Number(e.target.value))}
+                            onValueChange={(values, { source }) => {
+                              if (source !== 'event') return;
+                              const { floatValue } = values;
+                              field.onChange(floatValue ?? null);
+                            }}
+                            thousandSeparator=""
+                            decimalScale={0}
                           />
                         </FormControl>
                         <FormMessage />
@@ -349,12 +332,18 @@ const MaintenanceServiceCrudPage = () => {
                       <FormItem>
                         <FormLabel>Repeat FH</FormLabel>
                         <FormControl>
-                          <Input
-                            type="number"
-                            min="0"
+                          <NumericFormat
+                            customInput={Input}
+                            min={0}
                             placeholder="0"
                             value={field.value ?? ''}
-                            onChange={(e) => field.onChange(e.target.value === '' ? null : Number(e.target.value))}
+                            onValueChange={(values, { source }) => {
+                              if (source !== 'event') return;
+                              const { floatValue } = values;
+                              field.onChange(floatValue ?? null);
+                            }}
+                            thousandSeparator=""
+                            decimalScale={0}
                           />
                         </FormControl>
                         <FormMessage />
@@ -369,12 +358,18 @@ const MaintenanceServiceCrudPage = () => {
                       <FormItem>
                         <FormLabel>Repeat FC</FormLabel>
                         <FormControl>
-                          <Input
-                            type="number"
-                            min="0"
+                          <NumericFormat
+                            customInput={Input}
+                            min={0}
                             placeholder="0"
                             value={field.value ?? ''}
-                            onChange={(e) => field.onChange(e.target.value === '' ? null : Number(e.target.value))}
+                            onValueChange={(values, { source }) => {
+                              if (source !== 'event') return;
+                              const { floatValue } = values;
+                              field.onChange(floatValue ?? null);
+                            }}
+                            thousandSeparator=""
+                            decimalScale={0}
                           />
                         </FormControl>
                         <FormMessage />
@@ -389,12 +384,18 @@ const MaintenanceServiceCrudPage = () => {
                       <FormItem>
                         <FormLabel>Repeat Dias</FormLabel>
                         <FormControl>
-                          <Input
-                            type="number"
-                            min="0"
+                          <NumericFormat
+                            customInput={Input}
+                            min={0}
                             placeholder="0"
                             value={field.value ?? ''}
-                            onChange={(e) => field.onChange(e.target.value === '' ? null : Number(e.target.value))}
+                            onValueChange={(values, { source }) => {
+                              if (source !== 'event') return;
+                              const { floatValue } = values;
+                              field.onChange(floatValue ?? null);
+                            }}
+                            thousandSeparator=""
+                            decimalScale={0}
                           />
                         </FormControl>
                         <FormMessage />
@@ -404,6 +405,7 @@ const MaintenanceServiceCrudPage = () => {
                 </div>
 
                 <MaintenanceServiceApplicabilityFormSection />
+                <MaintenanceServiceTasksSection />
 
                 <div className="flex justify-end gap-2 pt-2">
                   <Button
@@ -438,4 +440,4 @@ const MaintenanceServiceCrudPage = () => {
   );
 };
 
-export default MaintenanceServiceCrudPage;
+export default MaintenanceServiceCreatePage;

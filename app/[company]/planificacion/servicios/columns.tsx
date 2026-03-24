@@ -1,15 +1,17 @@
 'use client';
 
-import { ColumnDef } from '@tanstack/react-table';
+import { createColumnHelper } from '@tanstack/react-table';
 
 import { DataTableColumnHeader } from '@/components/tables/DataTableHeader';
 
 import MaintenanceServiceDropdownActions from '@/components/dropdowns/mantenimiento/ordenes_trabajo/MaintenanceServiceDropdownActionts';
 import { Checkbox } from '@/components/ui/checkbox';
-import { MaintenanceProgramService } from '@/types/services';
+import { MaintenanceProgramService } from '@/types/planification';
 
-export const columns: ColumnDef<MaintenanceProgramService>[] = [
-  {
+const ch = createColumnHelper<MaintenanceProgramService>();
+
+export const columns = [
+  ch.display({
     id: 'select',
     header: ({ table }) => (
       <Checkbox
@@ -27,72 +29,51 @@ export const columns: ColumnDef<MaintenanceProgramService>[] = [
     ),
     enableSorting: false,
     enableHiding: false,
-  },
-  {
-    accessorKey: 'title',
+  }),
+  ch.accessor('title', {
     header: ({ column }) => <DataTableColumnHeader filter column={column} title="Nombre del Servicio" />,
-    cell: ({ row }) => <p className="flex justify-center font-bold">{row.original.title}</p>,
-  },
-  {
-    accessorKey: 'description',
+    cell: (item) => <p className="flex justify-center font-bold">{item.getValue()}</p>,
+  }),
+  ch.accessor('description', {
     header: ({ column }) => <DataTableColumnHeader column={column} title="Descripción" />,
-    cell: ({ row }) => <p className="flex justify-center font-bold italic">{row.original.description}</p>,
-  },
-  {
-    accessorKey: 'nro_ata',
+    cell: (item) => <p className="flex justify-center font-bold italic">{item.getValue()}</p>,
+  }),
+  ch.accessor('nro_ata', {
     header: ({ column }) => <DataTableColumnHeader column={column} title="ATA" />,
-    cell: ({ row }) => <p className="flex justify-center font-medium">{row.original.nro_ata ?? '-'}</p>,
-  },
-  {
-    accessorKey: 'threshold_fh',
+    cell: (item) => <p className="flex justify-center font-medium">{item.getValue() ?? '-'}</p>,
+  }),
+  ch.accessor('threshold_fh', {
     header: ({ column }) => <DataTableColumnHeader column={column} title="Threshold FH" />,
-    cell: ({ row }) => <p className="flex justify-center">{row.original.threshold_fh ?? '-'}</p>,
-  },
-  {
-    accessorKey: 'threshold_fc',
+    cell: (item) => <p className="flex justify-center">{item.getValue() ?? '-'}</p>,
+  }),
+  ch.accessor('threshold_fc', {
     header: ({ column }) => <DataTableColumnHeader column={column} title="Threshold FC" />,
-    cell: ({ row }) => <p className="flex justify-center">{row.original.threshold_fc ?? '-'}</p>,
-  },
-  {
-    accessorKey: 'threshold_days',
+    cell: (item) => <p className="flex justify-center">{item.getValue() ?? '-'}</p>,
+  }),
+  ch.accessor('threshold_days', {
     header: ({ column }) => <DataTableColumnHeader column={column} title="Threshold (días)" />,
-    cell: ({ row }) => <p className="flex justify-center">{row.original.threshold_days ?? '-'}</p>,
-  },
-  {
-    accessorKey: 'repeat_fh',
+    cell: (item) => <p className="flex justify-center">{item.getValue() ?? '-'}</p>,
+  }),
+  ch.accessor('repeat_fh', {
     header: ({ column }) => <DataTableColumnHeader column={column} title="Repeat FH" />,
-    cell: ({ row }) => <p className="flex justify-center">{row.original.repeat_fh ?? '-'}</p>,
-  },
-  {
-    accessorKey: 'repeat_fc',
+    cell: (item) => <p className="flex justify-center">{item.getValue() ?? '-'}</p>,
+  }),
+  ch.accessor('repeat_fc', {
     header: ({ column }) => <DataTableColumnHeader column={column} title="Repeat FC" />,
-    cell: ({ row }) => <p className="flex justify-center">{row.original.repeat_fc ?? '-'}</p>,
-  },
-  {
-    accessorKey: 'repeat_days',
+    cell: (item) => <p className="flex justify-center">{item.getValue() ?? '-'}</p>,
+  }),
+  ch.accessor('repeat_days', {
     header: ({ column }) => <DataTableColumnHeader column={column} title="Repeat (días)" />,
-    cell: ({ row }) => <p className="flex justify-center">{row.original.repeat_days ?? '-'}</p>,
-  },
-  {
-    accessorKey: 'task_cards_count',
-    header: ({ column }) => <DataTableColumnHeader column={column} title="# Task Cards" />,
-    cell: ({ row }) => <p className="flex justify-center">{row.original.task_cards_count ?? 0}</p>,
-  },
-  {
-    accessorKey: 'applicable_aircraft_types_count',
-    header: ({ column }) => <DataTableColumnHeader column={column} title="# Aircraft Types" />,
-    cell: ({ row }) => <p className="flex justify-center">{row.original.applicable_aircraft_types_count ?? 0}</p>,
-  },
-  {
-    accessorKey: 'part_numbers_count',
-    header: ({ column }) => <DataTableColumnHeader column={column} title="# Part Numbers" />,
-    cell: ({ row }) => <p className="flex justify-center">{row.original.part_numbers_count ?? 0}</p>,
-  },
-  {
+    cell: (item) => <p className="flex justify-center">{item.getValue() ?? '-'}</p>,
+  }),
+  ch.accessor('task_cards_count', {
+    header: ({ column }) => <DataTableColumnHeader column={column} title="# Tareas" />,
+    cell: (item) => <p className="flex justify-center">{item.getValue() ?? 0}</p>,
+  }),
+  ch.display({
     id: 'actions',
     cell: ({ row }) => {
-      const item = row.original;
       return <MaintenanceServiceDropdownActions service={row.original} />;
     },
-  },
+  }),
 ];

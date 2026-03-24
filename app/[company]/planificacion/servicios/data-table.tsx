@@ -1,6 +1,5 @@
 "use client"
 
-import { CreateMaintenanceServiceDialog } from "@/components/dialogs/mantenimiento/ordenes_trabajo/CreateMaintenanceServiceDialog"
 import { DataTablePagination } from "@/components/tables/DataTablePagination"
 import { DataTableViewOptions } from "@/components/tables/DataTableViewOptions"
 import { Button } from "@/components/ui/button"
@@ -25,18 +24,17 @@ import {
   useReactTable,
 } from "@tanstack/react-table"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
 import { useState } from "react"
 
-interface DataTableProps<TData, TValue> {
-  columns: ColumnDef<TData, TValue>[]
+interface DataTableProps<TData> {
+  columns: ColumnDef<TData, any>[]
   data: TData[] | null | undefined
 }
 
-export function DataTable<TData, TValue>({
+export function DataTable<TData>({
   columns,
   data,
-}: DataTableProps<TData, TValue>) {
+}: DataTableProps<TData>) {
   data ??= []
   const { selectedCompany } = useCompanyStore()
   const [sorting, setSorting] = useState<SortingState>([])

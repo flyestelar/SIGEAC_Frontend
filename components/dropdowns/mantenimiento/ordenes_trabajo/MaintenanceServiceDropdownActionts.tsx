@@ -11,7 +11,7 @@ import { useState } from "react"
 import { Button } from "../../../ui/button"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "../../../ui/dialog"
 import { useCompanyStore } from "@/stores/CompanyStore"
-import { MaintenanceProgramService } from "@/types/services"
+import { MaintenanceProgramService } from "@/types/planification"
 
 const MaintenanceServiceDropdownActions = ({ service }: { service: MaintenanceProgramService }) => {
 
