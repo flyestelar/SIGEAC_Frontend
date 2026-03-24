@@ -77,14 +77,16 @@ export const columns: ColumnDef<Requisition>[] = [
     header: ({ column }) => <DataTableColumnHeader column={column} title="Status" />,
     meta: { title: 'Status' },
     cell: ({ row }) => {
-      const process = row.original.status === 'PROCESO' || row.original.status === 'COTIZADO';
-      const aproved = row.original.status === 'APROBADO';
+      const s = row.original.status?.toUpperCase().trim();
+      const colorClass =
+        s === 'APROBADO'
+          ? 'bg-green-500'
+          : s === 'RECHAZADO'
+            ? 'bg-red-500'
+            : 'bg-yellow-500'; // PROCESO, COTIZADO
       return (
-        <Badge
-          className={cn('flex justify-center', process ? 'bg-yellow-500' : aproved ? 'bg-green-500' : 'bg-red-500')}
-        >
-          {' '}
-          {row.original.status.toUpperCase()}
+        <Badge className={cn('flex justify-center', colorClass)}>
+          {row.original.status?.toUpperCase()}
         </Badge>
       );
     },

@@ -124,6 +124,7 @@ export const useUpdateRequisitionStatus = () => {
       data: {
         status: string;
         updated_by: string;
+        observation?: string;
       };
       company: string;
     }) => {

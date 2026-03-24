@@ -35,22 +35,22 @@ import { Separator } from "../../../ui/separator";
 import { Textarea } from "../../../ui/textarea";
 
 const FormSchema = z.object({
-  tax: z.string(),
-  wire_fee: z.string(),
-  handling_fee: z.string(),
-  payment_method: z.string(),
-  bank_account_id: z.string(),
+  tax: z.string().optional(),
+  wire_fee: z.string().optional(),
+  handling_fee: z.string().optional(),
+  payment_method: z.string().optional(),
+  bank_account_id: z.string().optional(),
   card_id: z.string().optional(),
-  ock_shipping: z.string(),
-  usa_shipping: z.string(),
+  ock_shipping: z.string().optional(),
+  usa_shipping: z.string().optional(),
   invoice: z.instanceof(File).optional(),
   articles_purchase_orders: z.array(
     z.object({
-      article_part_number: z.string(),
+      article_part_number: z.string().optional(),
       article_purchase_order_id: z.number().optional(),
-      usa_tracking: z.string(),
-      ock_tracking: z.string(),
-      article_location: z.string(),
+      usa_tracking: z.string().optional(),
+      ock_tracking: z.string().optional(),
+      article_location: z.string().optional(),
     })
   ),
 });
@@ -66,7 +66,7 @@ export function CompletePurchaseForm({ onClose, po }: FormProps) {
   const { selectedCompany } = useCompanyStore();
 
   const { user } = useAuth();
-  
+
   const { data: accounts, isLoading: isAccLoading } = useGetBankAccounts();
 
   const { data: cards, isLoading: isCardsLoading } = useGetCards();
