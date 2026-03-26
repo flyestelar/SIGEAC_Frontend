@@ -14,6 +14,7 @@ interface CompletePurchaseData {
   updated_by?: string,
   company?: string,
   invoice?: File,
+  status?: string,
   articles_purchase_orders: POArticles[]
 }
 
@@ -81,6 +82,7 @@ export const useCompletePurchase = () => {
         formData.append('updated_by', data.updated_by || '')
         formData.append('company', data.company || company)
         formData.append('invoice', data.invoice)
+        formData.append('status', data.status || 'pagado')
         formData.append('articles_purchase_orders', JSON.stringify(data.articles_purchase_orders))
 
         await axiosInstance.put(`/${company}/purchase-order/${id}`, formData, {
@@ -133,6 +135,30 @@ export const useDeletePurchaseOrder = () => {
   })
 
   return { deletePurchaseOrder: deleteMutation }
+}
+
+export const useUpdatePurchaseOrderStatus = () => {
+  const queryClient = useQueryClient()
+
+  const updateStatusMutation = useMutation({
+    mutationFn: async ({ id, status, company }: { id: number; status: string; company: string }) => {
+      await axiosInstance.patch(`/${company}/purchase-order/${id}`, { status })
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['purchase-orders'] })
+      queryClient.invalidateQueries({ queryKey: ['purchase-order'], exact: false })
+      toast.success('¡Actualizado!', {
+        description: 'El status de la orden de compra ha sido actualizado.',
+      })
+    },
+    onError: () => {
+      toast.error('Oops!', {
+        description: 'No se pudo actualizar el status de la orden de compra.',
+      })
+    },
+  })
+
+  return { updatePurchaseOrderStatus: updateStatusMutation }
 }
 
 export const useDeleteQuote = () => {

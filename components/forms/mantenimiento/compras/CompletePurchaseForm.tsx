@@ -18,6 +18,8 @@ import { useCompanyStore } from '@/stores/CompanyStore';
 import { PurchaseOrder } from '@/types';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Loader2, Package2, ReceiptText } from 'lucide-react';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Label } from '@/components/ui/label';
 import { useWatch } from 'react-hook-form';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -39,6 +41,7 @@ const formSchema = z.object({
   freight: z.string().optional(),
   hazmat: z.string().optional(),
   invoice: z.instanceof(File).optional(),
+  status: z.enum(['PAGADO', 'CREDITO']),
   articles_purchase_orders: z.array(articleSchema),
 });
 
@@ -64,6 +67,7 @@ export function CompletePurchaseForm({ onClose, po }: FormProps) {
       freight: '',
       hazmat: '',
       invoice: undefined,
+      status: 'CREDITO' as const,
       articles_purchase_orders: po.article_purchase_order.map((article) => ({
         article_part_number: article.article_part_number,
         article_purchase_order_id: article.id,
@@ -89,6 +93,7 @@ export function CompletePurchaseForm({ onClose, po }: FormProps) {
         updated_by: `${user?.first_name} ${user?.last_name}`,
         company: selectedCompany!.slug,
         invoice: data.invoice,
+        status: data.status,
         articles_purchase_orders: data.articles_purchase_orders,
       },
     });
@@ -229,6 +234,33 @@ export function CompletePurchaseForm({ onClose, po }: FormProps) {
                 <span className="text-base font-semibold">{moneyFormatter.format(total)}</span>
               </div>
             </div>
+
+            <FormField
+              control={form.control}
+              name="status"
+              render={({ field }) => (
+                <FormItem className="space-y-1.5">
+                  <FormLabel className={fieldLabelClass}>Tipo de pago</FormLabel>
+                  <FormControl>
+                    <RadioGroup
+                      value={field.value}
+                      onValueChange={field.onChange}
+                      className="flex gap-6"
+                    >
+                      <div className="flex items-center gap-2">
+                        <RadioGroupItem value="PAGADO" id="status-pagado" />
+                        <Label htmlFor="status-pagado" className="cursor-pointer text-sm">Pagado</Label>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <RadioGroupItem value="CREDITO" id="status-credito" />
+                        <Label htmlFor="status-credito" className="cursor-pointer text-sm">Crédito</Label>
+                      </div>
+                    </RadioGroup>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
             <div className="flex justify-end">
               <Button disabled={completePurchase.isPending} type="submit">
