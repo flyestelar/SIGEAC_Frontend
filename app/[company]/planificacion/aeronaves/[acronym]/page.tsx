@@ -295,7 +295,6 @@ export default function AircraftDetailsPage() {
                   acronym={aircraft.acronym}
                   companySlug={selectedCompany?.slug || ""}
                   currentTypeId={aircraft.aircraft_type?.id}
-                  manufacturerId={aircraft.manufacturer?.id}
                 />
               </div>
             </div>

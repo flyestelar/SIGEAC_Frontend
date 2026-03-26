@@ -20,11 +20,10 @@ interface EditAircraftTypeDialogProps {
   acronym: string;
   companySlug: string;
   currentTypeId?: number;
-  manufacturerId?: number;
 }
 
 export function EditAircraftTypeDialog(props: EditAircraftTypeDialogProps) {
-  const { isOpen, onOpenChange, acronym, companySlug, currentTypeId, manufacturerId } = props;
+  const { isOpen, onOpenChange, acronym } = props;
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
@@ -41,13 +40,12 @@ export function EditAircraftTypeDialog(props: EditAircraftTypeDialogProps) {
 
 function EditAircraftTypeDialogContent({
   companySlug,
-  manufacturerId,
   currentTypeId,
   onOpenChange,
   isOpen,
   acronym,
 }: EditAircraftTypeDialogProps) {
-  const { data: aircraftTypesData } = useGetAircraftTypes(companySlug, undefined, manufacturerId);
+  const { data: aircraftTypesData } = useGetAircraftTypes(companySlug);
 
   const [selectedAircraftTypeId, setSelectedAircraftTypeId] = useState<number | undefined>(currentTypeId);
   const { updateMaintenanceAircraft } = useUpdateMaintenanceAircraft();
