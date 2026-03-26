@@ -193,7 +193,6 @@ const AircraftTypesPage = () => {
                   <TableHead>Familia</TableHead>
                   <TableHead>Serie</TableHead>
                   <TableHead>IATA</TableHead>
-                  <TableHead>Certificado</TableHead>
                   <TableHead className="text-right">Acciones</TableHead>
                 </TableRow>
               </TableHeader>
@@ -206,7 +205,6 @@ const AircraftTypesPage = () => {
                     <TableCell>
                       <Badge variant="outline">{type.iata_code ?? 'N/A'}</Badge>
                     </TableCell>
-                    <TableCell>{type.type_certificate || 'N/A'}</TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-2">
                         <Button variant="ghost" size="sm" onClick={() => openEditDialog(type)}>

@@ -551,7 +551,6 @@ export type AircraftType = {
   family: string;
   series: string;
   iata_code: string | null;
-  type_certificate: string | null;
   created_at: string;
   updated_at: string;
 };
