@@ -276,7 +276,7 @@ export type MaintenanceAircraft = {
   manufacturer: Manufacturer;
   serial: string;
   acronym: string;
-  aircraft_type: AircraftType;
+  aircraft_type: AircraftType | null;
   flight_hours: number;
   flight_cycles: number;
   fabricant_date: string;
@@ -1191,5 +1191,3 @@ export type ThirdPartyRole = {
   value: string;
   label: string;
 };
-
-

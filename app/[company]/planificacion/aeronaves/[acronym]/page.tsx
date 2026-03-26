@@ -7,6 +7,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -19,6 +20,7 @@ import { Separator } from "@/components/ui/separator";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useGetMaintenanceAircraftByAcronym } from "@/hooks/planificacion/useGetMaitenanceAircraftByAcronym";
 import { useCompanyStore } from "@/stores/CompanyStore";
+import { EditAircraftTypeDialog } from "@/components/dialogs/planificacion/EditAircraftTypeDialog";
 import { AircraftAssigment, MaintenanceAircraftPart } from "@/types";
 import {
   Calendar,
@@ -33,9 +35,10 @@ import {
   RotateCcw,
   User,
   Wrench,
+  Pencil,
 } from "lucide-react";
 import { useParams } from "next/navigation";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import LoadingPage from "@/components/misc/LoadingPage";
 import { ContentLayout } from "@/components/layout/ContentLayout";
 
@@ -52,17 +55,33 @@ const Stat = ({
   icon: Icon,
   label,
   value,
+  onEdit,
 }: {
   icon: React.ElementType;
   label: string;
   value: React.ReactNode;
+  onEdit?: () => void;
 }) => (
   <Card className="border-dashed">
     <CardHeader className="py-3 pb-1">
-      <CardTitle className="text-xs font-medium text-muted-foreground flex items-center gap-2">
-        <Icon className="h-4 w-4" />
-        {label}
-      </CardTitle>
+      <div className="flex items-center justify-between gap-2">
+        <CardTitle className="text-xs font-medium text-muted-foreground flex items-center gap-2">
+          <Icon className="h-4 w-4" />
+          {label}
+        </CardTitle>
+        {onEdit && (
+          <Button
+            type="button"
+            size="icon"
+            variant="ghost"
+            className="h-6 w-6"
+            aria-label={`Editar ${label}`}
+            onClick={onEdit}
+          >
+            <Pencil className="h-3.5 w-3.5" />
+          </Button>
+        )}
+      </div>
     </CardHeader>
     <CardContent className="pb-3">
       <div className="text-xl font-semibold tabular-nums">{value ?? "—"}</div>
@@ -200,6 +219,7 @@ export default function AircraftDetailsPage() {
     decodeURIComponent(acronym),
     selectedCompany?.slug
   );
+  const [isTypeDialogOpen, setIsTypeDialogOpen] = useState(false);
 
   if (isLoading) return <LoadingPage />;
 
@@ -263,11 +283,21 @@ export default function AircraftDetailsPage() {
                   </span>
                 </CardDescription>
               </div>
-              {aircraft.aircraft_type && (
-                <Badge variant="outline" className="w-fit shrink-0">
-                  {aircraft.aircraft_type.full_name}
-                </Badge>
-              )}
+              <div className="flex items-center gap-2">
+                {aircraft.aircraft_type && (
+                  <Badge variant="outline" className="w-fit shrink-0">
+                    {aircraft.aircraft_type.full_name}
+                  </Badge>
+                )}
+                <EditAircraftTypeDialog
+                  isOpen={isTypeDialogOpen}
+                  onOpenChange={setIsTypeDialogOpen}
+                  acronym={aircraft.acronym}
+                  companySlug={selectedCompany?.slug || ""}
+                  currentTypeId={aircraft.aircraft_type?.id}
+                  manufacturerId={aircraft.manufacturer?.id}
+                />
+              </div>
             </div>
           </CardHeader>
           <CardContent>
@@ -290,7 +320,8 @@ export default function AircraftDetailsPage() {
               <Stat
                 icon={Wrench}
                 label="Tipo"
-                value={'B737-200 ~ BOEING'}
+                value={aircraft.aircraft_type?.full_name ?? "—"}
+                onEdit={() => setIsTypeDialogOpen(true)}
               />
             </div>
           </CardContent>
