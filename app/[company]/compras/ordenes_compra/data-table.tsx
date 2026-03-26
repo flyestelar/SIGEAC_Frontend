@@ -1,118 +1,201 @@
-"use client"
+'use client';
 
 import {
   ColumnDef,
   ColumnFiltersState,
+  ExpandedState,
   flexRender,
   getCoreRowModel,
+  getExpandedRowModel,
   getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
+  Row,
   SortingState,
   useReactTable,
-} from "@tanstack/react-table"
+} from '@tanstack/react-table';
 
-import { RegisterDispatchRequestDialog } from "@/components/dialogs/mantenimiento/almacen/RegisterDispatchRequestDialog"
-import { DataTablePagination } from "@/components/tables/DataTablePagination"
-import { DataTableViewOptions } from "@/components/tables/DataTableViewOptions"
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
-import { useRouter } from "next/navigation"
-import { useState } from "react"
+import { DataTablePagination } from '@/components/tables/DataTablePagination';
+import { DataTableViewOptions } from '@/components/tables/DataTableViewOptions';
+import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { cn } from '@/lib/utils';
+import { PurchaseOrder } from '@/types';
+import { useState } from 'react';
 
-interface DataTableProps<TData, TValue> {
-  columns: ColumnDef<TData, TValue>[]
-  data: TData[]
-}
+const moneyFormatter = new Intl.NumberFormat('en-US', {
+  style: 'currency',
+  currency: 'USD',
+  minimumFractionDigits: 2,
+});
 
-export function DataTable<TData, TValue>({
-  columns,
-  data,
-}: DataTableProps<TData, TValue>) {
-
-  const [sorting, setSorting] = useState<SortingState>([])
-  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>(
-    []
-  )
-  const table = useReactTable({
-    data,
-    columns,
-    getCoreRowModel: getCoreRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
-    onSortingChange: setSorting,
-    onColumnFiltersChange: setColumnFilters,
-    getSortedRowModel: getSortedRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
-    state: {
-      sorting,
-      columnFilters
-    }
-  })
-
-  const router = useRouter();
-
-  const isFiltered = table.getState().columnFilters.length > 0
+function POSubRow({ row }: { row: Row<PurchaseOrder> }) {
+  const articles = row.original.article_purchase_order;
 
   return (
-    <>
-      <div className="flex flex-col gap-2 mb-4">
-        <h1 className="text-5xl font-bold text-center">Ordenes de Compra</h1>
-        <p className="text-sm italic text-muted-foreground text-center">Aquí puede ver las ordenes de compras realizadas a partir de las cotizaciones.</p>
-      </div>
-      <div className="flex items-center py-4">
-        <DataTableViewOptions table={table} />
-      </div>
-      <div className="rounded-md border mb-4">
+    <div className="border-t bg-muted/20 px-6 py-3">
+      <p className="mb-2 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+        Artículos
+      </p>
+      <div className="overflow-hidden rounded-md border">
         <Table>
           <TableHeader>
-            {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => {
-                  return (
-                    <TableHead key={header.id}>
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext()
-                        )}
-                    </TableHead>
-                  )
-                })}
-              </TableRow>
-            ))}
+            <TableRow className="bg-muted/30 hover:bg-muted/30">
+              <TableHead className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+                Batch
+              </TableHead>
+              <TableHead className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+                Part Number
+              </TableHead>
+              <TableHead className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+                ALT P/N
+              </TableHead>
+              <TableHead className="text-right text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+                Qty
+              </TableHead>
+              <TableHead className="text-right text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+                Unit Price
+              </TableHead>
+              <TableHead className="text-right text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+                Total
+              </TableHead>
+            </TableRow>
           </TableHeader>
           <TableBody>
-            {table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map((row) => (
-                <TableRow
-                  key={row.id}
-                  data-state={row.getIsSelected() && "selected"}
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                    </TableCell>
-                  ))}
+            {articles.map((article) => {
+              const lineTotal = Number(article.unit_price) * Number(article.quantity);
+              return (
+                <TableRow key={article.id} className="hover:bg-muted/10">
+                  <TableCell className="py-2 text-sm text-muted-foreground">
+                    {article.batch?.name ?? '—'}
+                  </TableCell>
+                  <TableCell className="py-2 font-mono text-sm font-medium">
+                    {article.article_part_number}
+                  </TableCell>
+                  <TableCell className="py-2 font-mono text-sm text-muted-foreground">
+                    {article.article_alt_part_number ?? '—'}
+                  </TableCell>
+                  <TableCell className="py-2 text-right text-sm">
+                    {article.quantity}
+                  </TableCell>
+                  <TableCell className="py-2 text-right text-sm">
+                    {moneyFormatter.format(Number(article.unit_price))}
+                  </TableCell>
+                  <TableCell className="py-2 text-right text-sm font-medium">
+                    {moneyFormatter.format(lineTotal)}
+                  </TableCell>
                 </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell colSpan={columns.length} className="h-24 text-center text-muted-foreground">
-                  No se ha encontrado ningún resultado...
-                </TableCell>
-              </TableRow>
-            )}
+              );
+            })}
+            <TableRow className="border-t hover:bg-transparent">
+              <TableCell
+                colSpan={5}
+                className="py-2 text-right text-[11px] font-semibold uppercase tracking-widest text-muted-foreground"
+              >
+                Subtotal
+              </TableCell>
+              <TableCell className="py-2 text-right text-sm font-semibold">
+                {moneyFormatter.format(Number(row.original.sub_total))}
+              </TableCell>
+            </TableRow>
           </TableBody>
         </Table>
       </div>
-      <DataTablePagination table={table} />
+    </div>
+  );
+}
+
+interface DataTableProps<TValue> {
+  columns: ColumnDef<PurchaseOrder, TValue>[];
+  data: PurchaseOrder[];
+}
+
+export function DataTable<TValue>({ columns, data }: DataTableProps<TValue>) {
+  const [sorting, setSorting] = useState<SortingState>([]);
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+  const [expanded, setExpanded] = useState<ExpandedState>({});
+
+  const table = useReactTable({
+    data,
+    columns,
+    state: { sorting, columnFilters, expanded },
+    onSortingChange: setSorting,
+    onColumnFiltersChange: setColumnFilters,
+    onExpandedChange: setExpanded,
+    getCoreRowModel: getCoreRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
+    getExpandedRowModel: getExpandedRowModel(),
+  });
+
+  return (
+    <>
+      <div className="flex items-center justify-between py-4">
+        <p className="text-sm text-muted-foreground">
+          {table.getFilteredRowModel().rows.length} resultado(s)
+        </p>
+        <DataTableViewOptions table={table} />
+      </div>
+
+      <div className="rounded-md border">
+        <ScrollArea className="w-full">
+          <div className="min-w-[820px]">
+            <Table>
+              <TableHeader className="sticky top-0 z-10 bg-background">
+                {table.getHeaderGroups().map((headerGroup) => (
+                  <TableRow key={headerGroup.id}>
+                    {headerGroup.headers.map((header) => (
+                      <TableHead key={header.id} className="whitespace-nowrap">
+                        {header.isPlaceholder
+                          ? null
+                          : flexRender(header.column.columnDef.header, header.getContext())}
+                      </TableHead>
+                    ))}
+                  </TableRow>
+                ))}
+              </TableHeader>
+              <TableBody>
+                {table.getRowModel().rows?.length ? (
+                  table.getRowModel().rows.map((row) => (
+                    <>
+                      <TableRow
+                        key={row.id}
+                        data-state={row.getIsSelected() && 'selected'}
+                        className={cn('hover:bg-muted/40 transition-colors', row.getIsExpanded() && 'bg-muted/10')}
+                      >
+                        {row.getVisibleCells().map((cell) => (
+                          <TableCell key={cell.id} className="align-middle">
+                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                          </TableCell>
+                        ))}
+                      </TableRow>
+                      {row.getIsExpanded() && (
+                        <TableRow key={`${row.id}-expanded`} className="hover:bg-transparent">
+                          <TableCell colSpan={columns.length} className="p-0">
+                            <POSubRow row={row} />
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={columns.length} className="h-32 text-center text-muted-foreground">
+                      No se ha encontrado ningún resultado.
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </div>
+          <ScrollBar orientation="horizontal" />
+        </ScrollArea>
+      </div>
+
+      <div className="mt-4">
+        <DataTablePagination table={table} />
+      </div>
     </>
-  )
+  );
 }

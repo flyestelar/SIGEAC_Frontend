@@ -31,7 +31,7 @@ const FormSchema = z.object({
   articles: z.array(
     z.object({
       part_number: z.string(),
-      alternate_part_number: z.string().optional(),
+      alt_part_number: z.string().optional(),
       quantity: z.number().min(1, { message: 'Debe ingresar al menos 1.' }),
       unit_price: z.string().min(0, { message: 'El precio no puede ser negativo.' }),
       condition: z.string({ message: 'Debe elegir la condición.' }),
@@ -65,7 +65,7 @@ export function CreateQuoteForm({
     initialData?.articles?.flatMap((article: any) =>
       article.batch_articles.map((batchArticle: any) => ({
         part_number: batchArticle.part_number,
-        alternate_part_number: batchArticle.alternate_part_number || '',
+        alt_part_number: batchArticle.alt_part_number || '',
         quantity: batchArticle.quantity,
         unit: batchArticle.unit ? batchArticle.unit.id.toString() : undefined,
         unit_price: '',
@@ -344,7 +344,7 @@ export function CreateQuoteForm({
 
                     <FormField
                       control={control}
-                      name={`articles.${index}.alternate_part_number`}
+                      name={`articles.${index}.alt_part_number`}
                       render={({ field }) => (
                         <FormItem className="space-y-1.5">
                           <p className={cn(fieldLabel, 'lg:hidden')}>Nro. Parte Alterno</p>
