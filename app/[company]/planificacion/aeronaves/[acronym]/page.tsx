@@ -36,8 +36,9 @@ import {
   User,
   Wrench,
   Pencil,
+  ArrowLeft,
 } from "lucide-react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import LoadingPage from "@/components/misc/LoadingPage";
 import { ContentLayout } from "@/components/layout/ContentLayout";
@@ -214,6 +215,7 @@ const AssignmentsTable = ({ rows }: { rows: AircraftAssigment[] }) => (
 // ── Page ─────────────────────────────────────────────────────────────────────
 export default function AircraftDetailsPage() {
   const { acronym } = useParams<{ acronym: string }>();
+  const router = useRouter();
   const { selectedCompany } = useCompanyStore();
   const { data: aircraft, isLoading, isError } = useGetMaintenanceAircraftByAcronym(
     decodeURIComponent(acronym),
@@ -259,13 +261,27 @@ export default function AircraftDetailsPage() {
           <CardHeader className="pb-2">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
               <div className="space-y-1 min-w-0">
-                <CardTitle className="flex flex-wrap items-center gap-2 text-xl">
-                  <Plane className="h-5 w-5 shrink-0" />
-                  <span className="font-mono tracking-widest">{aircraft.acronym}</span>
-                  <Badge variant="secondary" className="font-mono text-[10px]">
-                    S/N: {aircraft.serial || "—"}
-                  </Badge>
-                </CardTitle>
+                <div className="flex items-center gap-3">
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => router.back()}
+                    className="shrink-0"
+                  >
+                    <ArrowLeft className="h-4 w-4 mr-2" />
+                    Volver
+                  </Button>
+                  <div className="flex-1 min-w-0">
+                    <CardTitle className="flex flex-wrap items-center gap-2 text-xl">
+                      <Plane className="h-5 w-5 shrink-0" />
+                      <span className="font-mono tracking-widest">{aircraft.acronym}</span>
+                      <Badge variant="secondary" className="font-mono text-[10px]">
+                        S/N: {aircraft.serial || "—"}
+                      </Badge>
+                    </CardTitle>
+                  </div>
+                </div>
                 <CardDescription className="flex flex-wrap items-center gap-x-3 gap-y-1">
                   <span className="flex items-center gap-1">
                     <Factory className="h-3.5 w-3.5" />
@@ -289,6 +305,16 @@ export default function AircraftDetailsPage() {
                     {aircraft.aircraft_type.full_name}
                   </Badge>
                 )}
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setIsTypeDialogOpen(true)}
+                  className="shrink-0"
+                >
+                  <Pencil className="h-4 w-4 mr-2" />
+                  Editar
+                </Button>
                 <SimpleEditAirplaneDialog
                   isOpen={isTypeDialogOpen}
                   onOpenChange={setIsTypeDialogOpen}
@@ -322,7 +348,6 @@ export default function AircraftDetailsPage() {
                 icon={Wrench}
                 label="Tipo"
                 value={aircraft.aircraft_type?.full_name ?? "—"}
-                onEdit={() => setIsTypeDialogOpen(true)}
               />
             </div>
           </CardContent>
