@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { format } from 'date-fns';
@@ -43,8 +43,8 @@ import {
 //   Schema & Types
 // =========================
 const AircraftInfoSchema = z.object({
-  manufacturer_id: z.string().min(1, 'Debe seleccionar un fabricante'),
-  aircraft_type_id: z.number().int('Debe seleccionar un tipo de aeronave'),
+  manufacturer_id: z.number({ message: 'Debe seleccionar un fabricante' }),
+  aircraft_type_id: z.number({ message: 'Debe seleccionar un tipo de aeronave' }),
   serial: z.string().min(1, 'El serial es obligatorio'),
   acronym: z.string().min(1, 'El acrónimo es obligatorio'),
   flight_hours: z.string().refine((val) => {
@@ -95,7 +95,7 @@ export default function AircraftInfoForm({ onNext, onBack, initialData }: Aircra
     defaultValues: initialData || {},
   });
 
-  const selectedManufacturerId = form.watch('manufacturer_id');
+  const selectedManufacturerId = useWatch({ control: form.control, name: 'manufacturer_id' });
 
   useEffect(() => {
     if (!selectedManufacturerId) {
@@ -159,7 +159,7 @@ export default function AircraftInfoForm({ onNext, onBack, initialData }: Aircra
                             >
                               {isManufacturersLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                               {field.value ? (
-                                <span>{manufacturers?.find((m: any) => `${m.id}` === field.value)?.name || '—'}</span>
+                                <span>{manufacturers?.find((m: any) => m.id === field.value)?.name || '—'}</span>
                               ) : (
                                 'Elige al fabricante...'
                               )}
@@ -180,13 +180,13 @@ export default function AircraftInfoForm({ onNext, onBack, initialData }: Aircra
                                       key={m.id}
                                       value={`${m.name}`}
                                       onSelect={() => {
-                                        form.setValue('manufacturer_id', String(m.id), { shouldValidate: true });
+                                        form.setValue('manufacturer_id', m.id, { shouldValidate: true });
                                       }}
                                     >
                                       <Check
                                         className={cn(
                                           'mr-2 h-4 w-4',
-                                          `${m.id}` === field.value ? 'opacity-100' : 'opacity-0',
+                                          m.id === field.value ? 'opacity-100' : 'opacity-0',
                                         )}
                                       />
                                       {m.name}

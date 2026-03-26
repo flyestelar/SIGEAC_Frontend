@@ -12,7 +12,7 @@ interface AircraftTypeSelectProps {
 	value?: number;
 	onChange: (value: number | undefined) => void;
 	companySlug?: string;
-	manufacturerId?: string;
+	manufacturerId?: number;
 }
 
 export default function AircraftTypeSelect({ value, onChange, companySlug, manufacturerId }: AircraftTypeSelectProps) {
