@@ -13,7 +13,6 @@ import {
   useUpdateAircraftType,
 } from '@/actions/planificacion/aircraft-types/actions';
 import { ContentLayout } from '@/components/layout/ContentLayout';
-import LoadingPage from '@/components/misc/LoadingPage';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -48,7 +47,6 @@ const aircraftTypeSchema = z.object({
   family: z.string().min(1, 'La familia es obligatoria.').max(255, 'Máximo 255 caracteres.'),
   series: z.string().min(1, 'La serie es obligatoria.').max(255, 'Máximo 255 caracteres.'),
   iata_code: z.string().max(64, 'Máximo 64 caracteres.').optional(),
-  type_certificate: z.string().max(255, 'Máximo 255 caracteres.').optional(),
 });
 
 type AircraftTypeFormValues = z.infer<typeof aircraftTypeSchema>;
@@ -79,7 +77,6 @@ const AircraftTypeForm = ({
       family: initialData?.family ?? '',
       series: initialData?.series ?? '',
       iata_code: initialData?.iata_code ?? '',
-      type_certificate: initialData?.type_certificate ?? '',
     },
   });
 
@@ -141,35 +138,19 @@ const AircraftTypeForm = ({
           />
         </div>
 
-        <div className="grid gap-4 sm:grid-cols-2">
-          <FormField
-            control={form.control}
-            name="iata_code"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Código IATA (opcional)</FormLabel>
-                <FormControl>
-                  <Input placeholder="Ej: 320" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="type_certificate"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Certificado de tipo (opcional)</FormLabel>
-                <FormControl>
-                  <Input placeholder="Ej: EASA TCDS" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
+        <FormField
+          control={form.control}
+          name="iata_code"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Código IATA (opcional)</FormLabel>
+              <FormControl>
+                <Input placeholder="Ej: 320" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
         <DialogFooter>
           <Button type="button" variant="outline" onClick={onCancel} disabled={submitting}>
@@ -233,7 +214,6 @@ const AircraftTypesPage = () => {
     if (!selectedCompany?.slug) return;
 
     const iataCode = values.iata_code?.trim();
-    const typeCertificate = values.type_certificate?.trim();
     const manufacturerId = Number(values.manufacturer_id);
 
     if (dialogMode === 'create') {
@@ -244,7 +224,6 @@ const AircraftTypesPage = () => {
           family: values.family.trim(),
           series: values.series.trim(),
           iata_code: iataCode ? iataCode : null,
-          type_certificate: typeCertificate ? typeCertificate : null,
         },
       });
       closeDialog();
@@ -257,13 +236,11 @@ const AircraftTypesPage = () => {
       family: string;
       series: string;
       iata_code: string | null;
-      type_certificate: string | null;
       manufacturer_id?: number;
     } = {
       family: values.family.trim(),
       series: values.series.trim(),
       iata_code: iataCode ? iataCode : null,
-      type_certificate: typeCertificate ? typeCertificate : null,
     };
 
     if (editingType.manufacturer?.id !== manufacturerId) {
