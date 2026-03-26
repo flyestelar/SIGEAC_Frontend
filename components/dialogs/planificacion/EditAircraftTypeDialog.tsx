@@ -29,7 +29,7 @@ export function EditAircraftTypeDialog(props: EditAircraftTypeDialogProps) {
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Editar tipo de aeronave</DialogTitle>
+          <DialogTitle>Simple edit airplane</DialogTitle>
           <DialogDescription>Seleccione el tipo correcto para {acronym}.</DialogDescription>
         </DialogHeader>
         <EditAircraftTypeDialogContent {...props} />

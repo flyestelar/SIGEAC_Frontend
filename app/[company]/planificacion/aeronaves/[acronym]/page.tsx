@@ -20,7 +20,7 @@ import { Separator } from "@/components/ui/separator";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useGetMaintenanceAircraftByAcronym } from "@/hooks/planificacion/useGetMaitenanceAircraftByAcronym";
 import { useCompanyStore } from "@/stores/CompanyStore";
-import { EditAircraftTypeDialog } from "@/components/dialogs/planificacion/EditAircraftTypeDialog";
+import { SimpleEditAirplaneDialog } from "@/components/dialogs/planificacion/SimpleEditAirplaneDialog";
 import { AircraftAssigment, MaintenanceAircraftPart } from "@/types";
 import {
   Calendar,
@@ -289,12 +289,14 @@ export default function AircraftDetailsPage() {
                     {aircraft.aircraft_type.full_name}
                   </Badge>
                 )}
-                <EditAircraftTypeDialog
+                <SimpleEditAirplaneDialog
                   isOpen={isTypeDialogOpen}
                   onOpenChange={setIsTypeDialogOpen}
                   acronym={aircraft.acronym}
                   companySlug={selectedCompany?.slug || ""}
                   currentTypeId={aircraft.aircraft_type?.id}
+                  currentFlightHours={aircraft.flight_hours}
+                  currentFlightCycles={aircraft.flight_cycles}
                 />
               </div>
             </div>

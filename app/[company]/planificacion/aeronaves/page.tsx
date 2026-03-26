@@ -3,6 +3,7 @@
 import { ContentLayout } from '@/components/layout/ContentLayout';
 import LoadingPage from '@/components/misc/LoadingPage';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -12,7 +13,6 @@ import { useCompanyStore } from '@/stores/CompanyStore';
 import { MaintenanceAircraft } from '@/types';
 import { AlertCircle, Clock, MapPin, Plane, PlusCircle, RotateCcw, Search, SquareArrowOutUpRight } from 'lucide-react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { useMemo, useState } from 'react';
 
 const normalize = (v?: string | null) => (v ?? '').toLowerCase();
@@ -20,19 +20,26 @@ const normalize = (v?: string | null) => (v ?? '').toLowerCase();
 const AircraftsPage = () => {
   const { selectedCompany } = useCompanyStore();
   const { data: aircrafts, isLoading, isError } = useGetMaintenanceAircrafts(selectedCompany?.slug);
-  const router = useRouter();
   const [query, setQuery] = useState<string>('');
 
   const filteredAircrafts = useMemo<MaintenanceAircraft[]>(() => {
     if (!aircrafts) return [];
+
+    let filtered = aircrafts;
+
+    // Filtro de búsqueda por texto
     const q = normalize(query);
-    if (!q) return aircrafts;
-    return aircrafts.filter((a: MaintenanceAircraft) =>
-      normalize(a.acronym).includes(q) ||
-      normalize(a.manufacturer?.name).includes(q) ||
-      normalize(a.serial).includes(q) ||
-      normalize(a.aircraft_type?.full_name).includes(q)
-    );
+    if (q) {
+      filtered = filtered.filter(
+        (a: MaintenanceAircraft) =>
+          normalize(a.acronym).includes(q) ||
+          normalize(a.manufacturer?.name).includes(q) ||
+          normalize(a.serial).includes(q) ||
+          normalize(a.aircraft_type?.full_name).includes(q),
+      );
+    }
+
+    return filtered;
   }, [aircrafts, query]);
 
   if (isLoading) {
@@ -46,7 +53,8 @@ const AircraftsPage = () => {
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Registro de Aeronaves</h1>
           <p className="text-sm text-muted-foreground mt-0.5">
-            {aircrafts?.length ?? 0} aeronave{(aircrafts?.length ?? 0) !== 1 ? 's' : ''} registrada{(aircrafts?.length ?? 0) !== 1 ? 's' : ''}
+            {filteredAircrafts.length} de {aircrafts?.length ?? 0} aeronave{filteredAircrafts.length !== 1 ? 's' : ''}{' '}
+            mostrada{filteredAircrafts.length !== 1 ? 's' : ''}
           </p>
         </div>
         <div className="flex flex-col sm:flex-row gap-2 items-stretch sm:items-center mt-3 sm:mt-0">
@@ -83,7 +91,9 @@ const AircraftsPage = () => {
             <div className="flex flex-col items-center justify-center gap-2 py-20 text-muted-foreground">
               <Plane className="size-10 opacity-20" />
               <p className="text-sm">
-                {query ? `Sin resultados para "${query}"` : 'No hay aeronaves registradas'}
+                {query
+                  ? `Sin resultados para "${query}"`
+                  : 'No hay aeronaves registradas'}
               </p>
             </div>
           ) : (
@@ -103,9 +113,7 @@ const AircraftsPage = () => {
                   <CardHeader className="flex flex-row items-center justify-between p-4 pb-3 space-y-0">
                     <div className="flex items-center gap-2.5">
                       <Plane className="size-4 text-muted-foreground shrink-0 group-hover:text-foreground transition-colors" />
-                      <span className="font-mono text-lg font-semibold tracking-widest leading-none">
-                        {a.acronym}
-                      </span>
+                      <span className="font-mono text-lg font-semibold tracking-widest leading-none">{a.acronym}</span>
                     </div>
                     <span className="text-xs text-muted-foreground font-medium truncate max-w-[120px]">
                       {a.manufacturer?.name ?? '—'}
@@ -118,17 +126,21 @@ const AircraftsPage = () => {
                     {/* Tipo */}
                     <div className="flex items-start justify-between gap-2 text-sm">
                       <span className="text-muted-foreground shrink-0">Tipo</span>
-                      <span className="font-medium text-right truncate">
-                        {a.aircraft_type?.full_name ?? '—'}
-                      </span>
+                      <div className="text-right">
+                        {a.aircraft_type?.full_name ? (
+                          <span className="font-medium truncate">{a.aircraft_type.full_name}</span>
+                        ) : (
+                          <Badge variant="warning" className="text-xs">
+                            Sin definir
+                          </Badge>
+                        )}
+                      </div>
                     </div>
 
                     {/* Serial */}
                     <div className="flex items-start justify-between gap-2 text-sm">
                       <span className="text-muted-foreground shrink-0">Serial</span>
-                      <span className="font-mono text-xs font-medium text-right">
-                        {a.serial || '—'}
-                      </span>
+                      <span className="font-mono text-xs font-medium text-right">{a.serial || '—'}</span>
                     </div>
 
                     {/* Ubicación */}
@@ -160,12 +172,10 @@ const AircraftsPage = () => {
                     </div>
                   </CardContent>
                   <CardFooter>
-                    <Button
-                      className='w-full'
-                      variant={"outline"}
-                      onClick={() => router.push(`/${selectedCompany?.slug}/planificacion/aeronaves/${a.acronym}`)}
-                    >
-                      <SquareArrowOutUpRight />
+                    <Button asChild className="w-full" variant={'outline'}>
+                      <Link href={`/${selectedCompany?.slug}/planificacion/aeronaves/${a.acronym}`}>
+                        <SquareArrowOutUpRight size={14} />
+                      </Link>
                     </Button>
                   </CardFooter>
                 </Card>
