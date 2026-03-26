@@ -276,6 +276,7 @@ export type MaintenanceAircraft = {
   manufacturer: Manufacturer;
   serial: string;
   acronym: string;
+  aircraft_type: AircraftType;
   flight_hours: number;
   flight_cycles: number;
   fabricant_date: string;
@@ -547,6 +548,7 @@ export type PaginatedResponse<T> = {
 
 export type AircraftType = {
   id: number;
+  full_name: string;
   manufacturer: Manufacturer;
   family: string;
   series: string;
