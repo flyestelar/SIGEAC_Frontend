@@ -1,6 +1,7 @@
 'use client';
 
 import { useUpdateMaintenanceAircraft } from '@/actions/mantenimiento/planificacion/aeronaves/actions';
+import { FormNumericField } from '@/components/forms/FormNumericField';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -11,14 +12,12 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useGetAircraftTypes } from '@/hooks/planificacion/useGetAircraftTypes';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Clock, Plane, RotateCcw } from 'lucide-react';
 import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
-import { NumericFormat } from 'react-number-format';
 import { z } from 'zod';
 
 interface SimpleEditAirplaneDialogProps {
@@ -158,65 +157,30 @@ function SimpleEditAirplaneDialogContent({
         />
 
         <div className="grid grid-cols-2 gap-4">
-          <FormField
+          <FormNumericField
             control={control}
             name="flight_hours"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="flex items-center gap-2">
-                  <Clock className="h-4 w-4" />
-                  Horas de vuelo
-                </FormLabel>
-                <FormControl>
-                  <NumericFormat
-                    customInput={Input}
-                    min={0}
-                    placeholder="0.0"
-                    value={field.value ?? ''}
-                    onValueChange={(values, { source }) => {
-                      if (source !== 'event') return;
-                      const { floatValue } = values;
-                      field.onChange(floatValue ?? null);
-                    }}
-                    thousandSeparator=""
-                    decimalSeparator=","
-                    decimalScale={2}
-                    allowNegative={false}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
+            label="Horas de vuelo"
+            icon={Clock}
+            inputProps={{
+              placeholder: '0.0',
+              thousandSeparator: '',
+              decimalSeparator: ',',
+              decimalScale: 2,
+            }}
           />
 
-          <FormField
+          <FormNumericField
             control={control}
             name="flight_cycles"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="flex items-center gap-2">
-                  <RotateCcw className="h-4 w-4" />
-                  Ciclos
-                </FormLabel>
-                <FormControl>
-                  <NumericFormat
-                    customInput={Input}
-                    min={0}
-                    placeholder="0"
-                    value={field.value ?? ''}
-                    onValueChange={(values, { source }) => {
-                      if (source !== 'event') return;
-                      const { floatValue } = values;
-                      field.onChange(floatValue ?? null);
-                    }}
-                    thousandSeparator=""
-                    decimalScale={0}
-                    allowNegative={false}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
+            label="Ciclos"
+            icon={RotateCcw}
+            inputProps={{
+              placeholder: '0',
+              thousandSeparator: '',
+              decimalSeparator: ',',
+              decimalScale: 0,
+            }}
           />
         </div>
 
