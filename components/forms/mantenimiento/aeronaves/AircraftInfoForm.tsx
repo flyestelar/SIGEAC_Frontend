@@ -1,86 +1,109 @@
-"use client"
+'use client';
 
-import { useEffect } from "react"
-import { useForm } from "react-hook-form"
-import { z } from "zod"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { format } from "date-fns"
-import { es } from "date-fns/locale"
-import Link from "next/link"
+import { useEffect } from 'react';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { format } from 'date-fns';
+import { es } from 'date-fns/locale';
 
-import { cn } from "@/lib/utils"
-import { useCompanyStore } from "@/stores/CompanyStore"
-import { useGetClients } from "@/hooks/general/clientes/useGetClients"
-import { useGetLocationsByCompanyId } from "@/hooks/sistema/useGetLocationsByCompanyId"
-import { useGetManufacturers } from "@/hooks/general/condiciones/useGetConditions"
+import { cn } from '@/lib/utils';
+import { useCompanyStore } from '@/stores/CompanyStore';
+import { useGetLocationsByCompanyId } from '@/hooks/sistema/useGetLocationsByCompanyId';
+import { useGetManufacturers } from '@/hooks/general/condiciones/useGetConditions';
+import AircraftTypeSelect from '@/components/forms/mantenimiento/aeronaves/AircraftTypeSelect';
 
-import { Button } from "@/components/ui/button"
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command"
-import { Calendar } from "@/components/ui/calendar"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Separator } from "@/components/ui/separator"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import { Button } from '@/components/ui/button';
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
+import { Calendar } from '@/components/ui/calendar';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
-import { Calendar as CalendarIcon, Check, ChevronsUpDown, Loader2, Plane, Building2, Hash, MapPin, Clock, RotateCcw, FileText } from "lucide-react"
+import {
+  Calendar as CalendarIcon,
+  Check,
+  ChevronsUpDown,
+  Loader2,
+  Plane,
+  Building2,
+  Hash,
+  MapPin,
+  Clock,
+  RotateCcw,
+  FileText,
+} from 'lucide-react';
 
 // =========================
 //   Schema & Types
 // =========================
 const AircraftInfoSchema = z.object({
-  manufacturer_id: z.string().min(1, "Debe seleccionar un fabricante"),
-  serial: z.string().min(1, "El serial es obligatorio"),
-  model: z.string().min(1, "El modelo es obligatorio"),
-  acronym: z.string().min(1, "El acrónimo es obligatorio"),
-  flight_hours: z
-    .string()
-    .refine((val) => {
-      const num = parseInt(val)
-      return !isNaN(num) && num >= 0
-    }, "Debe ser un número entero mayor o igual a 0"),
-  flight_cycles: z
-    .string()
-    .refine((val) => {
-      const num = parseInt(val)
-      return !isNaN(num) && num >= 0
-    }, "Debe ser un número entero mayor o igual a 0"),
-  fabricant_date: z.date({ required_error: "Seleccione la fecha" }),
+  manufacturer_id: z.string().min(1, 'Debe seleccionar un fabricante'),
+  aircraft_type_id: z.number().int('Debe seleccionar un tipo de aeronave'),
+  serial: z.string().min(1, 'El serial es obligatorio'),
+  acronym: z.string().min(1, 'El acrónimo es obligatorio'),
+  flight_hours: z.string().refine((val) => {
+    const num = parseInt(val);
+    return !isNaN(num) && num >= 0;
+  }, 'Debe ser un número entero mayor o igual a 0'),
+  flight_cycles: z.string().refine((val) => {
+    const num = parseInt(val);
+    return !isNaN(num) && num >= 0;
+  }, 'Debe ser un número entero mayor o igual a 0'),
+  fabricant_date: z.date({ required_error: 'Seleccione la fecha' }),
   comments: z.string().optional(),
-  location_id: z.string().min(1, "La ubicación es obligatoria"),
-})
+  location_id: z.string().min(1, 'La ubicación es obligatoria'),
+});
 
-export type AircraftInfoType = z.infer<typeof AircraftInfoSchema>
+export type AircraftInfoType = z.infer<typeof AircraftInfoSchema>;
 
 interface AircraftInfoFormProps {
-  onNext: (data: AircraftInfoType) => void
-  onBack?: () => void
-  initialData?: Partial<AircraftInfoType>
+  onNext: (data: AircraftInfoType) => void;
+  onBack?: () => void;
+  initialData?: Partial<AircraftInfoType>;
 }
 
 // =========================
 //   Component
 // =========================
 export default function AircraftInfoForm({ onNext, onBack, initialData }: AircraftInfoFormProps) {
-  const { selectedCompany } = useCompanyStore()
-  const { data: clients, isLoading: isClientsLoading } = useGetClients(selectedCompany?.slug)
-  const { data: locations, isPending: isLocationsLoading, isError: isLocationsError, mutate } = useGetLocationsByCompanyId()
-  const { data: manufacturers, isLoading: isManufacturersLoading, isError: isManufacturersError } = useGetManufacturers(selectedCompany?.slug)
+  const { selectedCompany } = useCompanyStore();
+  const {
+    data: locations,
+    isPending: isLocationsLoading,
+    isError: isLocationsError,
+    mutate,
+  } = useGetLocationsByCompanyId();
+  const {
+    data: manufacturers,
+    isLoading: isManufacturersLoading,
+    isError: isManufacturersError,
+  } = useGetManufacturers(selectedCompany?.slug);
 
   useEffect(() => {
     // Cargar ubicaciones de manera perezosa al montar
-    mutate(2)
-  }, [mutate])
+    mutate(2);
+  }, [mutate]);
 
   const form = useForm<AircraftInfoType>({
     resolver: zodResolver(AircraftInfoSchema),
     defaultValues: initialData || {},
-  })
+  });
 
-  const onSubmit = (data: AircraftInfoType) => onNext(data)
+  const selectedManufacturerId = form.watch('manufacturer_id');
+
+  useEffect(() => {
+    if (!selectedManufacturerId) {
+      form.resetField('aircraft_type_id');
+    }
+  }, [form, selectedManufacturerId]);
+
+  const onSubmit = (data: AircraftInfoType) => onNext(data);
 
   return (
     <TooltipProvider>
@@ -92,7 +115,9 @@ export default function AircraftInfoForm({ onNext, onBack, initialData }: Aircra
               <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight flex items-center gap-2">
                 <Plane className="h-6 w-6" /> Registrar Aeronave
               </h1>
-              <p className="text-sm text-muted-foreground">Complete la información básica para crear la aeronave en el sistema.</p>
+              <p className="text-sm text-muted-foreground">
+                Complete la información básica para crear la aeronave en el sistema.
+              </p>
             </div>
             <div className="hidden sm:flex gap-2">
               {onBack && (
@@ -130,15 +155,13 @@ export default function AircraftInfoForm({ onNext, onBack, initialData }: Aircra
                               disabled={isManufacturersLoading || isManufacturersError}
                               variant="outline"
                               role="combobox"
-                              className={cn("w-full justify-between", !field.value && "text-muted-foreground")}
+                              className={cn('w-full justify-between', !field.value && 'text-muted-foreground')}
                             >
                               {isManufacturersLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                               {field.value ? (
-                                <span>
-                                  {manufacturers?.find((m: any) => `${m.id}` === field.value)?.name || "—"}
-                                </span>
+                                <span>{manufacturers?.find((m: any) => `${m.id}` === field.value)?.name || '—'}</span>
                               ) : (
-                                "Elige al fabricante..."
+                                'Elige al fabricante...'
                               )}
                               <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                             </Button>
@@ -150,16 +173,25 @@ export default function AircraftInfoForm({ onNext, onBack, initialData }: Aircra
                             <CommandList>
                               <CommandEmpty className="p-2 text-sm text-center">Sin resultados</CommandEmpty>
                               <CommandGroup>
-                                {manufacturers?.filter((m) => m.type === "AIRCRAFT").map((m) => (
-                                  <CommandItem
-                                    key={m.id}
-                                    value={`${m.name}`}
-                                    onSelect={() => form.setValue("manufacturer_id", String(m.id), { shouldValidate: true })}
-                                  >
-                                    <Check className={cn("mr-2 h-4 w-4", `${m.id}` === field.value ? "opacity-100" : "opacity-0")} />
-                                    {m.name}
-                                  </CommandItem>
-                                ))}
+                                {manufacturers
+                                  ?.filter((m) => m.type === 'AIRCRAFT')
+                                  .map((m) => (
+                                    <CommandItem
+                                      key={m.id}
+                                      value={`${m.name}`}
+                                      onSelect={() => {
+                                        form.setValue('manufacturer_id', String(m.id), { shouldValidate: true });
+                                      }}
+                                    >
+                                      <Check
+                                        className={cn(
+                                          'mr-2 h-4 w-4',
+                                          `${m.id}` === field.value ? 'opacity-100' : 'opacity-0',
+                                        )}
+                                      />
+                                      {m.name}
+                                    </CommandItem>
+                                  ))}
                               </CommandGroup>
                             </CommandList>
                           </Command>
@@ -170,18 +202,16 @@ export default function AircraftInfoForm({ onNext, onBack, initialData }: Aircra
                   )}
                 />
 
-                {/* Modelo */}
                 <FormField
                   control={form.control}
-                  name="model"
+                  name="aircraft_type_id"
                   render={({ field }) => (
-                    <FormItem className="space-y-2">
-                      <FormLabel className="flex items-center gap-2"><Plane className="h-4 w-4" /> Modelo</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Ej: B737-800" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
+                    <AircraftTypeSelect
+                      value={field.value}
+                      onChange={field.onChange}
+                      companySlug={selectedCompany?.slug}
+                      manufacturerId={selectedManufacturerId}
+                    />
                   )}
                 />
 
@@ -191,7 +221,9 @@ export default function AircraftInfoForm({ onNext, onBack, initialData }: Aircra
                   name="acronym"
                   render={({ field }) => (
                     <FormItem className="space-y-2">
-                      <FormLabel className="flex items-center gap-2"><Hash className="h-4 w-4" /> Acrónimo</FormLabel>
+                      <FormLabel className="flex items-center gap-2">
+                        <Hash className="h-4 w-4" /> Acrónimo
+                      </FormLabel>
                       <FormControl>
                         <Input placeholder="Ej: YVXXXX" {...field} />
                       </FormControl>
@@ -206,7 +238,9 @@ export default function AircraftInfoForm({ onNext, onBack, initialData }: Aircra
                   name="serial"
                   render={({ field }) => (
                     <FormItem className="space-y-2">
-                      <FormLabel className="flex items-center gap-2"><Hash className="h-4 w-4" /> Serial</FormLabel>
+                      <FormLabel className="flex items-center gap-2">
+                        <Hash className="h-4 w-4" /> Serial
+                      </FormLabel>
                       <FormControl>
                         <Input placeholder="Serial de la aeronave" {...field} />
                       </FormControl>
@@ -217,53 +251,56 @@ export default function AircraftInfoForm({ onNext, onBack, initialData }: Aircra
 
                 {/* Fecha de fabricación */}
                 <FormField
-                control={form.control}
-                name="fabricant_date"
-                render={({ field }) => (
-                  <FormItem className="space-y-2">
-                    <FormLabel className="flex items-center gap-2">
-                      <CalendarIcon className="h-4 w-4" /> Fecha de fabricación
-                    </FormLabel>
+                  control={form.control}
+                  name="fabricant_date"
+                  render={({ field }) => (
+                    <FormItem className="space-y-2">
+                      <FormLabel className="flex items-center gap-2">
+                        <CalendarIcon className="h-4 w-4" /> Fecha de fabricación
+                      </FormLabel>
 
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <FormControl>
-                          <Button
-                            variant="outline"
-                            className={cn("w-full justify-between", !field.value && "text-muted-foreground")}
-                          >
-                            {field.value ? format(field.value, "PPP", { locale: es }) : <span>Seleccione una fecha</span>}
-                            <CalendarIcon className="h-4 w-4 opacity-50" />
-                          </Button>
-                        </FormControl>
-                      </PopoverTrigger>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <FormControl>
+                            <Button
+                              variant="outline"
+                              className={cn('w-full justify-between', !field.value && 'text-muted-foreground')}
+                            >
+                              {field.value ? (
+                                format(field.value, 'PPP', { locale: es })
+                              ) : (
+                                <span>Seleccione una fecha</span>
+                              )}
+                              <CalendarIcon className="h-4 w-4 opacity-50" />
+                            </Button>
+                          </FormControl>
+                        </PopoverTrigger>
 
-                      <PopoverContent className="p-0 w-[--radix-popover-trigger-width]" align="start">
-                        <Calendar
-                          mode="single"
-                          selected={field.value}
-                          // Muestra el mes inicial (si hay valor, ese; si no, un año razonable, p.ej. 2000)
-                          defaultMonth={field.value ?? new Date(2000, 0, 1)}
-                          onSelect={(date) => date && field.onChange(date)}
-                          // Evita fechas futuras y muy antiguas
-                          disabled={(date) => date > new Date() || date < new Date("1900-01-01")}
-                          // Dropdowns para navegar rápido por mes/año
-                          captionLayout="dropdown"
-                          fromYear={1900}
-                          toYear={new Date().getFullYear()}
-                          // Localización
-                          locale={es}
-                          // Enfoque inicial dentro del popover
-                          initialFocus
-                        />
-                      </PopoverContent>
-                    </Popover>
+                        <PopoverContent className="p-0 w-[--radix-popover-trigger-width]" align="start">
+                          <Calendar
+                            mode="single"
+                            selected={field.value}
+                            // Muestra el mes inicial (si hay valor, ese; si no, un año razonable, p.ej. 2000)
+                            defaultMonth={field.value ?? new Date(2000, 0, 1)}
+                            onSelect={(date) => date && field.onChange(date)}
+                            // Evita fechas futuras y muy antiguas
+                            disabled={(date) => date > new Date() || date < new Date('1900-01-01')}
+                            // Dropdowns para navegar rápido por mes/año
+                            captionLayout="dropdown"
+                            fromYear={1900}
+                            toYear={new Date().getFullYear()}
+                            // Localización
+                            locale={es}
+                            // Enfoque inicial dentro del popover
+                            initialFocus
+                          />
+                        </PopoverContent>
+                      </Popover>
 
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
                 {/* Ubicación */}
                 <FormField
@@ -271,8 +308,14 @@ export default function AircraftInfoForm({ onNext, onBack, initialData }: Aircra
                   name="location_id"
                   render={({ field }) => (
                     <FormItem className="space-y-2">
-                      <FormLabel className="flex items-center gap-2"><MapPin className="h-4 w-4" /> Ubicación</FormLabel>
-                      <Select disabled={isLocationsLoading || isLocationsError} onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormLabel className="flex items-center gap-2">
+                        <MapPin className="h-4 w-4" /> Ubicación
+                      </FormLabel>
+                      <Select
+                        disabled={isLocationsLoading || isLocationsError}
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                      >
                         <FormControl>
                           <SelectTrigger>
                             <SelectValue placeholder="Seleccione..." />
@@ -308,7 +351,9 @@ export default function AircraftInfoForm({ onNext, onBack, initialData }: Aircra
                     name="flight_hours"
                     render={({ field }) => (
                       <FormItem className="space-y-2">
-                        <FormLabel className="flex items-center gap-2"><Clock className="h-4 w-4" /> Horas de vuelo</FormLabel>
+                        <FormLabel className="flex items-center gap-2">
+                          <Clock className="h-4 w-4" /> Horas de vuelo
+                        </FormLabel>
                         <FormControl>
                           <div className="relative">
                             <Input
@@ -319,10 +364,12 @@ export default function AircraftInfoForm({ onNext, onBack, initialData }: Aircra
                               placeholder="Ej: 15000"
                               {...field}
                               onKeyDown={(e) => {
-                                if (e.key === "-" || e.key === "." || e.key === ",") e.preventDefault()
+                                if (e.key === '-' || e.key === '.' || e.key === ',') e.preventDefault();
                               }}
                             />
-                            <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">h</span>
+                            <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
+                              h
+                            </span>
                           </div>
                         </FormControl>
                         <FormMessage />
@@ -336,7 +383,9 @@ export default function AircraftInfoForm({ onNext, onBack, initialData }: Aircra
                     name="flight_cycles"
                     render={({ field }) => (
                       <FormItem className="space-y-2">
-                        <FormLabel className="flex items-center gap-2"><RotateCcw className="h-4 w-4" /> Ciclos</FormLabel>
+                        <FormLabel className="flex items-center gap-2">
+                          <RotateCcw className="h-4 w-4" /> Ciclos
+                        </FormLabel>
                         <FormControl>
                           <div className="relative">
                             <Input
@@ -347,10 +396,12 @@ export default function AircraftInfoForm({ onNext, onBack, initialData }: Aircra
                               placeholder="Ej: 500"
                               {...field}
                               onKeyDown={(e) => {
-                                if (e.key === "-" || e.key === "." || e.key === ",") e.preventDefault()
+                                if (e.key === '-' || e.key === '.' || e.key === ',') e.preventDefault();
                               }}
                             />
-                            <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">ciclos</span>
+                            <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
+                              ciclos
+                            </span>
                           </div>
                         </FormControl>
                         <FormMessage />
@@ -376,7 +427,12 @@ export default function AircraftInfoForm({ onNext, onBack, initialData }: Aircra
                     <FormItem className="space-y-2">
                       <FormLabel>Comentarios</FormLabel>
                       <FormControl>
-                        <Textarea rows={5} className="resize-y" placeholder="Observaciones, historial, particularidades..." {...field} />
+                        <Textarea
+                          rows={5}
+                          className="resize-y"
+                          placeholder="Observaciones, historial, particularidades..."
+                          {...field}
+                        />
                       </FormControl>
                       <FormDescription className="text-xs">Opcional</FormDescription>
                       <FormMessage />
@@ -392,9 +448,13 @@ export default function AircraftInfoForm({ onNext, onBack, initialData }: Aircra
           <div className="sm:hidden fixed inset-x-0 bottom-0 z-40 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
             <div className="mx-auto max-w-4xl px-4 py-2 flex items-center justify-between gap-2">
               {onBack && (
-                <Button type="button" variant="outline" onClick={onBack} className="w-1/2">Anterior</Button>
+                <Button type="button" variant="outline" onClick={onBack} className="w-1/2">
+                  Anterior
+                </Button>
               )}
-              <Button type="submit" className={cn(onBack ? "w-1/2" : "w-full")}>Siguiente</Button>
+              <Button type="submit" className={cn(onBack ? 'w-1/2' : 'w-full')}>
+                Siguiente
+              </Button>
             </div>
           </div>
 
@@ -412,5 +472,5 @@ export default function AircraftInfoForm({ onNext, onBack, initialData }: Aircra
         </form>
       </Form>
     </TooltipProvider>
-  )
+  );
 }

@@ -5,6 +5,7 @@ import { toast } from "sonner";
 interface CreateAircraftWithPartsData {
   aircraft: {
     manufacturer_id: string,
+    aircraft_type_id: number,
     serial: string,
     acronym: string,
     flight_hours: number,

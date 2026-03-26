@@ -5,20 +5,25 @@ import { useQuery } from '@tanstack/react-query';
 const fetchAircraftTypes = async (
   company?: string,
   search?: string,
+  manufacturerId?: string,
   signal?: AbortSignal,
 ): Promise<PaginatedResponse<AircraftType>> => {
-  const params = search ? { search } : undefined;
+  const params = {
+    ...(search ? { search } : {}),
+    ...(manufacturerId ? { manufacturer_id: manufacturerId } : {}),
+  };
+
   const response = await axiosInstance.get<PaginatedResponse<AircraftType>>(`/${company}/aircraft-types`, {
-    params,
+    params: Object.keys(params).length ? params : undefined,
     signal,
   });
   return response.data;
 };
 
-export const useGetAircraftTypes = (company?: string, search?: string) => {
+export const useGetAircraftTypes = (company?: string, search?: string, manufacturerId?: string) => {
   return useQuery<PaginatedResponse<AircraftType>>({
-    queryKey: ['aircraftTypes', company, search ?? null],
-    queryFn: ({ signal }) => fetchAircraftTypes(company, search, signal),
+    queryKey: ['aircraftTypes', company, { search: search ?? null, manufacturerId: manufacturerId ?? null }],
+    queryFn: ({ signal }) => fetchAircraftTypes(company, search, manufacturerId, signal),
     enabled: !!company,
   });
 };
