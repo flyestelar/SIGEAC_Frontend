@@ -4,16 +4,15 @@ import { toast } from 'sonner';
 
 interface CreateFlightControlData {
   aircraft_id: string;
-  flight_cycles: number;
-  flight_hours: number;
-  flight_number: string;
+  flight_number?: string;
+  aircraft_operator: string;
   origin: string;
   destination: string;
-  pilot: string;
-  co_pilot: string;
-  arrival_time: string;
-  departure_time: string;
   flight_date: string;
+  departure_time?: string;
+  arrival_time?: string;
+  flight_hours: number;
+  flight_cycles: number;
 }
 
 export const useCreateFlightControl = () => {
@@ -33,10 +32,65 @@ export const useCreateFlightControl = () => {
       toast.error('Oops!', {
         description: 'No se pudo registrar el vuelo...',
       });
-      console.log(error);
+      console.error(error);
     },
   });
-  return {
-    createFlightControl: createMutation,
-  };
+
+  return { createFlightControl: createMutation };
+};
+
+export const useUpdateFlightControl = () => {
+  const queryClient = useQueryClient();
+
+  const updateMutation = useMutation({
+    mutationFn: async ({
+      id,
+      data,
+      company,
+    }: {
+      id: string;
+      data: Partial<CreateFlightControlData>;
+      company: string;
+    }) => {
+      await axiosInstance.put(`/${company}/flight-control/${id}`, data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['flight-control'] });
+      toast.success('¡Actualizado!', {
+        description: `El vuelo ha sido actualizado correctamente.`,
+      });
+    },
+    onError: (error) => {
+      toast.error('Oops!', {
+        description: 'No se pudo actualizar el vuelo...',
+      });
+      console.error(error);
+    },
+  });
+
+  return { updateFlightControl: updateMutation };
+};
+
+export const useDeleteFlightControl = () => {
+  const queryClient = useQueryClient();
+
+  const deleteMutation = useMutation({
+    mutationFn: async ({ id, company }: { id: string; company: string }) => {
+      await axiosInstance.delete(`/${company}/flight-control/${id}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['flight-control'] });
+      toast.success('¡Eliminado!', {
+        description: 'El vuelo ha sido eliminado correctamente.',
+      });
+    },
+    onError: (error) => {
+      toast.error('Oops!', {
+        description: 'No se pudo eliminar el vuelo...',
+      });
+      console.error(error);
+    },
+  });
+
+  return { deleteFlightControl: deleteMutation };
 };
