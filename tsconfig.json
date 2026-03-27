@@ -18,6 +18,10 @@
       }
     ],
     "paths": {
+      "@api/client": ["./.gen/api/client.gen.ts"],
+      "@api/types": ["./.gen/api/types.gen.ts"],
+      "@api/queries": ["./.gen/api/@tanstack/react-query.gen.ts"],
+      "@api/*": ["./.gen/api/*"],
       "@/*": ["./*"]
     }
   },

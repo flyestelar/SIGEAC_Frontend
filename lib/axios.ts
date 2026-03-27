@@ -1,5 +1,6 @@
 import { useCompanyStore } from '@/stores/CompanyStore';
-import axios from 'axios';
+import { client } from '@api/client';
+import axios, { InternalAxiosRequestConfig } from 'axios';
 import Cookies from 'js-cookie';
 
 const axiosInstance = axios.create({
@@ -10,7 +11,15 @@ const axiosInstance = axios.create({
   },
 });
 
-axiosInstance.interceptors.request.use((config) => {
+client.setConfig({
+  baseURL: process.env.NEXT_PUBLIC_API_BASE_URL,
+  withCredentials: true,
+  headers: {
+    skip_zrok_interstitial: true,
+  },
+});
+
+function requestInterceptor(config: InternalAxiosRequestConfig) {
   const token = Cookies.get('auth_token');
   if (token) {
     config.headers.Authorization = `${token}`;
@@ -23,6 +32,9 @@ axiosInstance.interceptors.request.use((config) => {
   }
 
   return config;
-});
+}
+
+axiosInstance.interceptors.request.use(requestInterceptor);
+client.instance.interceptors.request.use(requestInterceptor);
 
 export default axiosInstance;

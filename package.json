@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "api:generate": "openapi-ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",
@@ -82,6 +83,7 @@
     "zustand": "^4.5.4"
   },
   "devDependencies": {
+    "@hey-api/openapi-ts": "0.94.4",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
