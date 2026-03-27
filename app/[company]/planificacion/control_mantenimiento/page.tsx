@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { Settings2 } from "lucide-react";
 import { StatsCards } from "./_components/stats-cards";
 import { AircraftSelector } from "./_components/aircraft-selector";
 import { ControlSelector } from "./_components/control-selector";
@@ -11,6 +12,8 @@ import { useGetMaintenanceAircrafts } from "@/hooks/planificacion/useGetMaintena
 import { useGetMaintenanceControl } from "@/hooks/planificacion/control_mantenimiento/useGetMaintenanceControl";
 import { useCompanyStore } from "@/stores/CompanyStore";
 import LoadingPage from "@/components/misc/LoadingPage";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
 
 export default function MaintenanceDashboard() {
   const { selectedCompany } = useCompanyStore();
@@ -46,17 +49,27 @@ export default function MaintenanceDashboard() {
 
   return (
     <ContentLayout title="Control Mantenimiento">
-      <main className="p-6 w-full">
-        <div className="mb-6">
-          <h2 className="text-2xl font-semibold text-foreground">
-            Panel de Control de Mantenimiento
-          </h2>
-          <p className="mt-1 text-muted-foreground">
-            {selectedAircraft
-              ? `Gestión de mantenimiento para ${selectedAircraft.acronym} - ${selectedAircraft.manufacturer?.name ?? ''}`
-              : "Selecciona una aeronave para ver sus controles de mantenimiento"
-            }
-          </p>
+      <main className="p-4 lg:p-6 max-w-[2080px]">
+        <div className="mb-5 flex items-start justify-between">
+          <div>
+            <div className="flex items-center gap-3">
+              <h2 className="text-xl font-semibold text-foreground">
+                Control de Mantenimiento
+              </h2>
+              {selectedAircraft && (
+                <Badge variant="outline" className="font-mono text-xs border-primary/40 text-primary">
+                  {selectedAircraft.acronym}
+                </Badge>
+              )}
+            </div>
+            <p className="mt-1 text-sm text-muted-foreground">
+              {selectedAircraft
+                ? `${selectedAircraft.manufacturer?.name ?? ''} ${selectedAircraft.aircraft_type?.series ?? ''} — S/N ${selectedAircraft.serial}`
+                : "Selecciona una aeronave para inspeccionar sus programas de mantenimiento"
+              }
+            </p>
+          </div>
+          <Settings2 className="h-5 w-5 text-muted-foreground/50" />
         </div>
 
         <StatsCards
@@ -66,8 +79,8 @@ export default function MaintenanceDashboard() {
           controlsForAircraft={controlsForAircraft}
         />
 
-        <div className="mt-6 grid gap-6 lg:grid-cols-12">
-          <div className="lg:col-span-3 space-y-6">
+        <div className="mt-4 grid gap-4 lg:grid-cols-12">
+          <div className="lg:col-span-2">
             <AircraftSelector
               aircraft={aircraft}
               controls={controls}
@@ -76,7 +89,7 @@ export default function MaintenanceDashboard() {
             />
           </div>
 
-          <div className="lg:col-span-6 space-y-6">
+          <div className="lg:col-span-7 space-y-4">
             <ControlSelector
               controls={controlsForAircraft}
               selectedControlId={selectedControlId}
@@ -89,11 +102,18 @@ export default function MaintenanceDashboard() {
                 controlName={selectedControl.title}
               />
             ) : selectedAircraft ? (
-              <div className="flex h-[300px] items-center justify-center rounded-lg border border-border bg-card">
-                <p className="text-muted-foreground">
-                  Selecciona un control de mantenimiento para ver sus tareas
-                </p>
-              </div>
+              <Card className="border-border/60 bg-card">
+                <CardContent className="py-10">
+                  <div className="flex flex-col items-center justify-center text-center">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted">
+                      <Settings2 className="h-6 w-6 text-muted-foreground/60" />
+                    </div>
+                    <p className="mt-3 text-sm font-medium text-muted-foreground">
+                      Selecciona un control para ver sus task cards
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
             ) : null}
           </div>
 

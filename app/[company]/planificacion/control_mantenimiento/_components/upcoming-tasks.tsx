@@ -1,10 +1,11 @@
 "use client";
 
-import { AlertCircle, Clock, Calendar, RotateCcw, ArrowRight } from "lucide-react";
+import { AlertTriangle, Clock, Calendar, RotateCcw, ArrowRight } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Separator } from "@/components/ui/separator";
 
 export interface UpcomingTask {
   id: number;
@@ -71,86 +72,96 @@ interface UpcomingTasksProps {
 }
 
 export function UpcomingTasks({ tasks = MOCK_UPCOMING_TASKS }: UpcomingTasksProps) {
+  const criticalCount = tasks.filter((t) => t.status === "critical").length;
+
   return (
-    <Card className="border-border bg-card">
+    <Card className="border-border/60 bg-card">
       <CardHeader className="pb-3">
-        <CardTitle className="flex items-center gap-2 text-base font-medium text-foreground">
-          <AlertCircle className="h-4 w-4 text-warning" />
-          Próximas Tareas
+        <CardTitle className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+          <AlertTriangle className="h-4 w-4 text-amber-500" />
+          Alertas
+          {criticalCount > 0 && (
+            <Badge className="ml-auto bg-destructive/90 text-destructive-foreground font-mono text-[10px] px-1.5">
+              {criticalCount}
+            </Badge>
+          )}
         </CardTitle>
       </CardHeader>
       <CardContent className="p-0">
-        <ScrollArea className="h-[calc(100vh-300px)] px-6 pb-6">
-          <div className="space-y-3">
+        <ScrollArea className="h-[calc(100vh-340px)]">
+          <div className="px-4 pb-4">
             {tasks.length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-4">
-                No hay tareas próximas a vencer
+              <p className="text-xs text-muted-foreground text-center py-6">
+                Sin alertas activas
               </p>
             ) : (
-              tasks.map((task) => (
-                <div
-                  key={task.id}
-                  className={`rounded-lg border p-3 transition-colors ${
-                    task.status === "critical"
-                      ? "border-destructive/50 bg-destructive/5"
-                      : "border-warning/50 bg-warning/5"
-                  }`}
-                >
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="flex-1 min-w-0">
-                      <p className="font-mono text-sm text-primary">{task.code}</p>
-                      <p className="mt-1 text-sm text-foreground line-clamp-1">
-                        {task.description}
-                      </p>
-                    </div>
-                    <Badge
-                      className={
+              <div className="space-y-2">
+                {tasks.map((task, i) => (
+                  <div key={task.id}>
+                    <div
+                      className={`rounded-md border p-2.5 transition-colors ${
                         task.status === "critical"
-                          ? "bg-destructive text-destructive-foreground"
-                          : "bg-warning text-warning-foreground"
-                      }
+                          ? "border-destructive/30 bg-destructive/5"
+                          : "border-amber-500/20 bg-amber-500/5"
+                      }`}
                     >
-                      {task.status === "critical" ? "Crítico" : "Próximo"}
-                    </Badge>
-                  </div>
+                      <div className="flex items-start justify-between gap-1.5">
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-1.5">
+                            <div className={`h-1.5 w-1.5 rounded-full shrink-0 ${
+                              task.status === "critical" ? "bg-destructive animate-pulse" : "bg-amber-500"
+                            }`} />
+                            <span className="font-mono text-[11px] font-medium text-primary truncate">
+                              {task.code}
+                            </span>
+                          </div>
+                          <p className="mt-1 text-[11px] leading-snug text-foreground/80 line-clamp-2 pl-3">
+                            {task.description}
+                          </p>
+                        </div>
+                      </div>
 
-                  <div className="mt-2 flex items-center gap-3">
-                    <Badge variant="outline" className="border-border bg-muted text-muted-foreground">
-                      {intervalIcons[task.intervalType]}
-                      <span className="ml-1">{task.intervalType}</span>
-                    </Badge>
-                    <span className="text-xs text-muted-foreground">
-                      Restante:{" "}
-                      <span
-                        className={
-                          task.status === "critical"
-                            ? "text-destructive font-medium"
-                            : "text-warning font-medium"
-                        }
-                      >
-                        {task.remaining.toLocaleString()}{" "}
-                        {task.intervalType === "Calendar" ? "días" : task.intervalType}
-                      </span>
-                    </span>
-                  </div>
+                      <div className="mt-2 flex items-center gap-2 pl-3">
+                        <Badge variant="outline" className="h-4 border-border/60 px-1 text-[9px] font-normal gap-0.5">
+                          {intervalIcons[task.intervalType]}
+                          {task.intervalType}
+                        </Badge>
+                        <span className="text-[10px] text-muted-foreground">
+                          <span className={`font-mono font-semibold ${
+                            task.status === "critical" ? "text-destructive" : "text-amber-600 dark:text-amber-400"
+                          }`}>
+                            {task.remaining.toLocaleString()}
+                          </span>
+                          {" "}{task.intervalType === "Calendar" ? "días" : task.intervalType} restantes
+                        </span>
+                      </div>
 
-                  {task.dueDate && (
-                    <div className="mt-2 flex items-center gap-1 text-xs text-muted-foreground">
-                      <Calendar className="h-3 w-3" />
-                      <span suppressHydrationWarning>
-                        Vence: {new Date(task.dueDate).toLocaleDateString("es-AR")}
-                      </span>
+                      {task.dueDate && (
+                        <div className="mt-1.5 flex items-center gap-1 pl-3 text-[10px] text-muted-foreground">
+                          <Calendar className="h-2.5 w-2.5" />
+                          <span suppressHydrationWarning>
+                            {new Date(task.dueDate).toLocaleDateString("es-AR", {
+                              day: "2-digit",
+                              month: "short",
+                              year: "numeric",
+                            })}
+                          </span>
+                        </div>
+                      )}
                     </div>
-                  )}
-                </div>
-              ))
+                  </div>
+                ))}
+              </div>
             )}
 
             {tasks.length > 0 && (
-              <Button variant="ghost" className="w-full text-primary hover:text-primary hover:bg-primary/10">
-                Ver todas las tareas
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
+              <>
+                <Separator className="my-3" />
+                <Button variant="ghost" size="sm" className="w-full h-7 text-xs text-primary hover:text-primary hover:bg-primary/5">
+                  Ver todas las alertas
+                  <ArrowRight className="ml-1.5 h-3 w-3" />
+                </Button>
+              </>
             )}
           </div>
         </ScrollArea>

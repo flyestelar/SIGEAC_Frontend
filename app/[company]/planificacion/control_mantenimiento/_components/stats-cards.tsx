@@ -1,6 +1,12 @@
 "use client";
 
-import { Plane, ClipboardList, FileText, Wrench } from "lucide-react";
+import {
+  Plane,
+  ClipboardList,
+  FileText,
+  Wrench,
+  TrendingUp,
+} from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import type { MaintenanceAircraft, MaintenanceControl } from "@/types";
 
@@ -9,27 +15,23 @@ interface StatCardProps {
   value: string | number;
   subtitle: string;
   icon: React.ReactNode;
-  variant?: "default" | "warning" | "success";
+  accent?: string;
 }
 
-function StatCard({ title, value, subtitle, icon, variant = "default" }: StatCardProps) {
-  const variantClasses = {
-    default: "bg-primary/10 text-primary",
-    warning: "bg-warning/10 text-warning",
-    success: "bg-success/10 text-success",
-  };
+function StatCard({ title, value, subtitle, icon, accent = "text-primary bg-primary/10" }: StatCardProps) {
+  const [textColor, bgColor] = accent.split(" ");
 
   return (
-    <Card className="border-border bg-card">
-      <CardContent className="p-5">
-        <div className="flex items-start justify-between">
-          <div>
-            <p className="text-sm text-muted-foreground">{title}</p>
-            <p className="mt-1 text-3xl font-semibold text-foreground">{value}</p>
-            <p className="mt-1 text-xs text-muted-foreground">{subtitle}</p>
+    <Card className="border-border/60 bg-card overflow-hidden">
+      <CardContent className="p-0">
+        <div className="flex items-center gap-4 p-4">
+          <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-lg ${bgColor}`}>
+            <span className={textColor}>{icon}</span>
           </div>
-          <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${variantClasses[variant]}`}>
-            {icon}
+          <div className="min-w-0">
+            <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">{title}</p>
+            <p className="mt-0.5 text-2xl font-bold tabular-nums text-foreground">{value}</p>
+            <p className="text-xs text-muted-foreground truncate">{subtitle}</p>
           </div>
         </div>
       </CardContent>
@@ -49,31 +51,37 @@ export function StatsCards({ aircraft, controls, selectedAircraft, controlsForAi
   const totalTasks = displayControls.reduce((sum, c) => sum + c.task_cards.length, 0);
 
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
       <StatCard
-        title={selectedAircraft ? "Aeronave Seleccionada" : "Aeronaves Activas"}
+        title={selectedAircraft ? "Aeronave" : "Flota"}
         value={selectedAircraft ? selectedAircraft.acronym : aircraft.length}
-        subtitle={selectedAircraft ? (selectedAircraft.manufacturer?.name ?? '') : "En servicio"}
+        subtitle={selectedAircraft ? (selectedAircraft.manufacturer?.name ?? 'Sin fabricante') : "Aeronaves en servicio"}
         icon={<Plane className="h-5 w-5" />}
       />
       <StatCard
         title="Controles"
         value={displayControls.length}
-        subtitle={selectedAircraft ? `Para ${selectedAircraft.acronym}` : "Total en el sistema"}
+        subtitle={selectedAircraft ? `Asignados a ${selectedAircraft.acronym}` : "Programas registrados"}
         icon={<FileText className="h-5 w-5" />}
+        accent="text-blue-500 bg-blue-500/10"
       />
       <StatCard
-        title="Tareas Totales"
+        title="Task Cards"
         value={totalTasks}
         subtitle={`En ${displayControls.length} controles`}
         icon={<ClipboardList className="h-5 w-5" />}
+        accent="text-amber-500 bg-amber-500/10"
       />
       <StatCard
-        title="Aeronaves en Flota"
-        value={aircraft.length}
-        subtitle="Registradas"
+        title="Componentes"
+        value={
+          selectedAircraft
+            ? selectedAircraft.aircraft_assignments?.length ?? 0
+            : aircraft.reduce((sum, ac) => sum + (ac.aircraft_assignments?.length ?? 0), 0)
+        }
+        subtitle={selectedAircraft ? "Partes asignadas" : "Total en flota"}
         icon={<Wrench className="h-5 w-5" />}
-        variant="success"
+        accent="text-emerald-500 bg-emerald-500/10"
       />
     </div>
   );
