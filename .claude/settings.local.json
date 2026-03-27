@@ -3,7 +3,9 @@
     "allow": [
       "Bash(cd \"C:\\\\Users\\\\aanton\\\\Proyecto\\\\SIGEAC_ESTELAR\\\\SIGEAC_Frontend\" && npm run build 2>&1)",
       "Bash(find:*)",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "Bash(git add:*)",
+      "Bash(git push:*)"
     ]
   }
 }

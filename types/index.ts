@@ -560,6 +560,25 @@ export type AircraftType = {
   updated_at: string;
 };
 
+export type MaintenanceControl = {
+  id: number;
+  manual_reference: string;
+  title: string;
+  description: string;
+  aircrafs: MaintenanceAircraft[]
+  task_cards: TaskCard[]
+}
+
+export type TaskCard = {
+  id: number;
+  description: string,
+  old_task: string,
+  new_task: string,
+  interval_fh: string,
+  interval_fc: string,
+  interval_days: string,
+}
+
 export type Vendor = {
   id: string | number;
   name: string;

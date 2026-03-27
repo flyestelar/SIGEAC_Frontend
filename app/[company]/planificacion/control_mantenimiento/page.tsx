@@ -6,13 +6,13 @@ import { AircraftSelector } from "./_components/aircraft-selector";
 import { ControlSelector } from "./_components/control-selector";
 import { TasksTable } from "./_components/tasks-table";
 import { UpcomingTasks } from "./_components/upcoming-tasks";
-import { aircraft } from "./_data/mock-data";
 import { ContentLayout } from "@/components/layout/ContentLayout";
+import { useGetMaintenanceAircrafts } from "@/hooks/planificacion/useGetMaintenanceAircrafts";
 
 export default function MaintenanceDashboard() {
   const [selectedAircraftId, setSelectedAircraftId] = useState<string | null>(null);
   const [selectedControlId, setSelectedControlId] = useState<string | null>(null);
-
+  const { data: aircraft, isLoading, isError } = useGetMaintenanceAircrafts()
   const selectedAircraft = useMemo(() => {
     return aircraft.find((ac) => ac.id === selectedAircraftId) || null;
   }, [selectedAircraftId]);
