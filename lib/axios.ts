@@ -16,7 +16,7 @@ axiosInstance.interceptors.request.use((config) => {
     config.headers.Authorization = `${token}`;
   }
 
-  const { selectedCompany } = useCompanyStore();
+  const { selectedCompany } = useCompanyStore.getState();
 
   if (selectedCompany) {
     config.headers['x-sigeac-company-id'] = selectedCompany.id;
