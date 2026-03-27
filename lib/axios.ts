@@ -19,7 +19,7 @@ axiosInstance.interceptors.request.use((config) => {
   const { selectedCompany } = useCompanyStore.getState();
 
   if (selectedCompany) {
-    config.headers['x-sigeac-company-id'] = selectedCompany.id;
+    config.headers['x-company-id'] = selectedCompany.id;
   }
 
   return config;
