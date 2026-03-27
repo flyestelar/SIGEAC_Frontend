@@ -1,14 +1,14 @@
 "use client";
 
-import { FileText, ChevronRight, Calendar, ClipboardList } from "lucide-react";
+import { FileText, ChevronRight, ClipboardList } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import type { MaintenanceControl } from "../_data/types";
+import type { MaintenanceControl } from "@/types";
 
 interface ControlSelectorProps {
   controls: MaintenanceControl[];
-  selectedControlId: string | null;
-  onSelectControl: (id: string) => void;
+  selectedControlId: number | null;
+  onSelectControl: (id: number) => void;
 }
 
 export function ControlSelector({
@@ -16,12 +16,6 @@ export function ControlSelector({
   selectedControlId,
   onSelectControl,
 }: ControlSelectorProps) {
-  const getTaskStats = (control: MaintenanceControl) => {
-    const critical = control.tasks.filter((t) => t.status === "critical").length;
-    const warning = control.tasks.filter((t) => t.status === "warning").length;
-    return { critical, warning, total: control.tasks.length };
-  };
-
   if (controls.length === 0) {
     return (
       <Card className="border-border bg-card">
@@ -56,57 +50,42 @@ export function ControlSelector({
       </CardHeader>
       <CardContent className="space-y-2">
         {controls.map((control) => {
-          const stats = getTaskStats(control);
           const isSelected = selectedControlId === control.id;
 
           return (
             <button
               key={control.id}
               onClick={() => onSelectControl(control.id)}
-              className={`w-full rounded-lg border p-4 text-left transition-all hover:border-primary/50 ${
-                isSelected
+              className={`w-full rounded-lg border p-4 text-left transition-all hover:border-primary/50 ${isSelected
                   ? "border-primary bg-primary/5"
                   : "border-border bg-secondary/30"
-              }`}
+                }`}
             >
               <div className="flex items-start justify-between">
                 <div className="flex-1">
-                  <h3 className="font-medium text-foreground">{control.name}</h3>
+                  <h3 className="font-medium text-foreground">{control.title}</h3>
                   <p className="mt-1 text-sm text-muted-foreground">
-                    {control.mpdReference}
+                    {control.manual_reference}
                   </p>
+                  {control.description && (
+                    <p className="mt-1 text-xs text-muted-foreground line-clamp-2">
+                      {control.description}
+                    </p>
+                  )}
                 </div>
                 <ChevronRight
-                  className={`h-5 w-5 text-muted-foreground transition-transform ${
-                    isSelected ? "rotate-90 text-primary" : ""
-                  }`}
+                  className={`h-5 w-5 text-muted-foreground transition-transform ${isSelected ? "rotate-90 text-primary" : ""
+                    }`}
                 />
               </div>
 
               <div className="mt-3 flex flex-wrap items-center gap-2">
                 <Badge variant="outline" className="border-border bg-secondary text-secondary-foreground">
-                  <Calendar className="mr-1 h-3 w-3" />
-                  {control.revision}
+                  {control.task_cards.length} tareas
                 </Badge>
                 <Badge variant="outline" className="border-border bg-secondary text-secondary-foreground">
-                  {stats.total} tareas
+                  {control.aircrafts.length} aeronaves
                 </Badge>
-                {stats.critical > 0 && (
-                  <Badge className="bg-destructive text-destructive-foreground">
-                    {stats.critical} críticas
-                  </Badge>
-                )}
-                {stats.warning > 0 && (
-                  <Badge className="bg-warning text-warning-foreground">
-                    {stats.warning} próximas
-                  </Badge>
-                )}
-              </div>
-
-              <div className="mt-3 border-t border-border pt-3">
-                <p className="text-xs text-muted-foreground" suppressHydrationWarning>
-                  Fecha efectiva: {new Date(control.effectiveDate).toLocaleDateString("es-AR")}
-                </p>
               </div>
             </button>
           );

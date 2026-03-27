@@ -565,7 +565,7 @@ export type MaintenanceControl = {
   manual_reference: string;
   title: string;
   description: string;
-  aircrafs: MaintenanceAircraft[]
+  aircrafts: MaintenanceAircraft[]
   task_cards: TaskCard[]
 }
 

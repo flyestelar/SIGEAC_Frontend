@@ -1,6 +1,6 @@
 "use client";
 
-import { Clock, Calendar, Gauge, RotateCcw, MoreHorizontal } from "lucide-react";
+import { Clock, Calendar, RotateCcw, MoreHorizontal } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -18,58 +18,12 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import type { MaintenanceTask, IntervalType } from "../_data/types";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import type { TaskCard } from "@/types";
 
 interface TasksTableProps {
-  tasks: MaintenanceTask[];
+  tasks: TaskCard[];
   controlName: string;
-}
-
-const intervalIcons: Record<IntervalType, React.ReactNode> = {
-  FH: <Clock className="h-3 w-3" />,
-  FC: <RotateCcw className="h-3 w-3" />,
-  Calendar: <Calendar className="h-3 w-3" />,
-  Interval: <Gauge className="h-3 w-3" />,
-};
-
-const intervalLabels: Record<IntervalType, string> = {
-  FH: "Flight Hours",
-  FC: "Flight Cycles",
-  Calendar: "Calendario",
-  Interval: "Intervalo",
-};
-
-function getStatusBadge(status: MaintenanceTask["status"]) {
-  switch (status) {
-    case "critical":
-      return (
-        <Badge className="bg-destructive text-destructive-foreground">
-          Crítico
-        </Badge>
-      );
-    case "warning":
-      return (
-        <Badge className="bg-warning text-warning-foreground">
-          Próximo
-        </Badge>
-      );
-    case "ok":
-      return (
-        <Badge className="bg-success text-success-foreground">
-          OK
-        </Badge>
-      );
-  }
-}
-
-function getProgressPercentage(task: MaintenanceTask) {
-  return Math.round((task.currentValue / task.intervalValue) * 100);
-}
-
-function getProgressColor(percentage: number) {
-  if (percentage >= 95) return "bg-destructive";
-  if (percentage >= 80) return "bg-warning";
-  return "bg-primary";
 }
 
 export function TasksTable({ tasks, controlName }: TasksTableProps) {
@@ -77,58 +31,65 @@ export function TasksTable({ tasks, controlName }: TasksTableProps) {
     <Card className="border-border bg-card">
       <CardHeader className="flex flex-row items-center justify-between pb-3">
         <CardTitle className="text-base font-medium text-foreground">
-          Tareas de Mantenimiento
+          Tareas - {controlName}
         </CardTitle>
         <Badge variant="outline" className="border-border text-muted-foreground">
           {tasks.length} tareas
         </Badge>
       </CardHeader>
       <CardContent>
-        <div className="rounded-lg border border-border overflow-hidden">
-          <Table>
-            <TableHeader>
-              <TableRow className="border-border bg-secondary/50 hover:bg-secondary/50">
-                <TableHead className="text-muted-foreground">Código</TableHead>
-                <TableHead className="text-muted-foreground">Descripción</TableHead>
-                <TableHead className="text-muted-foreground">Tipo</TableHead>
-                <TableHead className="text-muted-foreground">Intervalo</TableHead>
-                <TableHead className="text-muted-foreground">Estado</TableHead>
-                <TableHead className="w-10"></TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {tasks.map((task) => {
-                const progress = getProgressPercentage(task);
-                return (
+        <ScrollArea className="h-[calc(100vh-400px)]">
+          <div className="rounded-lg border border-border overflow-hidden">
+            <Table>
+              <TableHeader>
+                <TableRow className="border-border bg-secondary/50 hover:bg-secondary/50">
+                  <TableHead className="text-muted-foreground">Tarea</TableHead>
+                  <TableHead className="text-muted-foreground">Descripción</TableHead>
+                  <TableHead className="text-muted-foreground">
+                    <div className="flex items-center gap-1">
+                      <Clock className="h-3 w-3" />
+                    </div>
+                  </TableHead>
+                  <TableHead className="text-muted-foreground">
+                    <div className="flex items-center gap-1">
+                      <RotateCcw className="h-3 w-3" />
+                    </div>
+                  </TableHead>
+                  <TableHead className="text-muted-foreground">
+                    <div className="flex items-center gap-1">
+                      <Calendar className="h-3 w-3" />
+                    </div>
+                  </TableHead>
+                  <TableHead className="w-10"></TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {tasks.map((task) => (
                   <TableRow key={task.id} className="border-border hover:bg-secondary/30">
                     <TableCell className="font-mono text-sm text-primary">
-                      {task.code}
+                      <div className="flex flex-col">
+                        <span>{task.new_task || task.old_task}</span>
+                        {task.new_task && task.old_task && task.new_task !== task.old_task && (
+                          <span className="text-xs text-muted-foreground">
+                            ({task.old_task})
+                          </span>
+                        )}
+                      </div>
                     </TableCell>
                     <TableCell className="max-w-[300px]">
                       <span className="line-clamp-2 text-sm text-foreground">
                         {task.description}
                       </span>
                     </TableCell>
-                    <TableCell>
-                      <Badge
-                        variant="outline"
-                        className="border-border bg-muted text-muted-foreground"
-                      >
-                        {intervalIcons[task.intervalType]}
-                        <span className="ml-1">{task.intervalType}</span>
-                      </Badge>
+                    <TableCell className="text-sm text-muted-foreground">
+                      {`${task.interval_fh} h`}
                     </TableCell>
                     <TableCell className="text-sm text-muted-foreground">
-                      <div className="flex flex-col">
-                        <span>
-                          {task.currentValue.toLocaleString()} / {task.intervalValue.toLocaleString()}
-                        </span>
-                        <span className="text-xs">
-                          {intervalLabels[task.intervalType]}
-                        </span>
-                      </div>
+                      {task.interval_fc || '-'}
                     </TableCell>
-                    <TableCell>{getStatusBadge(task.status)}</TableCell>
+                    <TableCell className="text-sm text-muted-foreground">
+                      {task.interval_days || '-'}
+                    </TableCell>
                     <TableCell>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -144,11 +105,11 @@ export function TasksTable({ tasks, controlName }: TasksTableProps) {
                       </DropdownMenu>
                     </TableCell>
                   </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
-        </div>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </ScrollArea>
       </CardContent>
     </Card>
   );

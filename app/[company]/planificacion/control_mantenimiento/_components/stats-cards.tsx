@@ -1,8 +1,8 @@
 "use client";
 
-import { Plane, ClipboardList, AlertTriangle, CheckCircle } from "lucide-react";
+import { Plane, ClipboardList, FileText, Wrench } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
-import type { Aircraft } from "../_data/types";
+import type { MaintenanceAircraft, MaintenanceControl } from "@/types";
 
 interface StatCardProps {
   title: string;
@@ -38,45 +38,41 @@ function StatCard({ title, value, subtitle, icon, variant = "default" }: StatCar
 }
 
 interface StatsCardsProps {
-  aircraft: Aircraft[];
-  selectedAircraft?: Aircraft | null;
+  aircraft: MaintenanceAircraft[];
+  controls: MaintenanceControl[];
+  selectedAircraft: MaintenanceAircraft | null;
+  controlsForAircraft: MaintenanceControl[];
 }
 
-export function StatsCards({ aircraft, selectedAircraft }: StatsCardsProps) {
-  const targetAircraft = selectedAircraft ? [selectedAircraft] : aircraft;
-  
-  const totalTasks = targetAircraft.flatMap((ac) => ac.controls.flatMap((c) => c.tasks));
-  const criticalTasks = totalTasks.filter((t) => t.status === "critical").length;
-  const warningTasks = totalTasks.filter((t) => t.status === "warning").length;
-  const okTasks = totalTasks.filter((t) => t.status === "ok").length;
-  const totalControls = targetAircraft.flatMap((ac) => ac.controls).length;
+export function StatsCards({ aircraft, controls, selectedAircraft, controlsForAircraft }: StatsCardsProps) {
+  const displayControls = selectedAircraft ? controlsForAircraft : controls;
+  const totalTasks = displayControls.reduce((sum, c) => sum + c.task_cards.length, 0);
 
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
       <StatCard
         title={selectedAircraft ? "Aeronave Seleccionada" : "Aeronaves Activas"}
-        value={selectedAircraft ? selectedAircraft.registration : aircraft.length}
-        subtitle={selectedAircraft ? selectedAircraft.model : "En servicio"}
+        value={selectedAircraft ? selectedAircraft.acronym : aircraft.length}
+        subtitle={selectedAircraft ? (selectedAircraft.manufacturer?.name ?? '') : "En servicio"}
         icon={<Plane className="h-5 w-5" />}
       />
       <StatCard
+        title="Controles"
+        value={displayControls.length}
+        subtitle={selectedAircraft ? `Para ${selectedAircraft.acronym}` : "Total en el sistema"}
+        icon={<FileText className="h-5 w-5" />}
+      />
+      <StatCard
         title="Tareas Totales"
-        value={totalTasks.length}
-        subtitle={`En ${totalControls} controles`}
+        value={totalTasks}
+        subtitle={`En ${displayControls.length} controles`}
         icon={<ClipboardList className="h-5 w-5" />}
       />
       <StatCard
-        title="Atención Requerida"
-        value={criticalTasks + warningTasks}
-        subtitle={`${criticalTasks} críticas, ${warningTasks} próximas`}
-        icon={<AlertTriangle className="h-5 w-5" />}
-        variant="warning"
-      />
-      <StatCard
-        title="En Estado OK"
-        value={okTasks}
-        subtitle="Sin acciones pendientes"
-        icon={<CheckCircle className="h-5 w-5" />}
+        title="Aeronaves en Flota"
+        value={aircraft.length}
+        subtitle="Registradas"
+        icon={<Wrench className="h-5 w-5" />}
         variant="success"
       />
     </div>
