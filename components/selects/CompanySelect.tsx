@@ -9,11 +9,13 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useGetUserLocationsByCompanyId } from "@/hooks/sistema/usuario/useGetUserLocationsByCompanyId";
 import { useCompanyStore } from "@/stores/CompanyStore";
 import { Company } from "@/types";
+import { useQueryClient } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 
 const CompanySelect = () => {
   // Hooks y estados
   const { user, loading: userLoading } = useAuth();
+  const queryClient = useQueryClient();
 
   const { selectedCompany, selectedStation, setSelectedCompany, setSelectedStation } = useCompanyStore();
   
@@ -34,11 +36,13 @@ const CompanySelect = () => {
     const company = user?.companies?.find((c) => c.id.toString() === companyId);
     if (company) {
       setSelectedCompany(company);
+      queryClient.clear();
     }
   };
 
   const handleStationSelect = (value: string) => {
     setSelectedStation(value);
+    queryClient.clear();
   };
 
   // Funciones auxiliares
