@@ -21,7 +21,10 @@ axiosInstance.interceptors.request.use((config) => {
   }
   
   return config;
-});
+}
+
+axiosInstance.interceptors.request.use(requestInterceptor);
+client.instance.interceptors.request.use(requestInterceptor);
 
 // 2. Interceptor de Respuesta: Detecta si el servidor nos expulsó (Error 401)
 axiosInstance.interceptors.response.use(
