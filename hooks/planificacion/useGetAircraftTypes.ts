@@ -1,31 +1,13 @@
-import axiosInstance from '@/lib/axios';
-import { AircraftType, PaginatedResponse } from '@/types';
+import { aircraftTypesIndexOptions } from '@api/queries';
 import { useQuery } from '@tanstack/react-query';
 
-const fetchAircraftTypes = async ({
-  company,
-  search,
-  manufacturerId,
-  signal,
-}: { company?: string; search?: string; manufacturerId?: number; signal?: AbortSignal } = {}): Promise<
-  PaginatedResponse<AircraftType>
-> => {
-  const params = {
-    ...(search ? { search } : {}),
-    ...(manufacturerId ? { manufacturer_id: manufacturerId } : {}),
-  };
-
-  const response = await axiosInstance.get<PaginatedResponse<AircraftType>>(`/${company}/aircraft-types`, {
-    params: Object.keys(params).length ? params : undefined,
-    signal,
-  });
-  return response.data;
-};
-
 export const useGetAircraftTypes = (company?: string, search?: string, manufacturerId?: number) => {
-  return useQuery<PaginatedResponse<AircraftType>>({
-    queryKey: ['aircraftTypes', company, { search: search ?? null, manufacturerId: manufacturerId ?? null }],
-    queryFn: ({ signal }) => fetchAircraftTypes({ company, search, manufacturerId, signal }),
-    enabled: !!company,
+  return useQuery({
+    ...aircraftTypesIndexOptions({
+      query: {
+        manufacturer_id: manufacturerId,
+        search,
+      },
+    }),
   });
 };

@@ -219,6 +219,7 @@ import {
   login,
   logout,
   maintenanceControlsDestroy,
+  maintenanceControlsGetTasks,
   maintenanceControlsIndex,
   maintenanceControlsShow,
   maintenanceControlsStore,
@@ -328,6 +329,7 @@ import {
   taskCardsShow,
   taskCardsStore,
   taskCardsUpdate,
+  taskExecutionsStore,
   tasksDestroy,
   tasksIndex,
   tasksShow,
@@ -989,6 +991,9 @@ import type {
   MaintenanceControlsDestroyData,
   MaintenanceControlsDestroyError,
   MaintenanceControlsDestroyResponse,
+  MaintenanceControlsGetTasksData,
+  MaintenanceControlsGetTasksError,
+  MaintenanceControlsGetTasksResponse,
   MaintenanceControlsIndexData,
   MaintenanceControlsIndexError,
   MaintenanceControlsIndexResponse,
@@ -1302,6 +1307,9 @@ import type {
   TaskCardsUpdateData,
   TaskCardsUpdateError,
   TaskCardsUpdateResponse,
+  TaskExecutionsStoreData,
+  TaskExecutionsStoreError,
+  TaskExecutionsStoreResponse,
   TasksDestroyData,
   TasksDestroyError,
   TasksIndexData,
@@ -1904,7 +1912,7 @@ export const accountantCategoryGetAccountantCategoriesOptions = (
   });
 
 /**
- * ⚠️ Cannot generate request documentation: include(/home/angeldaj/projects/SIGEAC_Backend/vendor/composer/../../app/Models/Companies/Transmandu/BaseModel.php): Failed to open stream: No such file or directory
+ * ⚠️ Cannot generate request documentation: Class "App\Models\Companies\Transmandu\BaseModel" not found
  */
 export const activityFinalizeMutation = (
   options?: Partial<Options<ActivityFinalizeData>>,
@@ -1927,7 +1935,7 @@ export const activityFinalizeMutation = (
 };
 
 /**
- * ⚠️ Cannot generate request documentation: include(/home/angeldaj/projects/SIGEAC_Backend/vendor/composer/../../app/Models/Companies/Transmandu/BaseModel.php): Failed to open stream: No such file or directory
+ * ⚠️ Cannot generate request documentation: Class "App\Models\Companies\Transmandu\BaseModel" not found
  */
 export const activityPatchMutation = (
   options?: Partial<Options<ActivityPatchData>>,
@@ -1951,7 +1959,7 @@ export const activityReportIndexQueryKey = (options?: Options<ActivityReportInde
 /**
  * Lista los informes de actividad con usuario y fecha formateada
  *
- * ⚠️ Cannot generate request documentation: include(/home/angeldaj/projects/SIGEAC_Backend/vendor/composer/../../app/Models/Companies/Transmandu/BaseModel.php): Failed to open stream: No such file or directory
+ * ⚠️ Cannot generate request documentation: Class "App\Models\Companies\Transmandu\BaseModel" not found
  */
 export const activityReportIndexOptions = (options?: Options<ActivityReportIndexData>) =>
   queryOptions<unknown, AxiosError<ActivityReportIndexError>, unknown, ReturnType<typeof activityReportIndexQueryKey>>({
@@ -1970,7 +1978,7 @@ export const activityReportIndexOptions = (options?: Options<ActivityReportIndex
 /**
  * Crea un informe de actividad
  *
- * ⚠️ Cannot generate request documentation: include(/home/angeldaj/projects/SIGEAC_Backend/vendor/composer/../../app/Models/Companies/Transmandu/BaseModel.php): Failed to open stream: No such file or directory
+ * ⚠️ Cannot generate request documentation: Class "App\Models\Companies\Transmandu\BaseModel" not found
  */
 export const activityReportStoreMutation = (
   options?: Partial<Options<ActivityReportStoreData>>,
@@ -1998,7 +2006,7 @@ export const activityReportShowQueryKey = (options?: Options<ActivityReportShowD
 /**
  * Muestra actividades de un informe
  *
- * ⚠️ Cannot generate request documentation: include(/home/angeldaj/projects/SIGEAC_Backend/vendor/composer/../../app/Models/Companies/Transmandu/BaseModel.php): Failed to open stream: No such file or directory
+ * ⚠️ Cannot generate request documentation: Class "App\Models\Companies\Transmandu\BaseModel" not found
  */
 export const activityReportShowOptions = (options?: Options<ActivityReportShowData>) =>
   queryOptions<unknown, AxiosError<ActivityReportShowError>, unknown, ReturnType<typeof activityReportShowQueryKey>>({
@@ -2017,7 +2025,7 @@ export const activityReportShowOptions = (options?: Options<ActivityReportShowDa
 /**
  * Actualiza un informe de actividad
  *
- * ⚠️ Cannot generate request documentation: include(/home/angeldaj/projects/SIGEAC_Backend/vendor/composer/../../app/Models/Companies/Transmandu/BaseModel.php): Failed to open stream: No such file or directory
+ * ⚠️ Cannot generate request documentation: Class "App\Models\Companies\Transmandu\BaseModel" not found
  */
 export const activityReportUpdateMutation = (
   options?: Partial<Options<ActivityReportUpdateData>>,
@@ -2045,7 +2053,7 @@ export const activityReportsDailyActivitiesQueryKey = (options?: Options<Activit
 /**
  * Obtiene actividades diarias de un usuario
  *
- * ⚠️ Cannot generate request documentation: include(/home/angeldaj/projects/SIGEAC_Backend/vendor/composer/../../app/Models/Companies/Transmandu/BaseModel.php): Failed to open stream: No such file or directory
+ * ⚠️ Cannot generate request documentation: Class "App\Models\Companies\Transmandu\BaseModel" not found
  */
 export const activityReportsDailyActivitiesOptions = (options?: Options<ActivityReportsDailyActivitiesData>) =>
   queryOptions<
@@ -2072,7 +2080,7 @@ export const activityReportsUserActivityQueryKey = (options?: Options<ActivityRe
 /**
  * Obtiene actividades del usuario autenticado
  *
- * ⚠️ Cannot generate request documentation: include(/home/angeldaj/projects/SIGEAC_Backend/vendor/composer/../../app/Models/Companies/Transmandu/BaseModel.php): Failed to open stream: No such file or directory
+ * ⚠️ Cannot generate request documentation: Class "App\Models\Companies\Transmandu\BaseModel" not found
  */
 export const activityReportsUserActivityOptions = (options?: Options<ActivityReportsUserActivityData>) =>
   queryOptions<
@@ -2121,7 +2129,7 @@ export const developerActivityReportsShow0Options = (options: Options<DeveloperA
 /**
  * Actualiza parcialmente un informe de actividad
  *
- * ⚠️ Cannot generate request documentation: include(/home/angeldaj/projects/SIGEAC_Backend/vendor/composer/../../app/Models/Companies/Transmandu/BaseModel.php): Failed to open stream: No such file or directory
+ * ⚠️ Cannot generate request documentation: Class "App\Models\Companies\Transmandu\BaseModel" not found
  */
 export const activityReportsPatchMutation = (
   options?: Partial<Options<ActivityReportsPatchData>>,
@@ -6905,6 +6913,31 @@ export const maintenanceControlsUpdateMutation = (
   return mutationOptions;
 };
 
+export const maintenanceControlsGetTasksQueryKey = (options: Options<MaintenanceControlsGetTasksData>) =>
+  createQueryKey('maintenanceControlsGetTasks', options);
+
+/**
+ * Get tasks for a specific maintenance control and aircraft
+ */
+export const maintenanceControlsGetTasksOptions = (options: Options<MaintenanceControlsGetTasksData>) =>
+  queryOptions<
+    MaintenanceControlsGetTasksResponse,
+    AxiosError<MaintenanceControlsGetTasksError>,
+    MaintenanceControlsGetTasksResponse,
+    ReturnType<typeof maintenanceControlsGetTasksQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await maintenanceControlsGetTasks({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: maintenanceControlsGetTasksQueryKey(options),
+  });
+
 export const manufacturerIndexQueryKey = (options: Options<ManufacturerIndexData>) =>
   createQueryKey('manufacturerIndex', options);
 
@@ -9559,6 +9592,33 @@ export const taskCardsUpdateMutation = (
   > = {
     mutationFn: async (fnOptions) => {
       const { data } = await taskCardsUpdate({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+/**
+ * Store a newly created resource in storage
+ */
+export const taskExecutionsStoreMutation = (
+  options?: Partial<Options<TaskExecutionsStoreData>>,
+): UseMutationOptions<
+  TaskExecutionsStoreResponse,
+  AxiosError<TaskExecutionsStoreError>,
+  Options<TaskExecutionsStoreData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    TaskExecutionsStoreResponse,
+    AxiosError<TaskExecutionsStoreError>,
+    Options<TaskExecutionsStoreData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await taskExecutionsStore({
         ...options,
         ...fnOptions,
         throwOnError: true,

@@ -2,12 +2,13 @@
 
 import { Button } from '@/components/ui/button';
 import {
-    DialogFooter
+  DialogFooter
 } from '@/components/ui/dialog';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { AircraftType, Manufacturer } from '@/types';
+import { Manufacturer } from '@/types';
+import { AircraftTypeResource } from '@api/types';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -25,7 +26,7 @@ export type DialogMode = 'create' | 'edit';
 
 interface AircraftTypeFormProps {
   mode: DialogMode;
-  initialData?: AircraftType | null;
+  initialData?: AircraftTypeResource | null;
   manufacturers: Manufacturer[];
   submitting: boolean;
   onCancel: () => void;

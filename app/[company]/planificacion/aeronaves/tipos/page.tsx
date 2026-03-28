@@ -22,19 +22,13 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle
-} from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useGetManufacturers } from '@/hooks/general/fabricantes/useGetManufacturers';
 import { useGetAircraftTypes } from '@/hooks/planificacion/useGetAircraftTypes';
 import { useCompanyStore } from '@/stores/CompanyStore';
-import { AircraftType } from '@/types';
+import { AircraftTypeResource } from '@api/types';
 import AircraftTypeForm, { AircraftTypeFormValues, DialogMode } from './_components/AircraftTypeForm';
 
 const AircraftTypesPage = () => {
@@ -43,9 +37,9 @@ const AircraftTypesPage = () => {
   const [input, setInput] = useDebouncedInput(search, (v) => setSearch(v), 500);
   const [dialogMode, setDialogMode] = useState<DialogMode>('create');
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [editingType, setEditingType] = useState<AircraftType | null>(null);
+  const [editingType, setEditingType] = useState<AircraftTypeResource | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [deletingType, setDeletingType] = useState<AircraftType | null>(null);
+  const [deletingType, setDeletingType] = useState<AircraftTypeResource | null>(null);
 
   const { data: manufacturers = [] } = useGetManufacturers(selectedCompany?.slug);
   const { data: aircraftTypesResponse, isLoading, isError } = useGetAircraftTypes(selectedCompany?.slug, search);
@@ -66,13 +60,13 @@ const AircraftTypesPage = () => {
     setDialogOpen(true);
   };
 
-  const openEditDialog = (type: AircraftType) => {
+  const openEditDialog = (type: AircraftTypeResource) => {
     setDialogMode('edit');
     setEditingType(type);
     setDialogOpen(true);
   };
 
-  const openDeleteDialog = (type: AircraftType) => {
+  const openDeleteDialog = (type: AircraftTypeResource) => {
     setDeletingType(type);
     setDeleteDialogOpen(true);
   };
@@ -90,8 +84,7 @@ const AircraftTypesPage = () => {
 
     if (dialogMode === 'create') {
       await createAircraftType.mutateAsync({
-        company: selectedCompany.slug,
-        data: {
+        body: {
           manufacturer_id: manufacturerId,
           family: values.family.trim(),
           series: values.series.trim(),
@@ -120,9 +113,8 @@ const AircraftTypesPage = () => {
     }
 
     await updateAircraftType.mutateAsync({
-      company: selectedCompany.slug,
-      id: editingType.id,
-      data: updatePayload,
+      path: { id: editingType.id },
+      body: updatePayload,
     });
     closeDialog();
   };
@@ -131,8 +123,7 @@ const AircraftTypesPage = () => {
     if (!selectedCompany?.slug || !deletingType) return;
 
     await deleteAircraftType.mutateAsync({
-      company: selectedCompany.slug,
-      id: deletingType.id,
+      path: { id: deletingType.id },
     });
     setDeleteDialogOpen(false);
     setDeletingType(null);

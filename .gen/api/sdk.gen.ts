@@ -645,6 +645,9 @@ import type {
   MaintenanceControlsDestroyData,
   MaintenanceControlsDestroyErrors,
   MaintenanceControlsDestroyResponses,
+  MaintenanceControlsGetTasksData,
+  MaintenanceControlsGetTasksErrors,
+  MaintenanceControlsGetTasksResponses,
   MaintenanceControlsIndexData,
   MaintenanceControlsIndexErrors,
   MaintenanceControlsIndexResponses,
@@ -969,6 +972,9 @@ import type {
   TaskCardsUpdateData,
   TaskCardsUpdateErrors,
   TaskCardsUpdateResponses,
+  TaskExecutionsStoreData,
+  TaskExecutionsStoreErrors,
+  TaskExecutionsStoreResponses,
   TasksDestroyData,
   TasksDestroyErrors,
   TasksDestroyResponses,
@@ -1379,7 +1385,7 @@ export const accountantCategoryGetAccountantCategories = <ThrowOnError extends b
   });
 
 /**
- * ⚠️ Cannot generate request documentation: include(/home/angeldaj/projects/SIGEAC_Backend/vendor/composer/../../app/Models/Companies/Transmandu/BaseModel.php): Failed to open stream: No such file or directory
+ * ⚠️ Cannot generate request documentation: Class "App\Models\Companies\Transmandu\BaseModel" not found
  */
 export const activityFinalize = <ThrowOnError extends boolean = false>(
   options?: Options<ActivityFinalizeData, ThrowOnError>,
@@ -1391,7 +1397,7 @@ export const activityFinalize = <ThrowOnError extends boolean = false>(
   });
 
 /**
- * ⚠️ Cannot generate request documentation: include(/home/angeldaj/projects/SIGEAC_Backend/vendor/composer/../../app/Models/Companies/Transmandu/BaseModel.php): Failed to open stream: No such file or directory
+ * ⚠️ Cannot generate request documentation: Class "App\Models\Companies\Transmandu\BaseModel" not found
  */
 export const activityPatch = <ThrowOnError extends boolean = false>(
   options?: Options<ActivityPatchData, ThrowOnError>,
@@ -1405,7 +1411,7 @@ export const activityPatch = <ThrowOnError extends boolean = false>(
 /**
  * Lista los informes de actividad con usuario y fecha formateada
  *
- * ⚠️ Cannot generate request documentation: include(/home/angeldaj/projects/SIGEAC_Backend/vendor/composer/../../app/Models/Companies/Transmandu/BaseModel.php): Failed to open stream: No such file or directory
+ * ⚠️ Cannot generate request documentation: Class "App\Models\Companies\Transmandu\BaseModel" not found
  */
 export const activityReportIndex = <ThrowOnError extends boolean = false>(
   options?: Options<ActivityReportIndexData, ThrowOnError>,
@@ -1419,7 +1425,7 @@ export const activityReportIndex = <ThrowOnError extends boolean = false>(
 /**
  * Crea un informe de actividad
  *
- * ⚠️ Cannot generate request documentation: include(/home/angeldaj/projects/SIGEAC_Backend/vendor/composer/../../app/Models/Companies/Transmandu/BaseModel.php): Failed to open stream: No such file or directory
+ * ⚠️ Cannot generate request documentation: Class "App\Models\Companies\Transmandu\BaseModel" not found
  */
 export const activityReportStore = <ThrowOnError extends boolean = false>(
   options?: Options<ActivityReportStoreData, ThrowOnError>,
@@ -1433,7 +1439,7 @@ export const activityReportStore = <ThrowOnError extends boolean = false>(
 /**
  * Muestra actividades de un informe
  *
- * ⚠️ Cannot generate request documentation: include(/home/angeldaj/projects/SIGEAC_Backend/vendor/composer/../../app/Models/Companies/Transmandu/BaseModel.php): Failed to open stream: No such file or directory
+ * ⚠️ Cannot generate request documentation: Class "App\Models\Companies\Transmandu\BaseModel" not found
  */
 export const activityReportShow = <ThrowOnError extends boolean = false>(
   options?: Options<ActivityReportShowData, ThrowOnError>,
@@ -1447,7 +1453,7 @@ export const activityReportShow = <ThrowOnError extends boolean = false>(
 /**
  * Actualiza un informe de actividad
  *
- * ⚠️ Cannot generate request documentation: include(/home/angeldaj/projects/SIGEAC_Backend/vendor/composer/../../app/Models/Companies/Transmandu/BaseModel.php): Failed to open stream: No such file or directory
+ * ⚠️ Cannot generate request documentation: Class "App\Models\Companies\Transmandu\BaseModel" not found
  */
 export const activityReportUpdate = <ThrowOnError extends boolean = false>(
   options?: Options<ActivityReportUpdateData, ThrowOnError>,
@@ -1461,7 +1467,7 @@ export const activityReportUpdate = <ThrowOnError extends boolean = false>(
 /**
  * Obtiene actividades diarias de un usuario
  *
- * ⚠️ Cannot generate request documentation: include(/home/angeldaj/projects/SIGEAC_Backend/vendor/composer/../../app/Models/Companies/Transmandu/BaseModel.php): Failed to open stream: No such file or directory
+ * ⚠️ Cannot generate request documentation: Class "App\Models\Companies\Transmandu\BaseModel" not found
  */
 export const activityReportsDailyActivities = <ThrowOnError extends boolean = false>(
   options?: Options<ActivityReportsDailyActivitiesData, ThrowOnError>,
@@ -1479,7 +1485,7 @@ export const activityReportsDailyActivities = <ThrowOnError extends boolean = fa
 /**
  * Obtiene actividades del usuario autenticado
  *
- * ⚠️ Cannot generate request documentation: include(/home/angeldaj/projects/SIGEAC_Backend/vendor/composer/../../app/Models/Companies/Transmandu/BaseModel.php): Failed to open stream: No such file or directory
+ * ⚠️ Cannot generate request documentation: Class "App\Models\Companies\Transmandu\BaseModel" not found
  */
 export const activityReportsUserActivity = <ThrowOnError extends boolean = false>(
   options?: Options<ActivityReportsUserActivityData, ThrowOnError>,
@@ -1513,7 +1519,7 @@ export const developerActivityReportsShow0 = <ThrowOnError extends boolean = fal
 /**
  * Actualiza parcialmente un informe de actividad
  *
- * ⚠️ Cannot generate request documentation: include(/home/angeldaj/projects/SIGEAC_Backend/vendor/composer/../../app/Models/Companies/Transmandu/BaseModel.php): Failed to open stream: No such file or directory
+ * ⚠️ Cannot generate request documentation: Class "App\Models\Companies\Transmandu\BaseModel" not found
  */
 export const activityReportsPatch = <ThrowOnError extends boolean = false>(
   options?: Options<ActivityReportsPatchData, ThrowOnError>,
@@ -4221,6 +4227,21 @@ export const maintenanceControlsUpdate = <ThrowOnError extends boolean = false>(
   });
 
 /**
+ * Get tasks for a specific maintenance control and aircraft
+ */
+export const maintenanceControlsGetTasks = <ThrowOnError extends boolean = false>(
+  options: Options<MaintenanceControlsGetTasksData, ThrowOnError>,
+) =>
+  (options.client ?? client).get<MaintenanceControlsGetTasksResponses, MaintenanceControlsGetTasksErrors, ThrowOnError>(
+    {
+      responseType: 'json',
+      security: [{ scheme: 'bearer', type: 'http' }],
+      url: '/maintenance-controls/{id}/tasks',
+      ...options,
+    },
+  );
+
+/**
  * Display a listing of the resource
  */
 export const manufacturerIndex = <ThrowOnError extends boolean = false>(
@@ -5761,6 +5782,23 @@ export const taskCardsUpdate = <ThrowOnError extends boolean = false>(
     responseType: 'json',
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/task-cards/{id}',
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    },
+  });
+
+/**
+ * Store a newly created resource in storage
+ */
+export const taskExecutionsStore = <ThrowOnError extends boolean = false>(
+  options: Options<TaskExecutionsStoreData, ThrowOnError>,
+) =>
+  (options.client ?? client).post<TaskExecutionsStoreResponses, TaskExecutionsStoreErrors, ThrowOnError>({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/task-executions',
     ...options,
     headers: {
       'Content-Type': 'application/json',
