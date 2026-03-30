@@ -9,7 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { parseMaintenanceInterval, processExcelFile } from '@/lib/excelProcessor';
 import { useCompanyStore } from '@/stores/CompanyStore';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { ChevronDown, ChevronUp, CircleHelp, Plus, Trash2 } from 'lucide-react';
+import { ChevronDown, ChevronUp, CircleHelp, ListChecksIcon, Plus, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { useFieldArray, useForm } from 'react-hook-form';
@@ -44,9 +44,10 @@ interface MaintenanceControlFormProps {
   submitting: boolean;
   onCancel: () => void;
   onSubmit: (values: MaintenanceControlFormValues) => Promise<void>;
+  initialValues?: Partial<MaintenanceControlFormValues>;
 }
 
-const MaintenanceControlForm = ({ submitting, onCancel, onSubmit }: MaintenanceControlFormProps) => {
+const MaintenanceControlForm = ({ submitting, onCancel, onSubmit, initialValues }: MaintenanceControlFormProps) => {
   const { selectedCompany } = useCompanyStore();
 
   const form = useForm<MaintenanceControlFormValues>({
@@ -58,6 +59,7 @@ const MaintenanceControlForm = ({ submitting, onCancel, onSubmit }: MaintenanceC
       interval: '',
       aircraft_ids: [],
       tasks: [],
+      ...initialValues,
     },
   });
 
@@ -258,11 +260,14 @@ const MaintenanceControlForm = ({ submitting, onCancel, onSubmit }: MaintenanceC
 
         <FormItem>
           <div className="flex items-center justify-between">
-            <FormLabel>Tareas</FormLabel>
+            <FormLabel className="flex items-center gap-2">
+              <ListChecksIcon className="h-4 w-4" />
+              Tareas
+            </FormLabel>
             {fields.length > 0 && (
               <Button
                 type="button"
-                variant="outline"
+                variant="ghost"
                 size="sm"
                 onClick={handleRemoveAllTasks}
                 className="text-destructive hover:text-destructive"
@@ -356,7 +361,13 @@ const MaintenanceControlForm = ({ submitting, onCancel, onSubmit }: MaintenanceC
                         >
                           <ChevronDown className="h-3 w-3" />
                         </Button>
-                        <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)} className="h-6 w-6">
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => remove(index)}
+                          className="h-6 w-6"
+                        >
                           <Trash2 className="h-3 w-3" />
                         </Button>
                       </div>
@@ -409,7 +420,13 @@ const MaintenanceControlForm = ({ submitting, onCancel, onSubmit }: MaintenanceC
             Cancelar
           </Button>
           <Button type="submit" disabled={submitting}>
-            {submitting ? 'Creando...' : 'Crear Control'}
+            {submitting
+              ? initialValues
+                ? 'Actualizando...'
+                : 'Creando...'
+              : initialValues
+                ? 'Actualizar Control'
+                : 'Crear Control'}
           </Button>
         </div>
       </form>

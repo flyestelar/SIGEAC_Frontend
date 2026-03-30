@@ -1,9 +1,12 @@
 "use client";
 
-import { FileText, BookOpen, ClipboardList, Plane } from "lucide-react";
+import { FileText, BookOpen, ClipboardList, Plane, Edit } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import { Button } from "@/components/ui/button";
+import { useCompanyStore } from "@/stores/CompanyStore";
+import Link from "next/link";
 import type { MaintenanceControl } from "@/types";
 
 interface ControlSelectorProps {
@@ -17,6 +20,7 @@ export function ControlSelector({
   selectedControlId,
   onSelectControl,
 }: ControlSelectorProps) {
+  const { selectedCompany } = useCompanyStore();
   if (controls.length === 0) {
     return (
       <Card className="border-border/60 bg-card">
@@ -58,12 +62,25 @@ export function ControlSelector({
                 <button
                   key={control.id}
                   onClick={() => onSelectControl(control.id)}
-                  className={`group shrink-0 rounded-lg border p-3 text-left transition-all w-[220px] ${
+                  className={`group relative shrink-0 rounded-lg border p-3 text-left transition-all w-[220px] ${
                     isSelected
                       ? "border-primary/60 bg-primary/5 ring-1 ring-primary/20"
                       : "border-border/60 bg-muted/20 hover:bg-muted/50 hover:border-border"
                   }`}
                 >
+                  <div className="absolute top-2 right-2 z-10">
+                    <Button
+                      asChild
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <Link href={`/${selectedCompany?.slug}/planificacion/control_mantenimiento/${control.id}/editar`}>
+                        <Edit className="h-3 w-3" />
+                      </Link>
+                    </Button>
+                  </div>
                   <div className="flex items-start gap-2.5">
                     <div className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-md transition-colors ${
                       isSelected ? "bg-primary/15 text-primary" : "bg-muted text-muted-foreground"
