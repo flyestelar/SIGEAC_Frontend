@@ -108,6 +108,11 @@ const MaintenanceControlForm = ({ submitting, onCancel, onSubmit }: MaintenanceC
     }
   };
 
+  const handleRemoveAllTasks = () => {
+    replace([]);
+    form.clearErrors('tasks');
+  };
+
   const handleNewTaskKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
     if (event.key === 'Enter') {
       event.preventDefault();
@@ -252,7 +257,21 @@ const MaintenanceControlForm = ({ submitting, onCancel, onSubmit }: MaintenanceC
         />
 
         <FormItem>
-          <FormLabel>Tareas</FormLabel>
+          <div className="flex items-center justify-between">
+            <FormLabel>Tareas</FormLabel>
+            {fields.length > 0 && (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={handleRemoveAllTasks}
+                className="text-destructive hover:text-destructive"
+              >
+                <Trash2 className="h-4 w-4 mr-2" />
+                Remover todas
+              </Button>
+            )}
+          </div>
           <div
             {...getRootProps()}
             className={`cursor-pointer rounded-md border border-dashed p-4 transition-colors ${
