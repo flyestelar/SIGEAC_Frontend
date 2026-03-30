@@ -7,10 +7,10 @@ import { FormControl, FormItem, FormLabel, FormMessage } from '@/components/ui/f
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useGetMaintenanceAircrafts } from '@/hooks/planificacion/useGetMaintenanceAircrafts';
 import { useDebouncedInput } from '@/lib/useDebounce';
-import { cn } from '@/lib/utils';
 import { AircraftResource } from '@api/types';
-import { Check, Loader2, Plane } from 'lucide-react';
+import { Check, Loader2, Plane, Search } from 'lucide-react';
 import { useMemo, useState } from 'react';
+import { BulkAircraftSelectDialog } from './BulkAircraftSelectDialog';
 
 interface MultiAircraftSelectProps {
   value: number[];
@@ -22,7 +22,6 @@ export const MultiAircraftSelect = ({ value, onChange, companySlug }: MultiAircr
   const [aircraftSearch, setAircraftSearch] = useState('');
   const [aircraftCommandInput, setAircraftCommandInput] = useDebouncedInput('', setAircraftSearch);
   const [isAircraftPopoverOpen, setIsAircraftPopoverOpen] = useState(false);
-  const [manufacturerFilter, setManufacturerFilter] = useState<number | null>(null);
 
   const { data: aircraftData, isFetching: isAircraftFetching } = useGetMaintenanceAircrafts(companySlug);
 
@@ -36,20 +35,22 @@ export const MultiAircraftSelect = ({ value, onChange, companySlug }: MultiAircr
   };
 
   const selectedAircraftList = aircraftOptions.filter((aircraft) => value?.includes(aircraft.id));
-  const manufacturers = [
-    ...new Map(
-      aircraftOptions
-        .map((aircraft) => aircraft.aircraft_type?.manufacturer)
-        .filter((manufacturer) => manufacturer != null)
-        .map((manufacturer) => [manufacturer.id, manufacturer] as const),
-    ).values(),
-  ];
 
   return (
     <FormItem className="space-y-3">
       <FormLabel className="flex items-center gap-2">
         <Plane className="h-4 w-4" />
         Aeronaves Aplicables
+        <BulkAircraftSelectDialog
+          companySlug={companySlug}
+          aircraftOptions={aircraftOptions}
+          currentSelection={value}
+          onBulkSelect={onChange}
+        >
+          <Button variant="ghost" size="icon" className="h-6 w-6">
+            <Search className="h-3 w-3" />
+          </Button>
+        </BulkAircraftSelectDialog>
       </FormLabel>
       <FormControl>
         <Popover open={isAircraftPopoverOpen} onOpenChange={setIsAircraftPopoverOpen}>
@@ -72,31 +73,6 @@ export const MultiAircraftSelect = ({ value, onChange, companySlug }: MultiAircr
                 value={aircraftCommandInput}
                 onValueChange={setAircraftCommandInput}
               />
-              <div className="flex items-center gap-2 px-2 py-1">
-                <Button
-                  className={cn(
-                    'py-0 px-3 min-h-0 h-6 text-xs rounded-full',
-                    manufacturerFilter && 'bg-secondary text-secondary-foreground',
-                  )}
-                  size="sm"
-                  onClick={() => setManufacturerFilter(null)}
-                >
-                  Todos
-                </Button>
-                {manufacturers.map((manufacturer) => (
-                  <Button
-                    key={manufacturer.id}
-                    size="sm"
-                    className={cn(
-                      'py-0 px-3 min-h-0 h-6 text-xs rounded-full',
-                      manufacturerFilter !== manufacturer.id && 'bg-secondary text-secondary-foreground',
-                    )}
-                    onClick={() => setManufacturerFilter((prev) => (prev === manufacturer.id ? null : manufacturer.id))}
-                  >
-                    {manufacturer.name}
-                  </Button>
-                ))}
-              </div>
               <CommandList>
                 {isAircraftFetching && (
                   <CommandItem>

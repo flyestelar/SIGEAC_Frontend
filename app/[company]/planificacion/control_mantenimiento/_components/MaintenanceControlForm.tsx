@@ -273,9 +273,9 @@ const MaintenanceControlForm = ({ submitting, onCancel, onSubmit }: MaintenanceC
               <thead className="bg-muted/50">
                 <tr>
                   <th className="px-3 py-2 text-left font-medium">Descripción</th>
-                  <th className="px-3 py-2 text-left font-medium">Old Task</th>
-                  <th className="px-3 py-2 text-left font-medium">New Task</th>
-                  <th className="px-3 py-2 text-right font-medium">Acciones</th>
+                  <th className="px-3 py-2 text-left font-medium">Old Task Card</th>
+                  <th className="px-3 py-2 text-left font-medium">New Task Card</th>
+                  <th className="px-3 py-2 text-right font-medium"></th>
                 </tr>
               </thead>
               <tbody>
@@ -298,10 +298,10 @@ const MaintenanceControlForm = ({ submitting, onCancel, onSubmit }: MaintenanceC
                       )}
                     </td>
                     <td className="px-3 py-2 align-top">
-                      <Input placeholder="Old task" {...form.register(`tasks.${index}.old_task`)} />
+                      <Input placeholder="Old task card" {...form.register(`tasks.${index}.old_task`)} />
                     </td>
                     <td className="px-3 py-2 align-top">
-                      <Input placeholder="New task" {...form.register(`tasks.${index}.new_task`)} />
+                      <Input placeholder="New task card" {...form.register(`tasks.${index}.new_task`)} />
                     </td>
                     <td className="px-3 py-2 text-right align-top">
                       <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)}>
@@ -404,9 +404,9 @@ function ExcelFormatHelpPopover() {
           <table className="w-full text-xs">
             <thead className="bg-muted/50">
               <tr>
-                <th className="px-2 py-1 text-left">Old Task</th>
+                <th className="px-2 py-1 text-left">Old Task Card</th>
                 <th className="px-2 py-1 text-left">Descripción</th>
-                <th className="px-2 py-1 text-left">New Task</th>
+                <th className="px-2 py-1 text-left">New Task Card</th>
               </tr>
             </thead>
             <tbody>
