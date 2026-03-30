@@ -2,38 +2,33 @@
 
 import { MultiAircraftSelect } from '@/components/forms/MultiAircraftSelect';
 import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { parseMaintenanceInterval, processExcelFile } from '@/lib/excelProcessor';
 import { useCompanyStore } from '@/stores/CompanyStore';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Plus, Trash2 } from 'lucide-react';
+import { CircleHelp, Plus, Trash2 } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
-import { useFieldArray, useForm } from 'react-hook-form';
+import { useFieldArray, useForm, useWatch } from 'react-hook-form';
 import { z } from 'zod';
+import ImportTasksConfirmDialog, { ImportStrategy } from './ImportTasksConfirmDialog';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 
 const taskSchema = z.object({
-  description: z.string().min(1, 'La descripción es obligatoria'),
-  old_task: z.string().optional(),
-  new_task: z.string().optional(),
+  description: z.string().trim().min(1, 'La descripción es obligatoria'),
+  old_task: z.string().trim().optional().default(''),
+  new_task: z.string().trim().optional().default(''),
 });
 
 const maintenanceControlSchema = z.object({
-  title: z.string().min(1, 'El título es obligatorio').max(255, 'Máximo 255 caracteres'),
-  description: z.string().optional(),
-  manual_reference: z.string().optional(),
+  title: z.string().trim().min(1, 'El título es obligatorio').max(255, 'Máximo 255 caracteres'),
+  description: z.string().trim().optional(),
+  manual_reference: z.string().trim().optional(),
   interval: z
     .string()
+    .trim()
     .min(1, 'El intervalo es obligatorio')
     .refine((value) => {
       const parsed = parseMaintenanceInterval(value);
@@ -45,16 +40,13 @@ const maintenanceControlSchema = z.object({
 
 export type MaintenanceControlFormValues = z.infer<typeof maintenanceControlSchema>;
 
-export type DialogMode = 'create';
-
 interface MaintenanceControlFormProps {
-  mode: DialogMode;
   submitting: boolean;
   onCancel: () => void;
   onSubmit: (values: MaintenanceControlFormValues) => Promise<void>;
 }
 
-const MaintenanceControlForm = ({ mode, submitting, onCancel, onSubmit }: MaintenanceControlFormProps) => {
+const MaintenanceControlForm = ({ submitting, onCancel, onSubmit }: MaintenanceControlFormProps) => {
   const { selectedCompany } = useCompanyStore();
 
   const form = useForm<MaintenanceControlFormValues>({
@@ -69,8 +61,10 @@ const MaintenanceControlForm = ({ mode, submitting, onCancel, onSubmit }: Mainte
     },
   });
 
+  const { control } = form;
+
   const { fields, append, remove, replace } = useFieldArray({
-    control: form.control,
+    control,
     name: 'tasks',
   });
 
@@ -83,22 +77,6 @@ const MaintenanceControlForm = ({ mode, submitting, onCancel, onSubmit }: Mainte
   const [pendingFileName, setPendingFileName] = useState('');
   const [isPreviewDialogOpen, setIsPreviewDialogOpen] = useState(false);
 
-  const intervalInput = form.watch('interval');
-
-  const parsedIntervalPreview = useMemo(() => {
-    const raw = intervalInput?.trim();
-    if (!raw) return null;
-
-    const parsed = parseMaintenanceInterval(raw);
-    const parts: string[] = [];
-
-    if (parsed.fh !== undefined) parts.push(`FH: ${parsed.fh}`);
-    if (parsed.fc !== undefined) parts.push(`FC: ${parsed.fc}`);
-    if (parsed.days !== undefined) parts.push(`Días: ${parsed.days}`);
-
-    return parts.length > 0 ? parts.join(' | ') : 'No se reconoce el intervalo';
-  }, [intervalInput]);
-
   const handleAddTask = () => {
     if (!newTask.description.trim()) {
       form.setError('tasks', {
@@ -110,24 +88,25 @@ const MaintenanceControlForm = ({ mode, submitting, onCancel, onSubmit }: Mainte
 
     append({
       description: newTask.description.trim(),
-      old_task: newTask.old_task.trim() || undefined,
-      new_task: newTask.new_task.trim() || undefined,
+      old_task: newTask.old_task.trim() || '',
+      new_task: newTask.new_task.trim() || '',
     });
 
     form.clearErrors('tasks');
     setNewTask({ description: '', old_task: '', new_task: '' });
   };
 
+  const handleNewTaskKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      handleAddTask();
+    }
+  };
+
   const handleExcelSelection = async (file: File) => {
     try {
       const parsedTasks = await processExcelFile(file);
-      setPendingImportedTasks(
-        parsedTasks.map((task) => ({
-          description: task.description,
-          old_task: task.old_task,
-          new_task: task.new_task,
-        })),
-      );
+      setPendingImportedTasks(parsedTasks);
       setPendingFileName(file.name);
       setIsPreviewDialogOpen(true);
       form.clearErrors('tasks');
@@ -142,8 +121,17 @@ const MaintenanceControlForm = ({ mode, submitting, onCancel, onSubmit }: Mainte
     }
   };
 
-  const confirmImport = () => {
-    replace(pendingImportedTasks);
+  const confirmImport = (importStrategy: ImportStrategy) => {
+    const currentTasks = form.getValues('tasks');
+
+    if (importStrategy === 'replace') {
+      replace(pendingImportedTasks);
+    } else if (importStrategy === 'prepend') {
+      replace([...pendingImportedTasks, ...currentTasks]);
+    } else {
+      replace([...currentTasks, ...pendingImportedTasks]);
+    }
+
     setPendingImportedTasks([]);
     setPendingFileName('');
     setIsPreviewDialogOpen(false);
@@ -223,23 +211,24 @@ const MaintenanceControlForm = ({ mode, submitting, onCancel, onSubmit }: Mainte
         <FormField
           control={form.control}
           name="interval"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Intervalo General</FormLabel>
-              <FormControl>
-                <div className="space-y-2">
-                  <Input placeholder="Ejemplo: 500 FH, 24 FC o 1A" {...field} />
-                  <p className="text-xs text-muted-foreground">
-                    Este intervalo se aplicará automáticamente a todas las tareas del control.
-                  </p>
-                  {parsedIntervalPreview && (
-                    <p className="text-xs font-medium text-foreground">Intervalo parseado: {parsedIntervalPreview}</p>
-                  )}
-                </div>
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
+          render={({ field }) => {
+            const preview = formatInterval(field.value);
+            return (
+              <FormItem>
+                <FormLabel>Intervalo</FormLabel>
+                <FormControl>
+                  <div className="space-y-2">
+                    <Input placeholder="Ejemplo: 500 FH, 24 FC o 1A" {...field} />
+                    <p className="text-xs text-muted-foreground">
+                      Este intervalo se aplicará automáticamente a todas las tareas del control.
+                    </p>
+                    {preview && <p className="text-xs font-medium text-foreground">{preview}</p>}
+                  </div>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            );
+          }}
         />
 
         <FormField
@@ -263,60 +252,21 @@ const MaintenanceControlForm = ({ mode, submitting, onCancel, onSubmit }: Mainte
             <p className="text-xs text-muted-foreground mt-1">
               Arrastre y suelte su archivo aquí, o haga clic para seleccionar (.xlsx, .xls, .ods).
             </p>
-            <div className="mt-3">
+            <div className="mt-3 flex items-center gap-2">
               <Button type="button" variant="outline" size="sm" className="pointer-events-none">
                 Seleccionar archivo
               </Button>
+              <ExcelFormatHelpPopover />
             </div>
           </div>
 
-          <Dialog
+          <ImportTasksConfirmDialog
             open={isPreviewDialogOpen}
-            onOpenChange={(open) => {
-              setIsPreviewDialogOpen(open);
-              if (!open) {
-                cancelImport();
-              }
-            }}
-          >
-            <DialogContent className="max-w-4xl">
-              <DialogHeader>
-                <DialogTitle>Previsualización de tareas importadas</DialogTitle>
-                <DialogDescription>
-                  Se detectaron {pendingImportedTasks.length} tareas en {pendingFileName}. Confirme para reemplazar la
-                  lista actual.
-                </DialogDescription>
-              </DialogHeader>
-              <div className="max-h-[60vh] overflow-auto rounded-md border bg-background">
-                <table className="w-full text-xs">
-                  <thead className="bg-muted/50">
-                    <tr>
-                      <th className="px-2 py-1 text-left">Old Task Card</th>
-                      <th className="px-2 py-1 text-left">Descripción</th>
-                      <th className="px-2 py-1 text-left">New Task Card</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {pendingImportedTasks.map((task, index) => (
-                      <tr key={`preview-${index}`} className="border-t">
-                        <td className="px-2 py-1">{task.old_task || '-'}</td>
-                        <td className="px-2 py-1">{task.description}</td>
-                        <td className="px-2 py-1">{task.new_task || '-'}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-              <DialogFooter>
-                <Button type="button" variant="ghost" onClick={cancelImport}>
-                  Cancelar
-                </Button>
-                <Button type="button" onClick={confirmImport}>
-                  Confirmar importación
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
+            pendingImportedTasks={pendingImportedTasks}
+            pendingFileName={pendingFileName}
+            onCancel={cancelImport}
+            onConfirm={confirmImport}
+          />
 
           <div className="overflow-x-auto rounded-md border">
             <table className="w-full min-w-[720px] text-sm">
@@ -367,6 +317,7 @@ const MaintenanceControlForm = ({ mode, submitting, onCancel, onSubmit }: Mainte
                       placeholder="Descripción"
                       value={newTask.description}
                       onChange={(e) => setNewTask((prev) => ({ ...prev, description: e.target.value }))}
+                      onKeyDown={handleNewTaskKeyDown}
                     />
                   </td>
                   <td className="px-3 py-2">
@@ -374,6 +325,7 @@ const MaintenanceControlForm = ({ mode, submitting, onCancel, onSubmit }: Mainte
                       placeholder="Old Task Card"
                       value={newTask.old_task}
                       onChange={(e) => setNewTask((prev) => ({ ...prev, old_task: e.target.value }))}
+                      onKeyDown={handleNewTaskKeyDown}
                     />
                   </td>
                   <td className="px-3 py-2">
@@ -381,6 +333,7 @@ const MaintenanceControlForm = ({ mode, submitting, onCancel, onSubmit }: Mainte
                       placeholder="New Task Card"
                       value={newTask.new_task}
                       onChange={(e) => setNewTask((prev) => ({ ...prev, new_task: e.target.value }))}
+                      onKeyDown={handleNewTaskKeyDown}
                     />
                   </td>
                   <td className="px-3 py-2 text-right">
@@ -412,3 +365,68 @@ const MaintenanceControlForm = ({ mode, submitting, onCancel, onSubmit }: Mainte
 };
 
 export default MaintenanceControlForm;
+
+function formatInterval(intervalInput: string) {
+  const raw = intervalInput?.trim();
+  if (!raw) return null;
+
+  const parsed = parseMaintenanceInterval(raw);
+  const parts: string[] = [];
+
+  if (parsed.fh !== undefined) parts.push(`FH: ${parsed.fh}`);
+  if (parsed.fc !== undefined) parts.push(`FC: ${parsed.fc}`);
+  if (parsed.days !== undefined) parts.push(`Días: ${parsed.days}`);
+
+  return parts.length > 0 ? parts.join(' | ') : 'No se reconoce el intervalo';
+}
+
+function ExcelFormatHelpPopover() {
+  return (
+    <Popover>
+      <PopoverTrigger
+        asChild
+        onClick={(e) => {
+          e.stopPropagation();
+        }}
+      >
+        <Button type="button" variant="secondary" size="icon" className="gap-2">
+          <CircleHelp className="h-4 w-4" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent align="end" className="w-[420px] space-y-3">
+        <div>
+          <p className="text-sm font-semibold">Formato esperado</p>
+          <p className="text-xs text-muted-foreground">
+            El archivo debe incluir solo tareas con estas columnas: Old Task Card, Descripción y New Task Card.
+          </p>
+        </div>
+        <div className="rounded-md border overflow-x-auto">
+          <table className="w-full text-xs">
+            <thead className="bg-muted/50">
+              <tr>
+                <th className="px-2 py-1 text-left">Old Task</th>
+                <th className="px-2 py-1 text-left">Descripción</th>
+                <th className="px-2 py-1 text-left">New Task</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr className="border-t">
+                <td className="px-2 py-1">H1-001</td>
+                <td className="px-2 py-1">Inspeccionar sistema hidráulico</td>
+                <td className="px-2 py-1">H1-002</td>
+              </tr>
+              <tr className="border-t">
+                <td className="px-2 py-1">F2-001</td>
+                <td className="px-2 py-1">Verificar funcionamiento de flaps</td>
+                <td className="px-2 py-1">F2-002</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p className="text-xs text-muted-foreground">
+          El intervalo se define en el formulario del control y se aplica automáticamente a todas las tareas importadas.
+        </p>
+      </PopoverContent>
+    </Popover>
+  );
+}

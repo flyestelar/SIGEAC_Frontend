@@ -2,8 +2,8 @@ import * as XLSX from 'xlsx';
 
 export interface TaskCardData {
   description: string;
-  old_task?: string;
-  new_task?: string;
+  old_task: string;
+  new_task: string;
 }
 
 export interface ParsedMaintenanceInterval {
@@ -165,8 +165,8 @@ export async function processExcelFile(file: File): Promise<TaskCardData[]> {
 
     const task: TaskCardData = {
       description: String(descriptionCell || '').trim(),
-      old_task: oldTaskCell ? String(oldTaskCell || '').trim() : undefined,
-      new_task: newTaskCell ? String(newTaskCell || '').trim() : undefined,
+      old_task: String(oldTaskCell || '').trim(),
+      new_task: String(newTaskCell || '').trim(),
     };
 
     // Validate required fields
