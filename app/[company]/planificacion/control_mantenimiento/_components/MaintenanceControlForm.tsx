@@ -4,17 +4,17 @@ import { MultiAircraftSelect } from '@/components/forms/MultiAircraftSelect';
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Textarea } from '@/components/ui/textarea';
 import { parseMaintenanceInterval, processExcelFile } from '@/lib/excelProcessor';
 import { useCompanyStore } from '@/stores/CompanyStore';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { CircleHelp, Plus, Trash2 } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { ChevronDown, ChevronUp, CircleHelp, Plus, Trash2 } from 'lucide-react';
+import { useState } from 'react';
 import { useDropzone } from 'react-dropzone';
-import { useFieldArray, useForm, useWatch } from 'react-hook-form';
+import { useFieldArray, useForm } from 'react-hook-form';
 import { z } from 'zod';
 import ImportTasksConfirmDialog, { ImportStrategy } from './ImportTasksConfirmDialog';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 
 const taskSchema = z.object({
   description: z.string().trim().min(1, 'La descripción es obligatoria'),
@@ -63,7 +63,7 @@ const MaintenanceControlForm = ({ submitting, onCancel, onSubmit }: MaintenanceC
 
   const { control } = form;
 
-  const { fields, append, remove, replace } = useFieldArray({
+  const { fields, append, remove, replace, move } = useFieldArray({
     control,
     name: 'tasks',
   });
@@ -94,6 +94,18 @@ const MaintenanceControlForm = ({ submitting, onCancel, onSubmit }: MaintenanceC
 
     form.clearErrors('tasks');
     setNewTask({ description: '', old_task: '', new_task: '' });
+  };
+
+  const handleMoveTaskUp = (index: number) => {
+    if (index > 0) {
+      move(index, index - 1);
+    }
+  };
+
+  const handleMoveTaskDown = (index: number) => {
+    if (index < fields.length - 1) {
+      move(index, index + 1);
+    }
   };
 
   const handleNewTaskKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
@@ -275,7 +287,7 @@ const MaintenanceControlForm = ({ submitting, onCancel, onSubmit }: MaintenanceC
                   <th className="px-3 py-2 text-left font-medium">Descripción</th>
                   <th className="px-3 py-2 text-left font-medium">Old Task Card</th>
                   <th className="px-3 py-2 text-left font-medium">New Task Card</th>
-                  <th className="px-3 py-2 text-right font-medium"></th>
+                  <th className="px-3 py-2 text-right font-medium">Acciones</th>
                 </tr>
               </thead>
               <tbody>
@@ -304,9 +316,31 @@ const MaintenanceControlForm = ({ submitting, onCancel, onSubmit }: MaintenanceC
                       <Input placeholder="New task card" {...form.register(`tasks.${index}.new_task`)} />
                     </td>
                     <td className="px-3 py-2 text-right align-top">
-                      <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)}>
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                      <div className="flex items-center justify-end gap-1">
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleMoveTaskUp(index)}
+                          disabled={index === 0}
+                          className="h-6 w-6"
+                        >
+                          <ChevronUp className="h-3 w-3" />
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleMoveTaskDown(index)}
+                          disabled={index === fields.length - 1}
+                          className="h-6 w-6"
+                        >
+                          <ChevronDown className="h-3 w-3" />
+                        </Button>
+                        <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)} className="h-6 w-6">
+                          <Trash2 className="h-3 w-3" />
+                        </Button>
+                      </div>
                     </td>
                   </tr>
                 ))}
