@@ -1,9 +1,14 @@
 "use client";
 
-import { Plane, Bell, Settings, Search } from "lucide-react";
+import { Plane, Bell, Settings, Search, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-export function Header() {
+
+interface HeaderProps {
+  onCreateClick?: () => void;
+}
+
+export function Header({ onCreateClick }: HeaderProps) {
   return (
     <header className="border-b border-border bg-card px-6 py-4">
       <div className="flex items-center justify-between">
@@ -22,6 +27,13 @@ export function Header() {
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input placeholder="Buscar tareas..." className="pl-9" />
           </div>
+
+          {onCreateClick && (
+            <Button onClick={onCreateClick} className="gap-2">
+              <Plus className="h-4 w-4" />
+              Nuevo Control
+            </Button>
+          )}
 
           <Button variant="ghost" size="icon" className="relative">
             <Bell className="h-5 w-5" />

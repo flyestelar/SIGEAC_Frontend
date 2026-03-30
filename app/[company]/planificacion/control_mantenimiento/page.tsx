@@ -1,7 +1,8 @@
 "use client";
 
+import Link from "next/link";
 import { useState, useMemo } from "react";
-import { Settings2 } from "lucide-react";
+import { Plus, Settings2 } from "lucide-react";
 import { StatsCards } from "./_components/stats-cards";
 import { AircraftSelector } from "./_components/aircraft-selector";
 import { ControlSelector } from "./_components/control-selector";
@@ -13,6 +14,7 @@ import { useGetMaintenanceControl } from "@/hooks/planificacion/control_mantenim
 import { useCompanyStore } from "@/stores/CompanyStore";
 import LoadingPage from "@/components/misc/LoadingPage";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 
 export default function MaintenanceDashboard() {
@@ -31,9 +33,7 @@ export default function MaintenanceDashboard() {
 
   const controlsForAircraft = useMemo(() => {
     if (!selectedAircraft) return [];
-    return controls.filter((c) =>
-      c.aircrafts.some((ac) => ac.id === selectedAircraft.id)
-    );
+    return controls.filter((c) => c.aircrafts.some((ac) => ac.id === selectedAircraft.id));
   }, [controls, selectedAircraft]);
 
   const selectedControl = useMemo(() => {
@@ -53,9 +53,7 @@ export default function MaintenanceDashboard() {
         <div className="mb-5 flex items-start justify-between">
           <div>
             <div className="flex items-center gap-3">
-              <h2 className="text-xl font-semibold text-foreground">
-                Control de Mantenimiento
-              </h2>
+              <h2 className="text-xl font-semibold text-foreground">Control de Mantenimiento</h2>
               {selectedAircraft && (
                 <Badge variant="outline" className="font-mono text-xs border-primary/40 text-primary">
                   {selectedAircraft.acronym}
@@ -65,11 +63,18 @@ export default function MaintenanceDashboard() {
             <p className="mt-1 text-sm text-muted-foreground">
               {selectedAircraft
                 ? `${selectedAircraft.manufacturer?.name ?? ''} ${selectedAircraft.aircraft_type?.series ?? ''} — S/N ${selectedAircraft.serial}`
-                : "Selecciona una aeronave para inspeccionar sus programas de mantenimiento"
-              }
+                : 'Selecciona una aeronave para inspeccionar sus programas de mantenimiento'}
             </p>
           </div>
-          <Settings2 className="h-5 w-5 text-muted-foreground/50" />
+          <div className="flex items-center gap-2">
+            <Button asChild className="gap-2">
+              <Link href={`/${selectedCompany?.slug}/planificacion/control_mantenimiento/nuevo`}>
+                <Plus className="h-4 w-4" />
+                Nuevo Control
+              </Link>
+            </Button>
+            <Settings2 className="h-5 w-5 text-muted-foreground/50" />
+          </div>
         </div>
 
         <StatsCards
@@ -97,10 +102,7 @@ export default function MaintenanceDashboard() {
             />
 
             {selectedControl ? (
-              <TasksTable
-                tasks={selectedControl.task_cards}
-                controlName={selectedControl.title}
-              />
+              <TasksTable tasks={selectedControl.task_cards} controlName={selectedControl.title} />
             ) : selectedAircraft ? (
               <Card className="border-border/60 bg-card">
                 <CardContent className="py-10">

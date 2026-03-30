@@ -637,6 +637,18 @@ export function getMenuList(pathname: string, currentCompany: Company | null, us
             },
           ],
         },
+        ...(process.env.NODE_ENV === 'development'
+          ? [
+              {
+                href: companyPath('/planificacion/control_mantenimiento'),
+                label: 'Control de Mantenimiento',
+                active: isCompanyPath('/planificacion/control_mantenimiento', 'includes'),
+                icon: ClipboardList,
+                roles: ['ANALISTA_PLANIFICACION', 'JEFE_PLANIFICACION', 'SUPERUSER'],
+                submenus: [],
+              },
+            ]
+          : []),
       ],
     },
     {

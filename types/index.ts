@@ -1,3 +1,5 @@
+import { AircraftResource, AircraftTypeResource } from '@api/types';
+
 export type Accountant = {
   id: number;
   name: string;
@@ -549,36 +551,27 @@ export type PaginatedResponse<T> = {
   };
 };
 
-export type AircraftType = {
-  id: number;
-  full_name: string;
-  manufacturer: Manufacturer;
-  family: string;
-  series: string;
-  iata_code: string | null;
-  created_at: string;
-  updated_at: string;
-};
+export interface AircraftType extends AircraftTypeResource {}
 
 export type MaintenanceControl = {
   id: number;
   manual_reference: string;
   title: string;
   description: string;
-  aircrafts: MaintenanceAircraft[]
-  task_cards: TaskCard[]
-}
+  aircrafts: MaintenanceAircraft[];
+  task_cards: TaskCard[];
+};
 
 export type TaskCard = {
   id: number;
   manual_reference: string;
-  description: string,
-  old_task: string,
-  new_task: string,
-  interval_fh: string,
-  interval_fc: string,
-  interval_days: string,
-}
+  description: string;
+  old_task: string;
+  new_task: string;
+  interval_fh: number;
+  interval_fc: number;
+  interval_days: number;
+};
 
 export type Vendor = {
   id: string | number;
