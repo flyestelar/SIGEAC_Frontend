@@ -7,12 +7,12 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import type { MaintenanceAircraft, MaintenanceControl } from "@/types";
 import { cn } from "../_data/utils";
+import { AircraftResource, MaintenanceControlResource } from "@api/types";
 
 interface AircraftSelectorProps {
-  aircraft: MaintenanceAircraft[];
-  controls: MaintenanceControl[];
+  aircraft: AircraftResource[];
+  controls: MaintenanceControlResource[];
   selectedAircraftId: number | null;
   onSelectAircraft: (id: number) => void;
 }
@@ -25,11 +25,11 @@ export function AircraftSelector({
 }: AircraftSelectorProps) {
   const [search, setSearch] = useState("");
 
-  const getAircraftStats = (ac: MaintenanceAircraft) => {
+  const getAircraftStats = (ac: AircraftResource) => {
     const relatedControls = controls.filter((c) =>
-      c.aircrafts.some((a) => a.id === ac.id)
+      c.aircrafts?.some((a) => a.id === ac.id)
     );
-    const totalTasks = relatedControls.reduce((sum, c) => sum + c.task_cards?.length, 0);
+    const totalTasks = relatedControls.reduce((sum, c) => sum + c.task_cards?.length!, 0);
     return { totalControls: relatedControls.length, totalTasks };
   };
 

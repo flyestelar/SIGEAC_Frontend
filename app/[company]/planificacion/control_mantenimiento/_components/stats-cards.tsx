@@ -1,14 +1,14 @@
 "use client";
 
+import { Card, CardContent } from "@/components/ui/card";
+import type { MaintenanceAircraft } from "@/types";
+import { MaintenanceControlResource } from "@api/types";
 import {
-  Plane,
   ClipboardList,
   FileText,
-  Wrench,
-  TrendingUp,
+  Plane,
+  Wrench
 } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
-import type { MaintenanceAircraft, MaintenanceControl } from "@/types";
 
 interface StatCardProps {
   title: string;
@@ -41,14 +41,14 @@ function StatCard({ title, value, subtitle, icon, accent = "text-primary bg-prim
 
 interface StatsCardsProps {
   aircraft: MaintenanceAircraft[];
-  controls: MaintenanceControl[];
+  controls: MaintenanceControlResource[];
   selectedAircraft: MaintenanceAircraft | null;
-  controlsForAircraft: MaintenanceControl[];
+  controlsForAircraft: MaintenanceControlResource[];
 }
 
 export function StatsCards({ aircraft, controls, selectedAircraft, controlsForAircraft }: StatsCardsProps) {
   const displayControls = selectedAircraft ? controlsForAircraft : controls;
-  const totalTasks = displayControls.reduce((sum, c) => sum + c.task_cards?.length, 0);
+  const totalTasks = displayControls.reduce((sum, c) => sum + (c.task_cards?.length ?? 0), 0);
 
   return (
     <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">

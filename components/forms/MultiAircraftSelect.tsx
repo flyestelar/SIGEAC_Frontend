@@ -8,7 +8,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { useGetMaintenanceAircrafts } from '@/hooks/planificacion/useGetMaintenanceAircrafts';
 import { useDebouncedInput } from '@/lib/useDebounce';
 import { AircraftResource } from '@api/types';
-import { Check, Loader2, Plane, Search } from 'lucide-react';
+import { Check, Loader2, Plane, Search, X } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { BulkAircraftSelectDialog } from './BulkAircraftSelectDialog';
 
@@ -121,8 +121,15 @@ export const MultiAircraftSelect = ({ value, onChange, companySlug }: MultiAircr
       {selectedAircraftList.length > 0 && (
         <div className="flex flex-wrap gap-1">
           {selectedAircraftList.map((aircraft) => (
-            <Badge key={aircraft.id} variant="secondary" className="text-xs">
+            <Badge key={aircraft.id} variant="secondary" className="text-xs flex items-center gap-1">
               {aircraft.acronym}
+              <button
+                type="button"
+                onClick={() => toggleAircraft(aircraft)}
+                className="ml-1 hover:bg-secondary-foreground/20 rounded-full p-0.5"
+              >
+                <X className="h-3 w-3" />
+              </button>
             </Badge>
           ))}
         </div>

@@ -8,16 +8,19 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { useCompanyStore } from '@/stores/CompanyStore';
 import {
+  aircraftIndexOptions,
+  maintenanceControlsExecutionsStoreMutation,
   maintenanceControlsIndexOptions,
   maintenanceControlsIndexQueryKey,
-  maintenanceControlsShowOptions,
   maintenanceControlsShowQueryKey,
 } from '@api/queries';
+import { AircraftResource, StoreMaintenanceControlExecutionRequest } from '@api/types';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { differenceInDays } from 'date-fns';
 import { AlertCircle, CheckCircle2, GaugeCircle, Wrench } from 'lucide-react';
-import { useMemo, useState, useEffect } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { NumericFormat } from 'react-number-format';
 import { toast } from 'sonner';
 
@@ -43,13 +46,23 @@ const getStatus = (consumed: number | null, interval: number | null) => {
 };
 
 export default function MaintenanceControlTestPage() {
+  const company = useCompanyStore((state) => state.selectedCompany?.slug!);
+  const { data: aircrafts = [], isLoading: isAircraftsLoading } = useQuery({
+    ...aircraftIndexOptions({
+      path: { company },
+    }),
+    select: (data) => data as AircraftResource[],
+  });
+  const [selectedAircraftId, setSelectedAircraftId] = useState<number | null>(null);
   const { data, isLoading, isError } = useQuery({
-    ...maintenanceControlsIndexOptions(),
+    ...maintenanceControlsIndexOptions({
+      query: { aircraft_id: selectedAircraftId! },
+    }),
+    enabled: !!selectedAircraftId,
   });
   const controls = useMemo(() => data?.data ?? [], [data]);
 
   const [selectedControlId, setSelectedControlId] = useState<number | null>(null);
-  const [selectedAircraftId, setSelectedAircraftId] = useState<number | null>(null);
   const [customConsumedFH, setCustomConsumedFH] = useState<string>('');
   const [customConsumedFC, setCustomConsumedFC] = useState<string>('');
   const [customConsumedDays, setCustomConsumedDays] = useState<string>('');
@@ -62,48 +75,29 @@ export default function MaintenanceControlTestPage() {
   }, [controls, selectedControlId]);
 
   const queryClient = useQueryClient();
-  const createTaskExecutionMutation = useMutation({
-    ...taskExecutionsStoreMutation(),
+
+  const createControlExecutionMutation = useMutation({
+    ...maintenanceControlsExecutionsStoreMutation(),
     onSuccess: () => {
-      toast.success('Ejecución de tarea creada');
+      toast.success('Ejecución de control creada');
       queryClient.invalidateQueries({ queryKey: maintenanceControlsIndexQueryKey() });
       queryClient.invalidateQueries({
         queryKey: maintenanceControlsShowQueryKey({ path: { id: Number(selectedControlId) } }),
       });
-      queryClient.invalidateQueries({
-        queryKey: maintenanceControlsGetTasksQueryKey({ path: { id: Number(selectedControlId) } }),
-      });
     },
-  });
-
-  const controlQuery = useQuery({
-    ...maintenanceControlsShowOptions({ path: { id: Number(selectedControlId) } }),
-    enabled: !!selectedControlId,
-  });
-
-  const tasksQuery = useQuery({
-    ...maintenanceControlsGetTasksOptions({
-      path: { id: Number(selectedControlId) },
-      query: selectedAircraftId ? { aircraft_id: Number(selectedAircraftId) } : undefined,
-    }),
-    enabled: !!selectedControlId,
+    onError: () => {
+      toast.error('No se pudo crear la ejecución del control');
+    },
   });
 
   const selectedControl = selectedControlId
     ? (data?.data.find((control) => control.id === selectedControlId) ?? null)
     : null;
 
-  // Seleccionar automáticamente la primera aeronave cuando se seleccione un control
-  useEffect(() => {
-    if (selectedControl?.aircrafts && selectedControl.aircrafts.length > 0 && selectedAircraftId === null) {
-      setSelectedAircraftId(selectedControl.aircrafts[0].id);
-    }
-  }, [selectedControl, selectedAircraftId]);
-
-  const tasks = tasksQuery.data?.data || [];
+  const tasks = selectedControl?.task_cards || [];
 
   // Obtener la aeronave seleccionada
-  const selectedAircraft = selectedControl?.aircrafts?.find((aircraft) => aircraft.id === selectedAircraftId);
+  const selectedAircraft = aircrafts.find((aircraft) => aircraft.id === selectedAircraftId);
 
   // Calcular consumo basado en la aeronave seleccionada
   const consumedValues = useMemo(() => {
@@ -139,19 +133,30 @@ export default function MaintenanceControlTestPage() {
       toast.error('Debe seleccionar un control de mantenimiento');
       return;
     }
+  };
 
-    if (tasksQuery.isLoading) {
-      toast.error('Espere a que se carguen las tareas');
+  const handleCreateControlExecution = () => {
+    if (!selectedAircraftId) {
+      toast.error('Debe seleccionar una aeronave');
       return;
     }
 
-    const executionData: StoreTaskExecutionRequest = {
-      task_card_id: Number(taskId),
+    if (!selectedControlId) {
+      toast.error('Debe seleccionar un control de mantenimiento');
+      return;
+    }
+
+    const executionData: StoreMaintenanceControlExecutionRequest = {
       maintenance_control_id: Number(selectedControlId),
       aircraft_id: Number(selectedAircraftId),
+      executed_at: new Date().toISOString(),
+      status: 'COMPLETED',
     };
 
-    createTaskExecutionMutation.mutate({ body: executionData });
+    createControlExecutionMutation.mutate({
+      body: executionData,
+      path: { maintenance_control: selectedControlId.toString() },
+    });
   };
 
   const rows = useMemo(() => {
@@ -164,9 +169,11 @@ export default function MaintenanceControlTestPage() {
 
     return tasks.map((task) => {
       // Calcular consumed basado en consumo actual - última ejecución
-      const lastFH = task.last_execution?.current_fh || 0;
-      const lastFC = task.last_execution?.current_fc || 0;
-      const lastExecutedAt = task.last_execution?.executed_at ? new Date(task.last_execution.executed_at) : null;
+      const lastFH = selectedControl.last_execution?.current_fh || 0;
+      const lastFC = selectedControl.last_execution?.current_fc || 0;
+      const lastExecutedAt = selectedControl.last_execution?.executed_at
+        ? new Date(selectedControl.last_execution.executed_at)
+        : null;
 
       // Calcular días desde la última ejecución usando date-fns
       const lastDays = lastExecutedAt ? differenceInDays(new Date(), lastExecutedAt) : 0; // Si nunca se ejecutó, usar 0
@@ -188,9 +195,6 @@ export default function MaintenanceControlTestPage() {
         statuses[0];
 
       return {
-        id: task.id,
-        code: task.new_task || task.old_task || `TASK-${task.id}`,
-        description: task.description,
         intervalFH: controlIntervalFH,
         intervalFC: controlIntervalFC,
         intervalDays: controlIntervalDays,
@@ -198,12 +202,13 @@ export default function MaintenanceControlTestPage() {
         consumedFC,
         consumedDays,
         status: priorityStatus,
-        lastExecution: task.last_execution,
+        lastExecution: selectedControl.last_execution,
+        ...task,
       };
     });
   }, [consumedValues.days, consumedValues.fc, consumedValues.fh, selectedControl, tasks]);
 
-  if (isLoading) return <LoadingPage />;
+  if (isAircraftsLoading) return <LoadingPage />;
 
   return (
     <ContentLayout title="Prueba de Consumo de Mantenimiento">
@@ -215,28 +220,28 @@ export default function MaintenanceControlTestPage() {
               Página de Prueba de Consumo
             </CardTitle>
             <CardDescription>
-              Selecciona un control de mantenimiento y una aeronave para ver cuánto se ha consumido desde la última
+              Selecciona una aeronave y un control de mantenimiento para ver cuánto se ha consumido desde la última
               ejecución de cada tarea. Puedes personalizar temporalmente los valores de consumo para simular diferentes
               escenarios.
             </CardDescription>
           </CardHeader>
           <CardContent className="grid gap-4 md:grid-cols-2">
             <div className="space-y-1.5">
-              <p className="text-sm font-medium">Control de mantenimiento</p>
+              <p className="text-sm font-medium">Aeronave</p>
               <Select
-                value={selectedControlId ? String(selectedControlId) : ''}
+                value={selectedAircraftId ? String(selectedAircraftId) : ''}
                 onValueChange={(value) => {
-                  setSelectedControlId(Number(value));
-                  setSelectedAircraftId(null); // Limpiar selección de aeronave al cambiar control
+                  setSelectedAircraftId(Number(value));
+                  setSelectedControlId(null); // Limpiar selección de control al cambiar aeronave
                 }}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Selecciona un control" />
+                  <SelectValue placeholder="Selecciona una aeronave" />
                 </SelectTrigger>
                 <SelectContent>
-                  {controls.map((control) => (
-                    <SelectItem key={control.id} value={String(control.id)}>
-                      {control.title}
+                  {aircrafts.map((aircraft) => (
+                    <SelectItem key={aircraft.id} value={String(aircraft.id)}>
+                      {aircraft.serial} - {aircraft.acronym}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -244,27 +249,27 @@ export default function MaintenanceControlTestPage() {
             </div>
 
             <div className="space-y-1.5">
-              <p className="text-sm font-medium">Aeronave</p>
+              <p className="text-sm font-medium">Control de mantenimiento</p>
               <Select
-                value={selectedAircraftId ? String(selectedAircraftId) : ''}
+                value={selectedControlId ? String(selectedControlId) : ''}
                 onValueChange={(value) => {
-                  setSelectedAircraftId(Number(value));
-                  // Limpiar valores personalizados al cambiar de aeronave
+                  setSelectedControlId(Number(value));
+                  // Limpiar valores personalizados al cambiar de control
                   setCustomConsumedFH('');
                   setCustomConsumedFC('');
                   setCustomConsumedDays('');
                 }}
-                disabled={!selectedControlId}
+                disabled={!selectedAircraftId}
               >
                 <SelectTrigger>
                   <SelectValue
-                    placeholder={selectedControlId ? 'Selecciona una aeronave' : 'Primero selecciona un control'}
+                    placeholder={selectedAircraftId ? 'Selecciona un control' : 'Primero selecciona una aeronave'}
                   />
                 </SelectTrigger>
                 <SelectContent>
-                  {selectedControl?.aircrafts?.map((aircraft) => (
-                    <SelectItem key={aircraft.id} value={String(aircraft.id)}>
-                      {aircraft.serial} - {aircraft.acronym}
+                  {controls.map((control) => (
+                    <SelectItem key={control.id} value={String(control.id)}>
+                      {control.title}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -344,42 +349,146 @@ export default function MaintenanceControlTestPage() {
           </Card>
         )}
 
-        {isError && (
-          <Card className="border-destructive/40 bg-destructive/5">
-            <CardContent className="pt-6">
-              <p className="text-sm text-destructive">No se pudo cargar la información de los controles.</p>
+        {selectedControl && (
+          <Card className="border-border/60">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm flex items-center justify-between">
+                <span className="flex items-center gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-primary" />
+                  Última ejecución del control
+                </span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleCreateControlExecution}
+                  disabled={createControlExecutionMutation.isPending}
+                  className="text-xs"
+                >
+                  {createControlExecutionMutation.isPending ? 'Creando...' : 'Ejecutar Control'}
+                </Button>
+              </CardTitle>
+              <CardDescription className="text-xs">
+                {selectedControl.last_execution
+                  ? 'Información de la última vez que se ejecutó este control de mantenimiento'
+                  : 'Este control aún no ha sido ejecutado. Haz clic en "Ejecutar Control" para registrarlo.'}
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {selectedControl.last_execution ? (
+                <>
+                  <div className="grid gap-4 md:grid-cols-3">
+                    <div className="text-center">
+                      <p className="text-lg font-semibold text-primary">
+                        {selectedControl.last_execution.current_fh.toFixed(1)}
+                      </p>
+                      <p className="text-xs text-muted-foreground">Horas de vuelo (FH)</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-lg font-semibold text-primary">{selectedControl.last_execution.current_fc}</p>
+                      <p className="text-xs text-muted-foreground">Ciclos de vuelo (FC)</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-lg font-semibold text-primary">
+                        {new Date(selectedControl.last_execution.executed_at).toLocaleDateString()}
+                      </p>
+                      <p className="text-xs text-muted-foreground">Fecha de ejecución</p>
+                    </div>
+                  </div>
+                  {selectedControl.since_last && (
+                    <div className="border-t pt-4">
+                      <h4 className="text-sm font-medium mb-3 text-center">Consumo desde la última ejecución</h4>
+                      <div className="grid gap-4 md:grid-cols-3">
+                        <div className="text-center">
+                          <p className="text-lg font-semibold text-blue-600">
+                            {selectedControl.since_last.fh.toFixed(1)}
+                          </p>
+                          <p className="text-xs text-muted-foreground">Horas de vuelo consumidas</p>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            / {selectedControl.interval_fh?.toFixed(1) || 'N/A'} requerido
+                          </p>
+                        </div>
+                        <div className="text-center">
+                          <p className="text-lg font-semibold text-blue-600">{selectedControl.since_last.fc}</p>
+                          <p className="text-xs text-muted-foreground">Ciclos de vuelo consumidos</p>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            / {selectedControl.interval_fc || 'N/A'} requerido
+                          </p>
+                        </div>
+                        <div className="text-center">
+                          <p className="text-lg font-semibold text-blue-600">{selectedControl.since_last.days}</p>
+                          <p className="text-xs text-muted-foreground">Días transcurridos</p>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            / {selectedControl.interval_days || 'N/A'} requerido
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  <div className="text-center pt-2 border-t">
+                    <p className="text-xs text-muted-foreground">
+                      Estado del consumo actual basado en esta última ejecución
+                    </p>
+                  </div>
+                </>
+              ) : (
+                <div className="text-center py-8">
+                  <CheckCircle2 className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                  <p className="text-sm text-muted-foreground">No hay ejecuciones registradas para este control</p>
+                </div>
+              )}
             </CardContent>
           </Card>
         )}
 
-        {!selectedControlId ? (
+        {isError && selectedAircraftId && (
+          <Card className="border-destructive/40 bg-destructive/5">
+            <CardContent className="pt-6">
+              <p className="text-sm text-destructive">
+                No se pudo cargar los controles de mantenimiento para esta aeronave.
+              </p>
+            </CardContent>
+          </Card>
+        )}
+
+        {!selectedAircraftId ? (
           <Card className="border-border/60">
             <CardContent className="py-10 text-center">
               <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-muted">
                 <Wrench className="h-6 w-6 text-muted-foreground" />
               </div>
-              <p className="mt-3 text-sm text-muted-foreground">Selecciona un control para ver sus tareas.</p>
+              <p className="mt-3 text-sm text-muted-foreground">
+                Selecciona una aeronave para ver sus controles de mantenimiento.
+              </p>
             </CardContent>
           </Card>
-        ) : tasksQuery.isLoading ? (
+        ) : isLoading ? (
           <Card className="border-border/60">
             <CardContent className="py-10 text-center">
               <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-muted">
                 <Wrench className="h-6 w-6 text-muted-foreground animate-spin" />
               </div>
-              <p className="mt-3 text-sm text-muted-foreground">Cargando tareas...</p>
+              <p className="mt-3 text-sm text-muted-foreground">Cargando controles de mantenimiento...</p>
             </CardContent>
           </Card>
-        ) : rows.length === 0 ? (
+        ) : controls.length === 0 ? (
           <Card className="border-border/60">
             <CardContent className="py-10 text-center">
               <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-muted">
                 <AlertCircle className="h-6 w-6 text-muted-foreground" />
               </div>
               <p className="mt-3 text-sm text-muted-foreground">
-                {selectedAircraftId
-                  ? 'No hay tareas asignadas para esta aeronave en este control.'
-                  : 'Selecciona una aeronave para ver las tareas asignadas.'}
+                No hay controles de mantenimiento asignados para esta aeronave.
+              </p>
+            </CardContent>
+          </Card>
+        ) : !selectedControlId ? (
+          <Card className="border-border/60">
+            <CardContent className="py-10 text-center">
+              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-muted">
+                <Wrench className="h-6 w-6 text-muted-foreground" />
+              </div>
+              <p className="mt-3 text-sm text-muted-foreground">
+                Selecciona un control de mantenimiento para ver sus tareas.
               </p>
             </CardContent>
           </Card>
@@ -398,75 +507,16 @@ export default function MaintenanceControlTestPage() {
                   <TableRow>
                     <TableHead>Tarea</TableHead>
                     <TableHead>Descripción</TableHead>
-                    <TableHead className="text-center">Consumido FH</TableHead>
-                    <TableHead className="text-center">Consumido FC</TableHead>
-                    <TableHead className="text-center">Consumido Días</TableHead>
-                    <TableHead className="text-center">Última ejecución</TableHead>
-                    <TableHead className="text-right">Estado</TableHead>
-                    <TableHead className="text-right">Acciones</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {rows.map((row) => (
                     <TableRow key={row.id}>
-                      <TableCell className="font-mono text-xs text-primary">{row.code}</TableCell>
+                      <TableCell className="font-mono text-xs text-primary">
+                        <div>{row.new_task}</div>
+                        <div className="text-[10px] text-muted-foreground mt-1">{row.old_task}</div>
+                      </TableCell>
                       <TableCell className="max-w-[300px] text-xs">{row.description}</TableCell>
-                      <TableCell className="text-center font-mono text-xs">
-                        <div className="flex flex-col">
-                          <span className={getConsumedColor(row.consumedFH, row.intervalFH)}>
-                            {formatConsumed(row.consumedFH, '')}
-                          </span>
-                          <span className="text-xs text-muted-foreground">/ {formatConsumed(row.intervalFH, '')}</span>
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-center font-mono text-xs">
-                        <div className="flex flex-col">
-                          <span className={getConsumedColor(row.consumedFC, row.intervalFC)}>
-                            {formatConsumed(row.consumedFC, '')}
-                          </span>
-                          <span className="text-xs text-muted-foreground">/ {formatConsumed(row.intervalFC, '')}</span>
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-center font-mono text-xs">
-                        <div className="flex flex-col">
-                          <span className={getConsumedColor(row.consumedDays, row.intervalDays)}>
-                            {formatConsumed(row.consumedDays, '')}
-                          </span>
-                          <span className="text-xs text-muted-foreground">
-                            / {formatConsumed(row.intervalDays, '')}
-                          </span>
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-center text-xs">
-                        {row.lastExecution ? (
-                          <div className="flex flex-col">
-                            <span className="font-mono">
-                              {new Date(row.lastExecution.executed_at).toLocaleDateString()}
-                            </span>
-                            <span className="text-xs text-muted-foreground">
-                              FH: {row.lastExecution.current_fh.toFixed(1)} | FC: {row.lastExecution.current_fc}
-                            </span>
-                          </div>
-                        ) : (
-                          <span className="text-muted-foreground">Nunca ejecutada</span>
-                        )}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <Badge variant={row.status.variant} className="text-xs">
-                          {row.status.label}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleCreateTaskExecution(row.id, row.code)}
-                          className="h-8 gap-1.5 text-xs"
-                        >
-                          <CheckCircle2 className="h-3.5 w-3.5" />
-                          Ejecutar
-                        </Button>
-                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>

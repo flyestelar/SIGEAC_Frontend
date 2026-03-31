@@ -48,7 +48,7 @@ export type AircraftResource = {
   fabricant_date: string;
   aircraft_operator: string;
   comments: string;
-  manufacturer?: Manufacturer;
+  manufacturer?: ManufacturerResource;
   location?: {
     id: number;
     address: string;
@@ -73,10 +73,7 @@ export type AircraftResource = {
  */
 export type AircraftTypeResource = {
   id: number;
-  manufacturer?: {
-    id: number;
-    name: string;
-  };
+  manufacturer?: ManufacturerResource;
   family: string;
   series: string;
   full_name: string;
@@ -270,7 +267,6 @@ export type MaintenanceControlExecutionResource = {
   id: number;
   maintenance_control_id: number;
   aircraft_id: number;
-  user_id: number;
   executed_at: string;
   completed_at: string;
   current_fh: number;
@@ -279,7 +275,6 @@ export type MaintenanceControlExecutionResource = {
   notes: string;
   maintenance_control?: MaintenanceControlResource;
   aircraft?: AircraftResource;
-  user?: UserResource;
   created_at: string;
   updated_at: string;
 };
@@ -300,12 +295,20 @@ export type MaintenanceControlResource = {
   last_execution?: MaintenanceControlExecutionResource;
   created_at: string | null;
   updated_at: string | null;
+  since_last?: {
+    fh: number;
+    fc: number;
+    days: number;
+  };
 };
 
 /**
- * Manufacturer
+ * ManufacturerResource
  */
-export type Manufacturer = Array<string>;
+export type ManufacturerResource = {
+  id: number;
+  name: string;
+};
 
 /**
  * MessageBag
@@ -524,25 +527,6 @@ export type TaskCardResource = {
   updated_at: string;
   manual_reference: string;
   order?: string;
-  last_execution?: TaskExecutionResource;
-};
-
-/**
- * TaskExecutionResource
- */
-export type TaskExecutionResource = {
-  id: number;
-  task_card_id: number;
-  maintenance_control_id: number;
-  aircraft_id: number;
-  executed_at: string;
-  current_fh: number;
-  current_fc: number;
-  task_card?: TaskCardResource;
-  maintenance_control?: MaintenanceControlResource;
-  aircraft?: AircraftResource;
-  created_at: string;
-  updated_at: string;
 };
 
 /**
@@ -748,16 +732,6 @@ export type UserRequest = {
   last_name: string;
   username: string;
   email: string;
-};
-
-/**
- * UserResource
- */
-export type UserResource = {
-  first_name: string | null;
-  last_name: string | null;
-  username: string;
-  email: string | null;
 };
 
 /**
@@ -1717,7 +1691,7 @@ export type AircraftIndexErrors = {
 export type AircraftIndexError = AircraftIndexErrors[keyof AircraftIndexErrors];
 
 export type AircraftIndexResponses = {
-  200: Array<unknown>;
+  200: Array<AircraftResource>;
 };
 
 export type AircraftIndexResponse = AircraftIndexResponses[keyof AircraftIndexResponses];
@@ -8293,11 +8267,7 @@ export type MaintenanceControlsExecutionsShowResponse =
 export type MaintenanceControlsIndexData = {
   body?: never;
   path?: never;
-  query?: {
-    manual_reference?: string;
-    per_page?: number;
-    aircraft_id?: number;
-  };
+  query?: never;
   url: '/maintenance-controls';
 };
 
@@ -8528,9 +8498,7 @@ export type MaintenanceControlsDetailsData = {
   path: {
     id: number;
   };
-  query?: {
-    aircraft_id?: number;
-  };
+  query?: never;
   url: '/maintenance-controls/{id}/details';
 };
 
