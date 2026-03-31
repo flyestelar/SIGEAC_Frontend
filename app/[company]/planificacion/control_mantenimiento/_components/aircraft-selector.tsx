@@ -5,8 +5,10 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import type { MaintenanceAircraft, MaintenanceControl } from "@/types";
+import { cn } from "../_data/utils";
 
 interface AircraftSelectorProps {
   aircraft: MaintenanceAircraft[];
@@ -63,7 +65,7 @@ export function AircraftSelector({
       </CardHeader>
       <CardContent className="p-0">
         <ScrollArea className="h-[calc(100vh-340px)]">
-          <div className="space-y-1 px-3 pb-3">
+          <div className="space-y-2 px-3 pb-3">
             {filtered.map((ac) => {
               const stats = getAircraftStats(ac);
               const isSelected = selectedAircraftId === ac.id;
@@ -72,52 +74,83 @@ export function AircraftSelector({
                 <button
                   key={ac.id}
                   onClick={() => onSelectAircraft(ac.id)}
-                  className={`group w-full rounded-md border p-3 text-left transition-all ${isSelected
-                    ? "border-primary/60 bg-primary/5 ring-1 ring-primary/20"
-                    : "border-transparent bg-muted/30 hover:bg-muted/60 hover:border-border/60"
+                  className={`group w-full overflow-hidden rounded-lg border text-left transition-all ${isSelected
+                    ? "border-primary/60 ring-1 ring-primary/20"
+                    : "border-border/60 hover:border-foreground/20"
                     }`}
                 >
-                  <div className="flex items-center gap-3">
-                    <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-md transition-colors ${isSelected ? "bg-primary/15 text-primary" : "bg-muted text-muted-foreground group-hover:text-foreground"
-                      }`}>
-                      <Plane className="h-4 w-4" />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-2">
-                        <span className={`font-semibold text-sm ${isSelected ? "text-primary" : "text-foreground"}`}>
+                  {/* Image */}
+                  <div className="relative">
+                    <img
+                      src="https://cdn.zbordirect.com/images/airlines/ES.webp"
+                      alt={ac.acronym ?? "Aircraft"}
+                      className={cn("aspect-[16/7] w-full object-cover", isSelected ? "brightness-1" : "brightness-[0.5] dark:brightness-[0.4]")}
+                    />
+                    {/* Acronym overlay */}
+                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent px-3 pb-2 pt-4">
+                      <div className="flex items-center justify-between">
+                        <span className="font-mono text-sm font-bold tracking-widest text-white">
                           {ac.acronym}
                         </span>
-                        <span className="font-mono text-[10px] text-muted-foreground">
-                          S/N {ac.serial}
-                        </span>
+                        {isSelected && (
+                          <Badge className="h-4 bg-primary/90 px-1.5 text-[9px] font-semibold text-primary-foreground">
+                            Activa
+                          </Badge>
+                        )}
                       </div>
-                      <p className="text-xs text-muted-foreground truncate">
-                        {ac.manufacturer?.name} {ac.aircraft_type?.series ? `- ${ac.aircraft_type.series}` : ''}
-                      </p>
                     </div>
                   </div>
 
-                  <div className="mt-2 flex items-center gap-3 text-[11px]">
-                    <span className="flex items-center gap-1 text-muted-foreground">
-                      <Clock className="h-3 w-3" />
-                      <span className="font-mono font-medium text-foreground">{ac.flight_hours?.toLocaleString() ?? 0}</span>
-                      FH
-                    </span>
-                    <span className="flex items-center gap-1 text-muted-foreground">
-                      <RotateCcw className="h-3 w-3" />
-                      <span className="font-mono font-medium text-foreground">{ac.flight_cycles?.toLocaleString() ?? 0}</span>
-                      FC
-                    </span>
-                    <span className="ml-auto text-muted-foreground">
-                      {stats.totalControls}C / {stats.totalTasks}T
-                    </span>
+                  {/* Info */}
+                  <div className="space-y-2 px-3 py-2.5">
+                    <div className="flex items-start justify-between gap-2">
+                      <span className="text-xs font-medium text-foreground truncate">
+                        {ac.manufacturer?.name ?? "—"}
+                      </span>
+                      <span className="shrink-0 font-mono text-[10px] text-muted-foreground">
+                        S/N {ac.serial || "—"}
+                      </span>
+                    </div>
+
+                    {ac.aircraft_type?.series && (
+                      <p className="text-[11px] text-muted-foreground truncate">
+                        {ac.aircraft_type.full_name ?? ac.aircraft_type.series}
+                      </p>
+                    )}
+
+                    <Separator className="!my-1.5" />
+
+                    {/* Telemetry + stats */}
+                    <div className="flex items-center gap-2 text-[11px]">
+                      <span className="flex items-center gap-1 text-muted-foreground">
+                        <Clock className="h-3 w-3" />
+                        <span className="font-mono font-medium tabular-nums text-foreground">
+                          {ac.flight_hours?.toLocaleString() ?? 0}
+                        </span>
+                        h
+                      </span>
+                      <span className="text-border">·</span>
+                      <span className="flex items-center gap-1 text-muted-foreground">
+                        <RotateCcw className="h-3 w-3" />
+                        <span className="font-mono font-medium tabular-nums text-foreground">
+                          {ac.flight_cycles?.toLocaleString() ?? 0}
+                        </span>
+                        cyc
+                      </span>
+                      <span className="ml-auto text-[10px] text-muted-foreground">
+                        {stats.totalControls}C / {stats.totalTasks}T
+                      </span>
+                    </div>
                   </div>
                 </button>
               );
             })}
             {filtered.length === 0 && (
-              <div className="py-8 text-center text-xs text-muted-foreground">
-                No se encontraron aeronaves
+              <div className="flex flex-col items-center gap-1.5 py-8 text-center">
+                <Plane className="h-6 w-6 text-muted-foreground/30" />
+                <p className="text-xs text-muted-foreground">
+                  No se encontraron aeronaves
+                </p>
               </div>
             )}
           </div>

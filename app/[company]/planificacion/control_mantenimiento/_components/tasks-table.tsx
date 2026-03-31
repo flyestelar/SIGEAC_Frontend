@@ -1,9 +1,8 @@
 "use client";
 
-import { Clock, Calendar, RotateCcw, MoreHorizontal, ClipboardList, Eye, CheckCircle, Pencil } from "lucide-react";
+import { Clock, Calendar, RotateCcw, ClipboardList } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -12,13 +11,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import type { TaskCard } from "@/types";
 
@@ -67,31 +59,21 @@ export function TasksTable({ tasks, controlName }: TasksTableProps) {
           <Table>
             <TableHeader>
               <TableRow className="border-border/60 bg-muted/40 hover:bg-muted/40">
-                <TableHead className="pl-6 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                <TableHead className="w-[180px] pl-6 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                   Tarea
                 </TableHead>
                 <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                   Descripción
                 </TableHead>
-                <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  <div className="flex items-center gap-1.5">
-                    <Clock className="h-3 w-3" />
-                    FH
-                  </div>
+                <TableHead className="w-[50px] text-center text-muted-foreground">
+                  <Clock className="mx-auto h-3.5 w-3.5" />
                 </TableHead>
-                <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  <div className="flex items-center gap-1.5">
-                    <RotateCcw className="h-3 w-3" />
-                    FC
-                  </div>
+                <TableHead className="w-[50px] text-center text-muted-foreground">
+                  <RotateCcw className="mx-auto h-3.5 w-3.5" />
                 </TableHead>
-                <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  <div className="flex items-center gap-1.5">
-                    <Calendar className="h-3 w-3" />
-                    Días
-                  </div>
+                <TableHead className="w-[50px] text-center text-muted-foreground">
+                  <Calendar className="mx-auto h-3.5 w-3.5" />
                 </TableHead>
-                <TableHead className="w-10 pr-6"></TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -99,63 +81,35 @@ export function TasksTable({ tasks, controlName }: TasksTableProps) {
                 <TableRow key={task.id} className="group border-border/40 hover:bg-muted/30">
                   <TableCell className="pl-6">
                     <div className="flex flex-col">
-                      <span className="font-mono text-xs font-medium text-primary">
+                      <span className="whitespace-nowrap font-mono text-xs font-medium text-primary">
                         {task.new_task || task.old_task}
                       </span>
                       {task.new_task && task.old_task && task.new_task !== task.old_task && (
-                        <span className="font-mono text-[10px] text-muted-foreground/60 line-through">
-                          {task.old_task}
+                        <span className="font-mono text-[10px] text-muted-foreground/60">
+                          ({task.old_task})
                         </span>
                       )}
                     </div>
                   </TableCell>
-                  <TableCell className="max-w-[280px]">
-                    <span className="line-clamp-2 text-xs text-foreground">
+                  <TableCell>
+                    <span className="text-xs text-foreground">
                       {task.description}
                     </span>
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="whitespace-nowrap text-center">
                     <span className="font-mono text-xs tabular-nums text-foreground">
-                      {task.interval_fh || <span className="text-muted-foreground/40">—</span>}
+                      {task.interval_fh ? `${task.interval_fh} h` : <span className="text-muted-foreground/40">—</span>}
                     </span>
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="whitespace-nowrap text-center">
                     <span className="font-mono text-xs tabular-nums text-foreground">
-                      {task.interval_fc || <span className="text-muted-foreground/40">—</span>}
+                      {task.interval_fc ? `${task.interval_fc} cyc` : <span className="text-muted-foreground/40">—</span>}
                     </span>
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="whitespace-nowrap text-center">
                     <span className="font-mono text-xs tabular-nums text-foreground">
-                      {task.interval_days || <span className="text-muted-foreground/40">—</span>}
+                      {task.interval_days ? `${task.interval_days} days` : <span className="text-muted-foreground/40">—</span>}
                     </span>
-                  </TableCell>
-                  <TableCell className="pr-6">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity"
-                        >
-                          <MoreHorizontal className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="w-48">
-                        <DropdownMenuItem>
-                          <Eye className="mr-2 h-3.5 w-3.5" />
-                          Ver detalles
-                        </DropdownMenuItem>
-                        <DropdownMenuItem>
-                          <Pencil className="mr-2 h-3.5 w-3.5" />
-                          Editar tarea
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem>
-                          <CheckCircle className="mr-2 h-3.5 w-3.5" />
-                          Registrar cumplimiento
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
                   </TableCell>
                 </TableRow>
               ))}

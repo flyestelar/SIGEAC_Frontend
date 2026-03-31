@@ -6,7 +6,9 @@
       "Bash(ls:*)",
       "Bash(git add:*)",
       "Bash(git push:*)",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "Bash(git diff:*)",
+      "Bash(grep:*)"
     ]
   }
 }

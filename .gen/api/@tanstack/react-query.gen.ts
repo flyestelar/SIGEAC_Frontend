@@ -323,6 +323,11 @@ import {
   sMsActivityAttendanceGetEnrolledEmployeesByActivity,
   sMsActivityAttendanceGetEnrollementStatus,
   sMsActivityAttendanceStoreSmsActivityAttendance,
+  taskCardsDestroy,
+  taskCardsIndex,
+  taskCardsShow,
+  taskCardsStore,
+  taskCardsUpdate,
   tasksDestroy,
   tasksIndex,
   tasksShow,
@@ -1282,6 +1287,21 @@ import type {
   SMsActivityAttendanceStoreSmsActivityAttendanceData,
   SMsActivityAttendanceStoreSmsActivityAttendanceError,
   SMsActivityAttendanceStoreSmsActivityAttendanceResponse,
+  TaskCardsDestroyData,
+  TaskCardsDestroyError,
+  TaskCardsDestroyResponse,
+  TaskCardsIndexData,
+  TaskCardsIndexError,
+  TaskCardsIndexResponse,
+  TaskCardsShowData,
+  TaskCardsShowError,
+  TaskCardsShowResponse,
+  TaskCardsStoreData,
+  TaskCardsStoreError,
+  TaskCardsStoreResponse,
+  TaskCardsUpdateData,
+  TaskCardsUpdateError,
+  TaskCardsUpdateResponse,
   TasksDestroyData,
   TasksDestroyError,
   TasksIndexData,
@@ -2548,10 +2568,10 @@ export const aircraftPartAssignmentAircraftMutation = (
   return mutationOptions;
 };
 
-export const aircraftTypesIndexQueryKey = (options: Options<AircraftTypesIndexData>) =>
+export const aircraftTypesIndexQueryKey = (options?: Options<AircraftTypesIndexData>) =>
   createQueryKey('aircraftTypesIndex', options);
 
-export const aircraftTypesIndexOptions = (options: Options<AircraftTypesIndexData>) =>
+export const aircraftTypesIndexOptions = (options?: Options<AircraftTypesIndexData>) =>
   queryOptions<
     AircraftTypesIndexResponse,
     AxiosError<AircraftTypesIndexError>,
@@ -9430,6 +9450,124 @@ export const sMsActivityAttendanceGetEnrolledEmployeesByActivityOptions = (
     },
     queryKey: sMsActivityAttendanceGetEnrolledEmployeesByActivityQueryKey(options),
   });
+
+export const taskCardsIndexQueryKey = (options?: Options<TaskCardsIndexData>) =>
+  createQueryKey('taskCardsIndex', options);
+
+/**
+ * Display a listing of the resource
+ */
+export const taskCardsIndexOptions = (options?: Options<TaskCardsIndexData>) =>
+  queryOptions<
+    TaskCardsIndexResponse,
+    AxiosError<TaskCardsIndexError>,
+    TaskCardsIndexResponse,
+    ReturnType<typeof taskCardsIndexQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await taskCardsIndex({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: taskCardsIndexQueryKey(options),
+  });
+
+/**
+ * Store a newly created resource in storage
+ */
+export const taskCardsStoreMutation = (
+  options?: Partial<Options<TaskCardsStoreData>>,
+): UseMutationOptions<TaskCardsStoreResponse, AxiosError<TaskCardsStoreError>, Options<TaskCardsStoreData>> => {
+  const mutationOptions: UseMutationOptions<
+    TaskCardsStoreResponse,
+    AxiosError<TaskCardsStoreError>,
+    Options<TaskCardsStoreData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await taskCardsStore({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+/**
+ * Remove the specified resource from storage
+ */
+export const taskCardsDestroyMutation = (
+  options?: Partial<Options<TaskCardsDestroyData>>,
+): UseMutationOptions<TaskCardsDestroyResponse, AxiosError<TaskCardsDestroyError>, Options<TaskCardsDestroyData>> => {
+  const mutationOptions: UseMutationOptions<
+    TaskCardsDestroyResponse,
+    AxiosError<TaskCardsDestroyError>,
+    Options<TaskCardsDestroyData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await taskCardsDestroy({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+export const taskCardsShowQueryKey = (options: Options<TaskCardsShowData>) => createQueryKey('taskCardsShow', options);
+
+/**
+ * Display the specified resource
+ */
+export const taskCardsShowOptions = (options: Options<TaskCardsShowData>) =>
+  queryOptions<
+    TaskCardsShowResponse,
+    AxiosError<TaskCardsShowError>,
+    TaskCardsShowResponse,
+    ReturnType<typeof taskCardsShowQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await taskCardsShow({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: taskCardsShowQueryKey(options),
+  });
+
+/**
+ * Update the specified resource in storage
+ */
+export const taskCardsUpdateMutation = (
+  options?: Partial<Options<TaskCardsUpdateData>>,
+): UseMutationOptions<TaskCardsUpdateResponse, AxiosError<TaskCardsUpdateError>, Options<TaskCardsUpdateData>> => {
+  const mutationOptions: UseMutationOptions<
+    TaskCardsUpdateResponse,
+    AxiosError<TaskCardsUpdateError>,
+    Options<TaskCardsUpdateData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await taskCardsUpdate({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
 
 export const tasksIndexQueryKey = (options: Options<TasksIndexData>) => createQueryKey('tasksIndex', options);
 

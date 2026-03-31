@@ -954,6 +954,21 @@ import type {
   SMsActivityAttendanceStoreSmsActivityAttendanceData,
   SMsActivityAttendanceStoreSmsActivityAttendanceErrors,
   SMsActivityAttendanceStoreSmsActivityAttendanceResponses,
+  TaskCardsDestroyData,
+  TaskCardsDestroyErrors,
+  TaskCardsDestroyResponses,
+  TaskCardsIndexData,
+  TaskCardsIndexErrors,
+  TaskCardsIndexResponses,
+  TaskCardsShowData,
+  TaskCardsShowErrors,
+  TaskCardsShowResponses,
+  TaskCardsStoreData,
+  TaskCardsStoreErrors,
+  TaskCardsStoreResponses,
+  TaskCardsUpdateData,
+  TaskCardsUpdateErrors,
+  TaskCardsUpdateResponses,
   TasksDestroyData,
   TasksDestroyErrors,
   TasksDestroyResponses,
@@ -1760,12 +1775,12 @@ export const aircraftPartAssignmentAircraft = <ThrowOnError extends boolean = fa
   });
 
 export const aircraftTypesIndex = <ThrowOnError extends boolean = false>(
-  options: Options<AircraftTypesIndexData, ThrowOnError>,
+  options?: Options<AircraftTypesIndexData, ThrowOnError>,
 ) =>
-  (options.client ?? client).get<AircraftTypesIndexResponses, AircraftTypesIndexErrors, ThrowOnError>({
+  (options?.client ?? client).get<AircraftTypesIndexResponses, AircraftTypesIndexErrors, ThrowOnError>({
     responseType: 'json',
     security: [{ scheme: 'bearer', type: 'http' }],
-    url: '/{company}/aircraft-types',
+    url: '/aircraft-types',
     ...options,
   });
 
@@ -1775,7 +1790,7 @@ export const aircraftTypesStore = <ThrowOnError extends boolean = false>(
   (options.client ?? client).post<AircraftTypesStoreResponses, AircraftTypesStoreErrors, ThrowOnError>({
     responseType: 'json',
     security: [{ scheme: 'bearer', type: 'http' }],
-    url: '/{company}/aircraft-types',
+    url: '/aircraft-types',
     ...options,
     headers: {
       'Content-Type': 'application/json',
@@ -1789,7 +1804,7 @@ export const aircraftTypesDestroy = <ThrowOnError extends boolean = false>(
   (options.client ?? client).delete<AircraftTypesDestroyResponses, AircraftTypesDestroyErrors, ThrowOnError>({
     responseType: 'json',
     security: [{ scheme: 'bearer', type: 'http' }],
-    url: '/{company}/aircraft-types/{id}',
+    url: '/aircraft-types/{id}',
     ...options,
   });
 
@@ -1799,7 +1814,7 @@ export const aircraftTypesShow = <ThrowOnError extends boolean = false>(
   (options.client ?? client).get<AircraftTypesShowResponses, AircraftTypesShowErrors, ThrowOnError>({
     responseType: 'json',
     security: [{ scheme: 'bearer', type: 'http' }],
-    url: '/{company}/aircraft-types/{id}',
+    url: '/aircraft-types/{id}',
     ...options,
   });
 
@@ -1809,7 +1824,7 @@ export const aircraftTypesUpdate = <ThrowOnError extends boolean = false>(
   (options.client ?? client).put<AircraftTypesUpdateResponses, AircraftTypesUpdateErrors, ThrowOnError>({
     responseType: 'json',
     security: [{ scheme: 'bearer', type: 'http' }],
-    url: '/{company}/aircraft-types/{id}',
+    url: '/aircraft-types/{id}',
     ...options,
     headers: {
       'Content-Type': 'application/json',
@@ -5678,6 +5693,79 @@ export const sMsActivityAttendanceGetEnrolledEmployeesByActivity = <ThrowOnError
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/{company}/sms/activities/{activity_id}/enrolled-employees',
     ...options,
+  });
+
+/**
+ * Display a listing of the resource
+ */
+export const taskCardsIndex = <ThrowOnError extends boolean = false>(
+  options?: Options<TaskCardsIndexData, ThrowOnError>,
+) =>
+  (options?.client ?? client).get<TaskCardsIndexResponses, TaskCardsIndexErrors, ThrowOnError>({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/task-cards',
+    ...options,
+  });
+
+/**
+ * Store a newly created resource in storage
+ */
+export const taskCardsStore = <ThrowOnError extends boolean = false>(
+  options?: Options<TaskCardsStoreData, ThrowOnError>,
+) =>
+  (options?.client ?? client).post<TaskCardsStoreResponses, TaskCardsStoreErrors, ThrowOnError>({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/task-cards',
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...options?.headers,
+    },
+  });
+
+/**
+ * Remove the specified resource from storage
+ */
+export const taskCardsDestroy = <ThrowOnError extends boolean = false>(
+  options: Options<TaskCardsDestroyData, ThrowOnError>,
+) =>
+  (options.client ?? client).delete<TaskCardsDestroyResponses, TaskCardsDestroyErrors, ThrowOnError>({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/task-cards/{id}',
+    ...options,
+  });
+
+/**
+ * Display the specified resource
+ */
+export const taskCardsShow = <ThrowOnError extends boolean = false>(
+  options: Options<TaskCardsShowData, ThrowOnError>,
+) =>
+  (options.client ?? client).get<TaskCardsShowResponses, TaskCardsShowErrors, ThrowOnError>({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/task-cards/{id}',
+    ...options,
+  });
+
+/**
+ * Update the specified resource in storage
+ */
+export const taskCardsUpdate = <ThrowOnError extends boolean = false>(
+  options: Options<TaskCardsUpdateData, ThrowOnError>,
+) =>
+  (options.client ?? client).put<TaskCardsUpdateResponses, TaskCardsUpdateErrors, ThrowOnError>({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/task-cards/{id}',
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    },
   });
 
 /**

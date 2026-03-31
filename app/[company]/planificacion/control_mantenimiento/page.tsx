@@ -80,7 +80,7 @@ export default function MaintenanceDashboard() {
         />
 
         <div className="mt-4 grid gap-4 lg:grid-cols-12">
-          <div className="lg:col-span-2">
+          <div className="lg:col-span-3">
             <AircraftSelector
               aircraft={aircraft}
               controls={controls}
@@ -89,7 +89,7 @@ export default function MaintenanceDashboard() {
             />
           </div>
 
-          <div className="lg:col-span-7 space-y-4">
+          <div className="lg:col-span-6 space-y-4">
             <ControlSelector
               controls={controlsForAircraft}
               selectedControlId={selectedControlId}

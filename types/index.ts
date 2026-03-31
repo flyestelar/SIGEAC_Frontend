@@ -571,6 +571,7 @@ export type MaintenanceControl = {
 
 export type TaskCard = {
   id: number;
+  manual_reference: string;
   description: string,
   old_task: string,
   new_task: string,
