@@ -99,7 +99,7 @@ export function ControlSelector({
                   <div className="mt-2.5 flex items-center gap-1.5">
                     <Badge variant="outline" className="h-5 border-border/60 px-1.5 text-[10px] font-normal">
                       <ClipboardList className="mr-0.5 h-2.5 w-2.5" />
-                      {control.task_cards.length}
+                      {control.task_cards?.length}
                     </Badge>
                     <Badge variant="outline" className="h-5 border-border/60 px-1.5 text-[10px] font-normal">
                       <Plane className="mr-0.5 h-2.5 w-2.5" />

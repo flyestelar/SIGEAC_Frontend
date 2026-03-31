@@ -29,7 +29,7 @@ export function AircraftSelector({
     const relatedControls = controls.filter((c) =>
       c.aircrafts.some((a) => a.id === ac.id)
     );
-    const totalTasks = relatedControls.reduce((sum, c) => sum + c.task_cards.length, 0);
+    const totalTasks = relatedControls.reduce((sum, c) => sum + c.task_cards?.length, 0);
     return { totalControls: relatedControls.length, totalTasks };
   };
 

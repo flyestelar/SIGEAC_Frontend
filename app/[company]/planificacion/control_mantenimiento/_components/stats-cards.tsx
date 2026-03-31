@@ -48,7 +48,7 @@ interface StatsCardsProps {
 
 export function StatsCards({ aircraft, controls, selectedAircraft, controlsForAircraft }: StatsCardsProps) {
   const displayControls = selectedAircraft ? controlsForAircraft : controls;
-  const totalTasks = displayControls.reduce((sum, c) => sum + c.task_cards.length, 0);
+  const totalTasks = displayControls.reduce((sum, c) => sum + c.task_cards?.length, 0);
 
   return (
     <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">

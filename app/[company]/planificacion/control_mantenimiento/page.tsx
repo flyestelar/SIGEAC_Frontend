@@ -1,21 +1,23 @@
-"use client";
+'use client';
 
-import Link from "next/link";
-import { useState, useMemo } from "react";
-import { Plus, Settings2 } from "lucide-react";
-import { StatsCards } from "./_components/stats-cards";
-import { AircraftSelector } from "./_components/aircraft-selector";
-import { ControlSelector } from "./_components/control-selector";
-import { TasksTable } from "./_components/tasks-table";
-import { UpcomingTasks } from "./_components/upcoming-tasks";
-import { ContentLayout } from "@/components/layout/ContentLayout";
-import { useGetMaintenanceAircrafts } from "@/hooks/planificacion/useGetMaintenanceAircrafts";
-import { useGetMaintenanceControl } from "@/hooks/planificacion/control_mantenimiento/useGetMaintenanceControl";
-import { useCompanyStore } from "@/stores/CompanyStore";
-import LoadingPage from "@/components/misc/LoadingPage";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import Link from 'next/link';
+import { useState, useMemo } from 'react';
+import { Plus, Settings2 } from 'lucide-react';
+import { StatsCards } from './_components/stats-cards';
+import { AircraftSelector } from './_components/aircraft-selector';
+import { ControlSelector } from './_components/control-selector';
+import { TasksTable } from './_components/tasks-table';
+import { UpcomingTasks } from './_components/upcoming-tasks';
+import { ContentLayout } from '@/components/layout/ContentLayout';
+import { useGetMaintenanceAircrafts } from '@/hooks/planificacion/useGetMaintenanceAircrafts';
+import { useGetMaintenanceControl } from '@/hooks/planificacion/control_mantenimiento/useGetMaintenanceControl';
+import { useCompanyStore } from '@/stores/CompanyStore';
+import LoadingPage from '@/components/misc/LoadingPage';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { useQuery } from '@tanstack/react-query';
+import { maintenanceControlsIndexOptions } from '@api/queries';
 
 export default function MaintenanceDashboard() {
   const { selectedCompany } = useCompanyStore();
@@ -23,7 +25,14 @@ export default function MaintenanceDashboard() {
   const [selectedControlId, setSelectedControlId] = useState<number | null>(null);
 
   const { data: aircraft = [], isLoading } = useGetMaintenanceAircrafts(selectedCompany?.slug);
-  const { data: controlsResponse, isLoading: isControlsLoading } = useGetMaintenanceControl();
+  const { data: controlsResponse, isLoading: isControlsLoading } = useQuery({
+    ...maintenanceControlsIndexOptions({
+      query: {
+        aircraft_id: selectedAircraftId ?? undefined,
+      },
+    }),
+    enabled: !!selectedAircraftId,
+  });
 
   const controls = controlsResponse?.data ?? [];
 
@@ -33,7 +42,7 @@ export default function MaintenanceDashboard() {
 
   const controlsForAircraft = useMemo(() => {
     if (!selectedAircraft) return [];
-    return controls.filter((c) => c.aircrafts.some((ac) => ac.id === selectedAircraft.id));
+    return controls.filter((c) => c.aircrafts?.some((ac) => ac.id === selectedAircraft.id));
   }, [controls, selectedAircraft]);
 
   const selectedControl = useMemo(() => {
