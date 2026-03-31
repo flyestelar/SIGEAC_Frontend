@@ -153,9 +153,6 @@ export default function MaintenanceControlTestPage() {
       task_card_id: Number(taskId),
       maintenance_control_id: Number(selectedControlId),
       aircraft_id: Number(selectedAircraftId),
-      executed_at: new Date().toISOString(),
-      current_fh: consumedValues.fh,
-      current_fc: consumedValues.fc,
     };
 
     createTaskExecutionMutation.mutate({ body: executionData });
@@ -176,9 +173,7 @@ export default function MaintenanceControlTestPage() {
       const lastExecutedAt = task.last_execution?.executed_at ? new Date(task.last_execution.executed_at) : null;
 
       // Calcular días desde la última ejecución usando date-fns
-      const lastDays = lastExecutedAt
-        ? differenceInDays(new Date(), lastExecutedAt)
-        : 0; // Si nunca se ejecutó, usar 0
+      const lastDays = lastExecutedAt ? differenceInDays(new Date(), lastExecutedAt) : 0; // Si nunca se ejecutó, usar 0
 
       const consumedFH = consumedValues.fh - lastFH;
       const consumedFC = consumedValues.fc - lastFC;
@@ -224,7 +219,9 @@ export default function MaintenanceControlTestPage() {
               Página de Prueba de Consumo
             </CardTitle>
             <CardDescription>
-              Selecciona un control de mantenimiento y una aeronave para ver cuánto se ha consumido desde la última ejecución de cada tarea. Puedes personalizar temporalmente los valores de consumo para simular diferentes escenarios.
+              Selecciona un control de mantenimiento y una aeronave para ver cuánto se ha consumido desde la última
+              ejecución de cada tarea. Puedes personalizar temporalmente los valores de consumo para simular diferentes
+              escenarios.
             </CardDescription>
           </CardHeader>
           <CardContent className="grid gap-4 md:grid-cols-2">
@@ -285,12 +282,7 @@ export default function MaintenanceControlTestPage() {
             <CardHeader className="pb-3">
               <CardTitle className="text-sm flex items-center justify-between">
                 <span>Consumo de la aeronave</span>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleResetCustomValues}
-                  className="text-xs"
-                >
+                <Button variant="outline" size="sm" onClick={handleResetCustomValues} className="text-xs">
                   Resetear
                 </Button>
               </CardTitle>
@@ -400,7 +392,8 @@ export default function MaintenanceControlTestPage() {
             <CardHeader className="pb-2">
               <CardTitle className="text-base">Tareas del control</CardTitle>
               <CardDescription>
-                Consumo desde la última ejecución para: <span className="font-medium text-foreground">{selectedControl?.title}</span>
+                Consumo desde la última ejecución para:{' '}
+                <span className="font-medium text-foreground">{selectedControl?.title}</span>
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -427,9 +420,7 @@ export default function MaintenanceControlTestPage() {
                           <span className={getConsumedColor(row.consumedFH, row.intervalFH)}>
                             {formatConsumed(row.consumedFH, '')}
                           </span>
-                          <span className="text-xs text-muted-foreground">
-                            / {formatConsumed(row.intervalFH, '')}
-                          </span>
+                          <span className="text-xs text-muted-foreground">/ {formatConsumed(row.intervalFH, '')}</span>
                         </div>
                       </TableCell>
                       <TableCell className="text-center font-mono text-xs">
@@ -437,9 +428,7 @@ export default function MaintenanceControlTestPage() {
                           <span className={getConsumedColor(row.consumedFC, row.intervalFC)}>
                             {formatConsumed(row.consumedFC, '')}
                           </span>
-                          <span className="text-xs text-muted-foreground">
-                            / {formatConsumed(row.intervalFC, '')}
-                          </span>
+                          <span className="text-xs text-muted-foreground">/ {formatConsumed(row.intervalFC, '')}</span>
                         </div>
                       </TableCell>
                       <TableCell className="text-center font-mono text-xs">
