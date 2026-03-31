@@ -1,6 +1,6 @@
 'use client';
 
-import { useUpdateMaintenanceAircraft } from '@/actions/mantenimiento/planificacion/aeronaves/actions';
+import { useUpdateMaintenanceAircraft } from '@/actions/planificacion/aeronaves/actions';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,

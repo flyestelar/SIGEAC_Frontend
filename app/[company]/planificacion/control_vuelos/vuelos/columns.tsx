@@ -24,7 +24,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog"
 import CreateFlightControlForm from "@/components/forms/mantenimiento/ordenes_trabajo/CreateFlightControlForm"
-import { useDeleteFlightControl } from "@/actions/mantenimiento/planificacion/vuelos/actions"
+import { useDeleteFlightControl } from "@/actions/planificacion/vuelos/actions"
 import { useCompanyStore } from "@/stores/CompanyStore"
 
 function formatDate(value?: string | Date | null) {

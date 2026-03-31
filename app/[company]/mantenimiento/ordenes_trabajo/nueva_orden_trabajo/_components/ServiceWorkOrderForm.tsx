@@ -1,5 +1,5 @@
 'use client';
-import { useCreateWorkOrder } from '@/actions/mantenimiento/planificacion/ordenes_trabajo/actions';
+import { useCreateWorkOrder } from '@/actions/planificacion/ordenes_trabajo/actions';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
@@ -95,7 +95,7 @@ const ServiceWorkOrderForm = () => {
   const [selectedService, setSelectedService] = useState<number | null>(null);
   const [articleAvailability, setArticleAvailability] = useState<ArticleAvailability[]>([]);
   const { selectedStation, selectedCompany } = useCompanyStore();
-  const { createWorkOrder } = useCreateWorkOrder();
+  const createWorkOrder = useCreateWorkOrder();
   const { data: aircrafts, isLoading: isAircraftsLoading } = useGetMaintenanceAircrafts(selectedCompany?.slug);
   const { data: services, isLoading: isServicesLoading } = useGetServicesByManufacturer(selectedAircraft);
   const {

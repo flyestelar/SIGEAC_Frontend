@@ -1,6 +1,6 @@
 "use client";
 
-import { useAddWorkOrderTask } from "@/actions/mantenimiento/planificacion/ordenes_trabajo/rutinarios/actions";
+import { useAddWorkOrderTask } from "@/actions/planificacion/ordenes_trabajo/rutinarios/actions";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,

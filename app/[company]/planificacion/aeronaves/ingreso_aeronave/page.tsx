@@ -1,6 +1,6 @@
 "use client";
 
-import { useCreateMaintenanceAircraft } from "@/actions/mantenimiento/planificacion/aeronaves/actions";
+import { useCreateMaintenanceAircraft } from "@/actions/planificacion/aeronaves/actions";
 import { AircraftPartsInfoForm } from "@/components/forms/mantenimiento/aeronaves/AircraftPartsForm";
 import AircraftInfoForm, { type AircraftInfoType } from "@/components/forms/mantenimiento/aeronaves/AircraftInfoForm";
 import { ContentLayout } from "@/components/layout/ContentLayout";

@@ -1,6 +1,6 @@
 "use client"
 
-import { useCreatePlanificationEvent } from "@/actions/mantenimiento/planificacion/eventos/actions"
+import { useCreatePlanificationEvent } from "@/actions/planificacion/eventos/actions"
 import { Button } from "@/components/ui/button"
 import { Calendar } from "@/components/ui/calendar"
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command'

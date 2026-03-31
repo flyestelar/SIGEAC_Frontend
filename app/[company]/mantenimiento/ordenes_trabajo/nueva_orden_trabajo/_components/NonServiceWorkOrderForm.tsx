@@ -1,5 +1,5 @@
 'use client';
-import { useCreateWorkOrder } from '@/actions/mantenimiento/planificacion/ordenes_trabajo/actions';
+import { useCreateWorkOrder } from '@/actions/planificacion/ordenes_trabajo/actions';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
@@ -66,7 +66,7 @@ const NonServiceWorkOrderForm = () => {
   const [selectedAircraft, setSelectedAircraft] = useState<string | null>(null);
   const [tasks, setTasks] = useState<TaskInProgress[]>([]);
   const { selectedStation, selectedCompany } = useCompanyStore();
-  const { createWorkOrder } = useCreateWorkOrder()
+  const createWorkOrder = useCreateWorkOrder()
   const { data: aircrafts, isLoading: isAircraftsLoading, isError: isAircraftsError } = useGetMaintenanceAircrafts(selectedCompany?.slug);
   const router = useRouter();
 

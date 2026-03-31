@@ -38,7 +38,7 @@ import { cn } from "@/lib/utils";
 import {
   useCreateFlightControl,
   useUpdateFlightControl,
-} from "@/actions/mantenimiento/planificacion/vuelos/actions";
+} from "@/actions/planificacion/vuelos/actions";
 import { useCompanyStore } from "@/stores/CompanyStore";
 import { useGetMaintenanceAircrafts } from "@/hooks/planificacion/useGetMaintenanceAircrafts";
 

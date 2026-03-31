@@ -1,10 +1,10 @@
 "use client";
-import { useUpdateNoRoutineTask } from "@/actions/mantenimiento/planificacion/ordenes_trabajo/no_rutinarios/actions";
+import { useUpdateNoRoutineTask } from "@/actions/planificacion/ordenes_trabajo/no_rutinarios/actions";
 import {
   useCreateTaskEvents,
   useUpdateWorkOrderTask,
   useUpdateWorkOrderTaskStatus,
-} from "@/actions/mantenimiento/planificacion/ordenes_trabajo/rutinarios/actions";
+} from "@/actions/planificacion/ordenes_trabajo/rutinarios/actions";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";

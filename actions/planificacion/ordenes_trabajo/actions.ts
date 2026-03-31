@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 export interface CreateWorkOrderData {
   aircraft_id: number;
   items: {
+    description: string;
     maintenance_control_id: number;
     maintenance_control_tasks_ids: number[];
   }[];

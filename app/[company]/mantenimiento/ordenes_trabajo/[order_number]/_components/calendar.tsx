@@ -1,5 +1,5 @@
 "use client";
-import { useUpdatePlanificationEvent } from "@/actions/mantenimiento/planificacion/eventos/actions";
+import { useUpdatePlanificationEvent } from "@/actions/planificacion/eventos/actions";
 import CreatePlanificationEventDialog from "@/components/dialogs/planificacion/calendario/CreatePlanificationEventDialog";
 import { useCompanyStore } from "@/stores/CompanyStore";
 import { PlanificationEvent, WorkOrderTaskEvent } from "@/types";
