@@ -9,15 +9,11 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import {
-  maintenanceControlsGetTasksOptions,
-  maintenanceControlsGetTasksQueryKey,
   maintenanceControlsIndexOptions,
   maintenanceControlsIndexQueryKey,
   maintenanceControlsShowOptions,
   maintenanceControlsShowQueryKey,
-  taskExecutionsStoreMutation,
 } from '@api/queries';
-import { StoreTaskExecutionRequest } from '@api/types';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { differenceInDays } from 'date-fns';
 import { AlertCircle, CheckCircle2, GaugeCircle, Wrench } from 'lucide-react';

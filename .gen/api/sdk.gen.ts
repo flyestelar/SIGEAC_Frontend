@@ -645,9 +645,18 @@ import type {
   MaintenanceControlsDestroyData,
   MaintenanceControlsDestroyErrors,
   MaintenanceControlsDestroyResponses,
-  MaintenanceControlsGetTasksData,
-  MaintenanceControlsGetTasksErrors,
-  MaintenanceControlsGetTasksResponses,
+  MaintenanceControlsDetailsData,
+  MaintenanceControlsDetailsErrors,
+  MaintenanceControlsDetailsResponses,
+  MaintenanceControlsExecutionsIndexData,
+  MaintenanceControlsExecutionsIndexErrors,
+  MaintenanceControlsExecutionsIndexResponses,
+  MaintenanceControlsExecutionsShowData,
+  MaintenanceControlsExecutionsShowErrors,
+  MaintenanceControlsExecutionsShowResponses,
+  MaintenanceControlsExecutionsStoreData,
+  MaintenanceControlsExecutionsStoreErrors,
+  MaintenanceControlsExecutionsStoreResponses,
   MaintenanceControlsIndexData,
   MaintenanceControlsIndexErrors,
   MaintenanceControlsIndexResponses,
@@ -972,9 +981,6 @@ import type {
   TaskCardsUpdateData,
   TaskCardsUpdateErrors,
   TaskCardsUpdateResponses,
-  TaskExecutionsStoreData,
-  TaskExecutionsStoreErrors,
-  TaskExecutionsStoreResponses,
   TasksDestroyData,
   TasksDestroyErrors,
   TasksDestroyResponses,
@@ -4152,6 +4158,61 @@ export const generalLocationIndex0 = <ThrowOnError extends boolean = false>(
 /**
  * Display a listing of the resource
  */
+export const maintenanceControlsExecutionsIndex = <ThrowOnError extends boolean = false>(
+  options: Options<MaintenanceControlsExecutionsIndexData, ThrowOnError>,
+) =>
+  (options.client ?? client).get<
+    MaintenanceControlsExecutionsIndexResponses,
+    MaintenanceControlsExecutionsIndexErrors,
+    ThrowOnError
+  >({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/maintenance-controls/{maintenance_control}/executions',
+    ...options,
+  });
+
+/**
+ * Store a newly created resource in storage
+ */
+export const maintenanceControlsExecutionsStore = <ThrowOnError extends boolean = false>(
+  options: Options<MaintenanceControlsExecutionsStoreData, ThrowOnError>,
+) =>
+  (options.client ?? client).post<
+    MaintenanceControlsExecutionsStoreResponses,
+    MaintenanceControlsExecutionsStoreErrors,
+    ThrowOnError
+  >({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/maintenance-controls/{maintenance_control}/executions',
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    },
+  });
+
+/**
+ * Display the specified resource
+ */
+export const maintenanceControlsExecutionsShow = <ThrowOnError extends boolean = false>(
+  options: Options<MaintenanceControlsExecutionsShowData, ThrowOnError>,
+) =>
+  (options.client ?? client).get<
+    MaintenanceControlsExecutionsShowResponses,
+    MaintenanceControlsExecutionsShowErrors,
+    ThrowOnError
+  >({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/maintenance-controls/{maintenance_control}/executions/{execution}',
+    ...options,
+  });
+
+/**
+ * Display a listing of the resource
+ */
 export const maintenanceControlsIndex = <ThrowOnError extends boolean = false>(
   options?: Options<MaintenanceControlsIndexData, ThrowOnError>,
 ) =>
@@ -4229,17 +4290,15 @@ export const maintenanceControlsUpdate = <ThrowOnError extends boolean = false>(
 /**
  * Get tasks for a specific maintenance control and aircraft
  */
-export const maintenanceControlsGetTasks = <ThrowOnError extends boolean = false>(
-  options: Options<MaintenanceControlsGetTasksData, ThrowOnError>,
+export const maintenanceControlsDetails = <ThrowOnError extends boolean = false>(
+  options: Options<MaintenanceControlsDetailsData, ThrowOnError>,
 ) =>
-  (options.client ?? client).get<MaintenanceControlsGetTasksResponses, MaintenanceControlsGetTasksErrors, ThrowOnError>(
-    {
-      responseType: 'json',
-      security: [{ scheme: 'bearer', type: 'http' }],
-      url: '/maintenance-controls/{id}/tasks',
-      ...options,
-    },
-  );
+  (options.client ?? client).get<MaintenanceControlsDetailsResponses, MaintenanceControlsDetailsErrors, ThrowOnError>({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/maintenance-controls/{id}/details',
+    ...options,
+  });
 
 /**
  * Display a listing of the resource
@@ -5782,23 +5841,6 @@ export const taskCardsUpdate = <ThrowOnError extends boolean = false>(
     responseType: 'json',
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/task-cards/{id}',
-    ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      ...options.headers,
-    },
-  });
-
-/**
- * Store a newly created resource in storage
- */
-export const taskExecutionsStore = <ThrowOnError extends boolean = false>(
-  options: Options<TaskExecutionsStoreData, ThrowOnError>,
-) =>
-  (options.client ?? client).post<TaskExecutionsStoreResponses, TaskExecutionsStoreErrors, ThrowOnError>({
-    responseType: 'json',
-    security: [{ scheme: 'bearer', type: 'http' }],
-    url: '/task-executions',
     ...options,
     headers: {
       'Content-Type': 'application/json',

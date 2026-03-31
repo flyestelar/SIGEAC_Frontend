@@ -219,7 +219,10 @@ import {
   login,
   logout,
   maintenanceControlsDestroy,
-  maintenanceControlsGetTasks,
+  maintenanceControlsDetails,
+  maintenanceControlsExecutionsIndex,
+  maintenanceControlsExecutionsShow,
+  maintenanceControlsExecutionsStore,
   maintenanceControlsIndex,
   maintenanceControlsShow,
   maintenanceControlsStore,
@@ -329,7 +332,6 @@ import {
   taskCardsShow,
   taskCardsStore,
   taskCardsUpdate,
-  taskExecutionsStore,
   tasksDestroy,
   tasksIndex,
   tasksShow,
@@ -991,9 +993,18 @@ import type {
   MaintenanceControlsDestroyData,
   MaintenanceControlsDestroyError,
   MaintenanceControlsDestroyResponse,
-  MaintenanceControlsGetTasksData,
-  MaintenanceControlsGetTasksError,
-  MaintenanceControlsGetTasksResponse,
+  MaintenanceControlsDetailsData,
+  MaintenanceControlsDetailsError,
+  MaintenanceControlsDetailsResponse,
+  MaintenanceControlsExecutionsIndexData,
+  MaintenanceControlsExecutionsIndexError,
+  MaintenanceControlsExecutionsIndexResponse,
+  MaintenanceControlsExecutionsShowData,
+  MaintenanceControlsExecutionsShowError,
+  MaintenanceControlsExecutionsShowResponse,
+  MaintenanceControlsExecutionsStoreData,
+  MaintenanceControlsExecutionsStoreError,
+  MaintenanceControlsExecutionsStoreResponse,
   MaintenanceControlsIndexData,
   MaintenanceControlsIndexError,
   MaintenanceControlsIndexResponse,
@@ -1307,9 +1318,6 @@ import type {
   TaskCardsUpdateData,
   TaskCardsUpdateError,
   TaskCardsUpdateResponse,
-  TaskExecutionsStoreData,
-  TaskExecutionsStoreError,
-  TaskExecutionsStoreResponse,
   TasksDestroyData,
   TasksDestroyError,
   TasksIndexData,
@@ -6782,6 +6790,83 @@ export const generalLocationIndex0Options = (options: Options<GeneralLocationInd
     queryKey: generalLocationIndex0QueryKey(options),
   });
 
+export const maintenanceControlsExecutionsIndexQueryKey = (options: Options<MaintenanceControlsExecutionsIndexData>) =>
+  createQueryKey('maintenanceControlsExecutionsIndex', options);
+
+/**
+ * Display a listing of the resource
+ */
+export const maintenanceControlsExecutionsIndexOptions = (options: Options<MaintenanceControlsExecutionsIndexData>) =>
+  queryOptions<
+    MaintenanceControlsExecutionsIndexResponse,
+    AxiosError<MaintenanceControlsExecutionsIndexError>,
+    MaintenanceControlsExecutionsIndexResponse,
+    ReturnType<typeof maintenanceControlsExecutionsIndexQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await maintenanceControlsExecutionsIndex({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: maintenanceControlsExecutionsIndexQueryKey(options),
+  });
+
+/**
+ * Store a newly created resource in storage
+ */
+export const maintenanceControlsExecutionsStoreMutation = (
+  options?: Partial<Options<MaintenanceControlsExecutionsStoreData>>,
+): UseMutationOptions<
+  MaintenanceControlsExecutionsStoreResponse,
+  AxiosError<MaintenanceControlsExecutionsStoreError>,
+  Options<MaintenanceControlsExecutionsStoreData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    MaintenanceControlsExecutionsStoreResponse,
+    AxiosError<MaintenanceControlsExecutionsStoreError>,
+    Options<MaintenanceControlsExecutionsStoreData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await maintenanceControlsExecutionsStore({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+export const maintenanceControlsExecutionsShowQueryKey = (options: Options<MaintenanceControlsExecutionsShowData>) =>
+  createQueryKey('maintenanceControlsExecutionsShow', options);
+
+/**
+ * Display the specified resource
+ */
+export const maintenanceControlsExecutionsShowOptions = (options: Options<MaintenanceControlsExecutionsShowData>) =>
+  queryOptions<
+    MaintenanceControlsExecutionsShowResponse,
+    AxiosError<MaintenanceControlsExecutionsShowError>,
+    MaintenanceControlsExecutionsShowResponse,
+    ReturnType<typeof maintenanceControlsExecutionsShowQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await maintenanceControlsExecutionsShow({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: maintenanceControlsExecutionsShowQueryKey(options),
+  });
+
 export const maintenanceControlsIndexQueryKey = (options?: Options<MaintenanceControlsIndexData>) =>
   createQueryKey('maintenanceControlsIndex', options);
 
@@ -6913,21 +6998,21 @@ export const maintenanceControlsUpdateMutation = (
   return mutationOptions;
 };
 
-export const maintenanceControlsGetTasksQueryKey = (options: Options<MaintenanceControlsGetTasksData>) =>
-  createQueryKey('maintenanceControlsGetTasks', options);
+export const maintenanceControlsDetailsQueryKey = (options: Options<MaintenanceControlsDetailsData>) =>
+  createQueryKey('maintenanceControlsDetails', options);
 
 /**
  * Get tasks for a specific maintenance control and aircraft
  */
-export const maintenanceControlsGetTasksOptions = (options: Options<MaintenanceControlsGetTasksData>) =>
+export const maintenanceControlsDetailsOptions = (options: Options<MaintenanceControlsDetailsData>) =>
   queryOptions<
-    MaintenanceControlsGetTasksResponse,
-    AxiosError<MaintenanceControlsGetTasksError>,
-    MaintenanceControlsGetTasksResponse,
-    ReturnType<typeof maintenanceControlsGetTasksQueryKey>
+    MaintenanceControlsDetailsResponse,
+    AxiosError<MaintenanceControlsDetailsError>,
+    MaintenanceControlsDetailsResponse,
+    ReturnType<typeof maintenanceControlsDetailsQueryKey>
   >({
     queryFn: async ({ queryKey, signal }) => {
-      const { data } = await maintenanceControlsGetTasks({
+      const { data } = await maintenanceControlsDetails({
         ...options,
         ...queryKey[0],
         signal,
@@ -6935,7 +7020,7 @@ export const maintenanceControlsGetTasksOptions = (options: Options<MaintenanceC
       });
       return data;
     },
-    queryKey: maintenanceControlsGetTasksQueryKey(options),
+    queryKey: maintenanceControlsDetailsQueryKey(options),
   });
 
 export const manufacturerIndexQueryKey = (options: Options<ManufacturerIndexData>) =>
@@ -9592,33 +9677,6 @@ export const taskCardsUpdateMutation = (
   > = {
     mutationFn: async (fnOptions) => {
       const { data } = await taskCardsUpdate({
-        ...options,
-        ...fnOptions,
-        throwOnError: true,
-      });
-      return data;
-    },
-  };
-  return mutationOptions;
-};
-
-/**
- * Store a newly created resource in storage
- */
-export const taskExecutionsStoreMutation = (
-  options?: Partial<Options<TaskExecutionsStoreData>>,
-): UseMutationOptions<
-  TaskExecutionsStoreResponse,
-  AxiosError<TaskExecutionsStoreError>,
-  Options<TaskExecutionsStoreData>
-> => {
-  const mutationOptions: UseMutationOptions<
-    TaskExecutionsStoreResponse,
-    AxiosError<TaskExecutionsStoreError>,
-    Options<TaskExecutionsStoreData>
-  > = {
-    mutationFn: async (fnOptions) => {
-      const { data } = await taskExecutionsStore({
         ...options,
         ...fnOptions,
         throwOnError: true,

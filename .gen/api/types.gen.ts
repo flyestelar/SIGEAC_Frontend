@@ -264,6 +264,27 @@ export type JobTitle = Array<string>;
 export type Location = Array<string>;
 
 /**
+ * MaintenanceControlExecutionResource
+ */
+export type MaintenanceControlExecutionResource = {
+  id: number;
+  maintenance_control_id: number;
+  aircraft_id: number;
+  user_id: number;
+  executed_at: string;
+  completed_at: string;
+  current_fh: number;
+  current_fc: number;
+  status: string;
+  notes: string;
+  maintenance_control?: MaintenanceControlResource;
+  aircraft?: AircraftResource;
+  user?: UserResource;
+  created_at: string;
+  updated_at: string;
+};
+
+/**
  * MaintenanceControlResource
  */
 export type MaintenanceControlResource = {
@@ -276,6 +297,7 @@ export type MaintenanceControlResource = {
   interval_days: number | null;
   task_cards?: Array<TaskCardResource>;
   aircrafts?: Array<AircraftResource>;
+  last_maintenance_control_execution?: MaintenanceControlExecutionResource;
   created_at: string | null;
   updated_at: string | null;
 };
@@ -380,6 +402,19 @@ export type StoreCourseRequest = {
 };
 
 /**
+ * StoreMaintenanceControlExecutionRequest
+ */
+export type StoreMaintenanceControlExecutionRequest = {
+  maintenance_control_id: number;
+  aircraft_id: number;
+  user_id?: number | null;
+  executed_at?: string | null;
+  completed_at?: string | null;
+  status?: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED';
+  notes?: string | null;
+};
+
+/**
  * StoreMaintenanceControlRequest
  */
 export type StoreMaintenanceControlRequest = {
@@ -436,16 +471,6 @@ export type StoreTaskCardRequest = {
   interval_fh?: number | null;
   interval_fc?: number | null;
   interval_days?: number | null;
-};
-
-/**
- * StoreTaskExecutionRequest
- */
-export type StoreTaskExecutionRequest = {
-  task_card_id: number;
-  maintenance_control_id: number;
-  aircraft_id: number;
-  executed_at?: string | null;
 };
 
 /**
@@ -723,6 +748,16 @@ export type UserRequest = {
   last_name: string;
   username: string;
   email: string;
+};
+
+/**
+ * UserResource
+ */
+export type UserResource = {
+  first_name: string | null;
+  last_name: string | null;
+  username: string;
+  email: string | null;
 };
 
 /**
@@ -8084,6 +8119,177 @@ export type GeneralLocationIndex0Responses = {
 
 export type GeneralLocationIndex0Response = GeneralLocationIndex0Responses[keyof GeneralLocationIndex0Responses];
 
+export type MaintenanceControlsExecutionsIndexData = {
+  body?: never;
+  path: {
+    maintenance_control: string;
+  };
+  query?: {
+    maintenance_control_id?: string;
+    aircraft_id?: string;
+    status?: string;
+    per_page?: number;
+  };
+  url: '/maintenance-controls/{maintenance_control}/executions';
+};
+
+export type MaintenanceControlsExecutionsIndexErrors = {
+  /**
+   * Unauthenticated
+   */
+  401: {
+    /**
+     * Error overview.
+     */
+    message: string;
+  };
+};
+
+export type MaintenanceControlsExecutionsIndexError =
+  MaintenanceControlsExecutionsIndexErrors[keyof MaintenanceControlsExecutionsIndexErrors];
+
+export type MaintenanceControlsExecutionsIndexResponses = {
+  /**
+   * Paginated set of `MaintenanceControlExecutionResource`
+   */
+  200: {
+    data: Array<MaintenanceControlExecutionResource>;
+    links: {
+      first: string | null;
+      last: string | null;
+      prev: string | null;
+      next: string | null;
+    };
+    meta: {
+      current_page: number;
+      from: number | null;
+      last_page: number;
+      /**
+       * Generated paginator links.
+       */
+      links: Array<{
+        url: string | null;
+        label: string;
+        active: boolean;
+      }>;
+      /**
+       * Base path for paginator generated URLs.
+       */
+      path: string | null;
+      /**
+       * Number of items shown per page.
+       */
+      per_page: number;
+      /**
+       * Number of the last item in the slice.
+       */
+      to: number | null;
+      /**
+       * Total number of items being paginated.
+       */
+      total: number;
+    };
+  };
+};
+
+export type MaintenanceControlsExecutionsIndexResponse =
+  MaintenanceControlsExecutionsIndexResponses[keyof MaintenanceControlsExecutionsIndexResponses];
+
+export type MaintenanceControlsExecutionsStoreData = {
+  body: StoreMaintenanceControlExecutionRequest;
+  path: {
+    maintenance_control: string;
+  };
+  query?: never;
+  url: '/maintenance-controls/{maintenance_control}/executions';
+};
+
+export type MaintenanceControlsExecutionsStoreErrors = {
+  /**
+   * Unauthenticated
+   */
+  401: {
+    /**
+     * Error overview.
+     */
+    message: string;
+  };
+  /**
+   * Validation error
+   */
+  422: {
+    /**
+     * Errors overview.
+     */
+    message: string;
+    /**
+     * A detailed description of each field that failed validation.
+     */
+    errors: {
+      [key: string]: Array<string>;
+    };
+  };
+};
+
+export type MaintenanceControlsExecutionsStoreError =
+  MaintenanceControlsExecutionsStoreErrors[keyof MaintenanceControlsExecutionsStoreErrors];
+
+export type MaintenanceControlsExecutionsStoreResponses = {
+  200: string;
+};
+
+export type MaintenanceControlsExecutionsStoreResponse =
+  MaintenanceControlsExecutionsStoreResponses[keyof MaintenanceControlsExecutionsStoreResponses];
+
+export type MaintenanceControlsExecutionsShowData = {
+  body?: never;
+  path: {
+    maintenance_control: string;
+    /**
+     * The execution ID
+     */
+    execution: number;
+  };
+  query?: never;
+  url: '/maintenance-controls/{maintenance_control}/executions/{execution}';
+};
+
+export type MaintenanceControlsExecutionsShowErrors = {
+  /**
+   * Unauthenticated
+   */
+  401: {
+    /**
+     * Error overview.
+     */
+    message: string;
+  };
+  /**
+   * Not found
+   */
+  404: {
+    /**
+     * Error overview.
+     */
+    message: string;
+  };
+};
+
+export type MaintenanceControlsExecutionsShowError =
+  MaintenanceControlsExecutionsShowErrors[keyof MaintenanceControlsExecutionsShowErrors];
+
+export type MaintenanceControlsExecutionsShowResponses = {
+  /**
+   * `MaintenanceControlExecutionResource`
+   */
+  200: {
+    data: MaintenanceControlExecutionResource;
+  };
+};
+
+export type MaintenanceControlsExecutionsShowResponse =
+  MaintenanceControlsExecutionsShowResponses[keyof MaintenanceControlsExecutionsShowResponses];
+
 export type MaintenanceControlsIndexData = {
   body?: never;
   path?: never;
@@ -8317,7 +8523,7 @@ export type MaintenanceControlsUpdateResponses = {
 export type MaintenanceControlsUpdateResponse =
   MaintenanceControlsUpdateResponses[keyof MaintenanceControlsUpdateResponses];
 
-export type MaintenanceControlsGetTasksData = {
+export type MaintenanceControlsDetailsData = {
   body?: never;
   path: {
     id: number;
@@ -8325,10 +8531,10 @@ export type MaintenanceControlsGetTasksData = {
   query?: {
     aircraft_id?: number;
   };
-  url: '/maintenance-controls/{id}/tasks';
+  url: '/maintenance-controls/{id}/details';
 };
 
-export type MaintenanceControlsGetTasksErrors = {
+export type MaintenanceControlsDetailsErrors = {
   /**
    * Unauthenticated
    */
@@ -8340,20 +8546,18 @@ export type MaintenanceControlsGetTasksErrors = {
   };
 };
 
-export type MaintenanceControlsGetTasksError =
-  MaintenanceControlsGetTasksErrors[keyof MaintenanceControlsGetTasksErrors];
+export type MaintenanceControlsDetailsError = MaintenanceControlsDetailsErrors[keyof MaintenanceControlsDetailsErrors];
 
-export type MaintenanceControlsGetTasksResponses = {
-  /**
-   * Array of `TaskCardResource`
-   */
+export type MaintenanceControlsDetailsResponses = {
   200: {
-    data: Array<TaskCardResource>;
+    aircrafts: string;
+    last_execution: string;
+    tasks: Array<TaskCardResource>;
   };
 };
 
-export type MaintenanceControlsGetTasksResponse =
-  MaintenanceControlsGetTasksResponses[keyof MaintenanceControlsGetTasksResponses];
+export type MaintenanceControlsDetailsResponse =
+  MaintenanceControlsDetailsResponses[keyof MaintenanceControlsDetailsResponses];
 
 export type ManufacturerIndexData = {
   body?: never;
@@ -12092,48 +12296,6 @@ export type TaskCardsUpdateResponses = {
 };
 
 export type TaskCardsUpdateResponse = TaskCardsUpdateResponses[keyof TaskCardsUpdateResponses];
-
-export type TaskExecutionsStoreData = {
-  body: StoreTaskExecutionRequest;
-  path?: never;
-  query?: never;
-  url: '/task-executions';
-};
-
-export type TaskExecutionsStoreErrors = {
-  /**
-   * Unauthenticated
-   */
-  401: {
-    /**
-     * Error overview.
-     */
-    message: string;
-  };
-  /**
-   * Validation error
-   */
-  422: {
-    /**
-     * Errors overview.
-     */
-    message: string;
-    /**
-     * A detailed description of each field that failed validation.
-     */
-    errors: {
-      [key: string]: Array<string>;
-    };
-  };
-};
-
-export type TaskExecutionsStoreError = TaskExecutionsStoreErrors[keyof TaskExecutionsStoreErrors];
-
-export type TaskExecutionsStoreResponses = {
-  200: string;
-};
-
-export type TaskExecutionsStoreResponse = TaskExecutionsStoreResponses[keyof TaskExecutionsStoreResponses];
 
 export type TasksIndexData = {
   body?: never;
