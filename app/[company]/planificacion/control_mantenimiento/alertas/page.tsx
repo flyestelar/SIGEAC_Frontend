@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Progress } from '@/components/ui/progress';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Skeleton } from '@/components/ui/skeleton';
 import { useGetMaintenanceAircrafts } from '@/hooks/planificacion/useGetMaintenanceAircrafts';
 import { useCompanyStore } from '@/stores/CompanyStore';
 import { maintenanceControlsAlertsOptions } from '@api/queries';
@@ -218,8 +219,53 @@ export default function MaintenanceControlsAlertsDashboardPage() {
         </Card>
 
         {isAlertsLoading ? (
-          <div className="flex items-center justify-center py-12">
-            <LoadingPage />
+          <div className="space-y-4">
+            {Array.from({ length: 3 }).map((_, groupIndex) => (
+              <section key={groupIndex} className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <Skeleton className="h-6 w-20" />
+                  <Skeleton className="h-4 w-16" />
+                </div>
+                <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                  {Array.from({ length: 6 }).map((_, cardIndex) => (
+                    <Card key={cardIndex} className="border-border/60">
+                      <CardHeader className="space-y-2">
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="space-y-1">
+                            <Skeleton className="h-4 w-32" />
+                            <Skeleton className="h-3 w-24" />
+                          </div>
+                          <Skeleton className="h-5 w-16" />
+                        </div>
+                        <div className="flex items-center justify-between rounded-xl border border-border/60 bg-background/60 px-3 py-2">
+                          <div>
+                            <Skeleton className="h-3 w-12 mb-1" />
+                            <Skeleton className="h-4 w-8" />
+                          </div>
+                          <div className="text-right">
+                            <Skeleton className="h-3 w-8 mb-1" />
+                            <Skeleton className="h-4 w-16" />
+                          </div>
+                        </div>
+                      </CardHeader>
+                      <CardContent className="space-y-3">
+                        <div>
+                          <Skeleton className="h-3 w-24 mb-1" />
+                          <Skeleton className="h-4 w-40" />
+                        </div>
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between">
+                            <Skeleton className="h-3 w-12" />
+                            <Skeleton className="h-3 w-8" />
+                          </div>
+                          <Skeleton className="h-2 w-full" />
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </section>
+            ))}
           </div>
         ) : (
           <div className="space-y-4">
