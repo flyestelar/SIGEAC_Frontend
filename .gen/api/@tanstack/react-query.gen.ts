@@ -218,6 +218,7 @@ import {
   locationUpdate,
   login,
   logout,
+  maintenanceControlsAlerts,
   maintenanceControlsDestroy,
   maintenanceControlsDetails,
   maintenanceControlsExecutionsIndex,
@@ -990,6 +991,9 @@ import type {
   LogoutData,
   LogoutError,
   LogoutResponse,
+  MaintenanceControlsAlertsData,
+  MaintenanceControlsAlertsError,
+  MaintenanceControlsAlertsResponse,
   MaintenanceControlsDestroyData,
   MaintenanceControlsDestroyError,
   MaintenanceControlsDestroyResponse,
@@ -7021,6 +7025,31 @@ export const maintenanceControlsDetailsOptions = (options: Options<MaintenanceCo
       return data;
     },
     queryKey: maintenanceControlsDetailsQueryKey(options),
+  });
+
+export const maintenanceControlsAlertsQueryKey = (options?: Options<MaintenanceControlsAlertsData>) =>
+  createQueryKey('maintenanceControlsAlerts', options);
+
+/**
+ * Get maintenance control alerts
+ */
+export const maintenanceControlsAlertsOptions = (options?: Options<MaintenanceControlsAlertsData>) =>
+  queryOptions<
+    MaintenanceControlsAlertsResponse,
+    AxiosError<MaintenanceControlsAlertsError>,
+    MaintenanceControlsAlertsResponse,
+    ReturnType<typeof maintenanceControlsAlertsQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await maintenanceControlsAlerts({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: maintenanceControlsAlertsQueryKey(options),
   });
 
 export const manufacturerIndexQueryKey = (options: Options<ManufacturerIndexData>) =>

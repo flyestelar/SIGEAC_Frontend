@@ -25,9 +25,19 @@ export type AdministrationFlight = Array<string>;
 export type Aircraft = Array<string>;
 
 /**
- * AircraftAssignment
+ * AircraftAssignmentResource
  */
-export type AircraftAssignment = Array<string>;
+export type AircraftAssignmentResource = {
+  id: number;
+  aircraft_id: string;
+  aircraft_part_id: string;
+  assigned_date: string;
+  removed_date: string;
+  hours_at_installation: number;
+  cycles_at_installation: number;
+  aircraft?: Aircraft;
+  aircraft_part?: AircraftPart;
+};
 
 /**
  * AircraftPart
@@ -64,8 +74,8 @@ export type AircraftResource = {
   /**
    * Relations included in search or show
    */
-  aircraft_assignments?: Array<AircraftAssignment>;
-  flight?: Array<Flight>;
+  aircraft_assignments?: Array<AircraftAssignmentResource>;
+  flight?: Array<FlightResource>;
 };
 
 /**
@@ -80,6 +90,7 @@ export type AircraftTypeResource = {
   iata_code: string;
   created_at: string;
   updated_at: string;
+  image: 'https://cdn.zbordirect.com/images/airlines/ES.webp';
 };
 
 /**
@@ -178,7 +189,7 @@ export type Company = {
   name: string;
   description: string;
   rif: string;
-  cod_inac: string | null;
+  cod_inac: string;
   fiscal_address: string;
   phone_number: string;
   alt_phone_number: string | null;
@@ -189,7 +200,7 @@ export type Company = {
   acronym: string | null;
   slug: string | null;
   isOMAC: boolean | null;
-  registered_by: string | null;
+  registered_by: string;
   updated_by: string | null;
 };
 
@@ -249,6 +260,25 @@ export type Extraction = Array<string>;
  * Flight
  */
 export type Flight = Array<string>;
+
+/**
+ * FlightResource
+ */
+export type FlightResource = {
+  id: number;
+  flight_number: string;
+  origin: string;
+  destination: string;
+  flight_hours: number;
+  flight_cycles: number;
+  flight_date: string;
+  departure_time: string;
+  arrival_time: string;
+  pilot: string;
+  co_pilot: string;
+  aircraft_id: string;
+  aircraft?: Aircraft;
+};
 
 /**
  * JobTitle
@@ -436,6 +466,30 @@ export type StoreMaintenanceControlRequest = {
 };
 
 /**
+ * StorePurchaseOrderRequest
+ */
+export type StorePurchaseOrderRequest = {
+  order_number: string;
+  status?: 'PENDIENTE' | 'APROBADO' | 'PAGADO' | 'CREDITO' | 'ANULADO';
+  justification?: string | null;
+  purchase_date: string;
+  sub_total: number;
+  total: number;
+  freight?: number | null;
+  hazmat?: number | null;
+  quote_order_id: number;
+  vendor_id: number;
+  articles_purchase_orders: Array<{
+    quantity: number;
+    unit_price: number;
+    amount: number;
+    article_part_number?: string | null;
+    article_serial?: string | null;
+    article_alt_part_number?: string | null;
+  }>;
+};
+
+/**
  * StoreRequisitionOrderRequest
  */
 export type StoreRequisitionOrderRequest = {
@@ -595,11 +649,7 @@ export type ToolBox = Array<string>;
 /**
  * Unit
  */
-export type Unit = {
-  id: number;
-  value: string;
-  label: string;
-};
+export type Unit = Array<string>;
 
 /**
  * UpdateAircraftTypeRequest
@@ -8267,7 +8317,11 @@ export type MaintenanceControlsExecutionsShowResponse =
 export type MaintenanceControlsIndexData = {
   body?: never;
   path?: never;
-  query?: never;
+  query?: {
+    manual_reference?: string;
+    per_page?: number;
+    aircraft_id?: number;
+  };
   url: '/maintenance-controls';
 };
 
@@ -8498,7 +8552,9 @@ export type MaintenanceControlsDetailsData = {
   path: {
     id: number;
   };
-  query?: never;
+  query?: {
+    aircraft_id?: number;
+  };
   url: '/maintenance-controls/{id}/details';
 };
 
@@ -8526,6 +8582,64 @@ export type MaintenanceControlsDetailsResponses = {
 
 export type MaintenanceControlsDetailsResponse =
   MaintenanceControlsDetailsResponses[keyof MaintenanceControlsDetailsResponses];
+
+export type MaintenanceControlsAlertsData = {
+  body?: never;
+  path?: never;
+  query?: {
+    aircraft_id?: number;
+  };
+  url: '/maintenance-controls-alerts';
+};
+
+export type MaintenanceControlsAlertsErrors = {
+  /**
+   * Unauthenticated
+   */
+  401: {
+    /**
+     * Error overview.
+     */
+    message: string;
+  };
+};
+
+export type MaintenanceControlsAlertsError = MaintenanceControlsAlertsErrors[keyof MaintenanceControlsAlertsErrors];
+
+export type MaintenanceControlsAlertsResponses = {
+  200: {
+    alerts: Array<{
+      aircraft: AircraftResource;
+      control: MaintenanceControlResource;
+      last_execution: MaintenanceControlExecutionResource;
+      metrics: Array<
+        | {
+            type: 'FH';
+            remaining: number;
+            percentage: number;
+            status: 'OK' | 'WARNING' | 'OVERDUE';
+          }
+        | {
+            type: 'FC';
+            remaining: number;
+            percentage: number;
+            status: 'OK' | 'WARNING' | 'OVERDUE';
+          }
+        | {
+            type: 'DAYS';
+            remaining: number;
+            percentage: number;
+            status: 'OK' | 'WARNING' | 'OVERDUE';
+          }
+      >;
+      status: 'OVERDUE' | 'WARNING' | 'OK';
+    }>;
+    total: number;
+  };
+};
+
+export type MaintenanceControlsAlertsResponse =
+  MaintenanceControlsAlertsResponses[keyof MaintenanceControlsAlertsResponses];
 
 export type ManufacturerIndexData = {
   body?: never;
@@ -9961,7 +10075,7 @@ export type PreliminaryInspectionStorePreInspecItemsResponse =
   PreliminaryInspectionStorePreInspecItemsResponses[keyof PreliminaryInspectionStorePreInspecItemsResponses];
 
 export type PurchaseOrderStoreData = {
-  body?: never;
+  body: StorePurchaseOrderRequest;
   path: {
     company: string;
   };
@@ -9978,6 +10092,30 @@ export type PurchaseOrderStoreErrors = {
      * Error overview.
      */
     message: string;
+  };
+  /**
+   * Authorization error
+   */
+  403: {
+    /**
+     * Error overview.
+     */
+    message: string;
+  };
+  /**
+   * Validation error
+   */
+  422: {
+    /**
+     * Errors overview.
+     */
+    message: string;
+    /**
+     * A detailed description of each field that failed validation.
+     */
+    errors: {
+      [key: string]: Array<string>;
+    };
   };
 };
 
@@ -13092,7 +13230,7 @@ export type UserRegisterErrors = {
 export type UserRegisterError = UserRegisterErrors[keyof UserRegisterErrors];
 
 export type UserRegisterResponses = {
-  200: string;
+  200: Array<unknown>;
 };
 
 export type UserRegisterResponse = UserRegisterResponses[keyof UserRegisterResponses];
@@ -13209,7 +13347,15 @@ export type UsersUpdateErrors = {
 export type UsersUpdateError = UsersUpdateErrors[keyof UsersUpdateErrors];
 
 export type UsersUpdateResponses = {
-  200: string;
+  200: {
+    success: boolean;
+    data: null;
+    message: 'Se actualiazo el registro';
+  };
+  /**
+   * No content
+   */
+  204: void;
 };
 
 export type UsersUpdateResponse = UsersUpdateResponses[keyof UsersUpdateResponses];

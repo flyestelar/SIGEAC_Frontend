@@ -272,20 +272,19 @@ export type MaintenanceClient = {
   phone_number: string;
 };
 
-export type MaintenanceAircraft = {
+export interface MaintenanceAircraft extends Omit<AircraftResource, 'aircraft_assignments'> {
   id: number;
   client: MaintenanceClient;
   manufacturer: Manufacturer;
   serial: string;
   acronym: string;
-  aircraft_type: AircraftType | null;
   flight_hours: number;
   flight_cycles: number;
   fabricant_date: string;
   aircraft_assignments: AircraftAssigment[];
   location: Location;
   comments: string;
-};
+}
 
 export type AircraftAssigment = {
   id: number;

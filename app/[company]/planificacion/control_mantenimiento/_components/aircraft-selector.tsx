@@ -1,37 +1,23 @@
-"use client";
+'use client';
 
-import { Plane, Clock, RotateCcw, Search } from "lucide-react";
-import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Separator } from "@/components/ui/separator";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { cn } from "../_data/utils";
-import { AircraftResource, MaintenanceControlResource } from "@api/types";
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Separator } from '@/components/ui/separator';
+import { AircraftResource } from '@api/types';
+import { Clock, Plane, RotateCcw, Search } from 'lucide-react';
+import { useState } from 'react';
+import { cn } from '../_data/utils';
 
 interface AircraftSelectorProps {
   aircraft: AircraftResource[];
-  controls: MaintenanceControlResource[];
   selectedAircraftId: number | null;
   onSelectAircraft: (id: number) => void;
 }
 
-export function AircraftSelector({
-  aircraft,
-  controls,
-  selectedAircraftId,
-  onSelectAircraft,
-}: AircraftSelectorProps) {
-  const [search, setSearch] = useState("");
-
-  const getAircraftStats = (ac: AircraftResource) => {
-    const relatedControls = controls.filter((c) =>
-      c.aircrafts?.some((a) => a.id === ac.id)
-    );
-    const totalTasks = relatedControls.reduce((sum, c) => sum + c.task_cards?.length!, 0);
-    return { totalControls: relatedControls.length, totalTasks };
-  };
+export function AircraftSelector({ aircraft, selectedAircraftId, onSelectAircraft }: AircraftSelectorProps) {
+  const [search, setSearch] = useState('');
 
   const filtered = aircraft.filter((ac) => {
     if (!search) return true;
@@ -67,31 +53,32 @@ export function AircraftSelector({
         <ScrollArea className="h-[calc(100vh-340px)]">
           <div className="space-y-2 px-3 pb-3">
             {filtered.map((ac) => {
-              const stats = getAircraftStats(ac);
               const isSelected = selectedAircraftId === ac.id;
 
               return (
                 <button
                   key={ac.id}
                   onClick={() => onSelectAircraft(ac.id)}
-                  className={`group w-full overflow-hidden rounded-lg border text-left transition-all ${isSelected
-                    ? "border-primary/60 ring-1 ring-primary/20"
-                    : "border-border/60 hover:border-foreground/20"
-                    }`}
+                  className={`group w-full overflow-hidden rounded-lg border text-left transition-all ${
+                    isSelected
+                      ? 'border-primary/60 ring-1 ring-primary/20'
+                      : 'border-border/60 hover:border-foreground/20'
+                  }`}
                 >
                   {/* Image */}
                   <div className="relative">
                     <img
                       src="https://cdn.zbordirect.com/images/airlines/ES.webp"
-                      alt={ac.acronym ?? "Aircraft"}
-                      className={cn("aspect-[16/7] w-full object-cover", isSelected ? "brightness-1" : "brightness-[0.5] dark:brightness-[0.4]")}
+                      alt={ac.acronym ?? 'Aircraft'}
+                      className={cn(
+                        'aspect-[16/7] w-full object-cover',
+                        isSelected ? 'brightness-1' : 'brightness-[0.5] dark:brightness-[0.4]',
+                      )}
                     />
                     {/* Acronym overlay */}
                     <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent px-3 pb-2 pt-4">
                       <div className="flex items-center justify-between">
-                        <span className="font-mono text-sm font-bold tracking-widest text-white">
-                          {ac.acronym}
-                        </span>
+                        <span className="font-mono text-sm font-bold tracking-widest text-white">{ac.acronym}</span>
                         {isSelected && (
                           <Badge className="h-4 bg-primary/90 px-1.5 text-[9px] font-semibold text-primary-foreground">
                             Activa
@@ -105,10 +92,10 @@ export function AircraftSelector({
                   <div className="space-y-2 px-3 py-2.5">
                     <div className="flex items-start justify-between gap-2">
                       <span className="text-xs font-medium text-foreground truncate">
-                        {ac.manufacturer?.name ?? "—"}
+                        {ac.manufacturer?.name ?? '—'}
                       </span>
                       <span className="shrink-0 font-mono text-[10px] text-muted-foreground">
-                        S/N {ac.serial || "—"}
+                        S/N {ac.serial || '—'}
                       </span>
                     </div>
 
@@ -137,9 +124,6 @@ export function AircraftSelector({
                         </span>
                         cyc
                       </span>
-                      <span className="ml-auto text-[10px] text-muted-foreground">
-                        {stats.totalControls}C / {stats.totalTasks}T
-                      </span>
                     </div>
                   </div>
                 </button>
@@ -148,9 +132,7 @@ export function AircraftSelector({
             {filtered.length === 0 && (
               <div className="flex flex-col items-center gap-1.5 py-8 text-center">
                 <Plane className="h-6 w-6 text-muted-foreground/30" />
-                <p className="text-xs text-muted-foreground">
-                  No se encontraron aeronaves
-                </p>
+                <p className="text-xs text-muted-foreground">No se encontraron aeronaves</p>
               </div>
             )}
           </div>

@@ -4,19 +4,16 @@ import { ContentLayout } from '@/components/layout/ContentLayout';
 import LoadingPage from '@/components/misc/LoadingPage';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
 import { useGetMaintenanceAircrafts } from '@/hooks/planificacion/useGetMaintenanceAircrafts';
 import { useCompanyStore } from '@/stores/CompanyStore';
 import { maintenanceControlsIndexOptions } from '@api/queries';
 import { useQuery } from '@tanstack/react-query';
-import { Plus, Settings2 } from 'lucide-react';
+import { Plus, Settings2, Siren } from 'lucide-react';
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
 import { AircraftSelector } from './_components/aircraft-selector';
-import { ControlSelector } from './_components/control-selector';
+import { MaintenanceControlsSection } from './_components/maintenance-controls-section';
 import { StatsCards } from './_components/stats-cards';
-import { TasksTable } from './_components/tasks-table';
-import { UpcomingTasks } from './_components/upcoming-tasks';
 
 export default function MaintenanceDashboard() {
   const { selectedCompany } = useCompanyStore();
@@ -24,36 +21,17 @@ export default function MaintenanceDashboard() {
   const [selectedControlId, setSelectedControlId] = useState<number | null>(null);
 
   const { data: aircraft = [], isLoading } = useGetMaintenanceAircrafts(selectedCompany?.slug);
-  const { data: controlsResponse, isLoading: isControlsLoading } = useQuery({
-    ...maintenanceControlsIndexOptions({
-      query: {
-        aircraft_id: selectedAircraftId ?? undefined,
-      },
-    }),
-    enabled: !!selectedAircraftId,
-  });
-
-  const controls = controlsResponse?.data ?? [];
 
   const selectedAircraft = useMemo(() => {
     return aircraft.find((ac) => ac.id === selectedAircraftId) ?? null;
   }, [aircraft, selectedAircraftId]);
-
-  const controlsForAircraft = useMemo(() => {
-    if (!selectedAircraft) return [];
-    return controls.filter((c) => c.aircrafts?.some((ac) => ac.id === selectedAircraft.id));
-  }, [controls, selectedAircraft]);
-
-  const selectedControl = useMemo(() => {
-    return controlsForAircraft.find((c) => c.id === selectedControlId) ?? null;
-  }, [controlsForAircraft, selectedControlId]);
 
   const handleSelectAircraft = (id: number) => {
     setSelectedAircraftId(id);
     setSelectedControlId(null);
   };
 
-  if (isLoading || isControlsLoading) return <LoadingPage />;
+  if (isLoading) return <LoadingPage />;
 
   return (
     <ContentLayout title="Control Mantenimiento">
@@ -75,6 +53,12 @@ export default function MaintenanceDashboard() {
             </p>
           </div>
           <div className="flex items-center gap-2">
+            <Button asChild variant="outline" className="gap-2">
+              <Link href={`/${selectedCompany?.slug}/planificacion/control_mantenimiento/alertas`}>
+                <Siren className="h-4 w-4" />
+                Dashboard Alertas
+              </Link>
+            </Button>
             <Button asChild className="gap-2">
               <Link href={`/${selectedCompany?.slug}/planificacion/control_mantenimiento/nuevo`}>
                 <Plus className="h-4 w-4" />
@@ -85,51 +69,21 @@ export default function MaintenanceDashboard() {
           </div>
         </div>
 
-        <StatsCards
-          aircraft={aircraft}
-          controls={controls}
-          selectedAircraft={selectedAircraft}
-          controlsForAircraft={controlsForAircraft}
-        />
-
         <div className="mt-4 grid gap-4 lg:grid-cols-12">
           <div className="lg:col-span-3">
             <AircraftSelector
               aircraft={aircraft}
-              controls={controls}
               selectedAircraftId={selectedAircraftId}
               onSelectAircraft={handleSelectAircraft}
             />
           </div>
 
-          <div className="lg:col-span-6 space-y-4">
-            <ControlSelector
-              controls={controlsForAircraft}
-              selectedControlId={selectedControlId}
-              onSelectControl={setSelectedControlId}
-            />
-
-            {selectedControl ? (
-              <TasksTable tasks={selectedControl.task_cards} controlName={selectedControl.title} />
-            ) : selectedAircraft ? (
-              <Card className="border-border/60 bg-card">
-                <CardContent className="py-10">
-                  <div className="flex flex-col items-center justify-center text-center">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted">
-                      <Settings2 className="h-6 w-6 text-muted-foreground/60" />
-                    </div>
-                    <p className="mt-3 text-sm font-medium text-muted-foreground">
-                      Selecciona un control para ver sus task cards
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
-            ) : null}
-          </div>
-
-          <div className="lg:col-span-3">
-            <UpcomingTasks />
-          </div>
+          <MaintenanceControlsSection
+            selectedControlId={selectedControlId}
+            onSelectControl={setSelectedControlId}
+            selectedAircraft={selectedAircraft}
+            selectedAircraftId={selectedAircraftId}
+          />
         </div>
       </main>
     </ContentLayout>

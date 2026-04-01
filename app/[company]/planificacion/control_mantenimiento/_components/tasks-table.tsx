@@ -12,15 +12,15 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import type { TaskCard } from "@/types";
+import type { TaskCardResource } from "@api/types";
 
 interface TasksTableProps {
-  tasks: TaskCard[];
+  tasks: TaskCardResource[]|null|undefined;
   controlName: string;
 }
 
 export function TasksTable({ tasks, controlName }: TasksTableProps) {
-  if (tasks.length === 0) {
+  if (!tasks || tasks.length === 0) {
     return (
       <Card className="border-border/60 bg-card">
         <CardContent className="py-10">
@@ -65,15 +65,6 @@ export function TasksTable({ tasks, controlName }: TasksTableProps) {
                 <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                   Descripción
                 </TableHead>
-                <TableHead className="w-[50px] text-center text-muted-foreground">
-                  <Clock className="mx-auto h-3.5 w-3.5" />
-                </TableHead>
-                <TableHead className="w-[50px] text-center text-muted-foreground">
-                  <RotateCcw className="mx-auto h-3.5 w-3.5" />
-                </TableHead>
-                <TableHead className="w-[50px] text-center text-muted-foreground">
-                  <Calendar className="mx-auto h-3.5 w-3.5" />
-                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -94,21 +85,6 @@ export function TasksTable({ tasks, controlName }: TasksTableProps) {
                   <TableCell>
                     <span className="text-xs text-foreground">
                       {task.description}
-                    </span>
-                  </TableCell>
-                  <TableCell className="whitespace-nowrap text-center">
-                    <span className="font-mono text-xs tabular-nums text-foreground">
-                      {task.interval_fh ? `${task.interval_fh} h` : <span className="text-muted-foreground/40">—</span>}
-                    </span>
-                  </TableCell>
-                  <TableCell className="whitespace-nowrap text-center">
-                    <span className="font-mono text-xs tabular-nums text-foreground">
-                      {task.interval_fc ? `${task.interval_fc} cyc` : <span className="text-muted-foreground/40">—</span>}
-                    </span>
-                  </TableCell>
-                  <TableCell className="whitespace-nowrap text-center">
-                    <span className="font-mono text-xs tabular-nums text-foreground">
-                      {task.interval_days ? `${task.interval_days} days` : <span className="text-muted-foreground/40">—</span>}
                     </span>
                   </TableCell>
                 </TableRow>

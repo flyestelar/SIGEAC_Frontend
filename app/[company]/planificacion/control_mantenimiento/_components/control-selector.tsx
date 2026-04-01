@@ -1,25 +1,21 @@
-"use client";
+'use client';
 
-import { FileText, BookOpen, ClipboardList, Plane, Edit } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
-import { Button } from "@/components/ui/button";
-import { useCompanyStore } from "@/stores/CompanyStore";
-import Link from "next/link";
-import type { MaintenanceControl } from "@/types";
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
+import { useCompanyStore } from '@/stores/CompanyStore';
+import { MaintenanceControlResource } from '@api/types';
+import { BookOpen, ClipboardList, Edit, FileText, Plane } from 'lucide-react';
+import Link from 'next/link';
 
 interface ControlSelectorProps {
-  controls: MaintenanceControl[];
+  controls: MaintenanceControlResource[];
   selectedControlId: number | null;
   onSelectControl: (id: number) => void;
 }
 
-export function ControlSelector({
-  controls,
-  selectedControlId,
-  onSelectControl,
-}: ControlSelectorProps) {
+export function ControlSelector({ controls, selectedControlId, onSelectControl }: ControlSelectorProps) {
   const { selectedCompany } = useCompanyStore();
   if (controls.length === 0) {
     return (
@@ -64,8 +60,8 @@ export function ControlSelector({
                   onClick={() => onSelectControl(control.id)}
                   className={`group relative shrink-0 rounded-lg border p-3 text-left transition-all w-[220px] ${
                     isSelected
-                      ? "border-primary/60 bg-primary/5 ring-1 ring-primary/20"
-                      : "border-border/60 bg-muted/20 hover:bg-muted/50 hover:border-border"
+                      ? 'border-primary/60 bg-primary/5 ring-1 ring-primary/20'
+                      : 'border-border/60 bg-muted/20 hover:bg-muted/50 hover:border-border'
                   }`}
                 >
                   <div className="absolute top-2 right-2 z-10">
@@ -82,13 +78,17 @@ export function ControlSelector({
                     </Button>
                   </div>
                   <div className="flex items-start gap-2.5">
-                    <div className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-md transition-colors ${
-                      isSelected ? "bg-primary/15 text-primary" : "bg-muted text-muted-foreground"
-                    }`}>
+                    <div
+                      className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-md transition-colors ${
+                        isSelected ? 'bg-primary/15 text-primary' : 'bg-muted text-muted-foreground'
+                      }`}
+                    >
                       <FileText className="h-3.5 w-3.5" />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <h3 className={`text-sm font-medium leading-tight truncate ${isSelected ? "text-primary" : "text-foreground"}`}>
+                      <h3
+                        className={`text-sm font-medium leading-tight truncate ${isSelected ? 'text-primary' : 'text-foreground'}`}
+                      >
                         {control.title}
                       </h3>
                       <p className="mt-0.5 font-mono text-[10px] text-muted-foreground truncate">
@@ -103,7 +103,7 @@ export function ControlSelector({
                     </Badge>
                     <Badge variant="outline" className="h-5 border-border/60 px-1.5 text-[10px] font-normal">
                       <Plane className="mr-0.5 h-2.5 w-2.5" />
-                      {control.aircrafts.length}
+                      {control.aircrafts?.length}
                     </Badge>
                   </div>
                 </button>

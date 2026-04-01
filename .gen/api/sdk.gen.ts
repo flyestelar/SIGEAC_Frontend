@@ -642,6 +642,9 @@ import type {
   LogoutData,
   LogoutErrors,
   LogoutResponses,
+  MaintenanceControlsAlertsData,
+  MaintenanceControlsAlertsErrors,
+  MaintenanceControlsAlertsResponses,
   MaintenanceControlsDestroyData,
   MaintenanceControlsDestroyErrors,
   MaintenanceControlsDestroyResponses,
@@ -4301,6 +4304,19 @@ export const maintenanceControlsDetails = <ThrowOnError extends boolean = false>
   });
 
 /**
+ * Get maintenance control alerts
+ */
+export const maintenanceControlsAlerts = <ThrowOnError extends boolean = false>(
+  options?: Options<MaintenanceControlsAlertsData, ThrowOnError>,
+) =>
+  (options?.client ?? client).get<MaintenanceControlsAlertsResponses, MaintenanceControlsAlertsErrors, ThrowOnError>({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/maintenance-controls-alerts',
+    ...options,
+  });
+
+/**
  * Display a listing of the resource
  */
 export const manufacturerIndex = <ThrowOnError extends boolean = false>(
@@ -4890,6 +4906,10 @@ export const purchaseOrderStore = <ThrowOnError extends boolean = false>(
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/{company}/purchase-order',
     ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    },
   });
 
 /**
