@@ -5,19 +5,23 @@ import LoadingPage from '@/components/misc/LoadingPage';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card';
 import { Input } from '@/components/ui/input';
 import { Progress } from '@/components/ui/progress';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
+import { format } from 'date-fns';
+import { es } from 'date-fns/locale';
 import { useGetMaintenanceAircrafts } from '@/hooks/planificacion/useGetMaintenanceAircrafts';
 import { useCompanyStore } from '@/stores/CompanyStore';
 import { maintenanceControlsAlertsOptions } from '@api/queries';
 import { useQuery } from '@tanstack/react-query';
 import {
-  AlertTriangle, ArrowLeft, Calendar, Clock, Gauge, Plane, RefreshCw, Search, ShieldCheck, Siren, TriangleAlert,
+  AlertTriangle, ArrowLeft, Calendar, Clock, FileText, Gauge, Plane, RefreshCw, Search, ShieldCheck, Siren, TriangleAlert, Wrench,
 } from 'lucide-react';
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
+import { HoverCardPortal } from '@radix-ui/react-hover-card';
 
 type AlertLevel = 'OVERDUE' | 'WARNING' | 'OK';
 type MetricType = 'FH' | 'FC' | 'DAYS';
@@ -48,8 +52,8 @@ const ALERT_LABELS: Record<AlertLevel, string> = {
 };
 
 const METRIC_LABELS: Record<MetricType, string> = {
-  FH: 'Horas de vuelo',
-  FC: 'Ciclos de vuelo',
+  FH: 'Horas',
+  FC: 'Ciclos',
   DAYS: 'Calendario',
 };
 
@@ -381,6 +385,60 @@ export default function MaintenanceControlsAlertsDashboardPage() {
                                 )}
                               </div>
                             </div>
+                            {row.last_execution && (
+                              <HoverCard openDelay={200} closeDelay={100}>
+                                <HoverCardTrigger asChild>
+                                  <div className="flex cursor-default items-center gap-2 rounded-md border border-border/40 bg-muted/15 px-3 py-1.5">
+                                    <Wrench className="h-3 w-3 text-muted-foreground" />
+                                    <span className="text-[11px] text-muted-foreground">Última ejecución:</span>
+                                    <span className="font-mono text-[11px] font-medium">
+                                      {format(new Date(row.last_execution.executed_at), "dd MMM yyyy", { locale: es })}
+                                    </span>
+                                  </div>
+                                </HoverCardTrigger>
+                                <HoverCardPortal>
+                                  <HoverCardContent align="center" className="w-72 space-y-3 text-sm">
+                                    <p className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+                                      <FileText className="h-3 w-3" />
+                                      Detalle de ejecución
+                                    </p>
+                                    <div className="grid grid-cols-2 gap-x-4 gap-y-2">
+                                      <div>
+                                        <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Ejecutado</p>
+                                        <p className="font-mono text-xs font-medium">
+                                          {format(new Date(row.last_execution.executed_at), "dd/MM/yyyy HH:mm", { locale: es })}
+                                        </p>
+                                      </div>
+                                      <div>
+                                        <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Completado</p>
+                                        <p className="font-mono text-xs font-medium">
+                                          {format(new Date(row.last_execution.completed_at), "dd/MM/yyyy HH:mm", { locale: es })}
+                                        </p>
+                                      </div>
+                                      <div>
+                                        <p className="text-[10px] uppercase tracking-wide text-muted-foreground">FH al momento</p>
+                                        <p className="font-mono text-xs font-medium tabular-nums">{row.last_execution.current_fh}</p>
+                                      </div>
+                                      <div>
+                                        <p className="text-[10px] uppercase tracking-wide text-muted-foreground">FC al momento</p>
+                                        <p className="font-mono text-xs font-medium tabular-nums">{row.last_execution.current_fc}</p>
+                                      </div>
+                                      <div className="col-span-2">
+                                        <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Estado</p>
+                                        <p className="text-xs font-medium">{row.last_execution.status}</p>
+                                      </div>
+                                      {row.last_execution.notes && (
+                                        <div className="col-span-2">
+                                          <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Notas</p>
+                                          <p className="text-xs text-foreground/80">{row.last_execution.notes}</p>
+                                        </div>
+                                      )}
+                                    </div>
+                                  </HoverCardContent>
+
+                                </HoverCardPortal>
+                              </HoverCard>
+                            )}
                           </CardHeader>
                           <CardContent className="space-y-3">
                             <p className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
@@ -409,7 +467,7 @@ export default function MaintenanceControlsAlertsDashboardPage() {
                                     {metric ? (
                                       <>
                                         <p className="mt-0.5 font-mono text-xs font-semibold tabular-nums">
-                                          <span className={metricCfg?.iconText}>{Math.max(metric.remaining, 0).toFixed(1)}</span>
+                                          <span className={metricCfg?.iconText}>{metric.consumed.toFixed(1)}</span>
                                           <span className="text-muted-foreground">/{interval}</span>
                                           <span className="ml-0.5 text-[10px] font-normal text-muted-foreground">
                                             {METRIC_UNITS[type]}
@@ -423,7 +481,8 @@ export default function MaintenanceControlsAlertsDashboardPage() {
                                       </>
                                     ) : (
                                       <p className="mt-0.5 font-mono text-xs font-semibold tabular-nums">
-                                        <span>{interval}</span>
+                                        <span>0</span>
+                                        <span className="text-muted-foreground">/{interval}</span>
                                         <span className="ml-0.5 text-[10px] font-normal text-muted-foreground">
                                           {METRIC_UNITS[type]}
                                         </span>
@@ -444,6 +503,6 @@ export default function MaintenanceControlsAlertsDashboardPage() {
           </div>
         )}
       </main>
-    </ContentLayout>
+    </ContentLayout >
   );
 }
