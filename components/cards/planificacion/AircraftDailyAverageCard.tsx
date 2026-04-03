@@ -50,7 +50,7 @@ export function AircraftDailyAverageCard({ average, isLoading = false }: Aircraf
 
         {average?.period ? (
           <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-            <Badge variant="outline">{average.period.days_in_range.toFixed(0)} dias</Badge>
+            <Badge variant="outline">{average.period.days_in_range} dias</Badge>
             <span>
               {formatDate(average.period.from)} - {formatDate(average.period.to)}
             </span>

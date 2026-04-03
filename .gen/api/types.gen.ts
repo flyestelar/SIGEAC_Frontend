@@ -274,7 +274,24 @@ export type Extraction = Array<string>;
 /**
  * Flight
  */
-export type Flight = Array<string>;
+export type Flight = {
+  id: number;
+  flight_number: string;
+  origin: string;
+  destination: string;
+  flight_hours: string | null;
+  flight_cycles: string | null;
+  flight_date: string;
+  registered_by: string;
+  updated_by: string | null;
+  aircraft_id: number;
+  created_at: string | null;
+  updated_at: string | null;
+  departure_time: string | null;
+  arrival_time: string | null;
+  pilot: string | null;
+  co_pilot: string | null;
+};
 
 /**
  * FlightResource
@@ -287,11 +304,11 @@ export type FlightResource = {
   flight_hours: number;
   flight_cycles: number;
   flight_date: string;
-  departure_time: string;
-  arrival_time: string;
-  pilot: string;
-  co_pilot: string;
-  aircraft_id: string;
+  departure_time: string | null;
+  arrival_time: string | null;
+  pilot: string | null;
+  co_pilot: string | null;
+  aircraft_id: number;
   aircraft?: Aircraft;
 };
 
@@ -1872,15 +1889,11 @@ export type AircraftAverageByDateRangeError = AircraftAverageByDateRangeErrors[k
 
 export type AircraftAverageByDateRangeResponses = {
   200: {
-    aircraft: {
-      id: number;
-      acronym: string;
-      model: string;
-    };
+    aircraft: AircraftResource;
     period: {
       from: string;
       to: string;
-      days_in_range: string;
+      days_in_range: number;
     };
     metrics: {
       total_flight_hours: number;
