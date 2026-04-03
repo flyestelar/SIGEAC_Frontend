@@ -19,6 +19,8 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useGetMaintenanceAircraftByAcronym } from "@/hooks/planificacion/useGetMaitenanceAircraftByAcronym";
+import { useGetAircraftDailyAverage } from "@/hooks/planificacion/useGetAircraftDailyAverage";
+import { AircraftDailyAverageCard } from "@/components/cards/planificacion/AircraftDailyAverageCard";
 import { useCompanyStore } from "@/stores/CompanyStore";
 import { SimpleEditAirplaneDialog } from "@/components/dialogs/planificacion/SimpleEditAirplaneDialog";
 import { AircraftAssigment, MaintenanceAircraftPart } from "@/types";
@@ -39,7 +41,7 @@ import {
   ArrowLeft,
 } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import LoadingPage from "@/components/misc/LoadingPage";
 import { ContentLayout } from "@/components/layout/ContentLayout";
 
@@ -215,11 +217,17 @@ const AssignmentsTable = ({ rows }: { rows: AircraftAssigment[] }) => (
 // ── Page ─────────────────────────────────────────────────────────────────────
 export default function AircraftDetailsPage() {
   const { acronym } = useParams<{ acronym: string }>();
+  const decodedAcronym = decodeURIComponent(acronym);
   const router = useRouter();
   const { selectedCompany } = useCompanyStore();
   const { data: aircraft, isLoading, isError } = useGetMaintenanceAircraftByAcronym(
-    decodeURIComponent(acronym),
+    decodedAcronym,
     selectedCompany?.slug
+  );
+  const { data: aircraftDailyAverage, isLoading: isDailyAverageLoading } = useGetAircraftDailyAverage(
+    decodedAcronym,
+    undefined,
+    !!selectedCompany?.slug
   );
   const [isTypeDialogOpen, setIsTypeDialogOpen] = useState(false);
 
@@ -232,7 +240,7 @@ export default function AircraftDetailsPage() {
           <Plane className="size-10 opacity-20" />
           <p className="text-sm">
             No se encontró la aeronave{" "}
-            <span className="font-mono font-medium">{decodeURIComponent(acronym)}</span>.
+            <span className="font-mono font-medium">{decodedAcronym}</span>.
           </p>
         </div>
       </ContentLayout>
@@ -389,8 +397,13 @@ export default function AircraftDetailsPage() {
           </div>
 
           {/* Notas */}
-          <div>
-            <Card className="h-full">
+          <div className="space-y-4">
+            <AircraftDailyAverageCard
+              average={aircraftDailyAverage}
+              isLoading={isDailyAverageLoading}
+            />
+
+            <Card>
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm flex items-center gap-2">
                   <FileText className="h-4 w-4" /> Notas

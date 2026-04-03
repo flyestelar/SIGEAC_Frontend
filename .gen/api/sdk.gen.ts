@@ -78,6 +78,9 @@ import type {
   AircraftAdministrationShowAircraftStatisticsData,
   AircraftAdministrationShowAircraftStatisticsErrors,
   AircraftAdministrationShowAircraftStatisticsResponses,
+  AircraftAverageByDateRangeData,
+  AircraftAverageByDateRangeErrors,
+  AircraftAverageByDateRangeResponses,
   AircraftDestroyData,
   AircraftDestroyErrors,
   AircraftDestroyResponses,
@@ -1110,21 +1113,6 @@ import type {
   WarehouseWarehouseWithUserData,
   WarehouseWarehouseWithUserErrors,
   WarehouseWarehouseWithUserResponses,
-  WorkOrdersDestroyData,
-  WorkOrdersDestroyErrors,
-  WorkOrdersDestroyResponses,
-  WorkOrdersIndexData,
-  WorkOrdersIndexErrors,
-  WorkOrdersIndexResponses,
-  WorkOrdersShowData,
-  WorkOrdersShowErrors,
-  WorkOrdersShowResponses,
-  WorkOrdersStoreData,
-  WorkOrdersStoreErrors,
-  WorkOrdersStoreResponses,
-  WorkOrdersUpdateData,
-  WorkOrdersUpdateErrors,
-  WorkOrdersUpdateResponses,
   WorkOrderTaskEventShowEventsByWorkOrderTaskData,
   WorkOrderTaskEventShowEventsByWorkOrderTaskErrors,
   WorkOrderTaskEventShowEventsByWorkOrderTaskResponses,
@@ -1640,6 +1628,23 @@ export const aircraftStore = <ThrowOnError extends boolean = false>(
       'Content-Type': 'application/json',
       ...options.headers,
     },
+  });
+
+/**
+ * Method: Get
+ * EndPoint: /aircrafts/{acronym}/average
+ * Function Name: averageByDateRange($acronym)
+ * Docs: Calcula el promedio de horas y ciclos de vuelo de una aeronave en un rango de fechas.
+ * Parametros opcionales: from (Y-m-d), to (Y-m-d). Por defecto usa los ultimos 90 dias
+ */
+export const aircraftAverageByDateRange = <ThrowOnError extends boolean = false>(
+  options: Options<AircraftAverageByDateRangeData, ThrowOnError>,
+) =>
+  (options.client ?? client).get<AircraftAverageByDateRangeResponses, AircraftAverageByDateRangeErrors, ThrowOnError>({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/aircrafts/{acronym}/average',
+    ...options,
   });
 
 /**
@@ -6303,79 +6308,6 @@ export const warehouseWarehouseWithUser = <ThrowOnError extends boolean = false>
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/{company}/{location}/warehouses-by-location',
     ...options,
-  });
-
-/**
- * Display a listing of the resource
- */
-export const workOrdersIndex = <ThrowOnError extends boolean = false>(
-  options?: Options<WorkOrdersIndexData, ThrowOnError>,
-) =>
-  (options?.client ?? client).get<WorkOrdersIndexResponses, WorkOrdersIndexErrors, ThrowOnError>({
-    responseType: 'json',
-    security: [{ scheme: 'bearer', type: 'http' }],
-    url: '/work-orders',
-    ...options,
-  });
-
-/**
- * Store a newly created resource in storage
- */
-export const workOrdersStore = <ThrowOnError extends boolean = false>(
-  options: Options<WorkOrdersStoreData, ThrowOnError>,
-) =>
-  (options.client ?? client).post<WorkOrdersStoreResponses, WorkOrdersStoreErrors, ThrowOnError>({
-    responseType: 'json',
-    security: [{ scheme: 'bearer', type: 'http' }],
-    url: '/work-orders',
-    ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      ...options.headers,
-    },
-  });
-
-/**
- * Remove the specified resource from storage
- */
-export const workOrdersDestroy = <ThrowOnError extends boolean = false>(
-  options: Options<WorkOrdersDestroyData, ThrowOnError>,
-) =>
-  (options.client ?? client).delete<WorkOrdersDestroyResponses, WorkOrdersDestroyErrors, ThrowOnError>({
-    responseType: 'json',
-    security: [{ scheme: 'bearer', type: 'http' }],
-    url: '/work-orders/{id}',
-    ...options,
-  });
-
-/**
- * Display the specified resource
- */
-export const workOrdersShow = <ThrowOnError extends boolean = false>(
-  options: Options<WorkOrdersShowData, ThrowOnError>,
-) =>
-  (options.client ?? client).get<WorkOrdersShowResponses, WorkOrdersShowErrors, ThrowOnError>({
-    responseType: 'json',
-    security: [{ scheme: 'bearer', type: 'http' }],
-    url: '/work-orders/{id}',
-    ...options,
-  });
-
-/**
- * Update the specified resource in storage
- */
-export const workOrdersUpdate = <ThrowOnError extends boolean = false>(
-  options: Options<WorkOrdersUpdateData, ThrowOnError>,
-) =>
-  (options.client ?? client).put<WorkOrdersUpdateResponses, WorkOrdersUpdateErrors, ThrowOnError>({
-    responseType: 'json',
-    security: [{ scheme: 'bearer', type: 'http' }],
-    url: '/work-orders/{id}',
-    ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      ...options.headers,
-    },
   });
 
 /**

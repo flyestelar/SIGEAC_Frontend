@@ -30,6 +30,7 @@ import {
   administrationClientUpdateBalance,
   adminRegister,
   aircraftAdministrationShowAircraftStatistics,
+  aircraftAverageByDateRange,
   aircraftDestroy,
   aircraftGetAircraftAcronyms,
   aircraftIndex,
@@ -375,11 +376,6 @@ import {
   warehouseStore,
   warehouseUpdate,
   warehouseWarehouseWithUser,
-  workOrdersDestroy,
-  workOrdersIndex,
-  workOrdersShow,
-  workOrdersStore,
-  workOrdersUpdate,
   workOrderTaskEventShowEventsByWorkOrderTask,
   workOrderTaskEventStore,
   workshopsDestroy,
@@ -457,6 +453,9 @@ import type {
   AircraftAdministrationShowAircraftStatisticsData,
   AircraftAdministrationShowAircraftStatisticsError,
   AircraftAdministrationShowAircraftStatisticsResponse,
+  AircraftAverageByDateRangeData,
+  AircraftAverageByDateRangeError,
+  AircraftAverageByDateRangeResponse,
   AircraftDestroyData,
   AircraftDestroyError,
   AircraftDestroyResponse,
@@ -1447,21 +1446,6 @@ import type {
   WarehouseWarehouseWithUserData,
   WarehouseWarehouseWithUserError,
   WarehouseWarehouseWithUserResponse,
-  WorkOrdersDestroyData,
-  WorkOrdersDestroyError,
-  WorkOrdersDestroyResponse,
-  WorkOrdersIndexData,
-  WorkOrdersIndexError,
-  WorkOrdersIndexResponse,
-  WorkOrdersShowData,
-  WorkOrdersShowError,
-  WorkOrdersShowResponse,
-  WorkOrdersStoreData,
-  WorkOrdersStoreError,
-  WorkOrdersStoreResponse,
-  WorkOrdersUpdateData,
-  WorkOrdersUpdateError,
-  WorkOrdersUpdateResponse,
   WorkOrderTaskEventShowEventsByWorkOrderTaskData,
   WorkOrderTaskEventShowEventsByWorkOrderTaskError,
   WorkOrderTaskEventShowEventsByWorkOrderTaskResponse,
@@ -2318,6 +2302,35 @@ export const aircraftStoreMutation = (
   };
   return mutationOptions;
 };
+
+export const aircraftAverageByDateRangeQueryKey = (options: Options<AircraftAverageByDateRangeData>) =>
+  createQueryKey('aircraftAverageByDateRange', options);
+
+/**
+ * Method: Get
+ * EndPoint: /aircrafts/{acronym}/average
+ * Function Name: averageByDateRange($acronym)
+ * Docs: Calcula el promedio de horas y ciclos de vuelo de una aeronave en un rango de fechas.
+ * Parametros opcionales: from (Y-m-d), to (Y-m-d). Por defecto usa los ultimos 90 dias
+ */
+export const aircraftAverageByDateRangeOptions = (options: Options<AircraftAverageByDateRangeData>) =>
+  queryOptions<
+    AircraftAverageByDateRangeResponse,
+    AxiosError<AircraftAverageByDateRangeError>,
+    AircraftAverageByDateRangeResponse,
+    ReturnType<typeof aircraftAverageByDateRangeQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await aircraftAverageByDateRange({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: aircraftAverageByDateRangeQueryKey(options),
+  });
 
 /**
  * Remove the specified resource from storage
@@ -10565,129 +10578,6 @@ export const warehouseWarehouseWithUserOptions = (options: Options<WarehouseWare
     },
     queryKey: warehouseWarehouseWithUserQueryKey(options),
   });
-
-export const workOrdersIndexQueryKey = (options?: Options<WorkOrdersIndexData>) =>
-  createQueryKey('workOrdersIndex', options);
-
-/**
- * Display a listing of the resource
- */
-export const workOrdersIndexOptions = (options?: Options<WorkOrdersIndexData>) =>
-  queryOptions<
-    WorkOrdersIndexResponse,
-    AxiosError<WorkOrdersIndexError>,
-    WorkOrdersIndexResponse,
-    ReturnType<typeof workOrdersIndexQueryKey>
-  >({
-    queryFn: async ({ queryKey, signal }) => {
-      const { data } = await workOrdersIndex({
-        ...options,
-        ...queryKey[0],
-        signal,
-        throwOnError: true,
-      });
-      return data;
-    },
-    queryKey: workOrdersIndexQueryKey(options),
-  });
-
-/**
- * Store a newly created resource in storage
- */
-export const workOrdersStoreMutation = (
-  options?: Partial<Options<WorkOrdersStoreData>>,
-): UseMutationOptions<WorkOrdersStoreResponse, AxiosError<WorkOrdersStoreError>, Options<WorkOrdersStoreData>> => {
-  const mutationOptions: UseMutationOptions<
-    WorkOrdersStoreResponse,
-    AxiosError<WorkOrdersStoreError>,
-    Options<WorkOrdersStoreData>
-  > = {
-    mutationFn: async (fnOptions) => {
-      const { data } = await workOrdersStore({
-        ...options,
-        ...fnOptions,
-        throwOnError: true,
-      });
-      return data;
-    },
-  };
-  return mutationOptions;
-};
-
-/**
- * Remove the specified resource from storage
- */
-export const workOrdersDestroyMutation = (
-  options?: Partial<Options<WorkOrdersDestroyData>>,
-): UseMutationOptions<
-  WorkOrdersDestroyResponse,
-  AxiosError<WorkOrdersDestroyError>,
-  Options<WorkOrdersDestroyData>
-> => {
-  const mutationOptions: UseMutationOptions<
-    WorkOrdersDestroyResponse,
-    AxiosError<WorkOrdersDestroyError>,
-    Options<WorkOrdersDestroyData>
-  > = {
-    mutationFn: async (fnOptions) => {
-      const { data } = await workOrdersDestroy({
-        ...options,
-        ...fnOptions,
-        throwOnError: true,
-      });
-      return data;
-    },
-  };
-  return mutationOptions;
-};
-
-export const workOrdersShowQueryKey = (options: Options<WorkOrdersShowData>) =>
-  createQueryKey('workOrdersShow', options);
-
-/**
- * Display the specified resource
- */
-export const workOrdersShowOptions = (options: Options<WorkOrdersShowData>) =>
-  queryOptions<
-    WorkOrdersShowResponse,
-    AxiosError<WorkOrdersShowError>,
-    WorkOrdersShowResponse,
-    ReturnType<typeof workOrdersShowQueryKey>
-  >({
-    queryFn: async ({ queryKey, signal }) => {
-      const { data } = await workOrdersShow({
-        ...options,
-        ...queryKey[0],
-        signal,
-        throwOnError: true,
-      });
-      return data;
-    },
-    queryKey: workOrdersShowQueryKey(options),
-  });
-
-/**
- * Update the specified resource in storage
- */
-export const workOrdersUpdateMutation = (
-  options?: Partial<Options<WorkOrdersUpdateData>>,
-): UseMutationOptions<WorkOrdersUpdateResponse, AxiosError<WorkOrdersUpdateError>, Options<WorkOrdersUpdateData>> => {
-  const mutationOptions: UseMutationOptions<
-    WorkOrdersUpdateResponse,
-    AxiosError<WorkOrdersUpdateError>,
-    Options<WorkOrdersUpdateData>
-  > = {
-    mutationFn: async (fnOptions) => {
-      const { data } = await workOrdersUpdate({
-        ...options,
-        ...fnOptions,
-        throwOnError: true,
-      });
-      return data;
-    },
-  };
-  return mutationOptions;
-};
 
 /**
  * Store a newly created resource in storage

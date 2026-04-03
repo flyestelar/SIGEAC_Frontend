@@ -582,26 +582,6 @@ export type StoreTaskMasterRequest = {
 };
 
 /**
- * StoreWorkOrderRequest
- */
-export type StoreWorkOrderRequest = {
-  description?: string | null;
-  status?: WorkOrderStatus;
-  aircraft_id: number;
-  date: string;
-  items?: Array<{
-    description: string;
-    maintenance_service_id?: number | null;
-    order?: number | null;
-    tasks?: Array<{
-      task_id?: number | null;
-      tecnico?: string | null;
-      inspector?: string | null;
-    }> | null;
-  }> | null;
-};
-
-/**
  * TaskCardResource
  */
 export type TaskCardResource = {
@@ -799,32 +779,6 @@ export type UpdateTaskCardRequest = {
 };
 
 /**
- * UpdateWorkOrderRequest
- */
-export type UpdateWorkOrderRequest = {
-  order_number?: string | null;
-  description?: string | null;
-  status?: WorkOrderStatus;
-  department_responsible?: string | null;
-  approved_by?: string | null;
-  elaborated_by?: string | null;
-  reviewed_by?: string | null;
-  aircraft_id?: number | null;
-  date?: string | null;
-  authorizing?: 'PROPIETARIO' | 'EXPLOTADOR';
-  items?: Array<{
-    description: string;
-    maintenance_service_id?: number | null;
-    order?: number | null;
-    tasks?: Array<{
-      task_id?: number | null;
-      tecnico?: string | null;
-      inspector?: string | null;
-    }> | null;
-  }>;
-};
-
-/**
  * User
  */
 export type User = {
@@ -854,58 +808,6 @@ export type UserRequest = {
  * Vendor
  */
 export type Vendor = Array<string>;
-
-/**
- * WorkOrderItemResource
- */
-export type WorkOrderItemResource = {
-  id: string;
-  work_order_id: string;
-  description: string;
-  maintenance_service_id: string;
-  order: string;
-  maintenance_service: string;
-  tasks?: Array<WorkOrderItemTaskResource>;
-  created_at: string;
-  updated_at: string;
-};
-
-/**
- * WorkOrderItemTaskResource
- */
-export type WorkOrderItemTaskResource = {
-  id: string;
-  task_id: string;
-  tecnico: string;
-  inspector: string;
-  task?: TaskCardResource;
-  created_at: string;
-  updated_at: string;
-};
-
-/**
- * WorkOrderResource
- */
-export type WorkOrderResource = {
-  id: string;
-  order_number: string;
-  description: string;
-  aircraft_id: string;
-  authorizing: string;
-  date: string;
-  created_by: string;
-  updated_by: string;
-  aircraft?: AircraftResource;
-  items_count?: number;
-  items?: Array<WorkOrderItemResource>;
-  created_at: string;
-  updated_at: string;
-};
-
-/**
- * WorkOrderStatus
- */
-export type WorkOrderStatus = 'ABIERTO' | 'CERRADO';
 
 /**
  * WorkShop
@@ -1926,6 +1828,72 @@ export type AircraftStoreResponses = {
 };
 
 export type AircraftStoreResponse = AircraftStoreResponses[keyof AircraftStoreResponses];
+
+export type AircraftAverageByDateRangeData = {
+  body?: never;
+  path: {
+    acronym: string;
+  };
+  query?: {
+    from?: string | null;
+    to?: string | null;
+  };
+  url: '/aircrafts/{acronym}/average';
+};
+
+export type AircraftAverageByDateRangeErrors = {
+  /**
+   * Unauthenticated
+   */
+  401: {
+    /**
+     * Error overview.
+     */
+    message: string;
+  };
+  /**
+   * Validation error
+   */
+  422: {
+    /**
+     * Errors overview.
+     */
+    message: string;
+    /**
+     * A detailed description of each field that failed validation.
+     */
+    errors: {
+      [key: string]: Array<string>;
+    };
+  };
+};
+
+export type AircraftAverageByDateRangeError = AircraftAverageByDateRangeErrors[keyof AircraftAverageByDateRangeErrors];
+
+export type AircraftAverageByDateRangeResponses = {
+  200: {
+    aircraft: {
+      id: number;
+      acronym: string;
+      model: string;
+    };
+    period: {
+      from: string;
+      to: string;
+      days_in_range: string;
+    };
+    metrics: {
+      total_flight_hours: number;
+      total_flight_cycles: number;
+      average_daily_flight_hours: number;
+      average_daily_flight_cycles: number;
+      flights_count: number;
+    };
+  };
+};
+
+export type AircraftAverageByDateRangeResponse =
+  AircraftAverageByDateRangeResponses[keyof AircraftAverageByDateRangeResponses];
 
 export type AircraftDestroyData = {
   body?: never;
@@ -13856,254 +13824,6 @@ export type WarehouseWarehouseWithUserResponses = {
 
 export type WarehouseWarehouseWithUserResponse =
   WarehouseWarehouseWithUserResponses[keyof WarehouseWarehouseWithUserResponses];
-
-export type WorkOrdersIndexData = {
-  body?: never;
-  path?: never;
-  query?: {
-    search?: string;
-    status?: string;
-    aircraft_id?: number;
-    per_page?: number;
-  };
-  url: '/work-orders';
-};
-
-export type WorkOrdersIndexErrors = {
-  /**
-   * Unauthenticated
-   */
-  401: {
-    /**
-     * Error overview.
-     */
-    message: string;
-  };
-};
-
-export type WorkOrdersIndexError = WorkOrdersIndexErrors[keyof WorkOrdersIndexErrors];
-
-export type WorkOrdersIndexResponses = {
-  /**
-   * Paginated set of `WorkOrderResource`
-   */
-  200: {
-    data: Array<WorkOrderResource>;
-    links: {
-      first: string | null;
-      last: string | null;
-      prev: string | null;
-      next: string | null;
-    };
-    meta: {
-      current_page: number;
-      from: number | null;
-      last_page: number;
-      /**
-       * Generated paginator links.
-       */
-      links: Array<{
-        url: string | null;
-        label: string;
-        active: boolean;
-      }>;
-      /**
-       * Base path for paginator generated URLs.
-       */
-      path: string | null;
-      /**
-       * Number of items shown per page.
-       */
-      per_page: number;
-      /**
-       * Number of the last item in the slice.
-       */
-      to: number | null;
-      /**
-       * Total number of items being paginated.
-       */
-      total: number;
-    };
-  };
-};
-
-export type WorkOrdersIndexResponse = WorkOrdersIndexResponses[keyof WorkOrdersIndexResponses];
-
-export type WorkOrdersStoreData = {
-  body: StoreWorkOrderRequest;
-  path?: never;
-  query?: never;
-  url: '/work-orders';
-};
-
-export type WorkOrdersStoreErrors = {
-  /**
-   * Unauthenticated
-   */
-  401: {
-    /**
-     * Error overview.
-     */
-    message: string;
-  };
-  /**
-   * Authorization error
-   */
-  403: {
-    /**
-     * Error overview.
-     */
-    message: string;
-  };
-  /**
-   * Validation error
-   */
-  422: {
-    /**
-     * Errors overview.
-     */
-    message: string;
-    /**
-     * A detailed description of each field that failed validation.
-     */
-    errors: {
-      [key: string]: Array<string>;
-    };
-  };
-};
-
-export type WorkOrdersStoreError = WorkOrdersStoreErrors[keyof WorkOrdersStoreErrors];
-
-export type WorkOrdersStoreResponses = {
-  200: string;
-};
-
-export type WorkOrdersStoreResponse = WorkOrdersStoreResponses[keyof WorkOrdersStoreResponses];
-
-export type WorkOrdersDestroyData = {
-  body?: never;
-  path: {
-    id: number;
-  };
-  query?: never;
-  url: '/work-orders/{id}';
-};
-
-export type WorkOrdersDestroyErrors = {
-  /**
-   * Unauthenticated
-   */
-  401: {
-    /**
-     * Error overview.
-     */
-    message: string;
-  };
-};
-
-export type WorkOrdersDestroyError = WorkOrdersDestroyErrors[keyof WorkOrdersDestroyErrors];
-
-export type WorkOrdersDestroyResponses = {
-  200: string;
-};
-
-export type WorkOrdersDestroyResponse = WorkOrdersDestroyResponses[keyof WorkOrdersDestroyResponses];
-
-export type WorkOrdersShowData = {
-  body?: never;
-  path: {
-    id: number;
-  };
-  query?: never;
-  url: '/work-orders/{id}';
-};
-
-export type WorkOrdersShowErrors = {
-  /**
-   * Unauthenticated
-   */
-  401: {
-    /**
-     * Error overview.
-     */
-    message: string;
-  };
-  /**
-   * Not found
-   */
-  404: {
-    /**
-     * Error overview.
-     */
-    message: string;
-  };
-};
-
-export type WorkOrdersShowError = WorkOrdersShowErrors[keyof WorkOrdersShowErrors];
-
-export type WorkOrdersShowResponses = {
-  /**
-   * `WorkOrderResource`
-   */
-  200: {
-    data: WorkOrderResource;
-  };
-};
-
-export type WorkOrdersShowResponse = WorkOrdersShowResponses[keyof WorkOrdersShowResponses];
-
-export type WorkOrdersUpdateData = {
-  body?: UpdateWorkOrderRequest;
-  path: {
-    id: number;
-  };
-  query?: never;
-  url: '/work-orders/{id}';
-};
-
-export type WorkOrdersUpdateErrors = {
-  /**
-   * Unauthenticated
-   */
-  401: {
-    /**
-     * Error overview.
-     */
-    message: string;
-  };
-  /**
-   * Authorization error
-   */
-  403: {
-    /**
-     * Error overview.
-     */
-    message: string;
-  };
-  /**
-   * Validation error
-   */
-  422: {
-    /**
-     * Errors overview.
-     */
-    message: string;
-    /**
-     * A detailed description of each field that failed validation.
-     */
-    errors: {
-      [key: string]: Array<string>;
-    };
-  };
-};
-
-export type WorkOrdersUpdateError = WorkOrdersUpdateErrors[keyof WorkOrdersUpdateErrors];
-
-export type WorkOrdersUpdateResponses = {
-  200: string;
-};
-
-export type WorkOrdersUpdateResponse = WorkOrdersUpdateResponses[keyof WorkOrdersUpdateResponses];
 
 export type WorkOrderTaskEventStoreData = {
   body?: never;
