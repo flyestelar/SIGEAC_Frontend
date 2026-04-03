@@ -8736,6 +8736,10 @@ export type MaintenanceControlsAlertsResponses = {
              * percentage
              */
             percentage: number;
+            /**
+             * consumed
+             */
+            consumed: number;
             status: 'OK' | 'WARNING' | 'OVERDUE';
           }
         | {
@@ -8748,6 +8752,10 @@ export type MaintenanceControlsAlertsResponses = {
              * percentage
              */
             percentage: number;
+            /**
+             * consumed
+             */
+            consumed: number;
             status: 'OK' | 'WARNING' | 'OVERDUE';
           }
         | {
@@ -8760,6 +8768,10 @@ export type MaintenanceControlsAlertsResponses = {
              * percentage
              */
             percentage: number;
+            /**
+             * consumed
+             */
+            consumed: number;
             status: 'OK' | 'WARNING' | 'OVERDUE';
           }
       >;
