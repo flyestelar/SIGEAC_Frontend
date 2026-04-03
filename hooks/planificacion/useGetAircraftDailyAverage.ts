@@ -23,3 +23,5 @@ export const useGetAircraftDailyAverage = (
     refetchOnWindowFocus: false,
   });
 };
+
+export const useGetAircraftAverage = useGetAircraftDailyAverage;

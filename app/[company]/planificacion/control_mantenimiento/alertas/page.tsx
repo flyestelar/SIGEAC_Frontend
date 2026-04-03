@@ -17,10 +17,12 @@ import { useCompanyStore } from '@/stores/CompanyStore';
 import { maintenanceControlsAlertsOptions } from '@api/queries';
 import { useQuery } from '@tanstack/react-query';
 import {
-  AlertTriangle, ArrowLeft, Calendar, Clock, FileText, Gauge, Plane, RefreshCw, Search, ShieldCheck, Siren, TriangleAlert, Wrench,
+  AlertTriangle, ArrowLeft, Calendar, CalendarClock, Clock, FileText, Gauge, Plane, RefreshCw, Search, ShieldCheck, Siren, TriangleAlert, Wrench,
 } from 'lucide-react';
 import Link from 'next/link';
-import { useMemo, useState } from 'react';
+import { addDays } from 'date-fns';
+import { useMemo, useCallback, useState } from 'react';
+import { useGetAircraftAverage } from '@/hooks/planificacion/useGetAircraftDailyAverage';
 import { HoverCardPortal } from '@radix-ui/react-hover-card';
 
 type AlertLevel = 'OVERDUE' | 'WARNING' | 'OK';
@@ -113,6 +115,122 @@ const LEVEL_CONFIG: Record<AlertLevel, {
     progressIndicator: 'bg-emerald-500',
   },
 };
+
+type AlertMetric = {
+  type: MetricType;
+  remaining: number;
+  percentage: number;
+  consumed: number;
+  status: 'OK' | 'WARNING' | 'OVERDUE';
+};
+
+function EstimatedDateCard({ acronym, metrics }: { acronym: string; metrics: AlertMetric[] }) {
+  const [requested, setRequested] = useState(false);
+  const { data, isLoading } = useGetAircraftAverage(acronym, undefined, requested);
+
+  const handleCalculate = useCallback(() => {
+    setRequested(true);
+  }, []);
+
+  const estimation = useMemo(() => {
+    if (!data?.metrics) return null;
+
+    const { average_daily_flight_hours, average_daily_flight_cycles } = data.metrics;
+    let bestEstimate: {
+      date: Date;
+      baseDate: Date;
+      metric: AlertMetric;
+      estimatedDays: number;
+      dailyAverage?: number;
+    } | null = null;
+
+    const baseDate = new Date();
+
+    for (const metric of metrics) {
+      if (metric.remaining <= 0) continue;
+
+      let estimatedDays: number | null = null;
+      let dailyAverage: number | undefined;
+
+      if (metric.type === 'DAYS') {
+        estimatedDays = metric.remaining;
+      } else if (metric.type === 'FH' && average_daily_flight_hours > 0) {
+        estimatedDays = metric.remaining / average_daily_flight_hours;
+        dailyAverage = average_daily_flight_hours;
+      } else if (metric.type === 'FC' && average_daily_flight_cycles > 0) {
+        estimatedDays = metric.remaining / average_daily_flight_cycles;
+        dailyAverage = average_daily_flight_cycles;
+      }
+
+      if (estimatedDays === null || !isFinite(estimatedDays)) continue;
+
+      if (!bestEstimate || estimatedDays < bestEstimate.estimatedDays) {
+        bestEstimate = {
+          date: addDays(baseDate, Math.ceil(estimatedDays)),
+          baseDate,
+          metric,
+          estimatedDays,
+          dailyAverage,
+        };
+      }
+    }
+
+    return bestEstimate;
+  }, [data, metrics]);
+
+  const explanation = useMemo(() => {
+    if (!estimation) return null;
+
+    const remaining = estimation.metric.remaining.toFixed(1);
+
+    if (estimation.metric.type === 'FH' && estimation.dailyAverage) {
+      return `Calculado por FH: ${remaining}h restantes / ${estimation.dailyAverage.toFixed(1)}h diarias desde ${format(estimation.baseDate, 'dd MMM yyyy', { locale: es })}`;
+    }
+
+    if (estimation.metric.type === 'FC' && estimation.dailyAverage) {
+      return `Calculado por FC: ${remaining} ciclos restantes / ${estimation.dailyAverage.toFixed(1)} ciclos diarios desde ${format(estimation.baseDate, 'dd MMM yyyy', { locale: es })}`;
+    }
+
+    return `Calculado por calendario: ${remaining} dias restantes desde ${format(estimation.baseDate, 'dd MMM yyyy', { locale: es })}`;
+  }, [estimation]);
+
+  return (
+    <button
+      type="button"
+      onClick={handleCalculate}
+      className="w-full rounded-md border border-border/40 bg-muted/15 px-3 py-2 text-left transition-colors hover:bg-muted/25"
+    >
+      <div className="flex items-start gap-2">
+        <CalendarClock className="mt-0.5 h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+        <div className="min-w-0 space-y-0.5">
+          <p className="text-[11px] text-muted-foreground">Próx. estimado</p>
+          {!requested ? (
+            <p className="text-[11px] font-medium text-foreground/80">Click para calcular</p>
+          ) : isLoading ? (
+            <div className="space-y-1">
+              <div className="flex items-center gap-1.5 text-[11px] font-medium text-muted-foreground">
+                <RefreshCw className="h-3 w-3 animate-spin" />
+                <span>Calculando estimación...</span>
+              </div>
+              <Skeleton className="h-3 w-44" />
+            </div>
+          ) : estimation ? (
+            <>
+              <p className="font-mono text-[11px] font-medium">
+                {format(estimation.date, 'dd MMM yyyy', { locale: es })}
+              </p>
+              <p className="text-[10px] leading-snug text-muted-foreground">
+                {explanation}
+              </p>
+            </>
+          ) : (
+            <p className="text-[11px] text-muted-foreground/60">Sin datos</p>
+          )}
+        </div>
+      </div>
+    </button>
+  );
+}
 
 export default function MaintenanceControlsAlertsDashboardPage() {
   const { selectedCompany } = useCompanyStore();
@@ -277,45 +395,63 @@ export default function MaintenanceControlsAlertsDashboardPage() {
 
         {isAlertsLoading ? (
           <div className="space-y-4">
-            {Array.from({ length: 3 }).map((_, groupIndex) => (
+            {Array.from({ length: 2 }).map((_, groupIndex) => (
               <section key={groupIndex} className="space-y-3">
                 <div className="flex items-center gap-2">
-                  <Skeleton className="h-6 w-20" />
-                  <Skeleton className="h-4 w-16" />
+                  <Skeleton className="h-6 w-20 rounded-full" />
+                  <Skeleton className="h-4 w-24" />
                 </div>
                 <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-                  {Array.from({ length: 6 }).map((_, cardIndex) => (
-                    <Card key={cardIndex} className="border-border/60">
+                  {Array.from({ length: 3 }).map((_, cardIndex) => (
+                    <Card key={cardIndex} className="overflow-hidden border-l-4 border-l-muted">
                       <CardHeader className="space-y-2">
+                        {/* Title + badge */}
                         <div className="flex items-start justify-between gap-3">
-                          <div className="space-y-1">
-                            <Skeleton className="h-4 w-32" />
-                            <Skeleton className="h-3 w-24" />
+                          <div className="flex items-start gap-2.5">
+                            <Skeleton className="mt-0.5 h-6 w-6 rounded" />
+                            <div className="space-y-1.5">
+                              <Skeleton className="h-4 w-36" />
+                              <Skeleton className="h-3 w-24" />
+                            </div>
                           </div>
-                          <Skeleton className="h-5 w-16" />
+                          <Skeleton className="h-5 w-16 rounded-full" />
                         </div>
-                        <div className="flex items-center justify-between rounded-xl border border-border/60 bg-background/60 px-3 py-2">
-                          <div>
-                            <Skeleton className="h-3 w-12 mb-1" />
-                            <Skeleton className="h-4 w-8" />
+                        {/* Aircraft sub-card */}
+                        <div className="flex items-center gap-3 rounded-md border border-border/40 bg-muted/10 px-3 py-2">
+                          <Skeleton className="h-8 w-8 rounded" />
+                          <div className="flex flex-1 flex-col gap-1">
+                            <div className="flex items-baseline justify-between">
+                              <Skeleton className="h-4 w-16" />
+                              <Skeleton className="h-3 w-20" />
+                            </div>
+                            <Skeleton className="h-3 w-28" />
                           </div>
-                          <div className="text-right">
-                            <Skeleton className="h-3 w-8 mb-1" />
-                            <Skeleton className="h-4 w-16" />
-                          </div>
+                        </div>
+                        {/* Last execution */}
+                        <div className="flex items-center gap-2 rounded-md border border-border/30 bg-muted/10 px-3 py-1.5">
+                          <Skeleton className="h-3 w-3 rounded-sm" />
+                          <Skeleton className="h-3 w-24" />
+                          <Skeleton className="h-3 w-20" />
                         </div>
                       </CardHeader>
                       <CardContent className="space-y-3">
-                        <div>
-                          <Skeleton className="h-3 w-24 mb-1" />
-                          <Skeleton className="h-4 w-40" />
+                        {/* Metrics label */}
+                        <Skeleton className="h-3 w-16" />
+                        {/* Metrics grid */}
+                        <div className="grid auto-cols-fr grid-flow-col gap-2">
+                          {Array.from({ length: 2 }).map((_, i) => (
+                            <div key={i} className="rounded-md border border-border/40 bg-muted/10 px-2 py-1.5 space-y-1.5">
+                              <Skeleton className="h-3 w-16" />
+                              <Skeleton className="h-3 w-20" />
+                              <Skeleton className="h-1.5 w-full rounded-full" />
+                            </div>
+                          ))}
                         </div>
-                        <div className="space-y-2">
-                          <div className="flex items-center justify-between">
-                            <Skeleton className="h-3 w-12" />
-                            <Skeleton className="h-3 w-8" />
-                          </div>
-                          <Skeleton className="h-2 w-full" />
+                        {/* Estimated date */}
+                        <div className="flex items-center gap-2 rounded-md border border-border/30 bg-muted/10 px-3 py-1.5">
+                          <Skeleton className="h-3.5 w-3.5 rounded-sm" />
+                          <Skeleton className="h-3 w-24" />
+                          <Skeleton className="h-3 w-20" />
                         </div>
                       </CardContent>
                     </Card>
@@ -409,12 +545,14 @@ export default function MaintenanceControlsAlertsDashboardPage() {
                                           {format(new Date(row.last_execution.executed_at), "dd/MM/yyyy HH:mm", { locale: es })}
                                         </p>
                                       </div>
-                                      <div>
-                                        <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Completado</p>
-                                        <p className="font-mono text-xs font-medium">
-                                          {format(new Date(row.last_execution.completed_at), "dd/MM/yyyy HH:mm", { locale: es })}
-                                        </p>
-                                      </div>
+                                      {row.last_execution.completed_at && (
+                                        <div>
+                                          <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Completado</p>
+                                          <p className="font-mono text-xs font-medium">
+                                            {format(new Date(row.last_execution.completed_at), "dd/MM/yyyy HH:mm", { locale: es })}
+                                          </p>
+                                        </div>
+                                      )}
                                       <div>
                                         <p className="text-[10px] uppercase tracking-wide text-muted-foreground">FH al momento</p>
                                         <p className="font-mono text-xs font-medium tabular-nums">{row.last_execution.current_fh}</p>
@@ -492,6 +630,7 @@ export default function MaintenanceControlsAlertsDashboardPage() {
                                 );
                               })}
                             </div>
+                            <EstimatedDateCard acronym={aircraft.acronym} metrics={row.metrics} />
                           </CardContent>
                         </Card>
                       );
