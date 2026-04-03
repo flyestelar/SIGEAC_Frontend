@@ -7,38 +7,37 @@ import { useCompanyStore } from '@/stores/CompanyStore';
 import { Loader2 } from 'lucide-react';
 import { columns } from './columns';
 import { DataTable } from './data-table';
+import { useQuery } from '@tanstack/react-query';
+import { workOrdersIndexOptions } from '@api/queries';
 
 const WorkOrdersPage = () => {
+  const {
+    data: work_orders,
+    isLoading,
+    isError,
+  } = useQuery({
+    ...workOrdersIndexOptions(),
+  });
 
-  const { selectedStation, selectedCompany } = useCompanyStore();
-
-  const { data: work_orders, isLoading, isError } = useGetWorkOrders(selectedStation ?? null, selectedCompany?.slug);
-
-  if (isLoading) return <LoadingPage />
+  if (isLoading) return <LoadingPage />;
 
   return (
-    <ContentLayout title='Ordenes de Trabajo'>
-      <div className='flex flex-col gap-y-2'>
-        <h1 className='text-5xl font-bold text-center'>Gestión de Ord. de Trabajo</h1>
-        <p className='text-sm text-muted-foreground text-center'>
-          Aquí puede observar todos las ordenes de trabajo realizadas. <br />Filtre y/o busque sí desea una orden en específico.
+    <ContentLayout title="Ordenes de Trabajo">
+      <div className="flex flex-col gap-y-2">
+        <h1 className="text-5xl font-bold text-center">Gestión de Ord. de Trabajo</h1>
+        <p className="text-sm text-muted-foreground text-center">
+          Aquí puede observar todos las ordenes de trabajo realizadas. <br />
+          Filtre y/o busque sí desea una orden en específico.
         </p>
-        {
-          work_orders && (
-            <DataTable
-              columns={columns}
-              data={work_orders}
-            />
-          )
-        }
-        {
-          isError && (
-            <p className='text-center text-muted-foreground text-sm'>Ha ocurrido un error al cargar las ordens de trabajo...</p>
-          )
-        }
+        {work_orders && <DataTable columns={columns} data={work_orders.data} />}
+        {isError && (
+          <p className="text-center text-muted-foreground text-sm">
+            Ha ocurrido un error al cargar las ordens de trabajo...
+          </p>
+        )}
       </div>
     </ContentLayout>
-  )
-}
+  );
+};
 
-export default WorkOrdersPage
+export default WorkOrdersPage;

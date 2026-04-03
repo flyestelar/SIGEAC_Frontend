@@ -201,8 +201,6 @@ import {
   flightsStore,
   flightsUpdate,
   generalLocationIndex0,
-  generalLocationShowByAllLocation0,
-  generalLocationShowByAllLocation02,
   getMailable,
   ingestDocumentStore,
   invoiceManagementInvoiceStatistics,
@@ -214,6 +212,7 @@ import {
   locationDestroy,
   locationIndex,
   locationShow,
+  locationShowByAllLocation,
   locationShowByIdCompany,
   locationUpdate,
   login,
@@ -376,6 +375,11 @@ import {
   warehouseStore,
   warehouseUpdate,
   warehouseWarehouseWithUser,
+  workOrdersDestroy,
+  workOrdersIndex,
+  workOrdersShow,
+  workOrdersStore,
+  workOrdersUpdate,
   workOrderTaskEventShowEventsByWorkOrderTask,
   workOrderTaskEventStore,
   workshopsDestroy,
@@ -942,12 +946,6 @@ import type {
   GeneralLocationIndex0Data,
   GeneralLocationIndex0Error,
   GeneralLocationIndex0Response,
-  GeneralLocationShowByAllLocation02Data,
-  GeneralLocationShowByAllLocation02Error,
-  GeneralLocationShowByAllLocation02Response,
-  GeneralLocationShowByAllLocation0Data,
-  GeneralLocationShowByAllLocation0Error,
-  GeneralLocationShowByAllLocation0Response,
   GetMailableData,
   GetMailableError,
   GetMailableResponse,
@@ -978,6 +976,9 @@ import type {
   LocationIndexData,
   LocationIndexError,
   LocationIndexResponse,
+  LocationShowByAllLocationData,
+  LocationShowByAllLocationError,
+  LocationShowByAllLocationResponse,
   LocationShowByIdCompanyData,
   LocationShowByIdCompanyError,
   LocationShowByIdCompanyResponse,
@@ -1446,6 +1447,21 @@ import type {
   WarehouseWarehouseWithUserData,
   WarehouseWarehouseWithUserError,
   WarehouseWarehouseWithUserResponse,
+  WorkOrdersDestroyData,
+  WorkOrdersDestroyError,
+  WorkOrdersDestroyResponse,
+  WorkOrdersIndexData,
+  WorkOrdersIndexError,
+  WorkOrdersIndexResponse,
+  WorkOrdersShowData,
+  WorkOrdersShowError,
+  WorkOrdersShowResponse,
+  WorkOrdersStoreData,
+  WorkOrdersStoreError,
+  WorkOrdersStoreResponse,
+  WorkOrdersUpdateData,
+  WorkOrdersUpdateError,
+  WorkOrdersUpdateResponse,
   WorkOrderTaskEventShowEventsByWorkOrderTaskData,
   WorkOrderTaskEventShowEventsByWorkOrderTaskError,
   WorkOrderTaskEventShowEventsByWorkOrderTaskResponse,
@@ -3068,6 +3084,26 @@ export const userOptions = (options?: Options<UserData>) =>
     },
     queryKey: userQueryKey(options),
   });
+
+export const userRegisterMutation = (
+  options?: Partial<Options<UserRegisterData>>,
+): UseMutationOptions<UserRegisterResponse, AxiosError<UserRegisterError>, Options<UserRegisterData>> => {
+  const mutationOptions: UseMutationOptions<
+    UserRegisterResponse,
+    AxiosError<UserRegisterError>,
+    Options<UserRegisterData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await userRegister({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
 
 export const logoutMutation = (
   options?: Partial<Options<LogoutData>>,
@@ -6619,6 +6655,28 @@ export const jobTitleUpdateMutation = (
   return mutationOptions;
 };
 
+export const locationShowByAllLocationQueryKey = (options?: Options<LocationShowByAllLocationData>) =>
+  createQueryKey('locationShowByAllLocation', options);
+
+export const locationShowByAllLocationOptions = (options?: Options<LocationShowByAllLocationData>) =>
+  queryOptions<
+    LocationShowByAllLocationResponse,
+    AxiosError<LocationShowByAllLocationError>,
+    LocationShowByAllLocationResponse,
+    ReturnType<typeof locationShowByAllLocationQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await locationShowByAllLocation({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: locationShowByAllLocationQueryKey(options),
+  });
+
 export const locationIndexQueryKey = (options?: Options<LocationIndexData>) => createQueryKey('locationIndex', options);
 
 /**
@@ -6700,50 +6758,6 @@ export const locationDestroyMutation = (
   };
   return mutationOptions;
 };
-
-export const generalLocationShowByAllLocation0QueryKey = (options?: Options<GeneralLocationShowByAllLocation0Data>) =>
-  createQueryKey('generalLocationShowByAllLocation0', options);
-
-export const generalLocationShowByAllLocation0Options = (options?: Options<GeneralLocationShowByAllLocation0Data>) =>
-  queryOptions<
-    GeneralLocationShowByAllLocation0Response,
-    AxiosError<GeneralLocationShowByAllLocation0Error>,
-    GeneralLocationShowByAllLocation0Response,
-    ReturnType<typeof generalLocationShowByAllLocation0QueryKey>
-  >({
-    queryFn: async ({ queryKey, signal }) => {
-      const { data } = await generalLocationShowByAllLocation0({
-        ...options,
-        ...queryKey[0],
-        signal,
-        throwOnError: true,
-      });
-      return data;
-    },
-    queryKey: generalLocationShowByAllLocation0QueryKey(options),
-  });
-
-export const generalLocationShowByAllLocation02QueryKey = (options?: Options<GeneralLocationShowByAllLocation02Data>) =>
-  createQueryKey('generalLocationShowByAllLocation02', options);
-
-export const generalLocationShowByAllLocation02Options = (options?: Options<GeneralLocationShowByAllLocation02Data>) =>
-  queryOptions<
-    GeneralLocationShowByAllLocation02Response,
-    AxiosError<GeneralLocationShowByAllLocation02Error>,
-    GeneralLocationShowByAllLocation02Response,
-    ReturnType<typeof generalLocationShowByAllLocation02QueryKey>
-  >({
-    queryFn: async ({ queryKey, signal }) => {
-      const { data } = await generalLocationShowByAllLocation02({
-        ...options,
-        ...queryKey[0],
-        signal,
-        throwOnError: true,
-      });
-      return data;
-    },
-    queryKey: generalLocationShowByAllLocation02QueryKey(options),
-  });
 
 export const locationShowByIdCompanyMutation = (
   options?: Partial<Options<LocationShowByIdCompanyData>>,
@@ -10243,26 +10257,6 @@ export const userUpdateUserMutation = (
   return mutationOptions;
 };
 
-export const userRegisterMutation = (
-  options?: Partial<Options<UserRegisterData>>,
-): UseMutationOptions<UserRegisterResponse, AxiosError<UserRegisterError>, Options<UserRegisterData>> => {
-  const mutationOptions: UseMutationOptions<
-    UserRegisterResponse,
-    AxiosError<UserRegisterError>,
-    Options<UserRegisterData>
-  > = {
-    mutationFn: async (fnOptions) => {
-      const { data } = await userRegister({
-        ...options,
-        ...fnOptions,
-        throwOnError: true,
-      });
-      return data;
-    },
-  };
-  return mutationOptions;
-};
-
 export const usersIndexQueryKey = (options?: Options<UsersIndexData>) => createQueryKey('usersIndex', options);
 
 export const usersIndexOptions = (options?: Options<UsersIndexData>) =>
@@ -10571,6 +10565,129 @@ export const warehouseWarehouseWithUserOptions = (options: Options<WarehouseWare
     },
     queryKey: warehouseWarehouseWithUserQueryKey(options),
   });
+
+export const workOrdersIndexQueryKey = (options?: Options<WorkOrdersIndexData>) =>
+  createQueryKey('workOrdersIndex', options);
+
+/**
+ * Display a listing of the resource
+ */
+export const workOrdersIndexOptions = (options?: Options<WorkOrdersIndexData>) =>
+  queryOptions<
+    WorkOrdersIndexResponse,
+    AxiosError<WorkOrdersIndexError>,
+    WorkOrdersIndexResponse,
+    ReturnType<typeof workOrdersIndexQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await workOrdersIndex({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: workOrdersIndexQueryKey(options),
+  });
+
+/**
+ * Store a newly created resource in storage
+ */
+export const workOrdersStoreMutation = (
+  options?: Partial<Options<WorkOrdersStoreData>>,
+): UseMutationOptions<WorkOrdersStoreResponse, AxiosError<WorkOrdersStoreError>, Options<WorkOrdersStoreData>> => {
+  const mutationOptions: UseMutationOptions<
+    WorkOrdersStoreResponse,
+    AxiosError<WorkOrdersStoreError>,
+    Options<WorkOrdersStoreData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await workOrdersStore({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+/**
+ * Remove the specified resource from storage
+ */
+export const workOrdersDestroyMutation = (
+  options?: Partial<Options<WorkOrdersDestroyData>>,
+): UseMutationOptions<
+  WorkOrdersDestroyResponse,
+  AxiosError<WorkOrdersDestroyError>,
+  Options<WorkOrdersDestroyData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    WorkOrdersDestroyResponse,
+    AxiosError<WorkOrdersDestroyError>,
+    Options<WorkOrdersDestroyData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await workOrdersDestroy({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+export const workOrdersShowQueryKey = (options: Options<WorkOrdersShowData>) =>
+  createQueryKey('workOrdersShow', options);
+
+/**
+ * Display the specified resource
+ */
+export const workOrdersShowOptions = (options: Options<WorkOrdersShowData>) =>
+  queryOptions<
+    WorkOrdersShowResponse,
+    AxiosError<WorkOrdersShowError>,
+    WorkOrdersShowResponse,
+    ReturnType<typeof workOrdersShowQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await workOrdersShow({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: workOrdersShowQueryKey(options),
+  });
+
+/**
+ * Update the specified resource in storage
+ */
+export const workOrdersUpdateMutation = (
+  options?: Partial<Options<WorkOrdersUpdateData>>,
+): UseMutationOptions<WorkOrdersUpdateResponse, AxiosError<WorkOrdersUpdateError>, Options<WorkOrdersUpdateData>> => {
+  const mutationOptions: UseMutationOptions<
+    WorkOrdersUpdateResponse,
+    AxiosError<WorkOrdersUpdateError>,
+    Options<WorkOrdersUpdateData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await workOrdersUpdate({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
 
 /**
  * Store a newly created resource in storage

@@ -22,7 +22,22 @@ export type AdministrationFlight = Array<string>;
 /**
  * Aircraft
  */
-export type Aircraft = Array<string>;
+export type Aircraft = {
+  id: number;
+  serial: string;
+  model: string;
+  acronym: string;
+  flight_hours: number;
+  flight_cycles: number;
+  fabricant_date: string;
+  comments: string | null;
+  registered_by: string;
+  updated_by: string | null;
+  client_id: number | null;
+  location_id: number | null;
+  manufacturer_id: number | null;
+  aircraft_type_id: number | null;
+};
 
 /**
  * AircraftAssignmentResource
@@ -57,7 +72,7 @@ export type AircraftResource = {
   flight_cycles: number;
   fabricant_date: string;
   aircraft_operator: string;
-  comments: string;
+  comments: string | null;
   manufacturer?: ManufacturerResource;
   location?: {
     id: number;
@@ -68,7 +83,7 @@ export type AircraftResource = {
   owner: string;
   status: string;
   registered_by: string;
-  updated_by: string;
+  updated_by: string | null;
   created_at: string;
   updated_at: string;
   /**
@@ -567,6 +582,26 @@ export type StoreTaskMasterRequest = {
 };
 
 /**
+ * StoreWorkOrderRequest
+ */
+export type StoreWorkOrderRequest = {
+  description?: string | null;
+  status?: WorkOrderStatus;
+  aircraft_id: number;
+  date: string;
+  items?: Array<{
+    description: string;
+    maintenance_service_id?: number | null;
+    order?: number | null;
+    tasks?: Array<{
+      task_id?: number | null;
+      tecnico?: string | null;
+      inspector?: string | null;
+    }> | null;
+  }> | null;
+};
+
+/**
  * TaskCardResource
  */
 export type TaskCardResource = {
@@ -759,6 +794,32 @@ export type UpdateTaskCardRequest = {
 };
 
 /**
+ * UpdateWorkOrderRequest
+ */
+export type UpdateWorkOrderRequest = {
+  order_number?: string | null;
+  description?: string | null;
+  status?: WorkOrderStatus;
+  department_responsible?: string | null;
+  approved_by?: string | null;
+  elaborated_by?: string | null;
+  reviewed_by?: string | null;
+  aircraft_id?: number | null;
+  date?: string | null;
+  authorizing?: 'PROPIETARIO' | 'EXPLOTADOR';
+  items?: Array<{
+    description: string;
+    maintenance_service_id?: number | null;
+    order?: number | null;
+    tasks?: Array<{
+      task_id?: number | null;
+      tecnico?: string | null;
+      inspector?: string | null;
+    }> | null;
+  }>;
+};
+
+/**
  * User
  */
 export type User = {
@@ -788,6 +849,58 @@ export type UserRequest = {
  * Vendor
  */
 export type Vendor = Array<string>;
+
+/**
+ * WorkOrderItemResource
+ */
+export type WorkOrderItemResource = {
+  id: string;
+  work_order_id: string;
+  description: string;
+  maintenance_service_id: string;
+  order: string;
+  maintenance_service: string;
+  tasks?: Array<WorkOrderItemTaskResource>;
+  created_at: string;
+  updated_at: string;
+};
+
+/**
+ * WorkOrderItemTaskResource
+ */
+export type WorkOrderItemTaskResource = {
+  id: string;
+  task_id: string;
+  tecnico: string;
+  inspector: string;
+  task?: TaskCardResource;
+  created_at: string;
+  updated_at: string;
+};
+
+/**
+ * WorkOrderResource
+ */
+export type WorkOrderResource = {
+  id: string;
+  order_number: string;
+  description: string;
+  aircraft_id: string;
+  authorizing: string;
+  date: string;
+  created_by: string;
+  updated_by: string;
+  aircraft?: AircraftResource;
+  items_count?: number;
+  items?: Array<WorkOrderItemResource>;
+  created_at: string;
+  updated_at: string;
+};
+
+/**
+ * WorkOrderStatus
+ */
+export type WorkOrderStatus = 'ABIERTO' | 'CERRADO';
 
 /**
  * WorkShop
@@ -2823,17 +2936,7 @@ export type AdminRegisterErrors = {
 export type AdminRegisterError = AdminRegisterErrors[keyof AdminRegisterErrors];
 
 export type AdminRegisterResponses = {
-  200:
-    | string
-    | {
-        success: boolean;
-        data: null;
-        message: 'No tiene permisos para crear usuarios';
-      };
-  /**
-   * No content
-   */
-  204: void;
+  200: Array<unknown>;
 };
 
 export type AdminRegisterResponse = AdminRegisterResponses[keyof AdminRegisterResponses];
@@ -2938,6 +3041,48 @@ export type UserResponses = {
 };
 
 export type UserResponse = UserResponses[keyof UserResponses];
+
+export type UserRegisterData = {
+  body: AuthRequest;
+  path?: never;
+  query?: never;
+  url: '/register';
+};
+
+export type UserRegisterErrors = {
+  /**
+   * Unauthenticated
+   */
+  401: {
+    /**
+     * Error overview.
+     */
+    message: string;
+  };
+  /**
+   * Validation error
+   */
+  422: {
+    /**
+     * Errors overview.
+     */
+    message: string;
+    /**
+     * A detailed description of each field that failed validation.
+     */
+    errors: {
+      [key: string]: Array<string>;
+    };
+  };
+};
+
+export type UserRegisterError = UserRegisterErrors[keyof UserRegisterErrors];
+
+export type UserRegisterResponses = {
+  200: Array<unknown>;
+};
+
+export type UserRegisterResponse = UserRegisterResponses[keyof UserRegisterResponses];
 
 export type LogoutData = {
   body?: never;
@@ -7913,6 +8058,36 @@ export type JobTitleUpdateResponses = {
 
 export type JobTitleUpdateResponse = JobTitleUpdateResponses[keyof JobTitleUpdateResponses];
 
+export type LocationShowByAllLocationData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: '/locations-by-companies';
+};
+
+export type LocationShowByAllLocationErrors = {
+  /**
+   * Unauthenticated
+   */
+  401: {
+    /**
+     * Error overview.
+     */
+    message: string;
+  };
+};
+
+export type LocationShowByAllLocationError = LocationShowByAllLocationErrors[keyof LocationShowByAllLocationErrors];
+
+export type LocationShowByAllLocationResponses = {
+  200: {
+    companies_location: string;
+  };
+};
+
+export type LocationShowByAllLocationResponse =
+  LocationShowByAllLocationResponses[keyof LocationShowByAllLocationResponses];
+
 export type LocationIndexData = {
   body?: never;
   path?: never;
@@ -8022,68 +8197,6 @@ export type LocationDestroyResponses = {
 };
 
 export type LocationDestroyResponse = LocationDestroyResponses[keyof LocationDestroyResponses];
-
-export type GeneralLocationShowByAllLocation0Data = {
-  body?: never;
-  path?: never;
-  query?: never;
-  url: '/locations';
-};
-
-export type GeneralLocationShowByAllLocation0Errors = {
-  /**
-   * Unauthenticated
-   */
-  401: {
-    /**
-     * Error overview.
-     */
-    message: string;
-  };
-};
-
-export type GeneralLocationShowByAllLocation0Error =
-  GeneralLocationShowByAllLocation0Errors[keyof GeneralLocationShowByAllLocation0Errors];
-
-export type GeneralLocationShowByAllLocation0Responses = {
-  200: {
-    companies_location: string;
-  };
-};
-
-export type GeneralLocationShowByAllLocation0Response =
-  GeneralLocationShowByAllLocation0Responses[keyof GeneralLocationShowByAllLocation0Responses];
-
-export type GeneralLocationShowByAllLocation02Data = {
-  body?: never;
-  path?: never;
-  query?: never;
-  url: '/locations-by-companies';
-};
-
-export type GeneralLocationShowByAllLocation02Errors = {
-  /**
-   * Unauthenticated
-   */
-  401: {
-    /**
-     * Error overview.
-     */
-    message: string;
-  };
-};
-
-export type GeneralLocationShowByAllLocation02Error =
-  GeneralLocationShowByAllLocation02Errors[keyof GeneralLocationShowByAllLocation02Errors];
-
-export type GeneralLocationShowByAllLocation02Responses = {
-  200: {
-    companies_location: string;
-  };
-};
-
-export type GeneralLocationShowByAllLocation02Response =
-  GeneralLocationShowByAllLocation02Responses[keyof GeneralLocationShowByAllLocation02Responses];
 
 export type LocationShowByIdCompanyData = {
   body?: never;
@@ -8615,19 +8728,37 @@ export type MaintenanceControlsAlertsResponses = {
       metrics: Array<
         | {
             type: 'FH';
+            /**
+             * remaining
+             */
             remaining: number;
+            /**
+             * percentage
+             */
             percentage: number;
             status: 'OK' | 'WARNING' | 'OVERDUE';
           }
         | {
             type: 'FC';
+            /**
+             * remaining
+             */
             remaining: number;
+            /**
+             * percentage
+             */
             percentage: number;
             status: 'OK' | 'WARNING' | 'OVERDUE';
           }
         | {
             type: 'DAYS';
+            /**
+             * remaining
+             */
             remaining: number;
+            /**
+             * percentage
+             */
             percentage: number;
             status: 'OK' | 'WARNING' | 'OVERDUE';
           }
@@ -13191,50 +13322,6 @@ export type UserUpdateUserResponses = {
 
 export type UserUpdateUserResponse = UserUpdateUserResponses[keyof UserUpdateUserResponses];
 
-export type UserRegisterData = {
-  body?: AuthRequest & {
-    roles?: string;
-  };
-  path?: never;
-  query?: never;
-  url: '/register';
-};
-
-export type UserRegisterErrors = {
-  /**
-   * Unauthenticated
-   */
-  401: {
-    /**
-     * Error overview.
-     */
-    message: string;
-  };
-  /**
-   * Validation error
-   */
-  422: {
-    /**
-     * Errors overview.
-     */
-    message: string;
-    /**
-     * A detailed description of each field that failed validation.
-     */
-    errors: {
-      [key: string]: Array<string>;
-    };
-  };
-};
-
-export type UserRegisterError = UserRegisterErrors[keyof UserRegisterErrors];
-
-export type UserRegisterResponses = {
-  200: Array<unknown>;
-};
-
-export type UserRegisterResponse = UserRegisterResponses[keyof UserRegisterResponses];
-
 export type UsersIndexData = {
   body?: never;
   path?: never;
@@ -13752,6 +13839,254 @@ export type WarehouseWarehouseWithUserResponses = {
 
 export type WarehouseWarehouseWithUserResponse =
   WarehouseWarehouseWithUserResponses[keyof WarehouseWarehouseWithUserResponses];
+
+export type WorkOrdersIndexData = {
+  body?: never;
+  path?: never;
+  query?: {
+    search?: string;
+    status?: string;
+    aircraft_id?: number;
+    per_page?: number;
+  };
+  url: '/work-orders';
+};
+
+export type WorkOrdersIndexErrors = {
+  /**
+   * Unauthenticated
+   */
+  401: {
+    /**
+     * Error overview.
+     */
+    message: string;
+  };
+};
+
+export type WorkOrdersIndexError = WorkOrdersIndexErrors[keyof WorkOrdersIndexErrors];
+
+export type WorkOrdersIndexResponses = {
+  /**
+   * Paginated set of `WorkOrderResource`
+   */
+  200: {
+    data: Array<WorkOrderResource>;
+    links: {
+      first: string | null;
+      last: string | null;
+      prev: string | null;
+      next: string | null;
+    };
+    meta: {
+      current_page: number;
+      from: number | null;
+      last_page: number;
+      /**
+       * Generated paginator links.
+       */
+      links: Array<{
+        url: string | null;
+        label: string;
+        active: boolean;
+      }>;
+      /**
+       * Base path for paginator generated URLs.
+       */
+      path: string | null;
+      /**
+       * Number of items shown per page.
+       */
+      per_page: number;
+      /**
+       * Number of the last item in the slice.
+       */
+      to: number | null;
+      /**
+       * Total number of items being paginated.
+       */
+      total: number;
+    };
+  };
+};
+
+export type WorkOrdersIndexResponse = WorkOrdersIndexResponses[keyof WorkOrdersIndexResponses];
+
+export type WorkOrdersStoreData = {
+  body: StoreWorkOrderRequest;
+  path?: never;
+  query?: never;
+  url: '/work-orders';
+};
+
+export type WorkOrdersStoreErrors = {
+  /**
+   * Unauthenticated
+   */
+  401: {
+    /**
+     * Error overview.
+     */
+    message: string;
+  };
+  /**
+   * Authorization error
+   */
+  403: {
+    /**
+     * Error overview.
+     */
+    message: string;
+  };
+  /**
+   * Validation error
+   */
+  422: {
+    /**
+     * Errors overview.
+     */
+    message: string;
+    /**
+     * A detailed description of each field that failed validation.
+     */
+    errors: {
+      [key: string]: Array<string>;
+    };
+  };
+};
+
+export type WorkOrdersStoreError = WorkOrdersStoreErrors[keyof WorkOrdersStoreErrors];
+
+export type WorkOrdersStoreResponses = {
+  200: string;
+};
+
+export type WorkOrdersStoreResponse = WorkOrdersStoreResponses[keyof WorkOrdersStoreResponses];
+
+export type WorkOrdersDestroyData = {
+  body?: never;
+  path: {
+    id: number;
+  };
+  query?: never;
+  url: '/work-orders/{id}';
+};
+
+export type WorkOrdersDestroyErrors = {
+  /**
+   * Unauthenticated
+   */
+  401: {
+    /**
+     * Error overview.
+     */
+    message: string;
+  };
+};
+
+export type WorkOrdersDestroyError = WorkOrdersDestroyErrors[keyof WorkOrdersDestroyErrors];
+
+export type WorkOrdersDestroyResponses = {
+  200: string;
+};
+
+export type WorkOrdersDestroyResponse = WorkOrdersDestroyResponses[keyof WorkOrdersDestroyResponses];
+
+export type WorkOrdersShowData = {
+  body?: never;
+  path: {
+    id: number;
+  };
+  query?: never;
+  url: '/work-orders/{id}';
+};
+
+export type WorkOrdersShowErrors = {
+  /**
+   * Unauthenticated
+   */
+  401: {
+    /**
+     * Error overview.
+     */
+    message: string;
+  };
+  /**
+   * Not found
+   */
+  404: {
+    /**
+     * Error overview.
+     */
+    message: string;
+  };
+};
+
+export type WorkOrdersShowError = WorkOrdersShowErrors[keyof WorkOrdersShowErrors];
+
+export type WorkOrdersShowResponses = {
+  /**
+   * `WorkOrderResource`
+   */
+  200: {
+    data: WorkOrderResource;
+  };
+};
+
+export type WorkOrdersShowResponse = WorkOrdersShowResponses[keyof WorkOrdersShowResponses];
+
+export type WorkOrdersUpdateData = {
+  body?: UpdateWorkOrderRequest;
+  path: {
+    id: number;
+  };
+  query?: never;
+  url: '/work-orders/{id}';
+};
+
+export type WorkOrdersUpdateErrors = {
+  /**
+   * Unauthenticated
+   */
+  401: {
+    /**
+     * Error overview.
+     */
+    message: string;
+  };
+  /**
+   * Authorization error
+   */
+  403: {
+    /**
+     * Error overview.
+     */
+    message: string;
+  };
+  /**
+   * Validation error
+   */
+  422: {
+    /**
+     * Errors overview.
+     */
+    message: string;
+    /**
+     * A detailed description of each field that failed validation.
+     */
+    errors: {
+      [key: string]: Array<string>;
+    };
+  };
+};
+
+export type WorkOrdersUpdateError = WorkOrdersUpdateErrors[keyof WorkOrdersUpdateErrors];
+
+export type WorkOrdersUpdateResponses = {
+  200: string;
+};
+
+export type WorkOrdersUpdateResponse = WorkOrdersUpdateResponses[keyof WorkOrdersUpdateResponses];
 
 export type WorkOrderTaskEventStoreData = {
   body?: never;

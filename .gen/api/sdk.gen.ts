@@ -591,12 +591,6 @@ import type {
   GeneralLocationIndex0Data,
   GeneralLocationIndex0Errors,
   GeneralLocationIndex0Responses,
-  GeneralLocationShowByAllLocation02Data,
-  GeneralLocationShowByAllLocation02Errors,
-  GeneralLocationShowByAllLocation02Responses,
-  GeneralLocationShowByAllLocation0Data,
-  GeneralLocationShowByAllLocation0Errors,
-  GeneralLocationShowByAllLocation0Responses,
   GetMailableData,
   GetMailableErrors,
   GetMailableResponses,
@@ -627,6 +621,9 @@ import type {
   LocationIndexData,
   LocationIndexErrors,
   LocationIndexResponses,
+  LocationShowByAllLocationData,
+  LocationShowByAllLocationErrors,
+  LocationShowByAllLocationResponses,
   LocationShowByIdCompanyData,
   LocationShowByIdCompanyErrors,
   LocationShowByIdCompanyResponses,
@@ -1113,6 +1110,21 @@ import type {
   WarehouseWarehouseWithUserData,
   WarehouseWarehouseWithUserErrors,
   WarehouseWarehouseWithUserResponses,
+  WorkOrdersDestroyData,
+  WorkOrdersDestroyErrors,
+  WorkOrdersDestroyResponses,
+  WorkOrdersIndexData,
+  WorkOrdersIndexErrors,
+  WorkOrdersIndexResponses,
+  WorkOrdersShowData,
+  WorkOrdersShowErrors,
+  WorkOrdersShowResponses,
+  WorkOrdersStoreData,
+  WorkOrdersStoreErrors,
+  WorkOrdersStoreResponses,
+  WorkOrdersUpdateData,
+  WorkOrdersUpdateErrors,
+  WorkOrdersUpdateResponses,
   WorkOrderTaskEventShowEventsByWorkOrderTaskData,
   WorkOrderTaskEventShowEventsByWorkOrderTaskErrors,
   WorkOrderTaskEventShowEventsByWorkOrderTaskResponses,
@@ -2051,6 +2063,18 @@ export const user = <ThrowOnError extends boolean = false>(options?: Options<Use
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/user',
     ...options,
+  });
+
+export const userRegister = <ThrowOnError extends boolean = false>(options: Options<UserRegisterData, ThrowOnError>) =>
+  (options.client ?? client).post<UserRegisterResponses, UserRegisterErrors, ThrowOnError>({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/register',
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    },
   });
 
 export const logout = <ThrowOnError extends boolean = false>(options?: Options<LogoutData, ThrowOnError>) =>
@@ -4062,6 +4086,16 @@ export const jobTitleUpdate = <ThrowOnError extends boolean = false>(
     ...options,
   });
 
+export const locationShowByAllLocation = <ThrowOnError extends boolean = false>(
+  options?: Options<LocationShowByAllLocationData, ThrowOnError>,
+) =>
+  (options?.client ?? client).get<LocationShowByAllLocationResponses, LocationShowByAllLocationErrors, ThrowOnError>({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/locations-by-companies',
+    ...options,
+  });
+
 /**
  * Display a listing of the resource
  */
@@ -4104,34 +4138,6 @@ export const locationDestroy = <ThrowOnError extends boolean = false>(
     responseType: 'json',
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/location/{company}',
-    ...options,
-  });
-
-export const generalLocationShowByAllLocation0 = <ThrowOnError extends boolean = false>(
-  options?: Options<GeneralLocationShowByAllLocation0Data, ThrowOnError>,
-) =>
-  (options?.client ?? client).get<
-    GeneralLocationShowByAllLocation0Responses,
-    GeneralLocationShowByAllLocation0Errors,
-    ThrowOnError
-  >({
-    responseType: 'json',
-    security: [{ scheme: 'bearer', type: 'http' }],
-    url: '/locations',
-    ...options,
-  });
-
-export const generalLocationShowByAllLocation02 = <ThrowOnError extends boolean = false>(
-  options?: Options<GeneralLocationShowByAllLocation02Data, ThrowOnError>,
-) =>
-  (options?.client ?? client).get<
-    GeneralLocationShowByAllLocation02Responses,
-    GeneralLocationShowByAllLocation02Errors,
-    ThrowOnError
-  >({
-    responseType: 'json',
-    security: [{ scheme: 'bearer', type: 'http' }],
-    url: '/locations-by-companies',
     ...options,
   });
 
@@ -6153,18 +6159,6 @@ export const userUpdateUser = <ThrowOnError extends boolean = false>(
     },
   });
 
-export const userRegister = <ThrowOnError extends boolean = false>(options?: Options<UserRegisterData, ThrowOnError>) =>
-  (options?.client ?? client).post<UserRegisterResponses, UserRegisterErrors, ThrowOnError>({
-    responseType: 'json',
-    security: [{ scheme: 'bearer', type: 'http' }],
-    url: '/register',
-    ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      ...options?.headers,
-    },
-  });
-
 export const usersIndex = <ThrowOnError extends boolean = false>(options?: Options<UsersIndexData, ThrowOnError>) =>
   (options?.client ?? client).get<UsersIndexResponses, UsersIndexErrors, ThrowOnError>({
     responseType: 'json',
@@ -6309,6 +6303,79 @@ export const warehouseWarehouseWithUser = <ThrowOnError extends boolean = false>
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/{company}/{location}/warehouses-by-location',
     ...options,
+  });
+
+/**
+ * Display a listing of the resource
+ */
+export const workOrdersIndex = <ThrowOnError extends boolean = false>(
+  options?: Options<WorkOrdersIndexData, ThrowOnError>,
+) =>
+  (options?.client ?? client).get<WorkOrdersIndexResponses, WorkOrdersIndexErrors, ThrowOnError>({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/work-orders',
+    ...options,
+  });
+
+/**
+ * Store a newly created resource in storage
+ */
+export const workOrdersStore = <ThrowOnError extends boolean = false>(
+  options: Options<WorkOrdersStoreData, ThrowOnError>,
+) =>
+  (options.client ?? client).post<WorkOrdersStoreResponses, WorkOrdersStoreErrors, ThrowOnError>({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/work-orders',
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    },
+  });
+
+/**
+ * Remove the specified resource from storage
+ */
+export const workOrdersDestroy = <ThrowOnError extends boolean = false>(
+  options: Options<WorkOrdersDestroyData, ThrowOnError>,
+) =>
+  (options.client ?? client).delete<WorkOrdersDestroyResponses, WorkOrdersDestroyErrors, ThrowOnError>({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/work-orders/{id}',
+    ...options,
+  });
+
+/**
+ * Display the specified resource
+ */
+export const workOrdersShow = <ThrowOnError extends boolean = false>(
+  options: Options<WorkOrdersShowData, ThrowOnError>,
+) =>
+  (options.client ?? client).get<WorkOrdersShowResponses, WorkOrdersShowErrors, ThrowOnError>({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/work-orders/{id}',
+    ...options,
+  });
+
+/**
+ * Update the specified resource in storage
+ */
+export const workOrdersUpdate = <ThrowOnError extends boolean = false>(
+  options: Options<WorkOrdersUpdateData, ThrowOnError>,
+) =>
+  (options.client ?? client).put<WorkOrdersUpdateResponses, WorkOrdersUpdateErrors, ThrowOnError>({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/work-orders/{id}',
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    },
   });
 
 /**

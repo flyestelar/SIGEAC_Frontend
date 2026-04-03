@@ -89,7 +89,7 @@ const ControlsList = ({ controls, selectedControls, onToggleTaskCard, onToggleAl
             const selectedControl = selectedControls.get(control.id);
             const selectedTcIds = selectedControl?.taskCardIds;
             const selectedCount = selectedTcIds?.size ?? 0;
-            const totalTasks = control.task_cards.length;
+            const totalTasks = control.task_cards?.length;
             const allSelected = totalTasks > 0 && selectedCount === totalTasks;
             const someSelected = selectedCount > 0 && !allSelected;
 

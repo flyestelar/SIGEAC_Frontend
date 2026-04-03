@@ -1,32 +1,17 @@
 "use client"
 
 import { ColumnDef } from "@tanstack/react-table"
-import { ClipboardCheck, MoreHorizontal, SquarePen, Trash2 } from "lucide-react"
 
 import { DataTableColumnHeader } from "@/components/tables/DataTableHeader"
-import { Button } from "@/components/ui/button"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger
-} from "@/components/ui/dropdown-menu"
 
+import WorkOrderDropdownActions from "@/components/dropdowns/mantenimiento/ordenes_trabajo/WorkOrderDropdownActionts"
 import { Checkbox } from "@/components/ui/checkbox"
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip"
-import { Batch, WorkOrder } from "@/types"
-import Link from "next/link"
+import { WorkOrderResource } from "@api/types"
 import { format } from "date-fns"
 import { es } from "date-fns/locale"
-import WorkOrderDropdownActions from "@/components/dropdowns/mantenimiento/ordenes_trabajo/WorkOrderDropdownActionts"
+import Link from "next/link"
 
-export const columns: ColumnDef<WorkOrder>[] = [
+export const columns: ColumnDef<WorkOrderResource>[] = [
   {
     id: "select",
     header: ({ table }) => (
@@ -67,7 +52,7 @@ export const columns: ColumnDef<WorkOrder>[] = [
     ),
     cell: ({ row }) => {
       return (
-        <Link href={`/estelar/planificacion/aeronaves/${row.original.aircraft.acronym}`} className="font-medium flex justify-center hover:scale-105 hover:text-blue-600 transition-all ease-in cursor-pointer duration-150">{row.original.aircraft.acronym}</Link>
+        <Link href={`/estelar/planificacion/aeronaves/${row.original.aircraft?.acronym}`} className="font-medium flex justify-center hover:scale-105 hover:text-blue-600 transition-all ease-in cursor-pointer duration-150">{row.original.aircraft.acronym}</Link>
       )
     }
   },
