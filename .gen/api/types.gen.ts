@@ -313,15 +313,15 @@ export type MaintenanceControlExecutionResource = {
   maintenance_control_id: number;
   aircraft_id: number;
   executed_at: string;
-  completed_at: string;
+  completed_at: string | null;
   current_fh: number;
   current_fc: number;
-  status: string;
-  notes: string;
+  status: TaskExecutionStatus;
+  notes: string | null;
   maintenance_control?: MaintenanceControlResource;
   aircraft?: AircraftResource;
-  created_at: string;
-  updated_at: string;
+  created_at: string | null;
+  updated_at: string | null;
 };
 
 /**
@@ -329,9 +329,9 @@ export type MaintenanceControlExecutionResource = {
  */
 export type MaintenanceControlResource = {
   id: number;
-  manual_reference: string;
+  manual_reference: string | null;
   title: string;
-  description: string;
+  description: string | null;
   interval_fc: number | null;
   interval_fh: number | null;
   interval_days: number | null;
@@ -617,6 +617,11 @@ export type TaskCardResource = {
   manual_reference: string;
   order?: string;
 };
+
+/**
+ * TaskExecutionStatus
+ */
+export type TaskExecutionStatus = 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED' | 'FAILED';
 
 /**
  * TaskMasterResource

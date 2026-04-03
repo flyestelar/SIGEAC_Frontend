@@ -2028,6 +2028,7 @@ export type {
   TaskCardsUpdateErrors,
   TaskCardsUpdateResponse,
   TaskCardsUpdateResponses,
+  TaskExecutionStatus,
   TaskMasterResource,
   TasksDestroyData,
   TasksDestroyError,
