@@ -102,9 +102,9 @@ export type AircraftTypeResource = {
   family: string;
   series: string;
   full_name: string;
-  iata_code: string;
-  created_at: string;
-  updated_at: string;
+  iata_code: string | null;
+  created_at: string | null;
+  updated_at: string | null;
   image: 'https://cdn.zbordirect.com/images/airlines/ES.webp';
 };
 
@@ -8688,18 +8688,15 @@ export type MaintenanceControlsDetailsResponse =
   MaintenanceControlsDetailsResponses[keyof MaintenanceControlsDetailsResponses];
 
 export type MaintenanceControlsExecutionsData = {
-  body?: {
+  body?: never;
+  path?: never;
+  query?: {
     maintenance_control_id?: number;
     aircraft_id?: number;
+    status?: string;
     per_page?: number;
   };
-  path: {
-    id: string;
-  };
-  query?: {
-    status?: string;
-  };
-  url: '/maintenance-controls/{id}/executions';
+  url: '/maintenance-controls/executions';
 };
 
 export type MaintenanceControlsExecutionsErrors = {

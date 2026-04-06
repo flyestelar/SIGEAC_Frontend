@@ -7058,29 +7058,27 @@ export const maintenanceControlsDetailsOptions = (options: Options<MaintenanceCo
     queryKey: maintenanceControlsDetailsQueryKey(options),
   });
 
-export const maintenanceControlsExecutionsMutation = (
-  options?: Partial<Options<MaintenanceControlsExecutionsData>>,
-): UseMutationOptions<
-  MaintenanceControlsExecutionsResponse,
-  AxiosError<MaintenanceControlsExecutionsError>,
-  Options<MaintenanceControlsExecutionsData>
-> => {
-  const mutationOptions: UseMutationOptions<
+export const maintenanceControlsExecutionsQueryKey = (options?: Options<MaintenanceControlsExecutionsData>) =>
+  createQueryKey('maintenanceControlsExecutions', options);
+
+export const maintenanceControlsExecutionsOptions = (options?: Options<MaintenanceControlsExecutionsData>) =>
+  queryOptions<
     MaintenanceControlsExecutionsResponse,
     AxiosError<MaintenanceControlsExecutionsError>,
-    Options<MaintenanceControlsExecutionsData>
-  > = {
-    mutationFn: async (fnOptions) => {
+    MaintenanceControlsExecutionsResponse,
+    ReturnType<typeof maintenanceControlsExecutionsQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
       const { data } = await maintenanceControlsExecutions({
         ...options,
-        ...fnOptions,
+        ...queryKey[0],
+        signal,
         throwOnError: true,
       });
       return data;
     },
-  };
-  return mutationOptions;
-};
+    queryKey: maintenanceControlsExecutionsQueryKey(options),
+  });
 
 export const maintenanceControlsAlertsQueryKey = (options?: Options<MaintenanceControlsAlertsData>) =>
   createQueryKey('maintenanceControlsAlerts', options);

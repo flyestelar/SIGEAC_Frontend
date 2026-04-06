@@ -4318,21 +4318,17 @@ export const maintenanceControlsDetails = <ThrowOnError extends boolean = false>
   });
 
 export const maintenanceControlsExecutions = <ThrowOnError extends boolean = false>(
-  options: Options<MaintenanceControlsExecutionsData, ThrowOnError>,
+  options?: Options<MaintenanceControlsExecutionsData, ThrowOnError>,
 ) =>
-  (options.client ?? client).post<
+  (options?.client ?? client).get<
     MaintenanceControlsExecutionsResponses,
     MaintenanceControlsExecutionsErrors,
     ThrowOnError
   >({
     responseType: 'json',
     security: [{ scheme: 'bearer', type: 'http' }],
-    url: '/maintenance-controls/{id}/executions',
+    url: '/maintenance-controls/executions',
     ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      ...options.headers,
-    },
   });
 
 /**
