@@ -8253,8 +8253,8 @@ export type MaintenanceControlsExecutionsIndexData = {
     maintenance_control: string;
   };
   query?: {
-    maintenance_control_id?: string;
-    aircraft_id?: string;
+    maintenance_control_id?: number;
+    aircraft_id?: number;
     status?: string;
     per_page?: number;
   };
