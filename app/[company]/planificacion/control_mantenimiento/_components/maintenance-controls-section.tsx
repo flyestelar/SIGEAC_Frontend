@@ -1,4 +1,5 @@
 import { ControlGrid } from './control-grid';
+import { EstimationsPanel } from './estimations-panel';
 import { ExecutionsTable } from './executions-table';
 import { TasksTable } from './tasks-table';
 import { useQuery } from '@tanstack/react-query';
@@ -58,10 +59,14 @@ export function MaintenanceControlsSection({
             <Tabs defaultValue="tasks" className="w-full">
               <TabsList>
                 <TabsTrigger value="tasks">Tasks</TabsTrigger>
+                <TabsTrigger value="estimaciones">Estimaciones</TabsTrigger>
                 <TabsTrigger value="ejecuciones">Ejecuciones</TabsTrigger>
               </TabsList>
               <TabsContent value="tasks">
                 <TasksTable tasks={selectedControl.task_cards} controlName={selectedControl.title} />
+              </TabsContent>
+              <TabsContent value="estimaciones">
+                <EstimationsPanel control={selectedControl} aircraft={selectedAircraft} />
               </TabsContent>
               <TabsContent value="ejecuciones">
                 <ExecutionsTable
