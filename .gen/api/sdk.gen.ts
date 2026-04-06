@@ -651,9 +651,12 @@ import type {
   MaintenanceControlsDetailsData,
   MaintenanceControlsDetailsErrors,
   MaintenanceControlsDetailsResponses,
+  MaintenanceControlsExecutionsData,
+  MaintenanceControlsExecutionsErrors,
   MaintenanceControlsExecutionsIndexData,
   MaintenanceControlsExecutionsIndexErrors,
   MaintenanceControlsExecutionsIndexResponses,
+  MaintenanceControlsExecutionsResponses,
   MaintenanceControlsExecutionsShowData,
   MaintenanceControlsExecutionsShowErrors,
   MaintenanceControlsExecutionsShowResponses,
@@ -4312,6 +4315,24 @@ export const maintenanceControlsDetails = <ThrowOnError extends boolean = false>
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/maintenance-controls/{id}/details',
     ...options,
+  });
+
+export const maintenanceControlsExecutions = <ThrowOnError extends boolean = false>(
+  options: Options<MaintenanceControlsExecutionsData, ThrowOnError>,
+) =>
+  (options.client ?? client).post<
+    MaintenanceControlsExecutionsResponses,
+    MaintenanceControlsExecutionsErrors,
+    ThrowOnError
+  >({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/maintenance-controls/{id}/executions',
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    },
   });
 
 /**

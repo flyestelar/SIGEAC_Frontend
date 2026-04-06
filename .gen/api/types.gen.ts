@@ -323,6 +323,11 @@ export type JobTitle = Array<string>;
 export type Location = Array<string>;
 
 /**
+ * MaintenanceAlertStatus
+ */
+export type MaintenanceAlertStatus = 'OVERDUE' | 'WARNING' | 'OK';
+
+/**
  * MaintenanceControlExecutionResource
  */
 export type MaintenanceControlExecutionResource = {
@@ -618,7 +623,7 @@ export type TaskCardResource = {
 /**
  * TaskExecutionStatus
  */
-export type TaskExecutionStatus = 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED' | 'FAILED';
+export type TaskExecutionStatus = 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED';
 
 /**
  * TaskMasterResource
@@ -8682,6 +8687,83 @@ export type MaintenanceControlsDetailsResponses = {
 export type MaintenanceControlsDetailsResponse =
   MaintenanceControlsDetailsResponses[keyof MaintenanceControlsDetailsResponses];
 
+export type MaintenanceControlsExecutionsData = {
+  body?: {
+    maintenance_control_id?: number;
+    aircraft_id?: number;
+    per_page?: number;
+  };
+  path: {
+    id: string;
+  };
+  query?: {
+    status?: string;
+  };
+  url: '/maintenance-controls/{id}/executions';
+};
+
+export type MaintenanceControlsExecutionsErrors = {
+  /**
+   * Unauthenticated
+   */
+  401: {
+    /**
+     * Error overview.
+     */
+    message: string;
+  };
+};
+
+export type MaintenanceControlsExecutionsError =
+  MaintenanceControlsExecutionsErrors[keyof MaintenanceControlsExecutionsErrors];
+
+export type MaintenanceControlsExecutionsResponses = {
+  /**
+   * Paginated set of `MaintenanceControlExecutionResource`
+   */
+  200: {
+    data: Array<MaintenanceControlExecutionResource>;
+    links: {
+      first: string | null;
+      last: string | null;
+      prev: string | null;
+      next: string | null;
+    };
+    meta: {
+      current_page: number;
+      from: number | null;
+      last_page: number;
+      /**
+       * Generated paginator links.
+       */
+      links: Array<{
+        url: string | null;
+        label: string;
+        active: boolean;
+      }>;
+      /**
+       * Base path for paginator generated URLs.
+       */
+      path: string | null;
+      /**
+       * Number of items shown per page.
+       */
+      per_page: number;
+      /**
+       * Number of the last item in the slice.
+       */
+      to: number | null;
+      /**
+       * Total number of items being paginated.
+       */
+      total: number;
+    };
+  };
+};
+
+export type MaintenanceControlsExecutionsResponse =
+  MaintenanceControlsExecutionsResponses[keyof MaintenanceControlsExecutionsResponses];
+
 export type MaintenanceControlsAlertsData = {
   body?: never;
   path?: never;
@@ -8726,7 +8808,7 @@ export type MaintenanceControlsAlertsResponses = {
              * consumed
              */
             consumed: number;
-            status: 'OK' | 'WARNING' | 'OVERDUE';
+            status: string;
           }
         | {
             type: 'FC';
@@ -8742,26 +8824,17 @@ export type MaintenanceControlsAlertsResponses = {
              * consumed
              */
             consumed: number;
-            status: 'OK' | 'WARNING' | 'OVERDUE';
+            status: string;
           }
         | {
             type: 'DAYS';
-            /**
-             * remaining
-             */
             remaining: number;
-            /**
-             * percentage
-             */
             percentage: number;
-            /**
-             * consumed
-             */
             consumed: number;
-            status: 'OK' | 'WARNING' | 'OVERDUE';
+            status: MaintenanceAlertStatus;
           }
       >;
-      status: 'OVERDUE' | 'WARNING' | 'OK';
+      status: unknown | string;
     }>;
     total: number;
   };

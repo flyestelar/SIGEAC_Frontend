@@ -221,6 +221,7 @@ import {
   maintenanceControlsAlerts,
   maintenanceControlsDestroy,
   maintenanceControlsDetails,
+  maintenanceControlsExecutions,
   maintenanceControlsExecutionsIndex,
   maintenanceControlsExecutionsShow,
   maintenanceControlsExecutionsStore,
@@ -1000,9 +1001,12 @@ import type {
   MaintenanceControlsDetailsData,
   MaintenanceControlsDetailsError,
   MaintenanceControlsDetailsResponse,
+  MaintenanceControlsExecutionsData,
+  MaintenanceControlsExecutionsError,
   MaintenanceControlsExecutionsIndexData,
   MaintenanceControlsExecutionsIndexError,
   MaintenanceControlsExecutionsIndexResponse,
+  MaintenanceControlsExecutionsResponse,
   MaintenanceControlsExecutionsShowData,
   MaintenanceControlsExecutionsShowError,
   MaintenanceControlsExecutionsShowResponse,
@@ -7053,6 +7057,30 @@ export const maintenanceControlsDetailsOptions = (options: Options<MaintenanceCo
     },
     queryKey: maintenanceControlsDetailsQueryKey(options),
   });
+
+export const maintenanceControlsExecutionsMutation = (
+  options?: Partial<Options<MaintenanceControlsExecutionsData>>,
+): UseMutationOptions<
+  MaintenanceControlsExecutionsResponse,
+  AxiosError<MaintenanceControlsExecutionsError>,
+  Options<MaintenanceControlsExecutionsData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    MaintenanceControlsExecutionsResponse,
+    AxiosError<MaintenanceControlsExecutionsError>,
+    Options<MaintenanceControlsExecutionsData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await maintenanceControlsExecutions({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
 
 export const maintenanceControlsAlertsQueryKey = (options?: Options<MaintenanceControlsAlertsData>) =>
   createQueryKey('maintenanceControlsAlerts', options);
