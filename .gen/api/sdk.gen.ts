@@ -642,6 +642,9 @@ import type {
   LogoutData,
   LogoutErrors,
   LogoutResponses,
+  MaintenanceControlExecutionsIndexData,
+  MaintenanceControlExecutionsIndexErrors,
+  MaintenanceControlExecutionsIndexResponses,
   MaintenanceControlsAlertsData,
   MaintenanceControlsAlertsErrors,
   MaintenanceControlsAlertsResponses,
@@ -651,18 +654,6 @@ import type {
   MaintenanceControlsDetailsData,
   MaintenanceControlsDetailsErrors,
   MaintenanceControlsDetailsResponses,
-  MaintenanceControlsExecutionsData,
-  MaintenanceControlsExecutionsErrors,
-  MaintenanceControlsExecutionsIndexData,
-  MaintenanceControlsExecutionsIndexErrors,
-  MaintenanceControlsExecutionsIndexResponses,
-  MaintenanceControlsExecutionsResponses,
-  MaintenanceControlsExecutionsShowData,
-  MaintenanceControlsExecutionsShowErrors,
-  MaintenanceControlsExecutionsShowResponses,
-  MaintenanceControlsExecutionsStoreData,
-  MaintenanceControlsExecutionsStoreErrors,
-  MaintenanceControlsExecutionsStoreResponses,
   MaintenanceControlsIndexData,
   MaintenanceControlsIndexErrors,
   MaintenanceControlsIndexResponses,
@@ -4175,55 +4166,17 @@ export const generalLocationIndex0 = <ThrowOnError extends boolean = false>(
 /**
  * Display a listing of the resource
  */
-export const maintenanceControlsExecutionsIndex = <ThrowOnError extends boolean = false>(
-  options: Options<MaintenanceControlsExecutionsIndexData, ThrowOnError>,
+export const maintenanceControlExecutionsIndex = <ThrowOnError extends boolean = false>(
+  options?: Options<MaintenanceControlExecutionsIndexData, ThrowOnError>,
 ) =>
-  (options.client ?? client).get<
-    MaintenanceControlsExecutionsIndexResponses,
-    MaintenanceControlsExecutionsIndexErrors,
+  (options?.client ?? client).get<
+    MaintenanceControlExecutionsIndexResponses,
+    MaintenanceControlExecutionsIndexErrors,
     ThrowOnError
   >({
     responseType: 'json',
     security: [{ scheme: 'bearer', type: 'http' }],
-    url: '/maintenance-controls/{maintenance_control}/executions',
-    ...options,
-  });
-
-/**
- * Store a newly created resource in storage
- */
-export const maintenanceControlsExecutionsStore = <ThrowOnError extends boolean = false>(
-  options: Options<MaintenanceControlsExecutionsStoreData, ThrowOnError>,
-) =>
-  (options.client ?? client).post<
-    MaintenanceControlsExecutionsStoreResponses,
-    MaintenanceControlsExecutionsStoreErrors,
-    ThrowOnError
-  >({
-    responseType: 'json',
-    security: [{ scheme: 'bearer', type: 'http' }],
-    url: '/maintenance-controls/{maintenance_control}/executions',
-    ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      ...options.headers,
-    },
-  });
-
-/**
- * Display the specified resource
- */
-export const maintenanceControlsExecutionsShow = <ThrowOnError extends boolean = false>(
-  options: Options<MaintenanceControlsExecutionsShowData, ThrowOnError>,
-) =>
-  (options.client ?? client).get<
-    MaintenanceControlsExecutionsShowResponses,
-    MaintenanceControlsExecutionsShowErrors,
-    ThrowOnError
-  >({
-    responseType: 'json',
-    security: [{ scheme: 'bearer', type: 'http' }],
-    url: '/maintenance-controls/{maintenance_control}/executions/{execution}',
+    url: '/maintenance-controls/executions',
     ...options,
   });
 
@@ -4314,20 +4267,6 @@ export const maintenanceControlsDetails = <ThrowOnError extends boolean = false>
     responseType: 'json',
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/maintenance-controls/{id}/details',
-    ...options,
-  });
-
-export const maintenanceControlsExecutions = <ThrowOnError extends boolean = false>(
-  options?: Options<MaintenanceControlsExecutionsData, ThrowOnError>,
-) =>
-  (options?.client ?? client).get<
-    MaintenanceControlsExecutionsResponses,
-    MaintenanceControlsExecutionsErrors,
-    ThrowOnError
-  >({
-    responseType: 'json',
-    security: [{ scheme: 'bearer', type: 'http' }],
-    url: '/maintenance-controls/executions',
     ...options,
   });
 

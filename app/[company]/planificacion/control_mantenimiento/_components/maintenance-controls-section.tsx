@@ -65,7 +65,11 @@ export function MaintenanceControlsSection({
                 <TasksTable tasks={selectedControl.task_cards} controlName={selectedControl.title} />
               </TabsContent>
               <TabsContent value="ejecuciones">
-                <ExecutionsTable controlId={selectedControl.id} controlName={selectedControl.title} />
+                <ExecutionsTable
+                  controlId={selectedControl.id}
+                  controlName={selectedControl.title}
+                  selectedAircraftId={selectedAircraftId}
+                />
               </TabsContent>
             </Tabs>
           ) : selectedAircraft ? (

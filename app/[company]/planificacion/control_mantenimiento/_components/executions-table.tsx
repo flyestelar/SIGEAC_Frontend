@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import {
   ColumnDef,
@@ -12,13 +11,24 @@ import {
   SortingState,
   useReactTable,
 } from '@tanstack/react-table';
-import { ArrowUpDown, ChevronFirst, ChevronLast, ChevronLeft, ChevronRight, ListRestart, Search, X, Activity } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
+import {
+  Activity,
+  ArrowUpDown,
+  ChevronFirst,
+  ChevronLast,
+  ChevronLeft,
+  ChevronRight,
+  ListRestart,
+  Search,
+  X,
+} from 'lucide-react';
+import { useState } from 'react';
 
-import { maintenanceControlsExecutionsIndexOptions } from '@api/queries';
-import type { MaintenanceControlExecutionResource, TaskExecutionStatus } from '@api/types';
+import type { MaintenanceAlertStatus, MaintenanceControlExecutionResource, TaskExecutionStatus } from '@api/types';
 
+import { DataTableViewOptions } from '@/components/tables/DataTableViewOptions';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -27,7 +37,7 @@ import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { DataTableViewOptions } from '@/components/tables/DataTableViewOptions';
+import { maintenanceControlExecutionsIndexOptions } from '@api/queries';
 
 // ─── Status config ───────────────────────────────────────────
 
@@ -122,9 +132,7 @@ const columns: ColumnDef<MaintenanceControlExecutionResource>[] = [
   },
   {
     accessorKey: 'notes',
-    header: () => (
-      <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Notas</span>
-    ),
+    header: () => <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Notas</span>,
     cell: ({ row }) =>
       row.original.notes ? (
         <span className="line-clamp-2 max-w-[200px] text-xs text-foreground/80">{row.original.notes}</span>
@@ -140,24 +148,26 @@ const columns: ColumnDef<MaintenanceControlExecutionResource>[] = [
 interface ExecutionsTableProps {
   controlId: number;
   controlName: string;
+  selectedAircraftId: number | null;
 }
 
-export function ExecutionsTable({ controlId, controlName }: ExecutionsTableProps) {
+export function ExecutionsTable({ controlId, controlName, selectedAircraftId }: ExecutionsTableProps) {
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(10);
-  const [statusFilter, setStatusFilter] = useState<string>('ALL');
+  const [statusFilter, setStatusFilter] = useState<MaintenanceAlertStatus | 'ALL'>('ALL');
   const [sorting, setSorting] = useState<SortingState>([]);
   const [globalFilter, setGlobalFilter] = useState('');
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
 
   const { data: response, isLoading } = useQuery({
-    ...maintenanceControlsExecutionsIndexOptions({
-      path: { maintenance_control: String(controlId) },
+    ...maintenanceControlExecutionsIndexOptions({
       query: {
+        maintenance_control_id: controlId,
+        aircraft_id: selectedAircraftId ?? undefined,
         per_page: perPage,
         ...(statusFilter !== 'ALL' && { status: statusFilter }),
-        page: page as any,
-      } as any,
+        page: page,
+      },
     }),
   });
 
@@ -189,11 +199,7 @@ export function ExecutionsTable({ controlId, controlName }: ExecutionsTableProps
     setPage(1);
   };
 
-  if (isLoading) {
-    return <ExecutionsTableSkeleton />;
-  }
-
-  if (!executions.length && statusFilter === 'ALL' && !globalFilter) {
+  if (!isLoading && !executions.length && statusFilter === 'ALL' && !globalFilter) {
     return (
       <Card className="border-border/60 bg-card">
         <CardContent className="py-10">
@@ -202,9 +208,7 @@ export function ExecutionsTable({ controlId, controlName }: ExecutionsTableProps
               <Activity className="h-6 w-6 text-muted-foreground/60" />
             </div>
             <p className="mt-3 text-sm font-medium text-muted-foreground">Sin ejecuciones registradas</p>
-            <p className="mt-1 text-xs text-muted-foreground/60">
-              Este control no tiene ejecuciones de mantenimiento
-            </p>
+            <p className="mt-1 text-xs text-muted-foreground/60">Este control no tiene ejecuciones de mantenimiento</p>
           </div>
         </CardContent>
       </Card>
@@ -254,7 +258,7 @@ export function ExecutionsTable({ controlId, controlName }: ExecutionsTableProps
             <Select
               value={statusFilter}
               onValueChange={(value) => {
-                setStatusFilter(value);
+                setStatusFilter(value as MaintenanceAlertStatus | 'ALL');
                 setPage(1);
               }}
             >
@@ -295,7 +299,17 @@ export function ExecutionsTable({ controlId, controlName }: ExecutionsTableProps
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {table.getRowModel().rows?.length ? (
+                {isLoading ? (
+                  Array.from({ length: perPage }).map((_, i) => (
+                    <TableRow key={`loading-row-${i}`} className="border-border/40">
+                      {columns.map((column, index) => (
+                        <TableCell key={`loading-cell-${i}-${column.id ?? index}`} className="align-middle">
+                          <Skeleton className="h-4 w-full max-w-[140px]" />
+                        </TableCell>
+                      ))}
+                    </TableRow>
+                  ))
+                ) : table.getRowModel().rows?.length ? (
                   table.getRowModel().rows.map((row) => (
                     <TableRow key={row.id} className="group border-border/40 hover:bg-muted/30 transition-colors">
                       {row.getVisibleCells().map((cell) => (
@@ -357,7 +371,7 @@ export function ExecutionsTable({ controlId, controlName }: ExecutionsTableProps
                 size="icon"
                 className="hidden h-7 w-7 lg:flex"
                 onClick={() => setPage(1)}
-                disabled={page <= 1}
+                disabled={isLoading || page <= 1}
               >
                 <ChevronFirst className="h-3.5 w-3.5" />
               </Button>
@@ -366,7 +380,7 @@ export function ExecutionsTable({ controlId, controlName }: ExecutionsTableProps
                 size="icon"
                 className="h-7 w-7"
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
-                disabled={page <= 1}
+                disabled={isLoading || page <= 1}
               >
                 <ChevronLeft className="h-3.5 w-3.5" />
               </Button>
@@ -375,7 +389,7 @@ export function ExecutionsTable({ controlId, controlName }: ExecutionsTableProps
                 size="icon"
                 className="h-7 w-7"
                 onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                disabled={page >= totalPages}
+                disabled={isLoading || page >= totalPages}
               >
                 <ChevronRight className="h-3.5 w-3.5" />
               </Button>
@@ -384,48 +398,12 @@ export function ExecutionsTable({ controlId, controlName }: ExecutionsTableProps
                 size="icon"
                 className="hidden h-7 w-7 lg:flex"
                 onClick={() => setPage(totalPages)}
-                disabled={page >= totalPages}
+                disabled={isLoading || page >= totalPages}
               >
                 <ChevronLast className="h-3.5 w-3.5" />
               </Button>
             </div>
           </div>
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
-
-// ─── Skeleton ────────────────────────────────────────────────
-
-function ExecutionsTableSkeleton() {
-  return (
-    <Card className="border-border/60 bg-card">
-      <CardHeader className="pb-3">
-        <Skeleton className="h-5 w-48" />
-        <Skeleton className="mt-2 h-4 w-32" />
-        <div className="mt-3 flex gap-2">
-          <Skeleton className="h-8 w-56" />
-          <Skeleton className="h-8 w-[150px]" />
-        </div>
-      </CardHeader>
-      <CardContent className="px-0 pb-0">
-        <div className="space-y-0 divide-y divide-border/40">
-          {Array.from({ length: 5 }).map((_, i) => (
-            <div key={i} className="flex items-center gap-4 px-4 py-3">
-              <Skeleton className="h-4 w-24" />
-              <Skeleton className="h-4 w-24" />
-              <Skeleton className="h-4 w-16" />
-              <Skeleton className="h-4 w-12" />
-              <Skeleton className="h-4 w-12" />
-              <Skeleton className="h-5 w-20 rounded-full" />
-              <Skeleton className="h-4 w-32" />
-            </div>
-          ))}
-        </div>
-        <div className="flex items-center justify-between border-t border-border/60 px-5 py-3">
-          <Skeleton className="h-4 w-36" />
-          <Skeleton className="h-7 w-48" />
         </div>
       </CardContent>
     </Card>
