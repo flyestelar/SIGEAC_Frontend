@@ -52,7 +52,7 @@ export const columns: ColumnDef<WorkOrderResource>[] = [
     ),
     cell: ({ row }) => {
       return (
-        <Link href={`/estelar/planificacion/aeronaves/${row.original.aircraft?.acronym}`} className="font-medium flex justify-center hover:scale-105 hover:text-blue-600 transition-all ease-in cursor-pointer duration-150">{row.original.aircraft.acronym}</Link>
+        <Link href={`/estelar/planificacion/aeronaves/${row.original.aircraft?.acronym}`} className="font-medium flex justify-center hover:scale-105 hover:text-blue-600 transition-all ease-in cursor-pointer duration-150">{row.original.aircraft?.acronym}</Link>
       )
     }
   },

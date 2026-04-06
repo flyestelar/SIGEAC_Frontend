@@ -5,15 +5,15 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu"
-import { WorkOrder } from "@/types"
 import { Loader2, MoreHorizontal, SearchCheck, Trash2 } from "lucide-react"
 import { useState } from "react"
 import { Button } from "../../../ui/button"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "../../../ui/dialog"
 import Link from "next/link"
 import { useCompanyStore } from "@/stores/CompanyStore"
+import { WorkOrderResource } from "@api/types"
 
-const WorkOrderDropdownActions = ({ work_order }: { work_order: WorkOrder }) => {
+const WorkOrderDropdownActions = ({ work_order }: { work_order: WorkOrderResource }) => {
 
   const [openDelete, setOpenDelete] = useState<boolean>(false)
 
