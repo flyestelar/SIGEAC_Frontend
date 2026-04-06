@@ -1,6 +1,7 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { Settings2 } from 'lucide-react';
 import { ControlGrid } from './control-grid';
+import { ExecutionsTable } from './executions-table';
 import { TasksTable } from './tasks-table';
 import { useQuery } from '@tanstack/react-query';
 import { maintenanceControlsIndexOptions } from '@api/queries';
@@ -64,18 +65,7 @@ export function MaintenanceControlsSection({
                 <TasksTable tasks={selectedControl.task_cards} controlName={selectedControl.title} />
               </TabsContent>
               <TabsContent value="ejecuciones">
-                <Card className="border-border/60 bg-card">
-                  <CardContent className="py-10">
-                    <div className="flex flex-col items-center justify-center text-center">
-                      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted">
-                        <Settings2 className="h-6 w-6 text-muted-foreground/60" />
-                      </div>
-                      <p className="mt-3 text-sm font-medium text-muted-foreground">
-                        Ejecuciones del control
-                      </p>
-                    </div>
-                  </CardContent>
-                </Card>
+                <ExecutionsTable controlId={selectedControl.id} controlName={selectedControl.title} />
               </TabsContent>
             </Tabs>
           ) : selectedAircraft ? (
