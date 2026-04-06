@@ -127,6 +127,12 @@ const MaintenanceControlForm = ({ submitting, onCancel, onSubmit, initialValues 
       const parsedTasks = await processExcelFile(file);
       setPendingImportedTasks(parsedTasks);
       setPendingFileName(file.name);
+
+      const currentTitle = form.getValues('title');
+      if (!currentTitle) {
+        form.setValue('title', file.name.replace(/\.[^/.]+$/, ''));
+      }
+
       setIsPreviewDialogOpen(true);
       form.clearErrors('tasks');
     } catch (error) {
@@ -254,7 +260,12 @@ const MaintenanceControlForm = ({ submitting, onCancel, onSubmit, initialValues 
           control={form.control}
           name="aircraft_ids"
           render={({ field }) => (
-            <MultiAircraftSelect value={field.value} onChange={field.onChange} companySlug={selectedCompany?.slug} />
+            <MultiAircraftSelect
+              buttonRef={field.ref}
+              value={field.value}
+              onChange={field.onChange}
+              label="Aeronaves Aplicables"
+            />
           )}
         />
 
@@ -308,6 +319,7 @@ const MaintenanceControlForm = ({ submitting, onCancel, onSubmit, initialValues 
             <table className="w-full min-w-[720px] text-sm">
               <thead className="bg-muted/50">
                 <tr>
+                  <th className="px-3 py-2 text-center w-10 font-medium">#</th>
                   <th className="px-3 py-2 text-left font-medium">Descripción</th>
                   <th className="px-3 py-2 text-left font-medium">Old Task Card</th>
                   <th className="px-3 py-2 text-left font-medium">New Task Card</th>
@@ -317,7 +329,7 @@ const MaintenanceControlForm = ({ submitting, onCancel, onSubmit, initialValues 
               <tbody>
                 {fields.length === 0 && (
                   <tr>
-                    <td colSpan={4} className="px-3 py-4 text-center text-muted-foreground">
+                    <td colSpan={5} className="px-3 py-4 text-center text-muted-foreground">
                       No hay tareas cargadas. Puede importar desde Excel o agregarlas manualmente.
                     </td>
                   </tr>
@@ -325,6 +337,9 @@ const MaintenanceControlForm = ({ submitting, onCancel, onSubmit, initialValues 
 
                 {fields.map((field, index) => (
                   <tr key={field.id} className="border-t">
+                    <td className="px-3 py-2 text-center text-sm text-muted-foreground align-middle">
+                      {index + 1}
+                    </td>
                     <td className="px-3 py-2 align-top">
                       <Input placeholder="Descripción de la tarea" {...form.register(`tasks.${index}.description`)} />
                       {form.formState.errors.tasks?.[index]?.description?.message && (
@@ -376,6 +391,9 @@ const MaintenanceControlForm = ({ submitting, onCancel, onSubmit, initialValues 
                 ))}
 
                 <tr className="border-t bg-muted/20">
+                  <td className="px-3 py-2 text-center text-sm text-muted-foreground align-middle">
+                    -
+                  </td>
                   <td className="px-3 py-2">
                     <Input
                       placeholder="Descripción"

@@ -6,6 +6,7 @@ import { useQuery } from '@tanstack/react-query';
 import { maintenanceControlsIndexOptions } from '@api/queries';
 import { useMemo } from 'react';
 import { AircraftResource } from '@api/types';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 interface MaintenanceControlsSectionProps {
   selectedControlId: number | null;
@@ -62,7 +63,29 @@ export function MaintenanceControlsSection({
           />
 
           {selectedControl ? (
-            <TasksTable tasks={selectedControl.task_cards} controlName={selectedControl.title} />
+            <Tabs defaultValue="tasks" className="w-full">
+              <TabsList>
+                <TabsTrigger value="tasks">Tasks</TabsTrigger>
+                <TabsTrigger value="ejecuciones">Ejecuciones</TabsTrigger>
+              </TabsList>
+              <TabsContent value="tasks">
+                <TasksTable tasks={selectedControl.task_cards} controlName={selectedControl.title} />
+              </TabsContent>
+              <TabsContent value="ejecuciones">
+                <Card className="border-border/60 bg-card">
+                  <CardContent className="py-10">
+                    <div className="flex flex-col items-center justify-center text-center">
+                      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted">
+                        <Settings2 className="h-6 w-6 text-muted-foreground/60" />
+                      </div>
+                      <p className="mt-3 text-sm font-medium text-muted-foreground">
+                        Ejecuciones del control
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+            </Tabs>
           ) : selectedAircraft ? (
             <Card className="border-border/60 bg-card">
               <CardContent className="py-10">

@@ -6,14 +6,11 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useGetMaintenanceAircrafts } from '@/hooks/planificacion/useGetMaintenanceAircrafts';
 import { useCompanyStore } from '@/stores/CompanyStore';
-import { maintenanceControlsIndexOptions } from '@api/queries';
-import { useQuery } from '@tanstack/react-query';
 import { Plus, Settings2, Siren } from 'lucide-react';
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
 import { AircraftSelector } from './_components/aircraft-selector';
 import { MaintenanceControlsSection } from './_components/maintenance-controls-section';
-import { StatsCards } from './_components/stats-cards';
 
 export default function MaintenanceDashboard() {
   const { selectedCompany } = useCompanyStore();

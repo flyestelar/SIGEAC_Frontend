@@ -7,22 +7,25 @@ import { FormControl, FormItem, FormLabel, FormMessage } from '@/components/ui/f
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useGetMaintenanceAircrafts } from '@/hooks/planificacion/useGetMaintenanceAircrafts';
 import { useDebouncedInput } from '@/lib/useDebounce';
+import { useCompanyStore } from '@/stores/CompanyStore';
 import { AircraftResource } from '@api/types';
 import { Check, Loader2, Plane, Search, X } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { BulkAircraftSelectDialog } from './BulkAircraftSelectDialog';
 
 interface MultiAircraftSelectProps {
+  buttonRef?: React.Ref<HTMLButtonElement>;
   value: number[];
   onChange: (value: number[]) => void;
-  companySlug?: string;
+  label?: React.ReactNode;
 }
 
-export const MultiAircraftSelect = ({ value, onChange, companySlug }: MultiAircraftSelectProps) => {
+export const MultiAircraftSelect = ({ buttonRef, value, onChange, label }: MultiAircraftSelectProps) => {
   const [aircraftSearch, setAircraftSearch] = useState('');
   const [aircraftCommandInput, setAircraftCommandInput] = useDebouncedInput('', setAircraftSearch);
   const [isAircraftPopoverOpen, setIsAircraftPopoverOpen] = useState(false);
 
+  const companySlug = useCompanyStore((state) => state.selectedCompany?.slug);
   const { data: aircraftData, isFetching: isAircraftFetching } = useGetMaintenanceAircrafts(companySlug);
 
   const aircraftOptions = useMemo(() => (aircraftData ?? []) as any as AircraftResource[], [aircraftData]);
@@ -40,7 +43,7 @@ export const MultiAircraftSelect = ({ value, onChange, companySlug }: MultiAircr
     <FormItem className="space-y-3">
       <FormLabel className="flex items-center gap-2">
         <Plane className="h-4 w-4" />
-        Aeronaves Aplicables
+        {label || 'Aeronaves Aplicables'}
         <BulkAircraftSelectDialog
           companySlug={companySlug}
           aircraftOptions={aircraftOptions}
@@ -55,7 +58,7 @@ export const MultiAircraftSelect = ({ value, onChange, companySlug }: MultiAircr
       <FormControl>
         <Popover open={isAircraftPopoverOpen} onOpenChange={setIsAircraftPopoverOpen}>
           <PopoverTrigger asChild>
-            <Button variant="outline" className="flex w-full items-center justify-between">
+            <Button variant="outline" className="flex w-full items-center justify-between" ref={buttonRef}>
               <span>
                 {selectedAircraftList.length
                   ? `${selectedAircraftList.length} aeronave${selectedAircraftList.length > 1 ? 's' : ''} seleccionada${selectedAircraftList.length > 1 ? 's' : ''}`

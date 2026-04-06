@@ -169,11 +169,6 @@ export async function processExcelFile(file: File): Promise<TaskCardData[]> {
       new_task: String(newTaskCell || '').trim(),
     };
 
-    // Validate required fields
-    if (!task.description) {
-      throw new Error(`Fila ${i + 1}: La descripción es obligatoria`);
-    }
-
     tasks.push(task);
   }
 

@@ -51,7 +51,7 @@ export function AircraftSelector({ aircraft, selectedAircraftId, onSelectAircraf
       </CardHeader>
       <CardContent className="p-0">
         <ScrollArea className="h-[calc(100vh-340px)]">
-          <div className="space-y-2 px-3 py-3">
+          <div className="flex flex-col w-full min-w-0 gap-y-2 px-3 py-3">
             {filtered.map((ac) => {
               const isSelected = selectedAircraftId === ac.id;
 
