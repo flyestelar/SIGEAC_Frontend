@@ -472,6 +472,19 @@ export type StoreCourseRequest = {
 };
 
 /**
+ * StoreMaintenanceControlExecutionRequest
+ */
+export type StoreMaintenanceControlExecutionRequest = {
+  maintenance_control_id: number;
+  aircraft_id: number;
+  user_id?: number | null;
+  executed_at?: string | null;
+  completed_at?: string | null;
+  status?: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED';
+  notes?: string | null;
+};
+
+/**
  * StoreMaintenanceControlRequest
  */
 export type StoreMaintenanceControlRequest = {
@@ -540,18 +553,6 @@ export type StoreRequisitionOrderRequest = {
       alt_part_number?: string | null;
     }>;
   }> | null;
-};
-
-/**
- * StoreTaskCardRequest
- */
-export type StoreTaskCardRequest = {
-  old_task?: string | null;
-  new_task?: string | null;
-  description?: string | null;
-  interval_fh?: number | null;
-  interval_fc?: number | null;
-  interval_days?: number | null;
 };
 
 /**
@@ -776,18 +777,6 @@ export type UpdateRequisitionOrderRequest = {
 };
 
 /**
- * UpdateTaskCardRequest
- */
-export type UpdateTaskCardRequest = {
-  old_task?: string | null;
-  new_task?: string | null;
-  description?: string | null;
-  interval_fh?: number | null;
-  interval_fc?: number | null;
-  interval_days?: number | null;
-};
-
-/**
  * User
  */
 export type User = {
@@ -817,6 +806,53 @@ export type UserRequest = {
  * Vendor
  */
 export type Vendor = Array<string>;
+
+/**
+ * WorkOrderItemResource
+ */
+export type WorkOrderItemResource = {
+  id: string;
+  work_order_id: string;
+  description: string;
+  maintenance_service_id: string;
+  order: string;
+  maintenance_service: string;
+  tasks?: Array<WorkOrderItemTaskResource>;
+  created_at: string;
+  updated_at: string;
+};
+
+/**
+ * WorkOrderItemTaskResource
+ */
+export type WorkOrderItemTaskResource = {
+  id: string;
+  task_id: string;
+  tecnico: string;
+  inspector: string;
+  task?: TaskCardResource;
+  created_at: string;
+  updated_at: string;
+};
+
+/**
+ * WorkOrderResource
+ */
+export type WorkOrderResource = {
+  id: number;
+  order_number: string;
+  description: string | null;
+  aircraft_id: number | null;
+  authorizing: string | null;
+  date: string | null;
+  created_by: string;
+  updated_by: string | null;
+  aircraft?: Aircraft;
+  items_count?: string;
+  items?: Array<WorkOrderItemResource>;
+  created_at: string;
+  updated_at: string;
+};
 
 /**
  * WorkShop
@@ -8241,8 +8277,8 @@ export type MaintenanceControlExecutionsIndexData = {
     maintenance_control_id?: number;
     aircraft_id?: number;
     status?: MaintenanceAlertStatus;
-    per_page?: number;
-    page?: number;
+    per_page?: number | null;
+    page?: number | null;
   };
   url: '/maintenance-controls/executions';
 };
@@ -8323,6 +8359,165 @@ export type MaintenanceControlExecutionsIndexResponses = {
 
 export type MaintenanceControlExecutionsIndexResponse =
   MaintenanceControlExecutionsIndexResponses[keyof MaintenanceControlExecutionsIndexResponses];
+
+export type MaintenanceControlExecutionsStoreData = {
+  body: StoreMaintenanceControlExecutionRequest;
+  path?: never;
+  query?: never;
+  url: '/maintenance-controls/executions';
+};
+
+export type MaintenanceControlExecutionsStoreErrors = {
+  /**
+   * Unauthenticated
+   */
+  401: {
+    /**
+     * Error overview.
+     */
+    message: string;
+  };
+  /**
+   * Validation error
+   */
+  422: {
+    /**
+     * Errors overview.
+     */
+    message: string;
+    /**
+     * A detailed description of each field that failed validation.
+     */
+    errors: {
+      [key: string]: Array<string>;
+    };
+  };
+};
+
+export type MaintenanceControlExecutionsStoreError =
+  MaintenanceControlExecutionsStoreErrors[keyof MaintenanceControlExecutionsStoreErrors];
+
+export type MaintenanceControlExecutionsStoreResponses = {
+  200: string;
+};
+
+export type MaintenanceControlExecutionsStoreResponse =
+  MaintenanceControlExecutionsStoreResponses[keyof MaintenanceControlExecutionsStoreResponses];
+
+export type MaintenanceControlsDetailsData = {
+  body?: never;
+  path: {
+    id: number;
+  };
+  query?: {
+    aircraft_id?: number;
+  };
+  url: '/maintenance-controls/{id}/details';
+};
+
+export type MaintenanceControlsDetailsErrors = {
+  /**
+   * Unauthenticated
+   */
+  401: {
+    /**
+     * Error overview.
+     */
+    message: string;
+  };
+};
+
+export type MaintenanceControlsDetailsError = MaintenanceControlsDetailsErrors[keyof MaintenanceControlsDetailsErrors];
+
+export type MaintenanceControlsDetailsResponses = {
+  200: {
+    aircrafts: string;
+    last_execution: string;
+    tasks: Array<TaskCardResource>;
+  };
+};
+
+export type MaintenanceControlsDetailsResponse =
+  MaintenanceControlsDetailsResponses[keyof MaintenanceControlsDetailsResponses];
+
+export type MaintenanceControlsAlertsData = {
+  body?: never;
+  path?: never;
+  query?: {
+    aircraft_id?: number;
+  };
+  url: '/maintenance-controls-alerts';
+};
+
+export type MaintenanceControlsAlertsErrors = {
+  /**
+   * Unauthenticated
+   */
+  401: {
+    /**
+     * Error overview.
+     */
+    message: string;
+  };
+};
+
+export type MaintenanceControlsAlertsError = MaintenanceControlsAlertsErrors[keyof MaintenanceControlsAlertsErrors];
+
+export type MaintenanceControlsAlertsResponses = {
+  200: {
+    alerts: Array<{
+      aircraft: AircraftResource;
+      control: MaintenanceControlResource;
+      last_execution: MaintenanceControlExecutionResource;
+      metrics: Array<
+        | {
+            type: 'FH';
+            /**
+             * remaining
+             */
+            remaining: number;
+            /**
+             * percentage
+             */
+            percentage: number;
+            /**
+             * consumed
+             */
+            consumed: number;
+            status: string;
+          }
+        | {
+            type: 'FC';
+            /**
+             * remaining
+             */
+            remaining: number;
+            /**
+             * percentage
+             */
+            percentage: number;
+            /**
+             * consumed
+             */
+            consumed: number;
+            status: string;
+          }
+        | {
+            type: 'DAYS';
+            remaining: number;
+            percentage: number;
+            consumed: number;
+            status: MaintenanceAlertStatus;
+          }
+      >;
+      status: unknown | string;
+    }>;
+    total: number;
+  };
+};
+
+export type MaintenanceControlsAlertsResponse =
+  MaintenanceControlsAlertsResponses[keyof MaintenanceControlsAlertsResponses];
 
 export type MaintenanceControlsIndexData = {
   body?: never;
@@ -8556,121 +8751,6 @@ export type MaintenanceControlsUpdateResponses = {
 
 export type MaintenanceControlsUpdateResponse =
   MaintenanceControlsUpdateResponses[keyof MaintenanceControlsUpdateResponses];
-
-export type MaintenanceControlsDetailsData = {
-  body?: never;
-  path: {
-    id: number;
-  };
-  query?: {
-    aircraft_id?: number;
-  };
-  url: '/maintenance-controls/{id}/details';
-};
-
-export type MaintenanceControlsDetailsErrors = {
-  /**
-   * Unauthenticated
-   */
-  401: {
-    /**
-     * Error overview.
-     */
-    message: string;
-  };
-};
-
-export type MaintenanceControlsDetailsError = MaintenanceControlsDetailsErrors[keyof MaintenanceControlsDetailsErrors];
-
-export type MaintenanceControlsDetailsResponses = {
-  200: {
-    aircrafts: string;
-    last_execution: string;
-    tasks: Array<TaskCardResource>;
-  };
-};
-
-export type MaintenanceControlsDetailsResponse =
-  MaintenanceControlsDetailsResponses[keyof MaintenanceControlsDetailsResponses];
-
-export type MaintenanceControlsAlertsData = {
-  body?: never;
-  path?: never;
-  query?: {
-    aircraft_id?: number;
-  };
-  url: '/maintenance-controls-alerts';
-};
-
-export type MaintenanceControlsAlertsErrors = {
-  /**
-   * Unauthenticated
-   */
-  401: {
-    /**
-     * Error overview.
-     */
-    message: string;
-  };
-};
-
-export type MaintenanceControlsAlertsError = MaintenanceControlsAlertsErrors[keyof MaintenanceControlsAlertsErrors];
-
-export type MaintenanceControlsAlertsResponses = {
-  200: {
-    alerts: Array<{
-      aircraft: AircraftResource;
-      control: MaintenanceControlResource;
-      last_execution: MaintenanceControlExecutionResource;
-      metrics: Array<
-        | {
-            type: 'FH';
-            /**
-             * remaining
-             */
-            remaining: number;
-            /**
-             * percentage
-             */
-            percentage: number;
-            /**
-             * consumed
-             */
-            consumed: number;
-            status: string;
-          }
-        | {
-            type: 'FC';
-            /**
-             * remaining
-             */
-            remaining: number;
-            /**
-             * percentage
-             */
-            percentage: number;
-            /**
-             * consumed
-             */
-            consumed: number;
-            status: string;
-          }
-        | {
-            type: 'DAYS';
-            remaining: number;
-            percentage: number;
-            consumed: number;
-            status: MaintenanceAlertStatus;
-          }
-      >;
-      status: unknown | string;
-    }>;
-    total: number;
-  };
-};
-
-export type MaintenanceControlsAlertsResponse =
-  MaintenanceControlsAlertsResponses[keyof MaintenanceControlsAlertsResponses];
 
 export type ManufacturerIndexData = {
   body?: never;
@@ -12250,190 +12330,6 @@ export type SMsActivityAttendanceGetEnrolledEmployeesByActivityResponses = {
 export type SMsActivityAttendanceGetEnrolledEmployeesByActivityResponse =
   SMsActivityAttendanceGetEnrolledEmployeesByActivityResponses[keyof SMsActivityAttendanceGetEnrolledEmployeesByActivityResponses];
 
-export type TaskCardsIndexData = {
-  body?: never;
-  path?: never;
-  query?: {
-    search?: string;
-    per_page?: number;
-  };
-  url: '/task-cards';
-};
-
-export type TaskCardsIndexErrors = {
-  /**
-   * Unauthenticated
-   */
-  401: {
-    /**
-     * Error overview.
-     */
-    message: string;
-  };
-};
-
-export type TaskCardsIndexError = TaskCardsIndexErrors[keyof TaskCardsIndexErrors];
-
-export type TaskCardsIndexResponses = {
-  /**
-   * Array of `TaskCardResource`
-   */
-  200: {
-    data: Array<TaskCardResource>;
-  };
-};
-
-export type TaskCardsIndexResponse = TaskCardsIndexResponses[keyof TaskCardsIndexResponses];
-
-export type TaskCardsStoreData = {
-  body?: StoreTaskCardRequest;
-  path?: never;
-  query?: never;
-  url: '/task-cards';
-};
-
-export type TaskCardsStoreErrors = {
-  /**
-   * Unauthenticated
-   */
-  401: {
-    /**
-     * Error overview.
-     */
-    message: string;
-  };
-  /**
-   * Validation error
-   */
-  422: {
-    /**
-     * Errors overview.
-     */
-    message: string;
-    /**
-     * A detailed description of each field that failed validation.
-     */
-    errors: {
-      [key: string]: Array<string>;
-    };
-  };
-};
-
-export type TaskCardsStoreError = TaskCardsStoreErrors[keyof TaskCardsStoreErrors];
-
-export type TaskCardsStoreResponses = {
-  200: string;
-};
-
-export type TaskCardsStoreResponse = TaskCardsStoreResponses[keyof TaskCardsStoreResponses];
-
-export type TaskCardsDestroyData = {
-  body?: never;
-  path: {
-    id: string;
-  };
-  query?: never;
-  url: '/task-cards/{id}';
-};
-
-export type TaskCardsDestroyErrors = {
-  /**
-   * Unauthenticated
-   */
-  401: {
-    /**
-     * Error overview.
-     */
-    message: string;
-  };
-};
-
-export type TaskCardsDestroyError = TaskCardsDestroyErrors[keyof TaskCardsDestroyErrors];
-
-export type TaskCardsDestroyResponses = {
-  200: string;
-};
-
-export type TaskCardsDestroyResponse = TaskCardsDestroyResponses[keyof TaskCardsDestroyResponses];
-
-export type TaskCardsShowData = {
-  body?: never;
-  path: {
-    id: string;
-  };
-  query?: never;
-  url: '/task-cards/{id}';
-};
-
-export type TaskCardsShowErrors = {
-  /**
-   * Unauthenticated
-   */
-  401: {
-    /**
-     * Error overview.
-     */
-    message: string;
-  };
-};
-
-export type TaskCardsShowError = TaskCardsShowErrors[keyof TaskCardsShowErrors];
-
-export type TaskCardsShowResponses = {
-  /**
-   * `TaskCardResource`
-   */
-  200: {
-    data: TaskCardResource;
-  };
-};
-
-export type TaskCardsShowResponse = TaskCardsShowResponses[keyof TaskCardsShowResponses];
-
-export type TaskCardsUpdateData = {
-  body?: UpdateTaskCardRequest;
-  path: {
-    id: string;
-  };
-  query?: never;
-  url: '/task-cards/{id}';
-};
-
-export type TaskCardsUpdateErrors = {
-  /**
-   * Unauthenticated
-   */
-  401: {
-    /**
-     * Error overview.
-     */
-    message: string;
-  };
-  /**
-   * Validation error
-   */
-  422: {
-    /**
-     * Errors overview.
-     */
-    message: string;
-    /**
-     * A detailed description of each field that failed validation.
-     */
-    errors: {
-      [key: string]: Array<string>;
-    };
-  };
-};
-
-export type TaskCardsUpdateError = TaskCardsUpdateErrors[keyof TaskCardsUpdateErrors];
-
-export type TaskCardsUpdateResponses = {
-  200: string;
-};
-
-export type TaskCardsUpdateResponse = TaskCardsUpdateResponses[keyof TaskCardsUpdateResponses];
-
 export type TasksIndexData = {
   body?: never;
   path: {
@@ -13739,6 +13635,179 @@ export type WarehouseWarehouseWithUserResponses = {
 
 export type WarehouseWarehouseWithUserResponse =
   WarehouseWarehouseWithUserResponses[keyof WarehouseWarehouseWithUserResponses];
+
+export type WorkOrdersIndexData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: '/work-orders';
+};
+
+export type WorkOrdersIndexErrors = {
+  /**
+   * Unauthenticated
+   */
+  401: {
+    /**
+     * Error overview.
+     */
+    message: string;
+  };
+};
+
+export type WorkOrdersIndexError = WorkOrdersIndexErrors[keyof WorkOrdersIndexErrors];
+
+export type WorkOrdersIndexResponses = {
+  /**
+   * Paginated set of `WorkOrderResource`
+   */
+  200: {
+    data: Array<WorkOrderResource>;
+    links: {
+      first: string | null;
+      last: string | null;
+      prev: string | null;
+      next: string | null;
+    };
+    meta: {
+      current_page: number;
+      from: number | null;
+      last_page: number;
+      /**
+       * Generated paginator links.
+       */
+      links: Array<{
+        url: string | null;
+        label: string;
+        active: boolean;
+      }>;
+      /**
+       * Base path for paginator generated URLs.
+       */
+      path: string | null;
+      /**
+       * Number of items shown per page.
+       */
+      per_page: number;
+      /**
+       * Number of the last item in the slice.
+       */
+      to: number | null;
+      /**
+       * Total number of items being paginated.
+       */
+      total: number;
+    };
+  };
+};
+
+export type WorkOrdersIndexResponse = WorkOrdersIndexResponses[keyof WorkOrdersIndexResponses];
+
+export type WorkOrdersStoreData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: '/work-orders';
+};
+
+export type WorkOrdersStoreErrors = {
+  /**
+   * Unauthenticated
+   */
+  401: {
+    /**
+     * Error overview.
+     */
+    message: string;
+  };
+};
+
+export type WorkOrdersStoreError = WorkOrdersStoreErrors[keyof WorkOrdersStoreErrors];
+
+export type WorkOrdersStoreResponses = {
+  200: unknown;
+};
+
+export type WorkOrdersDestroyData = {
+  body?: never;
+  path: {
+    id: string;
+  };
+  query?: never;
+  url: '/work-orders/{id}';
+};
+
+export type WorkOrdersDestroyErrors = {
+  /**
+   * Unauthenticated
+   */
+  401: {
+    /**
+     * Error overview.
+     */
+    message: string;
+  };
+};
+
+export type WorkOrdersDestroyError = WorkOrdersDestroyErrors[keyof WorkOrdersDestroyErrors];
+
+export type WorkOrdersDestroyResponses = {
+  200: unknown;
+};
+
+export type WorkOrdersShowData = {
+  body?: never;
+  path: {
+    id: string;
+  };
+  query?: never;
+  url: '/work-orders/{id}';
+};
+
+export type WorkOrdersShowErrors = {
+  /**
+   * Unauthenticated
+   */
+  401: {
+    /**
+     * Error overview.
+     */
+    message: string;
+  };
+};
+
+export type WorkOrdersShowError = WorkOrdersShowErrors[keyof WorkOrdersShowErrors];
+
+export type WorkOrdersShowResponses = {
+  200: unknown;
+};
+
+export type WorkOrdersUpdateData = {
+  body?: never;
+  path: {
+    id: string;
+  };
+  query?: never;
+  url: '/work-orders/{id}';
+};
+
+export type WorkOrdersUpdateErrors = {
+  /**
+   * Unauthenticated
+   */
+  401: {
+    /**
+     * Error overview.
+     */
+    message: string;
+  };
+};
+
+export type WorkOrdersUpdateError = WorkOrdersUpdateErrors[keyof WorkOrdersUpdateErrors];
+
+export type WorkOrdersUpdateResponses = {
+  200: unknown;
+};
 
 export type WorkOrderTaskEventStoreData = {
   body?: never;

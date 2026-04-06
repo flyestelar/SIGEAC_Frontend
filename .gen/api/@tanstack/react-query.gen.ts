@@ -219,6 +219,7 @@ import {
   login,
   logout,
   maintenanceControlExecutionsIndex,
+  maintenanceControlExecutionsStore,
   maintenanceControlsAlerts,
   maintenanceControlsDestroy,
   maintenanceControlsDetails,
@@ -326,11 +327,6 @@ import {
   sMsActivityAttendanceGetEnrolledEmployeesByActivity,
   sMsActivityAttendanceGetEnrollementStatus,
   sMsActivityAttendanceStoreSmsActivityAttendance,
-  taskCardsDestroy,
-  taskCardsIndex,
-  taskCardsShow,
-  taskCardsStore,
-  taskCardsUpdate,
   tasksDestroy,
   tasksIndex,
   tasksShow,
@@ -374,6 +370,11 @@ import {
   warehouseStore,
   warehouseUpdate,
   warehouseWarehouseWithUser,
+  workOrdersDestroy,
+  workOrdersIndex,
+  workOrdersShow,
+  workOrdersStore,
+  workOrdersUpdate,
   workOrderTaskEventShowEventsByWorkOrderTask,
   workOrderTaskEventStore,
   workshopsDestroy,
@@ -992,6 +993,9 @@ import type {
   MaintenanceControlExecutionsIndexData,
   MaintenanceControlExecutionsIndexError,
   MaintenanceControlExecutionsIndexResponse,
+  MaintenanceControlExecutionsStoreData,
+  MaintenanceControlExecutionsStoreError,
+  MaintenanceControlExecutionsStoreResponse,
   MaintenanceControlsAlertsData,
   MaintenanceControlsAlertsError,
   MaintenanceControlsAlertsResponse,
@@ -1299,21 +1303,6 @@ import type {
   SMsActivityAttendanceStoreSmsActivityAttendanceData,
   SMsActivityAttendanceStoreSmsActivityAttendanceError,
   SMsActivityAttendanceStoreSmsActivityAttendanceResponse,
-  TaskCardsDestroyData,
-  TaskCardsDestroyError,
-  TaskCardsDestroyResponse,
-  TaskCardsIndexData,
-  TaskCardsIndexError,
-  TaskCardsIndexResponse,
-  TaskCardsShowData,
-  TaskCardsShowError,
-  TaskCardsShowResponse,
-  TaskCardsStoreData,
-  TaskCardsStoreError,
-  TaskCardsStoreResponse,
-  TaskCardsUpdateData,
-  TaskCardsUpdateError,
-  TaskCardsUpdateResponse,
   TasksDestroyData,
   TasksDestroyError,
   TasksIndexData,
@@ -1438,6 +1427,17 @@ import type {
   WarehouseWarehouseWithUserData,
   WarehouseWarehouseWithUserError,
   WarehouseWarehouseWithUserResponse,
+  WorkOrdersDestroyData,
+  WorkOrdersDestroyError,
+  WorkOrdersIndexData,
+  WorkOrdersIndexError,
+  WorkOrdersIndexResponse,
+  WorkOrdersShowData,
+  WorkOrdersShowError,
+  WorkOrdersStoreData,
+  WorkOrdersStoreError,
+  WorkOrdersUpdateData,
+  WorkOrdersUpdateError,
   WorkOrderTaskEventShowEventsByWorkOrderTaskData,
   WorkOrderTaskEventShowEventsByWorkOrderTaskError,
   WorkOrderTaskEventShowEventsByWorkOrderTaskResponse,
@@ -6886,7 +6886,9 @@ export const maintenanceControlExecutionsIndexInfiniteOptions = (
     AxiosError<MaintenanceControlExecutionsIndexError>,
     InfiniteData<MaintenanceControlExecutionsIndexResponse>,
     QueryKey<Options<MaintenanceControlExecutionsIndexData>>,
-    number | Pick<QueryKey<Options<MaintenanceControlExecutionsIndexData>>[0], 'body' | 'headers' | 'path' | 'query'>
+    | number
+    | null
+    | Pick<QueryKey<Options<MaintenanceControlExecutionsIndexData>>[0], 'body' | 'headers' | 'path' | 'query'>
   >(
     // @ts-ignore
     {
@@ -6915,6 +6917,83 @@ export const maintenanceControlExecutionsIndexInfiniteOptions = (
       queryKey: maintenanceControlExecutionsIndexInfiniteQueryKey(options),
     },
   );
+
+/**
+ * Store a newly created resource in storage
+ */
+export const maintenanceControlExecutionsStoreMutation = (
+  options?: Partial<Options<MaintenanceControlExecutionsStoreData>>,
+): UseMutationOptions<
+  MaintenanceControlExecutionsStoreResponse,
+  AxiosError<MaintenanceControlExecutionsStoreError>,
+  Options<MaintenanceControlExecutionsStoreData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    MaintenanceControlExecutionsStoreResponse,
+    AxiosError<MaintenanceControlExecutionsStoreError>,
+    Options<MaintenanceControlExecutionsStoreData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await maintenanceControlExecutionsStore({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+export const maintenanceControlsDetailsQueryKey = (options: Options<MaintenanceControlsDetailsData>) =>
+  createQueryKey('maintenanceControlsDetails', options);
+
+/**
+ * Get tasks for a specific maintenance control and aircraft
+ */
+export const maintenanceControlsDetailsOptions = (options: Options<MaintenanceControlsDetailsData>) =>
+  queryOptions<
+    MaintenanceControlsDetailsResponse,
+    AxiosError<MaintenanceControlsDetailsError>,
+    MaintenanceControlsDetailsResponse,
+    ReturnType<typeof maintenanceControlsDetailsQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await maintenanceControlsDetails({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: maintenanceControlsDetailsQueryKey(options),
+  });
+
+export const maintenanceControlsAlertsQueryKey = (options?: Options<MaintenanceControlsAlertsData>) =>
+  createQueryKey('maintenanceControlsAlerts', options);
+
+/**
+ * Get maintenance control alerts
+ */
+export const maintenanceControlsAlertsOptions = (options?: Options<MaintenanceControlsAlertsData>) =>
+  queryOptions<
+    MaintenanceControlsAlertsResponse,
+    AxiosError<MaintenanceControlsAlertsError>,
+    MaintenanceControlsAlertsResponse,
+    ReturnType<typeof maintenanceControlsAlertsQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await maintenanceControlsAlerts({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: maintenanceControlsAlertsQueryKey(options),
+  });
 
 export const maintenanceControlsIndexQueryKey = (options?: Options<MaintenanceControlsIndexData>) =>
   createQueryKey('maintenanceControlsIndex', options);
@@ -7046,56 +7125,6 @@ export const maintenanceControlsUpdateMutation = (
   };
   return mutationOptions;
 };
-
-export const maintenanceControlsDetailsQueryKey = (options: Options<MaintenanceControlsDetailsData>) =>
-  createQueryKey('maintenanceControlsDetails', options);
-
-/**
- * Get tasks for a specific maintenance control and aircraft
- */
-export const maintenanceControlsDetailsOptions = (options: Options<MaintenanceControlsDetailsData>) =>
-  queryOptions<
-    MaintenanceControlsDetailsResponse,
-    AxiosError<MaintenanceControlsDetailsError>,
-    MaintenanceControlsDetailsResponse,
-    ReturnType<typeof maintenanceControlsDetailsQueryKey>
-  >({
-    queryFn: async ({ queryKey, signal }) => {
-      const { data } = await maintenanceControlsDetails({
-        ...options,
-        ...queryKey[0],
-        signal,
-        throwOnError: true,
-      });
-      return data;
-    },
-    queryKey: maintenanceControlsDetailsQueryKey(options),
-  });
-
-export const maintenanceControlsAlertsQueryKey = (options?: Options<MaintenanceControlsAlertsData>) =>
-  createQueryKey('maintenanceControlsAlerts', options);
-
-/**
- * Get maintenance control alerts
- */
-export const maintenanceControlsAlertsOptions = (options?: Options<MaintenanceControlsAlertsData>) =>
-  queryOptions<
-    MaintenanceControlsAlertsResponse,
-    AxiosError<MaintenanceControlsAlertsError>,
-    MaintenanceControlsAlertsResponse,
-    ReturnType<typeof maintenanceControlsAlertsQueryKey>
-  >({
-    queryFn: async ({ queryKey, signal }) => {
-      const { data } = await maintenanceControlsAlerts({
-        ...options,
-        ...queryKey[0],
-        signal,
-        throwOnError: true,
-      });
-      return data;
-    },
-    queryKey: maintenanceControlsAlertsQueryKey(options),
-  });
 
 export const manufacturerIndexQueryKey = (options: Options<ManufacturerIndexData>) =>
   createQueryKey('manufacturerIndex', options);
@@ -9643,124 +9672,6 @@ export const sMsActivityAttendanceGetEnrolledEmployeesByActivityOptions = (
     queryKey: sMsActivityAttendanceGetEnrolledEmployeesByActivityQueryKey(options),
   });
 
-export const taskCardsIndexQueryKey = (options?: Options<TaskCardsIndexData>) =>
-  createQueryKey('taskCardsIndex', options);
-
-/**
- * Display a listing of the resource
- */
-export const taskCardsIndexOptions = (options?: Options<TaskCardsIndexData>) =>
-  queryOptions<
-    TaskCardsIndexResponse,
-    AxiosError<TaskCardsIndexError>,
-    TaskCardsIndexResponse,
-    ReturnType<typeof taskCardsIndexQueryKey>
-  >({
-    queryFn: async ({ queryKey, signal }) => {
-      const { data } = await taskCardsIndex({
-        ...options,
-        ...queryKey[0],
-        signal,
-        throwOnError: true,
-      });
-      return data;
-    },
-    queryKey: taskCardsIndexQueryKey(options),
-  });
-
-/**
- * Store a newly created resource in storage
- */
-export const taskCardsStoreMutation = (
-  options?: Partial<Options<TaskCardsStoreData>>,
-): UseMutationOptions<TaskCardsStoreResponse, AxiosError<TaskCardsStoreError>, Options<TaskCardsStoreData>> => {
-  const mutationOptions: UseMutationOptions<
-    TaskCardsStoreResponse,
-    AxiosError<TaskCardsStoreError>,
-    Options<TaskCardsStoreData>
-  > = {
-    mutationFn: async (fnOptions) => {
-      const { data } = await taskCardsStore({
-        ...options,
-        ...fnOptions,
-        throwOnError: true,
-      });
-      return data;
-    },
-  };
-  return mutationOptions;
-};
-
-/**
- * Remove the specified resource from storage
- */
-export const taskCardsDestroyMutation = (
-  options?: Partial<Options<TaskCardsDestroyData>>,
-): UseMutationOptions<TaskCardsDestroyResponse, AxiosError<TaskCardsDestroyError>, Options<TaskCardsDestroyData>> => {
-  const mutationOptions: UseMutationOptions<
-    TaskCardsDestroyResponse,
-    AxiosError<TaskCardsDestroyError>,
-    Options<TaskCardsDestroyData>
-  > = {
-    mutationFn: async (fnOptions) => {
-      const { data } = await taskCardsDestroy({
-        ...options,
-        ...fnOptions,
-        throwOnError: true,
-      });
-      return data;
-    },
-  };
-  return mutationOptions;
-};
-
-export const taskCardsShowQueryKey = (options: Options<TaskCardsShowData>) => createQueryKey('taskCardsShow', options);
-
-/**
- * Display the specified resource
- */
-export const taskCardsShowOptions = (options: Options<TaskCardsShowData>) =>
-  queryOptions<
-    TaskCardsShowResponse,
-    AxiosError<TaskCardsShowError>,
-    TaskCardsShowResponse,
-    ReturnType<typeof taskCardsShowQueryKey>
-  >({
-    queryFn: async ({ queryKey, signal }) => {
-      const { data } = await taskCardsShow({
-        ...options,
-        ...queryKey[0],
-        signal,
-        throwOnError: true,
-      });
-      return data;
-    },
-    queryKey: taskCardsShowQueryKey(options),
-  });
-
-/**
- * Update the specified resource in storage
- */
-export const taskCardsUpdateMutation = (
-  options?: Partial<Options<TaskCardsUpdateData>>,
-): UseMutationOptions<TaskCardsUpdateResponse, AxiosError<TaskCardsUpdateError>, Options<TaskCardsUpdateData>> => {
-  const mutationOptions: UseMutationOptions<
-    TaskCardsUpdateResponse,
-    AxiosError<TaskCardsUpdateError>,
-    Options<TaskCardsUpdateData>
-  > = {
-    mutationFn: async (fnOptions) => {
-      const { data } = await taskCardsUpdate({
-        ...options,
-        ...fnOptions,
-        throwOnError: true,
-      });
-      return data;
-    },
-  };
-  return mutationOptions;
-};
-
 export const tasksIndexQueryKey = (options: Options<TasksIndexData>) => createQueryKey('tasksIndex', options);
 
 /**
@@ -10596,6 +10507,116 @@ export const warehouseWarehouseWithUserOptions = (options: Options<WarehouseWare
     },
     queryKey: warehouseWarehouseWithUserQueryKey(options),
   });
+
+export const workOrdersIndexQueryKey = (options?: Options<WorkOrdersIndexData>) =>
+  createQueryKey('workOrdersIndex', options);
+
+/**
+ * Display a listing of the resource
+ */
+export const workOrdersIndexOptions = (options?: Options<WorkOrdersIndexData>) =>
+  queryOptions<
+    WorkOrdersIndexResponse,
+    AxiosError<WorkOrdersIndexError>,
+    WorkOrdersIndexResponse,
+    ReturnType<typeof workOrdersIndexQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await workOrdersIndex({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: workOrdersIndexQueryKey(options),
+  });
+
+/**
+ * Store a newly created resource in storage
+ */
+export const workOrdersStoreMutation = (
+  options?: Partial<Options<WorkOrdersStoreData>>,
+): UseMutationOptions<unknown, AxiosError<WorkOrdersStoreError>, Options<WorkOrdersStoreData>> => {
+  const mutationOptions: UseMutationOptions<unknown, AxiosError<WorkOrdersStoreError>, Options<WorkOrdersStoreData>> = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await workOrdersStore({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+/**
+ * Remove the specified resource from storage
+ */
+export const workOrdersDestroyMutation = (
+  options?: Partial<Options<WorkOrdersDestroyData>>,
+): UseMutationOptions<unknown, AxiosError<WorkOrdersDestroyError>, Options<WorkOrdersDestroyData>> => {
+  const mutationOptions: UseMutationOptions<
+    unknown,
+    AxiosError<WorkOrdersDestroyError>,
+    Options<WorkOrdersDestroyData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await workOrdersDestroy({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+export const workOrdersShowQueryKey = (options: Options<WorkOrdersShowData>) =>
+  createQueryKey('workOrdersShow', options);
+
+/**
+ * Display the specified resource
+ */
+export const workOrdersShowOptions = (options: Options<WorkOrdersShowData>) =>
+  queryOptions<unknown, AxiosError<WorkOrdersShowError>, unknown, ReturnType<typeof workOrdersShowQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await workOrdersShow({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: workOrdersShowQueryKey(options),
+  });
+
+/**
+ * Update the specified resource in storage
+ */
+export const workOrdersUpdateMutation = (
+  options?: Partial<Options<WorkOrdersUpdateData>>,
+): UseMutationOptions<unknown, AxiosError<WorkOrdersUpdateError>, Options<WorkOrdersUpdateData>> => {
+  const mutationOptions: UseMutationOptions<
+    unknown,
+    AxiosError<WorkOrdersUpdateError>,
+    Options<WorkOrdersUpdateData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await workOrdersUpdate({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
 
 /**
  * Store a newly created resource in storage

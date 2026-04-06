@@ -645,6 +645,9 @@ import type {
   MaintenanceControlExecutionsIndexData,
   MaintenanceControlExecutionsIndexErrors,
   MaintenanceControlExecutionsIndexResponses,
+  MaintenanceControlExecutionsStoreData,
+  MaintenanceControlExecutionsStoreErrors,
+  MaintenanceControlExecutionsStoreResponses,
   MaintenanceControlsAlertsData,
   MaintenanceControlsAlertsErrors,
   MaintenanceControlsAlertsResponses,
@@ -963,21 +966,6 @@ import type {
   SMsActivityAttendanceStoreSmsActivityAttendanceData,
   SMsActivityAttendanceStoreSmsActivityAttendanceErrors,
   SMsActivityAttendanceStoreSmsActivityAttendanceResponses,
-  TaskCardsDestroyData,
-  TaskCardsDestroyErrors,
-  TaskCardsDestroyResponses,
-  TaskCardsIndexData,
-  TaskCardsIndexErrors,
-  TaskCardsIndexResponses,
-  TaskCardsShowData,
-  TaskCardsShowErrors,
-  TaskCardsShowResponses,
-  TaskCardsStoreData,
-  TaskCardsStoreErrors,
-  TaskCardsStoreResponses,
-  TaskCardsUpdateData,
-  TaskCardsUpdateErrors,
-  TaskCardsUpdateResponses,
   TasksDestroyData,
   TasksDestroyErrors,
   TasksDestroyResponses,
@@ -1107,6 +1095,21 @@ import type {
   WarehouseWarehouseWithUserData,
   WarehouseWarehouseWithUserErrors,
   WarehouseWarehouseWithUserResponses,
+  WorkOrdersDestroyData,
+  WorkOrdersDestroyErrors,
+  WorkOrdersDestroyResponses,
+  WorkOrdersIndexData,
+  WorkOrdersIndexErrors,
+  WorkOrdersIndexResponses,
+  WorkOrdersShowData,
+  WorkOrdersShowErrors,
+  WorkOrdersShowResponses,
+  WorkOrdersStoreData,
+  WorkOrdersStoreErrors,
+  WorkOrdersStoreResponses,
+  WorkOrdersUpdateData,
+  WorkOrdersUpdateErrors,
+  WorkOrdersUpdateResponses,
   WorkOrderTaskEventShowEventsByWorkOrderTaskData,
   WorkOrderTaskEventShowEventsByWorkOrderTaskErrors,
   WorkOrderTaskEventShowEventsByWorkOrderTaskResponses,
@@ -4181,6 +4184,53 @@ export const maintenanceControlExecutionsIndex = <ThrowOnError extends boolean =
   });
 
 /**
+ * Store a newly created resource in storage
+ */
+export const maintenanceControlExecutionsStore = <ThrowOnError extends boolean = false>(
+  options: Options<MaintenanceControlExecutionsStoreData, ThrowOnError>,
+) =>
+  (options.client ?? client).post<
+    MaintenanceControlExecutionsStoreResponses,
+    MaintenanceControlExecutionsStoreErrors,
+    ThrowOnError
+  >({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/maintenance-controls/executions',
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    },
+  });
+
+/**
+ * Get tasks for a specific maintenance control and aircraft
+ */
+export const maintenanceControlsDetails = <ThrowOnError extends boolean = false>(
+  options: Options<MaintenanceControlsDetailsData, ThrowOnError>,
+) =>
+  (options.client ?? client).get<MaintenanceControlsDetailsResponses, MaintenanceControlsDetailsErrors, ThrowOnError>({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/maintenance-controls/{id}/details',
+    ...options,
+  });
+
+/**
+ * Get maintenance control alerts
+ */
+export const maintenanceControlsAlerts = <ThrowOnError extends boolean = false>(
+  options?: Options<MaintenanceControlsAlertsData, ThrowOnError>,
+) =>
+  (options?.client ?? client).get<MaintenanceControlsAlertsResponses, MaintenanceControlsAlertsErrors, ThrowOnError>({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/maintenance-controls-alerts',
+    ...options,
+  });
+
+/**
  * Display a listing of the resource
  */
 export const maintenanceControlsIndex = <ThrowOnError extends boolean = false>(
@@ -4255,32 +4305,6 @@ export const maintenanceControlsUpdate = <ThrowOnError extends boolean = false>(
       'Content-Type': 'application/json',
       ...options.headers,
     },
-  });
-
-/**
- * Get tasks for a specific maintenance control and aircraft
- */
-export const maintenanceControlsDetails = <ThrowOnError extends boolean = false>(
-  options: Options<MaintenanceControlsDetailsData, ThrowOnError>,
-) =>
-  (options.client ?? client).get<MaintenanceControlsDetailsResponses, MaintenanceControlsDetailsErrors, ThrowOnError>({
-    responseType: 'json',
-    security: [{ scheme: 'bearer', type: 'http' }],
-    url: '/maintenance-controls/{id}/details',
-    ...options,
-  });
-
-/**
- * Get maintenance control alerts
- */
-export const maintenanceControlsAlerts = <ThrowOnError extends boolean = false>(
-  options?: Options<MaintenanceControlsAlertsData, ThrowOnError>,
-) =>
-  (options?.client ?? client).get<MaintenanceControlsAlertsResponses, MaintenanceControlsAlertsErrors, ThrowOnError>({
-    responseType: 'json',
-    security: [{ scheme: 'bearer', type: 'http' }],
-    url: '/maintenance-controls-alerts',
-    ...options,
   });
 
 /**
@@ -5765,79 +5789,6 @@ export const sMsActivityAttendanceGetEnrolledEmployeesByActivity = <ThrowOnError
 /**
  * Display a listing of the resource
  */
-export const taskCardsIndex = <ThrowOnError extends boolean = false>(
-  options?: Options<TaskCardsIndexData, ThrowOnError>,
-) =>
-  (options?.client ?? client).get<TaskCardsIndexResponses, TaskCardsIndexErrors, ThrowOnError>({
-    responseType: 'json',
-    security: [{ scheme: 'bearer', type: 'http' }],
-    url: '/task-cards',
-    ...options,
-  });
-
-/**
- * Store a newly created resource in storage
- */
-export const taskCardsStore = <ThrowOnError extends boolean = false>(
-  options?: Options<TaskCardsStoreData, ThrowOnError>,
-) =>
-  (options?.client ?? client).post<TaskCardsStoreResponses, TaskCardsStoreErrors, ThrowOnError>({
-    responseType: 'json',
-    security: [{ scheme: 'bearer', type: 'http' }],
-    url: '/task-cards',
-    ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      ...options?.headers,
-    },
-  });
-
-/**
- * Remove the specified resource from storage
- */
-export const taskCardsDestroy = <ThrowOnError extends boolean = false>(
-  options: Options<TaskCardsDestroyData, ThrowOnError>,
-) =>
-  (options.client ?? client).delete<TaskCardsDestroyResponses, TaskCardsDestroyErrors, ThrowOnError>({
-    responseType: 'json',
-    security: [{ scheme: 'bearer', type: 'http' }],
-    url: '/task-cards/{id}',
-    ...options,
-  });
-
-/**
- * Display the specified resource
- */
-export const taskCardsShow = <ThrowOnError extends boolean = false>(
-  options: Options<TaskCardsShowData, ThrowOnError>,
-) =>
-  (options.client ?? client).get<TaskCardsShowResponses, TaskCardsShowErrors, ThrowOnError>({
-    responseType: 'json',
-    security: [{ scheme: 'bearer', type: 'http' }],
-    url: '/task-cards/{id}',
-    ...options,
-  });
-
-/**
- * Update the specified resource in storage
- */
-export const taskCardsUpdate = <ThrowOnError extends boolean = false>(
-  options: Options<TaskCardsUpdateData, ThrowOnError>,
-) =>
-  (options.client ?? client).put<TaskCardsUpdateResponses, TaskCardsUpdateErrors, ThrowOnError>({
-    responseType: 'json',
-    security: [{ scheme: 'bearer', type: 'http' }],
-    url: '/task-cards/{id}',
-    ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      ...options.headers,
-    },
-  });
-
-/**
- * Display a listing of the resource
- */
 export const tasksIndex = <ThrowOnError extends boolean = false>(options: Options<TasksIndexData, ThrowOnError>) =>
   (options.client ?? client).get<TasksIndexResponses, TasksIndexErrors, ThrowOnError>({
     responseType: 'json',
@@ -6263,6 +6214,67 @@ export const warehouseWarehouseWithUser = <ThrowOnError extends boolean = false>
     responseType: 'json',
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/{company}/{location}/warehouses-by-location',
+    ...options,
+  });
+
+/**
+ * Display a listing of the resource
+ */
+export const workOrdersIndex = <ThrowOnError extends boolean = false>(
+  options?: Options<WorkOrdersIndexData, ThrowOnError>,
+) =>
+  (options?.client ?? client).get<WorkOrdersIndexResponses, WorkOrdersIndexErrors, ThrowOnError>({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/work-orders',
+    ...options,
+  });
+
+/**
+ * Store a newly created resource in storage
+ */
+export const workOrdersStore = <ThrowOnError extends boolean = false>(
+  options?: Options<WorkOrdersStoreData, ThrowOnError>,
+) =>
+  (options?.client ?? client).post<WorkOrdersStoreResponses, WorkOrdersStoreErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/work-orders',
+    ...options,
+  });
+
+/**
+ * Remove the specified resource from storage
+ */
+export const workOrdersDestroy = <ThrowOnError extends boolean = false>(
+  options: Options<WorkOrdersDestroyData, ThrowOnError>,
+) =>
+  (options.client ?? client).delete<WorkOrdersDestroyResponses, WorkOrdersDestroyErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/work-orders/{id}',
+    ...options,
+  });
+
+/**
+ * Display the specified resource
+ */
+export const workOrdersShow = <ThrowOnError extends boolean = false>(
+  options: Options<WorkOrdersShowData, ThrowOnError>,
+) =>
+  (options.client ?? client).get<WorkOrdersShowResponses, WorkOrdersShowErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/work-orders/{id}',
+    ...options,
+  });
+
+/**
+ * Update the specified resource in storage
+ */
+export const workOrdersUpdate = <ThrowOnError extends boolean = false>(
+  options: Options<WorkOrdersUpdateData, ThrowOnError>,
+) =>
+  (options.client ?? client).put<WorkOrdersUpdateResponses, WorkOrdersUpdateErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/work-orders/{id}',
     ...options,
   });
 

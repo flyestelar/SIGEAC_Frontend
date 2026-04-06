@@ -2,7 +2,6 @@
 
 import { ContentLayout } from '@/components/layout/ContentLayout';
 import LoadingPage from '@/components/misc/LoadingPage';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -11,7 +10,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { useCompanyStore } from '@/stores/CompanyStore';
 import {
   aircraftIndexOptions,
-  maintenanceControlsExecutionsStoreMutation,
+  maintenanceControlExecutionsStoreMutation,
   maintenanceControlsIndexOptions,
   maintenanceControlsIndexQueryKey,
   maintenanceControlsShowQueryKey,
@@ -77,7 +76,7 @@ export default function MaintenanceControlTestPage() {
   const queryClient = useQueryClient();
 
   const createControlExecutionMutation = useMutation({
-    ...maintenanceControlsExecutionsStoreMutation(),
+    ...maintenanceControlExecutionsStoreMutation(),
     onSuccess: () => {
       toast.success('Ejecución de control creada');
       queryClient.invalidateQueries({ queryKey: maintenanceControlsIndexQueryKey() });
@@ -147,15 +146,14 @@ export default function MaintenanceControlTestPage() {
     }
 
     const executionData: StoreMaintenanceControlExecutionRequest = {
-      maintenance_control_id: Number(selectedControlId),
-      aircraft_id: Number(selectedAircraftId),
+      maintenance_control_id: selectedControlId,
+      aircraft_id: selectedAircraftId,
       executed_at: new Date().toISOString(),
       status: 'COMPLETED',
     };
 
     createControlExecutionMutation.mutate({
       body: executionData,
-      path: { maintenance_control: selectedControlId.toString() },
     });
   };
 
