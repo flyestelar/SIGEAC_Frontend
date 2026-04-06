@@ -42,7 +42,7 @@ export function MaintenanceControlsSection({
   }, [controlsForAircraft, selectedControlId]);
 
   return (
-    <div className="lg:col-span-9 space-y-4">
+    <div className="space-y-4">
       {isControlsLoading ? (
         <ControlGrid.Skeleton />
       ) : (
@@ -57,11 +57,13 @@ export function MaintenanceControlsSection({
 
           {selectedControl && (
             <Tabs defaultValue="tasks" className="w-full">
-              <TabsList>
-                <TabsTrigger value="tasks">Tasks</TabsTrigger>
-                <TabsTrigger value="estimaciones">Estimaciones</TabsTrigger>
-                <TabsTrigger value="ejecuciones">Ejecuciones</TabsTrigger>
-              </TabsList>
+              <div className="flex justify-center">
+                <TabsList className="mx-auto">
+                  <TabsTrigger value="tasks">Tasks</TabsTrigger>
+                  <TabsTrigger value="estimaciones">Graficas</TabsTrigger>
+                  <TabsTrigger value="ejecuciones">Ejecuciones</TabsTrigger>
+                </TabsList>
+              </div>
               <TabsContent value="tasks">
                 <TasksTable tasks={selectedControl.task_cards} controlName={selectedControl.title} />
               </TabsContent>

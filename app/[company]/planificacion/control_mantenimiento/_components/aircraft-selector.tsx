@@ -3,7 +3,6 @@
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { AircraftResource } from '@api/types';
 import { Clock, Plane, RotateCcw, Search } from 'lucide-react';
@@ -49,95 +48,89 @@ export function AircraftSelector({ aircraft, selectedAircraftId, onSelectAircraf
           />
         </div>
       </CardHeader>
-      <CardContent className="p-0">
-        <ScrollArea className="h-[calc(100vh-340px)]">
-          <div className="flex flex-col w-full min-w-0 gap-y-2 px-3 py-3">
-            {filtered.map((ac) => {
-              const isSelected = selectedAircraftId === ac.id;
+      <CardContent className="p-3">
+        <div className="flex gap-3 overflow-x-auto pb-1">
+          {filtered.map((ac) => {
+            const isSelected = selectedAircraftId === ac.id;
 
-              return (
-                <button
-                  key={ac.id}
-                  onClick={() => onSelectAircraft(ac.id)}
-                  className={cn(
-                    'group w-full overflow-hidden rounded-lg border text-left transition-all',
-                    isSelected
-                      ? 'border-primary ring-2 ring-primary focus-visible:outline-none'
-                      : 'border-border/60 hover:border-foreground/20',
-                  )}
-                >
-                  {/* Image */}
-                  <div className="relative">
-                    <img
-                      src="https://cdn.zbordirect.com/images/airlines/ES.webp"
-                      alt={ac.acronym ?? 'Aircraft'}
-                      className={cn(
-                        'aspect-[16/7] w-full object-cover',
-                        isSelected ? 'brightness-1' : 'brightness-[0.5] dark:brightness-[0.4]',
-                      )}
-                    />
-                    {/* Acronym overlay */}
-                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent px-3 pb-2 pt-4">
-                      <div className="flex items-center justify-between">
-                        <span className="font-mono text-sm font-bold tracking-widest text-white">{ac.acronym}</span>
-                        {isSelected && (
-                          <Badge className="h-4 bg-primary/90 px-1.5 text-[9px] font-semibold text-primary-foreground">
-                            Activa
-                          </Badge>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Info */}
-                  <div className="space-y-2 px-3 py-2.5">
-                    <div className="flex items-start justify-between gap-2">
-                      <span className="text-xs font-medium text-foreground truncate">
-                        {ac.manufacturer?.name ?? '—'}
-                      </span>
-                      <span className="shrink-0 font-mono text-[10px] text-muted-foreground">
-                        S/N {ac.serial || '—'}
-                      </span>
-                    </div>
-
-                    {ac.aircraft_type?.series && (
-                      <p className="text-[11px] text-muted-foreground truncate">
-                        {ac.aircraft_type.full_name ?? ac.aircraft_type.series}
-                      </p>
+            return (
+              <button
+                key={ac.id}
+                onClick={() => onSelectAircraft(ac.id)}
+                className={cn(
+                  'group w-[280px] shrink-0 overflow-hidden rounded-lg border text-left transition-all',
+                  isSelected
+                    ? 'border-primary ring-2 ring-primary focus-visible:outline-none'
+                    : 'border-border/60 hover:border-foreground/20',
+                )}
+              >
+                {/* Image */}
+                <div className="relative">
+                  <img
+                    src="https://cdn.zbordirect.com/images/airlines/ES.webp"
+                    alt={ac.acronym ?? 'Aircraft'}
+                    className={cn(
+                      'aspect-[16/7] w-full object-cover',
+                      isSelected ? 'brightness-1' : 'brightness-[0.5] dark:brightness-[0.4]',
                     )}
-
-                    <Separator className="!my-1.5" />
-
-                    {/* Telemetry + stats */}
-                    <div className="flex items-center gap-2 text-[11px]">
-                      <span className="flex items-center gap-1 text-muted-foreground">
-                        <Clock className="h-3 w-3" />
-                        <span className="font-mono font-medium tabular-nums text-foreground">
-                          {ac.flight_hours?.toLocaleString() ?? 0}
-                        </span>
-                        h
-                      </span>
-                      <span className="text-border">·</span>
-                      <span className="flex items-center gap-1 text-muted-foreground">
-                        <RotateCcw className="h-3 w-3" />
-                        <span className="font-mono font-medium tabular-nums text-foreground">
-                          {ac.flight_cycles?.toLocaleString() ?? 0}
-                        </span>
-                        cyc
-                      </span>
+                  />
+                  {/* Acronym overlay */}
+                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent px-3 pb-2 pt-4">
+                    <div className="flex items-center justify-between">
+                      <span className="font-mono text-sm font-bold tracking-widest text-white">{ac.acronym}</span>
+                      {isSelected && (
+                        <Badge className="h-4 bg-primary/90 px-1.5 text-[9px] font-semibold text-primary-foreground">
+                          Activa
+                        </Badge>
+                      )}
                     </div>
                   </div>
-                </button>
-              );
-            })}
-            {filtered.length === 0 && (
-              <div className="flex flex-col items-center gap-1.5 py-8 text-center">
-                <Plane className="h-6 w-6 text-muted-foreground/30" />
-                <p className="text-xs text-muted-foreground">No se encontraron aeronaves</p>
-              </div>
-            )}
-          </div>
-        </ScrollArea>
+                </div>
+
+                {/* Info */}
+                <div className="space-y-2 px-3 py-2.5">
+                  <div className="flex items-start justify-between gap-2">
+                    <span className="truncate text-xs font-medium text-foreground">{ac.manufacturer?.name ?? '—'}</span>
+                    <span className="shrink-0 font-mono text-[10px] text-muted-foreground">S/N {ac.serial || '—'}</span>
+                  </div>
+
+                  {ac.aircraft_type?.series && (
+                    <p className="truncate text-[11px] text-muted-foreground">
+                      {ac.aircraft_type.full_name ?? ac.aircraft_type.series}
+                    </p>
+                  )}
+
+                  <Separator className="!my-1.5" />
+
+                  {/* Telemetry + stats */}
+                  <div className="flex items-center gap-2 text-[11px]">
+                    <span className="flex items-center gap-1 text-muted-foreground">
+                      <Clock className="h-3 w-3" />
+                      <span className="font-mono font-medium tabular-nums text-foreground">
+                        {ac.flight_hours?.toLocaleString() ?? 0}
+                      </span>
+                      h
+                    </span>
+                    <span className="text-border">·</span>
+                    <span className="flex items-center gap-1 text-muted-foreground">
+                      <RotateCcw className="h-3 w-3" />
+                      <span className="font-mono font-medium tabular-nums text-foreground">
+                        {ac.flight_cycles?.toLocaleString() ?? 0}
+                      </span>
+                      cyc
+                    </span>
+                  </div>
+                </div>
+              </button>
+            );
+          })}
+          {filtered.length === 0 && (
+            <div className="flex min-h-[180px] w-full flex-col items-center justify-center gap-1.5 rounded-lg border border-dashed border-border/60 text-center">
+              <Plane className="h-6 w-6 text-muted-foreground/30" />
+              <p className="text-xs text-muted-foreground">No se encontraron aeronaves</p>
+            </div>
+          )}
+        </div>
       </CardContent>
     </Card>
   );

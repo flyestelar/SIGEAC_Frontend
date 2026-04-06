@@ -66,15 +66,12 @@ export default function MaintenanceDashboard() {
           </div>
         </div>
 
-        <div className="mt-4 grid gap-4 lg:grid-cols-12">
-          <div className="lg:col-span-3">
-            <AircraftSelector
-              aircraft={aircraft}
-              selectedAircraftId={selectedAircraftId}
-              onSelectAircraft={handleSelectAircraft}
-            />
-          </div>
-
+        <div className="mt-4 space-y-4">
+          <AircraftSelector
+            aircraft={aircraft}
+            selectedAircraftId={selectedAircraftId}
+            onSelectAircraft={handleSelectAircraft}
+          />
           <MaintenanceControlsSection
             selectedControlId={selectedControlId}
             onSelectControl={setSelectedControlId}
