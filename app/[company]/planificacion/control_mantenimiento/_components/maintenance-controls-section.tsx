@@ -1,6 +1,6 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { Settings2 } from 'lucide-react';
-import { ControlSelector } from './control-selector';
+import { ControlGrid } from './control-grid';
 import { TasksTable } from './tasks-table';
 import { useQuery } from '@tanstack/react-query';
 import { maintenanceControlsIndexOptions } from '@api/queries';
@@ -10,7 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 interface MaintenanceControlsSectionProps {
   selectedControlId: number | null;
-  onSelectControl: (id: number) => void;
+  onSelectControl: (id: number | null) => void;
   selectedAircraft: AircraftResource | null;
   selectedAircraftId: number | null;
 }
@@ -44,22 +44,14 @@ export function MaintenanceControlsSection({
   return (
     <div className="lg:col-span-9 space-y-4">
       {isControlsLoading ? (
-        <Card className="border-border/60 bg-card">
-          <CardContent className="py-10">
-            <div className="flex flex-col items-center justify-center text-center">
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted">
-                <Settings2 className="h-6 w-6 text-muted-foreground/60 animate-spin" />
-              </div>
-              <p className="mt-3 text-sm font-medium text-muted-foreground">Cargando controles...</p>
-            </div>
-          </CardContent>
-        </Card>
+        <ControlGrid.Skeleton />
       ) : (
         <>
-          <ControlSelector
+          <ControlGrid
             controls={controlsForAircraft}
             selectedControlId={selectedControlId}
             onSelectControl={onSelectControl}
+            aircraftAcronym={selectedAircraft?.acronym ?? ''}
           />
 
           {selectedControl ? (

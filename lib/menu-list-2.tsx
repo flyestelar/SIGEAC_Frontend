@@ -13,6 +13,8 @@ import {
   ClipboardCopy,
   ClipboardList,
   ClipboardPen,
+  Clock2,
+  ClockArrowUp,
   CreditCardIcon,
   Drill,
   FileBadge,
@@ -546,11 +548,23 @@ export function getMenuList(pathname: string, currentCompany: Company | null, us
       groupLabel: 'Planificación',
       moduleValue: 'planification',
       menus: [
+        ...(process.env.NODE_ENV === 'development'
+          ? [
+            {
+              href: companyPath('/planificacion/control_mantenimiento'),
+              label: 'Ctrl. de Mantenimiento',
+              active: isCompanyPath('/planificacion/control_mantenimiento', 'includes'),
+              icon: ClipboardList,
+              roles: ['ANALISTA_PLANIFICACION', 'JEFE_PLANIFICACION', 'SUPERUSER'],
+              submenus: [],
+            },
+          ]
+          : []),
         {
           href: companyPath('/planificacion/control_vuelos'),
-          label: 'Control de Vuelos',
+          label: 'Ctrl. de Hrs. de Vuelo',
           active: isCompanyPath('/planificacion/control_vuelos', 'includes'),
-          icon: BookCheck,
+          icon: ClockArrowUp,
           roles: ['ANALISTA_PLANIFICACION', 'JEFE_PLANIFICACION', 'SUPERUSER'],
           submenus: [
             {
@@ -582,73 +596,8 @@ export function getMenuList(pathname: string, currentCompany: Company | null, us
               label: 'Gestión de Tipos de Aeronave',
               active: isCompanyPath('/planificacion/aeronaves/tipos'),
             },
-            // {
-            //   href: `/${currentCompany?.slug}/planificacion/aeronaves/partes`,
-            //   label: 'Gestión de Partes',
-            //   active: pathname === `/${currentCompany?.slug}/planificacion/aeronaves/partes`,
-            // },
           ],
         },
-        // {
-        //   href: `/${currentCompany?.slug}/planificacion/calendario`,
-        //   label: 'Calendario de Servicios',
-        //   active: pathname.includes(`/${currentCompany?.slug}/planificacion/calendario`),
-        //   icon: CalendarFold,
-        //   roles: ['ANALISTA_ADMINISTRACION', 'JEFE_PLANIFICACION', 'SUPERUSER'],
-        //   submenus: [],
-        // },
-        {
-          href: companyPath('/planificacion/carga_documentos'),
-          label: 'Carga de Task/Directivas',
-          active: isCompanyPath('/planificacion/carga_documentos', 'includes'),
-          icon: FileUp,
-          roles: ['ANALISTA_ADMINISTRACION', 'JEFE_PLANIFICACION', 'SUPERUSER'],
-          submenus: [
-            {
-              href: companyPath('/planificacion/carga_documentos/cargar_directivas'),
-              label: 'Carga de Directivas',
-              active: isCompanyPath('/planificacion/carga_documentos/cargar_directivas'),
-              roles: ['ANALISTA_ADMINISTRACION', 'JEFE_PLANIFICACION', 'SUPERUSER'],
-            },
-            {
-              href: companyPath('/planificacion/carga_documentos/cargar_tareas'),
-              label: 'Carga de Tareas',
-              active: isCompanyPath('/planificacion/carga_documentos/cargar_tareas'),
-              roles: ['ANALISTA_ADMINISTRACION', 'JEFE_PLANIFICACION', 'SUPERUSER'],
-            },
-          ],
-        },
-        {
-          href: companyPath('/planificacion/servicios'),
-          label: 'Servicios',
-          active: isCompanyPath('/planificacion/servicios', 'includes'),
-          icon: Drill,
-          roles: ['ANALISTA_ADMINISTRACION', 'JEFE_PLANIFICACION', 'SUPERUSER'],
-          submenus: [
-            {
-              href: companyPath('/planificacion/servicios'),
-              label: 'Gestión de Servicios',
-              active: isCompanyPath('/planificacion/servicios'),
-            },
-            {
-              href: companyPath('/planificacion/servicios/crear'),
-              label: 'Crear Servicio',
-              active: isCompanyPath('/planificacion/servicios/crear'),
-            },
-          ],
-        },
-        ...(process.env.NODE_ENV === 'development'
-          ? [
-              {
-                href: companyPath('/planificacion/control_mantenimiento'),
-                label: 'Control de Mantenimiento',
-                active: isCompanyPath('/planificacion/control_mantenimiento', 'includes'),
-                icon: ClipboardList,
-                roles: ['ANALISTA_PLANIFICACION', 'JEFE_PLANIFICACION', 'SUPERUSER'],
-                submenus: [],
-              },
-            ]
-          : []),
       ],
     },
     {
