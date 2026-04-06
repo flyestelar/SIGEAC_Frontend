@@ -39,7 +39,7 @@ export function LoginForm() {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col space-y-3">
+      <form onSubmit={form.handleSubmit(onSubmit)} method="post" className="flex flex-col space-y-3">
         <FormField
           control={form.control}
           name="login"

@@ -51,7 +51,7 @@ export function AircraftSelector({ aircraft, selectedAircraftId, onSelectAircraf
       </CardHeader>
       <CardContent className="p-0">
         <ScrollArea className="h-[calc(100vh-340px)]">
-          <div className="space-y-2 px-3 pb-3">
+          <div className="space-y-2 px-3 py-3">
             {filtered.map((ac) => {
               const isSelected = selectedAircraftId === ac.id;
 
@@ -59,11 +59,12 @@ export function AircraftSelector({ aircraft, selectedAircraftId, onSelectAircraf
                 <button
                   key={ac.id}
                   onClick={() => onSelectAircraft(ac.id)}
-                  className={`group w-full overflow-hidden rounded-lg border text-left transition-all ${
+                  className={cn(
+                    'group w-full overflow-hidden rounded-lg border text-left transition-all',
                     isSelected
-                      ? 'border-primary/60 ring-1 ring-primary/20'
-                      : 'border-border/60 hover:border-foreground/20'
-                  }`}
+                      ? 'border-primary ring-2 ring-primary focus-visible:outline-none'
+                      : 'border-border/60 hover:border-foreground/20',
+                  )}
                 >
                   {/* Image */}
                   <div className="relative">
