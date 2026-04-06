@@ -1,5 +1,3 @@
-import { Card, CardContent } from '@/components/ui/card';
-import { Settings2 } from 'lucide-react';
 import { ControlGrid } from './control-grid';
 import { ExecutionsTable } from './executions-table';
 import { TasksTable } from './tasks-table';
@@ -53,9 +51,10 @@ export function MaintenanceControlsSection({
             selectedControlId={selectedControlId}
             onSelectControl={onSelectControl}
             aircraftAcronym={selectedAircraft?.acronym ?? ''}
+            averages={selectedAircraft?.last_average_metric ?? null}
           />
 
-          {selectedControl ? (
+          {selectedControl && (
             <Tabs defaultValue="tasks" className="w-full">
               <TabsList>
                 <TabsTrigger value="tasks">Tasks</TabsTrigger>
@@ -72,20 +71,7 @@ export function MaintenanceControlsSection({
                 />
               </TabsContent>
             </Tabs>
-          ) : selectedAircraft ? (
-            <Card className="border-border/60 bg-card">
-              <CardContent className="py-10">
-                <div className="flex flex-col items-center justify-center text-center">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted">
-                    <Settings2 className="h-6 w-6 text-muted-foreground/60" />
-                  </div>
-                  <p className="mt-3 text-sm font-medium text-muted-foreground">
-                    Selecciona un control para ver sus task cards
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-          ) : null}
+          )}
         </>
       )}
     </div>

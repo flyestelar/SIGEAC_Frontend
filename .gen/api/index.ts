@@ -508,6 +508,7 @@ export type {
   AircraftAverageByDateRangeErrors,
   AircraftAverageByDateRangeResponse,
   AircraftAverageByDateRangeResponses,
+  AircraftAverageMetric,
   AircraftDestroyData,
   AircraftDestroyError,
   AircraftDestroyErrors,

@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { useCompanyStore } from '@/stores/CompanyStore';
-import { MaintenanceControlResource } from '@api/types';
+import { AircraftAverageMetric, MaintenanceControlResource } from '@api/types';
 import {
   AlertTriangle,
   ArrowLeft,
@@ -23,8 +23,7 @@ import {
   Wrench,
 } from 'lucide-react';
 import Link from 'next/link';
-import { useMemo, useCallback, useState } from 'react';
-import { useGetAircraftAverage } from '@/hooks/planificacion/useGetAircraftDailyAverage';
+import { useMemo } from 'react';
 import { addDays, format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -165,86 +164,31 @@ function worstStatus(metrics: ComputedMetric[]): AlertLevel {
   );
 }
 
-// ── EstimatedDateCard (compact) ────────────────────────────────────────────────
+// ── Per-metric estimation helper ──────────────────────────────────────────────
 
-function EstimatedDateCard({ acronym, metrics }: { acronym: string; metrics: ComputedMetric[] }) {
-  const [requested, setRequested] = useState(false);
-  const { data, isLoading } = useGetAircraftAverage(acronym, undefined, requested);
+type MetricEstimation = { date: Date; days: number; avg?: number } | null;
 
-  const handleCalculate = useCallback(() => setRequested(true), []);
+function computeMetricEstimation(
+  metric: ComputedMetric,
+  averages: { average_daily_flight_hours: number; average_daily_flight_cycles: number } | null,
+): MetricEstimation {
+  if (!averages || metric.remaining <= 0) return null;
+  const now = new Date();
+  let days: number | null = null;
+  let avg: number | undefined;
 
-  const estimation = useMemo(() => {
-    if (!data?.metrics) return null;
-    const { average_daily_flight_hours, average_daily_flight_cycles } = data.metrics;
-    let best: { date: Date; metric: ComputedMetric; days: number; avg?: number } | null = null;
-    const now = new Date();
+  if (metric.type === 'DAYS') {
+    days = metric.remaining;
+  } else if (metric.type === 'FH' && averages.average_daily_flight_hours > 0) {
+    days = metric.remaining / averages.average_daily_flight_hours;
+    avg = averages.average_daily_flight_hours;
+  } else if (metric.type === 'FC' && averages.average_daily_flight_cycles > 0) {
+    days = metric.remaining / averages.average_daily_flight_cycles;
+    avg = averages.average_daily_flight_cycles;
+  }
 
-    for (const m of metrics) {
-      if (m.remaining <= 0) continue;
-      let days: number | null = null;
-      let avg: number | undefined;
-
-      if (m.type === 'DAYS') {
-        days = m.remaining;
-      } else if (m.type === 'FH' && average_daily_flight_hours > 0) {
-        days = m.remaining / average_daily_flight_hours;
-        avg = average_daily_flight_hours;
-      } else if (m.type === 'FC' && average_daily_flight_cycles > 0) {
-        days = m.remaining / average_daily_flight_cycles;
-        avg = average_daily_flight_cycles;
-      }
-
-      if (days === null || !isFinite(days)) continue;
-      if (!best || days < best.days) {
-        best = { date: addDays(now, Math.ceil(days)), metric: m, days, avg };
-      }
-    }
-    return best;
-  }, [data, metrics]);
-
-  const explanation = useMemo(() => {
-    if (!estimation) return null;
-    const rem = estimation.metric.remaining.toFixed(1);
-    if (estimation.metric.type === 'FH' && estimation.avg) {
-      return `${rem}h rest. / ${estimation.avg.toFixed(1)}h diarias`;
-    }
-    if (estimation.metric.type === 'FC' && estimation.avg) {
-      return `${rem} ciclos rest. / ${estimation.avg.toFixed(1)} ciclos/día`;
-    }
-    return `${rem} días restantes`;
-  }, [estimation]);
-
-  return (
-    <button
-      type="button"
-      onClick={handleCalculate}
-      className="w-full rounded-md border border-border/40 bg-muted/15 px-3 py-2 text-left transition-colors hover:bg-muted/25"
-    >
-      <div className="flex items-start gap-2">
-        <CalendarClock className="mt-0.5 h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-        <div className="min-w-0 space-y-0.5">
-          <p className="text-[11px] text-muted-foreground">Próx. estimado</p>
-          {!requested ? (
-            <p className="text-[11px] font-medium text-foreground/80">Click para calcular</p>
-          ) : isLoading ? (
-            <div className="flex items-center gap-1.5 text-[11px] font-medium text-muted-foreground">
-              <RefreshCw className="h-3 w-3 animate-spin" />
-              <span>Calculando...</span>
-            </div>
-          ) : estimation ? (
-            <>
-              <p className="font-mono text-[11px] font-medium">
-                {format(estimation.date, 'dd MMM yyyy', { locale: es })}
-              </p>
-              <p className="text-[10px] leading-snug text-muted-foreground">{explanation}</p>
-            </>
-          ) : (
-            <p className="text-[11px] text-muted-foreground/60">Sin datos</p>
-          )}
-        </div>
-      </div>
-    </button>
-  );
+  if (days === null || !isFinite(days)) return null;
+  return { date: addDays(now, Math.ceil(days)), days, avg };
 }
 
 // ── ControlCard ────────────────────────────────────────────────────────────────
@@ -253,12 +197,12 @@ function ControlCard({
   computed,
   isSelected,
   onSelect,
-  aircraftAcronym,
+  averages,
 }: {
   computed: ComputedControl;
   isSelected: boolean;
   onSelect: () => void;
-  aircraftAcronym: string;
+  averages: AircraftAverageMetric | null;
 }) {
   const { selectedCompany } = useCompanyStore();
   const { control, metrics, status, isActive } = computed;
@@ -270,77 +214,95 @@ function ControlCard({
       className={`group cursor-pointer overflow-hidden transition hover:-translate-y-0.5 ${cfg.cardBorder} ${cfg.cardBg}`}
       onClick={onSelect}
     >
-      <CardHeader className="space-y-1.5 px-3 py-2.5">
-        <div className="flex items-start justify-between gap-2">
-          <div className="flex items-start gap-2">
-            <div className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded ${cfg.iconBg}`}>
-              <LevelIcon className={`h-3 w-3 ${cfg.iconText}`} />
+      <CardHeader className="space-y-2 px-5 py-4">
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex items-start gap-3">
+            <div className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-md ${cfg.iconBg}`}>
+              <LevelIcon className={`h-4 w-4 ${cfg.iconText}`} />
             </div>
             <div className="min-w-0">
-              <p className="text-xs font-semibold leading-tight text-foreground">{control.title}</p>
-              <p className="font-mono text-[10px] text-muted-foreground">{control.manual_reference}</p>
+              <p className="text-sm font-semibold leading-snug text-foreground">{control.title}</p>
+              <p className="mt-1 font-mono text-xs text-muted-foreground">{control.manual_reference}</p>
             </div>
           </div>
-          <div className="flex shrink-0 items-center gap-1">
+          <div className="flex shrink-0 items-center gap-1.5">
             {isActive && (
-              <Badge variant="outline" className="h-5 border-sky-500/30 bg-sky-500/10 px-1.5 text-[10px] text-sky-600 dark:text-sky-400">
-                <Wrench className="mr-0.5 h-2.5 w-2.5" />
+              <Badge variant="outline" className="h-6 border-sky-500/30 bg-sky-500/10 px-2 text-[11px] text-sky-600 dark:text-sky-400">
+                <Wrench className="mr-1 h-3 w-3" />
                 En curso
               </Badge>
             )}
-            <Badge variant="outline" className={`h-5 px-1.5 text-[10px] ${cfg.badgeClass}`}>
+            <Badge variant="outline" className={`h-6 px-2 text-[11px] ${cfg.badgeClass}`}>
               {ALERT_LABELS[status]}
             </Badge>
           </div>
         </div>
       </CardHeader>
 
-      <CardContent className="space-y-2 px-3 pb-3 pt-0">
+      <CardContent className="space-y-4 px-5 pb-5 pt-0">
         {metrics.length > 0 && (
-          <div className="grid auto-cols-fr grid-flow-col gap-1.5">
+          <div className="grid auto-cols-fr grid-flow-col gap-2.5">
             {metrics.map((metric) => {
               const metricCfg = LEVEL_CONFIG[metric.status];
               const MetricIcon = METRIC_ICONS[metric.type];
+              const estimation = averages ? computeMetricEstimation(metric, averages) : null;
               return (
-                <div key={metric.type} className="rounded border border-border/50 bg-muted/15 px-1.5 py-1">
-                  <p className="flex items-center gap-0.5 text-[9px] font-medium uppercase tracking-wide text-muted-foreground">
-                    <MetricIcon className="h-2.5 w-2.5" />
+                <div key={metric.type} className="rounded-md border border-border/50 bg-muted/15 px-3 py-2">
+                  <p className="flex items-center gap-1 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+                    <MetricIcon className="h-3.5 w-3.5" />
                     {METRIC_LABELS[metric.type]}
                   </p>
-                  <p className="mt-0.5 font-mono text-[11px] font-semibold tabular-nums">
+                  <p className="mt-1.5 font-mono text-sm font-semibold tabular-nums">
                     <span className={metricCfg.iconText}>{metric.consumed.toFixed(1)}</span>
                     <span className="text-muted-foreground">/{metric.interval}</span>
-                    <span className="ml-0.5 text-[9px] font-normal text-muted-foreground">
+                    <span className="ml-1 text-[11px] font-normal text-muted-foreground">
                       {METRIC_UNITS[metric.type]}
                     </span>
                   </p>
+                  <p className="mt-0.5 font-mono text-[11px] text-muted-foreground">
+                    ({metric.remaining.toFixed(1)} {METRIC_UNITS[metric.type]} rest.)
+                  </p>
                   <Progress
                     value={metric.percentage}
-                    className="mt-1 h-1"
+                    className="mt-2 h-1.5"
                     indicatorClassName={metricCfg.progressIndicator}
                   />
+                  {/* Próximo estimado inline */}
+                  <div className="mt-2.5 border-t border-border/30 pt-2">
+                    {estimation ? (
+                      <div className="flex items-center gap-1.5 text-[11px]">
+                        <CalendarClock className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                        <span className="font-mono font-medium">
+                          {format(estimation.date, 'dd MMM yy', { locale: es })}
+                        </span>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground/60">
+                        <CalendarClock className="h-3.5 w-3.5" />
+                        <span>Sin datos</span>
+                      </div>
+                    )}
+                  </div>
                 </div>
               );
             })}
           </div>
         )}
 
-        <EstimatedDateCard acronym={aircraftAcronym} metrics={metrics} />
-
         <div className="flex items-center justify-between">
-          <Badge variant="outline" className="h-4 border-border/50 px-1 text-[9px] font-normal">
-            <ClipboardList className="mr-0.5 h-2 w-2" />
+          <Badge variant="outline" className="h-6 border-border/50 px-2 text-[11px] font-normal">
+            <ClipboardList className="mr-1 h-3 w-3" />
             {control.task_cards?.length ?? 0} tasks
           </Badge>
           <Button
             asChild
             variant="ghost"
             size="icon"
-            className="h-5 w-5 opacity-0 transition-opacity group-hover:opacity-100"
+            className="h-7 w-7 opacity-0 transition-opacity group-hover:opacity-100"
             onClick={(e) => e.stopPropagation()}
           >
             <Link href={`/${selectedCompany?.slug}/planificacion/control_mantenimiento/${control.id}/editar`}>
-              <Edit className="h-2.5 w-2.5" />
+              <Edit className="h-3.5 w-3.5" />
             </Link>
           </Button>
         </div>
@@ -424,7 +386,9 @@ function SelectedControlHeader({
                       {METRIC_UNITS[metric.type]}
                     </span>
                   </span>
-                  <span className="text-[10px] text-muted-foreground">({metric.percentage.toFixed(0)}%)</span>
+                  <span className="font-mono text-[10px] text-muted-foreground">
+                    ({metric.remaining.toFixed(1)} {METRIC_UNITS[metric.type]} rest.)
+                  </span>
                   <Progress value={metric.percentage} className="h-1.5 w-16" indicatorClassName={metricCfg.progressIndicator} />
                 </div>
               );
@@ -480,9 +444,10 @@ interface ControlGridProps {
   selectedControlId: number | null;
   onSelectControl: (id: number | null) => void;
   aircraftAcronym: string;
+  averages: AircraftAverageMetric | null;
 }
 
-export function ControlGrid({ controls, selectedControlId, onSelectControl, aircraftAcronym }: ControlGridProps) {
+export function ControlGrid({ controls, selectedControlId, onSelectControl, aircraftAcronym, averages }: ControlGridProps) {
   const computedControls = useMemo<ComputedControl[]>(() => {
     return controls.map((control) => {
       const metrics = computeMetrics(control);
@@ -542,14 +507,14 @@ export function ControlGrid({ controls, selectedControlId, onSelectControl, airc
           {controls.length}
         </Badge>
       </div>
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-2 2xl:grid-cols-3">
         {sortedControls.map((computed) => (
           <ControlCard
             key={computed.control.id}
             computed={computed}
             isSelected={false}
             onSelect={() => onSelectControl(computed.control.id)}
-            aircraftAcronym={aircraftAcronym}
+            averages={averages}
           />
         ))}
       </div>
