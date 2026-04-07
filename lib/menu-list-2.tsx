@@ -61,6 +61,8 @@ type Group = {
   menus: Menu[];
 };
 
+const SUPERUSER_ROLES = ['SUPERUSER'];
+
 export function getMenuList(pathname: string, currentCompany: Company | null, userRoles: string[]): Group[] {
   const date = format(new Date(), 'yyyy-MM-dd');
   const normalizedPathname = pathname !== '/' && pathname.endsWith('/') ? pathname.slice(0, -1) : pathname;
@@ -79,7 +81,11 @@ export function getMenuList(pathname: string, currentCompany: Company | null, us
 
   // Verificar acceso por rol
   const hasRoleAccess = (menuItem: { roles?: string[] }): boolean => {
-    return !menuItem.roles || menuItem.roles.length === 0 || menuItem.roles.some((role) => userRoles.includes(role));
+    return (
+      !menuItem.roles ||
+      menuItem.roles.length === 0 ||
+      menuItem.roles.some((role) => userRoles.includes(role) || SUPERUSER_ROLES.includes(role))
+    );
   };
 
   // Verificar si el módulo está activo para la compañía
@@ -550,15 +556,15 @@ export function getMenuList(pathname: string, currentCompany: Company | null, us
       menus: [
         ...(process.env.NODE_ENV === 'development'
           ? [
-            {
-              href: companyPath('/planificacion/control_mantenimiento'),
-              label: 'Ctrl. de Mantenimiento',
-              active: isCompanyPath('/planificacion/control_mantenimiento', 'includes'),
-              icon: ClipboardList,
-              roles: ['ANALISTA_PLANIFICACION', 'JEFE_PLANIFICACION', 'SUPERUSER'],
-              submenus: [],
-            },
-          ]
+              {
+                href: companyPath('/planificacion/control_mantenimiento'),
+                label: 'Ctrl. de Mantenimiento',
+                active: isCompanyPath('/planificacion/control_mantenimiento', 'includes'),
+                icon: ClipboardList,
+                roles: ['ANALISTA_PLANIFICACION', 'JEFE_PLANIFICACION', 'SUPERUSER'],
+                submenus: [],
+              },
+            ]
           : []),
         {
           href: companyPath('/planificacion/control_vuelos'),
