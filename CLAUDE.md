@@ -61,6 +61,54 @@ useMutation({
 - **Tables:** TanStack React Table with column definitions typed in TypeScript.
 - **Formatting:** Prettier — 2-space indent, single quotes, trailing commas, 120-char line width.
 
+### Domains
+
+Business pages are organized under `app/[company]/` by domain:
+
+| Route folder | Domain |
+|---|---|
+| `almacen/` | Warehouse / inventory |
+| `compras/` | Purchasing |
+| `mantenimiento/` | MRO maintenance |
+| `ingenieria/` | Engineering |
+| `planificacion/` | Planning |
+| `sms/` | Safety management |
+| `gestion_costos/` | Cost management |
+| `administracion/` | Administration |
+| `ajustes/` | Settings |
+
+Corresponding server operations live in `actions/<domain>/` and hooks in `hooks/<domain>/`.
+
+### Interface Design System
+
+Full spec is in [`.interface-design/system.md`](.interface-design/system.md). Key rules:
+
+**Product domain:** Aviation MRO. Users are warehouse coordinators and purchasing analysts — information density is a feature.
+
+**No drop shadows.** All surfaces defined by borders only: `rounded-lg border bg-background`.
+
+**Typography hierarchy:**
+- Body/values: `text-sm font-medium`
+- Supporting info: `text-sm text-foreground/80`
+- Metadata: `text-xs text-muted-foreground`
+- Field labels: `text-[11px] font-semibold uppercase tracking-widest text-muted-foreground`
+- Technical data (P/N, order numbers, registrations): `font-mono`
+
+**Status badge color pattern** (`border-*/30 bg-*/10 text-*`):
+- Approved → `emerald-500`
+- Rejected → `red-500`
+- Pending → `amber-500`
+- Priority HIGH/AOG → `red-500`
+
+**Target type accent colors:**
+- AIRCRAFT → `sky-500`, FLEET → `indigo-500`, WORKSHOP → `orange-500`
+
+**Detail page layout:** `max-w-7xl`, two-column grid — left `lg:col-span-8` (main), right `lg:col-span-4` (sticky documents/side panel).
+
+**Context Strip pattern** — full-width accent band between page header and body, color driven by entity type. Use `TARGET_CONFIG` object pattern to centralize per-variant color decisions.
+
+**Reusable misc components:** `InfoCell` (label + value display, `mono` prop for technical data), `FieldLabel`, `DocPreview` (PDF/image with header bar, fixed `h-[240px]`).
+
 ### Environment Variables
 
 Key vars in `.env`:

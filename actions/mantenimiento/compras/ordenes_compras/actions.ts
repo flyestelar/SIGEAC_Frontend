@@ -20,6 +20,7 @@ interface CompletePurchaseData {
 
 interface CreatePurchaseOrderData {
   status: string,
+  order_number: string,
   justification: string,
   purchase_date: Date,
   sub_total: number,

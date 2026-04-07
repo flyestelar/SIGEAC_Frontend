@@ -577,7 +577,20 @@ export function ComponentDispatchForm({ onClose }: FormProps) {
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-[340px] p-0">
-              <Command>
+              <Command
+                filter={(value, search) => {
+                  if (!search) return 1;
+                  const s = search.toLowerCase();
+                  // value format: "${batch.name} ${part_number} ${serial} ${id}"
+                  // Exclude the last token (numeric id) from search matching
+                  const tokens = value.toLowerCase().split(' ');
+                  const searchable = tokens.slice(0, -1);
+                  if (!searchable.join(' ').includes(s)) return 0;
+                  // Prioritize items where serial or part_number starts with the search term
+                  if (searchable.some((t) => t.startsWith(s))) return 1;
+                  return 0.5;
+                }}
+              >
                 <CommandInput placeholder="Buscar componente..." />
                 <CommandList>
                   <CommandEmpty>No se han encontrado componentes...</CommandEmpty>
