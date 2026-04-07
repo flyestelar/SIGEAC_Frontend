@@ -72,7 +72,7 @@ const chartConfig = {
   },
   fc: {
     label: 'Ciclos de vuelo',
-    color: 'hsl(210, 70%, 55%)',
+    color: 'hsl(120, 65%, 35%)',
   },
   limitFh: {
     label: 'Límite FH',
@@ -90,7 +90,7 @@ const METRIC_ICONS = {
 } as const;
 
 function getMetricColor(key: 'fh' | 'fc') {
-  return key === 'fh' ? 'hsl(var(--primary))' : 'hsl(210, 70%, 55%)';
+  return key === 'fh' ? 'hsl(var(--primary))' : 'hsl(120, 65%, 35%)';
 }
 
 function formatChartDate(day: number) {
@@ -222,11 +222,7 @@ function buildProjectionData(
     });
 }
 
-function getAxisDomainMax(
-  metrics: ProjectionChartProps['metrics'],
-  key: 'fh' | 'fc',
-  projectionDays: number,
-) {
+function getAxisDomainMax(metrics: ProjectionChartProps['metrics'], key: 'fh' | 'fc', projectionDays: number) {
   const metric = metrics.find((item) => item.key === key);
   if (!metric || metric.consumed === null || !metric.averagePerDay || metric.averagePerDay <= 0) {
     return 'auto' as const;
@@ -335,8 +331,7 @@ export function ProjectionChart({ metrics }: ProjectionChartProps) {
     }
 
     const nextProjectionDays = computeProjectionDays(activeMetrics);
-    const stepDays =
-      nextProjectionDays > 365 ? 14 : nextProjectionDays > 180 ? 7 : nextProjectionDays > 60 ? 3 : 1;
+    const stepDays = nextProjectionDays > 365 ? 14 : nextProjectionDays > 180 ? 7 : nextProjectionDays > 60 ? 3 : 1;
     const nextDueMarkers = getDueMarkers(activeMetrics);
 
     return {
@@ -357,6 +352,12 @@ export function ProjectionChart({ metrics }: ProjectionChartProps) {
   const hasFc = activeMetrics.some((metric) => metric.key === 'fc');
   const dualAxis = hasFh && hasFc;
 
+  const axisNumberFormatter = new Intl.NumberFormat(undefined, {
+    notation: 'compact',
+    compactDisplay: 'short',
+    maximumFractionDigits: 2,
+  });
+
   return (
     <Card className="overflow-hidden border-border/60">
       <CardContent className="p-0">
@@ -367,9 +368,7 @@ export function ProjectionChart({ metrics }: ProjectionChartProps) {
             </div>
             <div>
               <p className="text-sm font-semibold text-foreground">Proyeccion de consumo</p>
-              <p className="mt-0.5 text-[11px] text-muted-foreground">
-                Basado en el promedio diario de la aeronave
-              </p>
+              <p className="mt-0.5 text-[11px] text-muted-foreground">Basado en el promedio diario de la aeronave</p>
             </div>
           </div>
 
@@ -402,8 +401,8 @@ export function ProjectionChart({ metrics }: ProjectionChartProps) {
                   <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0.02} />
                 </linearGradient>
                 <linearGradient id="gradientFc" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="hsl(210, 70%, 55%)" stopOpacity={0.15} />
-                  <stop offset="95%" stopColor="hsl(210, 70%, 55%)" stopOpacity={0.02} />
+                  <stop offset="0%" stopColor="hsl(120, 65%, 35%)" stopOpacity={0.18} />
+                  <stop offset="95%" stopColor="hsl(120, 65%, 35%)" stopOpacity={0.02} />
                 </linearGradient>
               </defs>
 
@@ -428,37 +427,37 @@ export function ProjectionChart({ metrics }: ProjectionChartProps) {
                   tickLine={false}
                   tick={{ fontSize: 11 }}
                   tickMargin={4}
-                  width={50}
-                  tickFormatter={(value) => `${value}`}
+                  width={55}
+                  tickFormatter={(value) => axisNumberFormatter.format(value) + ' FH'}
                 />
               )}
 
-              {dualAxis && hasFc && (
-                <YAxis
-                  yAxisId="fc"
-                  orientation="right"
-                  domain={[0, getAxisDomainMax(activeMetrics, 'fc', projectionDays)]}
-                  axisLine={false}
-                  tickLine={false}
-                  tick={{ fontSize: 11 }}
-                  tickMargin={4}
-                  width={50}
-                  tickFormatter={(value) => `${value}`}
-                />
-              )}
-
-              {!dualAxis && hasFc && (
-                <YAxis
-                  yAxisId="fc"
-                  domain={[0, getAxisDomainMax(activeMetrics, 'fc', projectionDays)]}
-                  axisLine={false}
-                  tickLine={false}
-                  tick={{ fontSize: 11 }}
-                  tickMargin={4}
-                  width={50}
-                  tickFormatter={(value) => `${value}`}
-                />
-              )}
+              {hasFc ? (
+                dualAxis ? (
+                  <YAxis
+                    yAxisId="fc"
+                    orientation="right"
+                    domain={[0, getAxisDomainMax(activeMetrics, 'fc', projectionDays)]}
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{ fontSize: 11 }}
+                    tickMargin={4}
+                    width={55}
+                    tickFormatter={(value) => axisNumberFormatter.format(value) + ' FC'}
+                  />
+                ) : (
+                  <YAxis
+                    yAxisId="fc"
+                    domain={[0, getAxisDomainMax(activeMetrics, 'fc', projectionDays)]}
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{ fontSize: 11 }}
+                    tickMargin={4}
+                    width={50}
+                    tickFormatter={(value) => axisNumberFormatter.format(value) + ' FC'}
+                  />
+                )
+              ) : null}
 
               <ChartTooltip
                 content={
@@ -472,7 +471,13 @@ export function ProjectionChart({ metrics }: ProjectionChartProps) {
 
                       return (
                         <div className="flex items-center justify-between gap-4">
-                          <span className="text-muted-foreground">{getMetricUnit(String(name))}</span>
+                          <span className="flex items-center gap-2 text-muted-foreground">
+                            <span
+                              className="h-2 w-2 rounded-full"
+                              style={{ backgroundColor: getMetricColor(String(name) as 'fh' | 'fc') }}
+                            />
+                            {getMetricUnit(String(name))}
+                          </span>
                           <span className="font-mono font-semibold tabular-nums">{Number(value).toFixed(1)}</span>
                         </div>
                       );
@@ -536,7 +541,7 @@ export function ProjectionChart({ metrics }: ProjectionChartProps) {
                   yAxisId="fc"
                   type="monotone"
                   dataKey="fc"
-                  stroke="hsl(210, 70%, 55%)"
+                  stroke="hsl(120, 65%, 35%)"
                   strokeWidth={2}
                   fill="url(#gradientFc)"
                   dot={false}
@@ -556,7 +561,7 @@ export function ProjectionChart({ metrics }: ProjectionChartProps) {
           )}
           {hasFc && (
             <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
-              <div className="h-0.5 w-4 rounded-full" style={{ backgroundColor: 'hsl(210, 70%, 55%)' }} />
+              <div className="h-0.5 w-4 rounded-full" style={{ backgroundColor: 'hsl(120, 65%, 35%)' }} />
               <span>FC proyectados</span>
             </div>
           )}

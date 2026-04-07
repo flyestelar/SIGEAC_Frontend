@@ -94,7 +94,7 @@ const STATUS_CONFIG: Record<
 // ── Helpers ──────────────────────────────────────────────────
 
 function fmt(value: number, digits = 1) {
-  return new Intl.NumberFormat('es-ES', {
+  return new Intl.NumberFormat(undefined, {
     minimumFractionDigits: digits,
     maximumFractionDigits: digits,
   }).format(value);
@@ -103,7 +103,7 @@ function fmt(value: number, digits = 1) {
 function computeEstimation(metric: EstimationMetric): ComputedEstimation | null {
   if (!metric.interval || metric.consumed === null || metric.consumed === undefined) return null;
 
-  const remaining = metric.interval - metric.consumed;
+  const remaining = Math.max(metric.interval - metric.consumed, 0);
   const percentage = Math.min((metric.consumed / metric.interval) * 100, 100);
   const averagePerDay = metric.averagePerDay ?? 0;
 

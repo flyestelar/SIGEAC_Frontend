@@ -61,7 +61,7 @@ export function MaintenanceControlsSection({
                 <TabsList className="mx-auto">
                   <TabsTrigger value="tasks">Tasks</TabsTrigger>
                   <TabsTrigger value="estimaciones">Graficas</TabsTrigger>
-                  <TabsTrigger value="ejecuciones">Ejecuciones</TabsTrigger>
+                  <TabsTrigger value="ejecuciones">Últimos Cumplimientos</TabsTrigger>
                 </TabsList>
               </div>
               <TabsContent value="tasks">
