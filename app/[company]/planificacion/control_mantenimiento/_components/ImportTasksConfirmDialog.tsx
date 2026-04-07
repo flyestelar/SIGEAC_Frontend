@@ -19,6 +19,7 @@ type ImportedTask = {
   description: string;
   old_task?: string;
   new_task?: string;
+  applicable: boolean;
 };
 
 interface ImportTasksConfirmDialogProps {
@@ -91,6 +92,7 @@ function ImportTasksConfirmDialogContent(props: ImportTasksConfirmDialogProps) {
               <th className="px-2 py-1 text-left">Old Task Card</th>
               <th className="px-2 py-1 text-left">Descripcion</th>
               <th className="px-2 py-1 text-left">New Task Card</th>
+              <th className="px-2 py-1 text-center">Aplica</th>
             </tr>
           </thead>
           <tbody>
@@ -99,6 +101,7 @@ function ImportTasksConfirmDialogContent(props: ImportTasksConfirmDialogProps) {
                 <td className="px-2 py-1 whitespace-nowrap">{task.old_task || '-'}</td>
                 <td className="px-2 py-1">{task.description}</td>
                 <td className="px-2 py-1 whitespace-nowrap">{task.new_task || '-'}</td>
+                <td className="px-2 py-1 text-center">{task.applicable ? 'Sí' : 'No'}</td>
               </tr>
             ))}
           </tbody>

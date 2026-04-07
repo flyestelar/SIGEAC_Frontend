@@ -619,14 +619,14 @@ export type StoreTaskMasterRequest = {
  * TaskCardResource
  */
 export type TaskCardResource = {
-  id: string;
-  old_task: string;
-  new_task: string;
-  description: string;
-  applicable: string;
-  created_at: string;
-  updated_at: string;
-  manual_reference: string;
+  id: number;
+  old_task: string | null;
+  new_task: string | null;
+  description: string | null;
+  applicable: boolean;
+  created_at: string | null;
+  updated_at: string | null;
+  manual_reference: string | null;
   order?: string;
 };
 

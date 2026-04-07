@@ -1,13 +1,12 @@
 'use client';
 
 import { useCreateMaintenanceControl } from '@/actions/planificacion/control_mantenimiento/actions';
+import { parseMaintenanceInterval } from '@/actions/planificacion/control_mantenimiento/excelProcessor';
 import { ContentLayout } from '@/components/layout/ContentLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { parseMaintenanceInterval } from '@/lib/excelProcessor';
 import { useCompanyStore } from '@/stores/CompanyStore';
-import { ArrowLeft, CircleHelp } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import MaintenanceControlForm, { MaintenanceControlFormValues } from '../_components/MaintenanceControlForm';

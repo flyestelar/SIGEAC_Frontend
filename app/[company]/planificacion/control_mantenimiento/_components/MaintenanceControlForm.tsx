@@ -1,13 +1,17 @@
 'use client';
 
+import {
+  parseMaintenanceInterval,
+  processExcelFile,
+  TaskCardData,
+} from '@/actions/planificacion/control_mantenimiento/excelProcessor';
 import { MultiAircraftSelect } from '@/components/forms/MultiAircraftSelect';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Textarea } from '@/components/ui/textarea';
-import { parseMaintenanceInterval, processExcelFile } from '@/lib/excelProcessor';
-import { useCompanyStore } from '@/stores/CompanyStore';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { ChevronDown, ChevronUp, CircleHelp, ListChecksIcon, Plus, Trash2 } from 'lucide-react';
 import { useState } from 'react';
@@ -17,9 +21,10 @@ import { z } from 'zod';
 import ImportTasksConfirmDialog, { ImportStrategy } from './ImportTasksConfirmDialog';
 
 const taskSchema = z.object({
-  description: z.string().trim().min(1, 'La descripción es obligatoria'),
-  old_task: z.string().trim().optional().default(''),
-  new_task: z.string().trim().optional().default(''),
+  description: z.string().trim().min(1, 'La descripción es obligatoria').default(''),
+  old_task: z.string().trim().default(''),
+  new_task: z.string().trim().default(''),
+  applicable: z.boolean().default(true),
 });
 
 const maintenanceControlSchema = z.object({
@@ -48,8 +53,6 @@ interface MaintenanceControlFormProps {
 }
 
 const MaintenanceControlForm = ({ submitting, onCancel, onSubmit, initialValues }: MaintenanceControlFormProps) => {
-  const { selectedCompany } = useCompanyStore();
-
   const form = useForm<MaintenanceControlFormValues>({
     resolver: zodResolver(maintenanceControlSchema),
     defaultValues: {
@@ -74,8 +77,9 @@ const MaintenanceControlForm = ({ submitting, onCancel, onSubmit, initialValues 
     description: '',
     old_task: '',
     new_task: '',
+    applicable: true,
   });
-  const [pendingImportedTasks, setPendingImportedTasks] = useState<MaintenanceControlFormValues['tasks']>([]);
+  const [pendingImportedTasks, setPendingImportedTasks] = useState<TaskCardData[]>([]);
   const [pendingFileName, setPendingFileName] = useState('');
   const [isPreviewDialogOpen, setIsPreviewDialogOpen] = useState(false);
 
@@ -92,10 +96,11 @@ const MaintenanceControlForm = ({ submitting, onCancel, onSubmit, initialValues 
       description: newTask.description.trim(),
       old_task: newTask.old_task.trim() || '',
       new_task: newTask.new_task.trim() || '',
+      applicable: newTask.applicable,
     });
 
     form.clearErrors('tasks');
-    setNewTask({ description: '', old_task: '', new_task: '' });
+    setNewTask({ description: '', old_task: '', new_task: '', applicable: true });
   };
 
   const handleMoveTaskUp = (index: number) => {
@@ -323,13 +328,14 @@ const MaintenanceControlForm = ({ submitting, onCancel, onSubmit, initialValues 
                   <th className="px-3 py-2 text-left font-medium">Descripción</th>
                   <th className="px-3 py-2 text-left font-medium">Old Task Card</th>
                   <th className="px-3 py-2 text-left font-medium">New Task Card</th>
+                  <th className="px-3 py-2 text-center font-medium">Aplica</th>
                   <th className="px-3 py-2 text-right font-medium">Acciones</th>
                 </tr>
               </thead>
               <tbody>
                 {fields.length === 0 && (
                   <tr>
-                    <td colSpan={5} className="px-3 py-4 text-center text-muted-foreground">
+                    <td colSpan={6} className="px-3 py-4 text-center text-muted-foreground">
                       No hay tareas cargadas. Puede importar desde Excel o agregarlas manualmente.
                     </td>
                   </tr>
@@ -337,9 +343,7 @@ const MaintenanceControlForm = ({ submitting, onCancel, onSubmit, initialValues 
 
                 {fields.map((field, index) => (
                   <tr key={field.id} className="border-t">
-                    <td className="px-3 py-2 text-center text-sm text-muted-foreground align-middle">
-                      {index + 1}
-                    </td>
+                    <td className="px-3 py-2 text-center text-sm text-muted-foreground align-middle">{index + 1}</td>
                     <td className="px-3 py-2 align-top">
                       <Input placeholder="Descripción de la tarea" {...form.register(`tasks.${index}.description`)} />
                       {form.formState.errors.tasks?.[index]?.description?.message && (
@@ -353,6 +357,14 @@ const MaintenanceControlForm = ({ submitting, onCancel, onSubmit, initialValues 
                     </td>
                     <td className="px-3 py-2 align-top">
                       <Input placeholder="New task card" {...form.register(`tasks.${index}.new_task`)} />
+                    </td>
+                    <td className="px-3 py-2 text-center align-middle">
+                      <FormField
+                        defaultValue={field.applicable}
+                        control={form.control}
+                        name={`tasks.${index}.applicable`}
+                        render={({ field }) => <Checkbox checked={field.value} onCheckedChange={field.onChange} />}
+                      />
                     </td>
                     <td className="px-3 py-2 text-right align-top">
                       <div className="flex items-center justify-end gap-1">
@@ -391,9 +403,7 @@ const MaintenanceControlForm = ({ submitting, onCancel, onSubmit, initialValues 
                 ))}
 
                 <tr className="border-t bg-muted/20">
-                  <td className="px-3 py-2 text-center text-sm text-muted-foreground align-middle">
-                    -
-                  </td>
+                  <td className="px-3 py-2 text-center text-sm text-muted-foreground align-middle">-</td>
                   <td className="px-3 py-2">
                     <Input
                       placeholder="Descripción"
@@ -416,6 +426,12 @@ const MaintenanceControlForm = ({ submitting, onCancel, onSubmit, initialValues 
                       value={newTask.new_task}
                       onChange={(e) => setNewTask((prev) => ({ ...prev, new_task: e.target.value }))}
                       onKeyDown={handleNewTaskKeyDown}
+                    />
+                  </td>
+                  <td className="px-3 py-2 text-center align-middle">
+                    <Checkbox
+                      checked={newTask.applicable}
+                      onCheckedChange={(checked) => setNewTask((prev) => ({ ...prev, applicable: !!checked }))}
                     />
                   </td>
                   <td className="px-3 py-2 text-right">
@@ -485,7 +501,8 @@ function ExcelFormatHelpPopover() {
         <div>
           <p className="text-sm font-semibold">Formato esperado</p>
           <p className="text-xs text-muted-foreground">
-            El archivo debe incluir solo tareas con estas columnas: Old Task Card, Descripción y New Task Card.
+            El archivo debe incluir solo tareas con estas columnas: Old Task Card, Descripción, New Task Card y
+            Applicable.
           </p>
         </div>
         <div className="rounded-md border overflow-x-auto">
@@ -495,6 +512,7 @@ function ExcelFormatHelpPopover() {
                 <th className="px-2 py-1 text-left">Old Task Card</th>
                 <th className="px-2 py-1 text-left">Descripción</th>
                 <th className="px-2 py-1 text-left">New Task Card</th>
+                <th className="px-2 py-1 text-center">Aplica</th>
               </tr>
             </thead>
             <tbody>
@@ -502,11 +520,13 @@ function ExcelFormatHelpPopover() {
                 <td className="px-2 py-1">H1-001</td>
                 <td className="px-2 py-1">Inspeccionar sistema hidráulico</td>
                 <td className="px-2 py-1">H1-002</td>
+                <td className="px-2 py-1 text-center">Sí</td>
               </tr>
               <tr className="border-t">
                 <td className="px-2 py-1">F2-001</td>
                 <td className="px-2 py-1">Verificar funcionamiento de flaps</td>
                 <td className="px-2 py-1">F2-002</td>
+                <td className="px-2 py-1 text-center">No</td>
               </tr>
             </tbody>
           </table>

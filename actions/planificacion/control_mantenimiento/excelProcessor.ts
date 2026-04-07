@@ -4,6 +4,7 @@ export interface TaskCardData {
   description: string;
   old_task: string;
   new_task: string;
+  applicable: boolean;
 }
 
 export interface ParsedMaintenanceInterval {
@@ -26,6 +27,11 @@ const STANDARD_SERVICE_INTERVALS: Record<string, ParsedMaintenanceInterval> = {
   '8c': { fh: 32000 },
   si: { fc: 24000 },
 };
+
+function parseExcelBool(value: string): boolean {
+  const normalized = normalizeText(value);
+  return normalized === 'si' || normalized === 'yes' || normalized === '1' || normalized === 'true' || normalized === 'verdadero';
+}
 
 function normalizeText(value: string): string {
   return value
@@ -150,6 +156,7 @@ export async function processExcelFile(file: File): Promise<TaskCardData[]> {
   const OLD_TASK_COL = 0;
   const DESCRIPTION_COL = 1;
   const NEW_TASK_COL = 2;
+  const APPLICABLE_COL = 3;
 
   for (let i = 1; i < jsonData.length; i++) {
     const row = jsonData[i];
@@ -162,11 +169,13 @@ export async function processExcelFile(file: File): Promise<TaskCardData[]> {
     const descriptionCell = row[DESCRIPTION_COL];
     const oldTaskCell = row[OLD_TASK_COL];
     const newTaskCell = row[NEW_TASK_COL];
+    const applicableCell = row[APPLICABLE_COL];
 
     const task: TaskCardData = {
       description: String(descriptionCell || '').trim(),
       old_task: String(oldTaskCell || '').trim(),
       new_task: String(newTaskCell || '').trim(),
+      applicable: parseExcelBool(String(applicableCell || '').trim()),
     };
 
     tasks.push(task);

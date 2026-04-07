@@ -1,10 +1,10 @@
 'use client';
 
 import { useUpdateMaintenanceControl } from '@/actions/planificacion/control_mantenimiento/actions';
+import { parseMaintenanceInterval } from '@/actions/planificacion/control_mantenimiento/excelProcessor';
 import { ContentLayout } from '@/components/layout/ContentLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { parseMaintenanceInterval } from '@/lib/excelProcessor';
 import { useGetMaintenanceControlById } from '@/hooks/planificacion/control_mantenimiento/useGetMaintenanceControlById';
 import { useCompanyStore } from '@/stores/CompanyStore';
 import { ArrowLeft, Loader2 } from 'lucide-react';
@@ -97,7 +97,8 @@ export default function EditMaintenanceControlPage() {
     aircraft_ids: control.data.aircrafts?.map((ac) => ac.id) || [],
     tasks:
       control.data.task_cards?.map((tc) => ({
-        description: tc.description,
+        ...tc,
+        description: tc.description || '',
         old_task: tc.old_task || '',
         new_task: tc.new_task || '',
       })) || [],
