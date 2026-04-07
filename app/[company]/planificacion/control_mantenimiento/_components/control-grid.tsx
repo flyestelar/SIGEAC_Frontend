@@ -15,8 +15,6 @@ import {
   Clock,
   ClipboardList,
   Edit,
-  FileText,
-  Gauge,
   RefreshCw,
   ShieldCheck,
   TriangleAlert,
@@ -132,6 +130,27 @@ const LEVEL_CONFIG: Record<
 
 const LEVEL_PRIORITY: Record<AlertLevel, number> = { OVERDUE: 0, WARNING: 1, OK: 2 };
 
+// ── Badge Components ─────────────────────────────────────────────────────
+
+export function EnCursoBadge() {
+  return (
+    <Badge variant="outline" className="h-5 border-sky-500/30 bg-sky-500/10 px-1.5 text-[10px] text-sky-600 dark:text-sky-400">
+      <Wrench className="mr-0.5 h-2.5 w-2.5" />
+      En curso
+    </Badge>
+  );
+}
+
+export function AlertBadge({ status, size = 'small' }: { status: AlertLevel; size?: 'small' | 'medium' }) {
+  const cfg = LEVEL_CONFIG[status];
+  const sizeClasses = size === 'small' ? 'h-5 px-1.5 text-[10px]' : 'h-6 px-2 text-[11px]';
+  return (
+    <Badge variant="outline" className={`${sizeClasses} ${cfg.badgeClass}`}>
+      {ALERT_LABELS[status]}
+    </Badge>
+  );
+}
+
 // ── Metric computation ─────────────────────────────────────────────────────────
 
 function computeMetrics(control: MaintenanceControlResource): ComputedMetric[] {
@@ -226,15 +245,8 @@ function ControlCard({
             </div>
           </div>
           <div className="flex shrink-0 items-center gap-1.5">
-            {isActive && (
-              <Badge variant="outline" className="h-6 border-sky-500/30 bg-sky-500/10 px-2 text-[11px] text-sky-600 dark:text-sky-400">
-                <Wrench className="mr-1 h-3 w-3" />
-                En curso
-              </Badge>
-            )}
-            <Badge variant="outline" className={`h-6 px-2 text-[11px] ${cfg.badgeClass}`}>
-              {ALERT_LABELS[status]}
-            </Badge>
+            {isActive && <EnCursoBadge />}
+            <AlertBadge status={status} size="medium" />
           </div>
         </div>
       </CardHeader>
@@ -349,15 +361,8 @@ function SelectedControlHeader({
           </div>
 
           <div className="flex items-center gap-1.5">
-            {isActive && (
-              <Badge variant="outline" className="h-5 border-sky-500/30 bg-sky-500/10 px-1.5 text-[10px] text-sky-600 dark:text-sky-400">
-                <Wrench className="mr-0.5 h-2.5 w-2.5" />
-                OT
-              </Badge>
-            )}
-            <Badge variant="outline" className={`h-5 px-1.5 text-[10px] ${cfg.badgeClass}`}>
-              {ALERT_LABELS[status]}
-            </Badge>
+            {isActive && <EnCursoBadge />}
+            <AlertBadge status={status} size="small" />
             <Button
               asChild
               variant="ghost"

@@ -24,34 +24,10 @@ import { addDays } from 'date-fns';
 import { useMemo, useCallback, useState } from 'react';
 import { useGetAircraftAverage } from '@/hooks/planificacion/useGetAircraftDailyAverage';
 import { HoverCardPortal } from '@radix-ui/react-hover-card';
+import { AlertBadge } from '../_components/control-grid';
 
 type AlertLevel = 'OVERDUE' | 'WARNING' | 'OK';
 type MetricType = 'FH' | 'FC' | 'DAYS';
-
-type MetricStatus = {
-  type: MetricType;
-  remaining: number;
-  progress: number;
-  level: AlertLevel;
-};
-
-type AlertRow = {
-  aircraftId: number;
-  controlId: number;
-  controlTitle: string;
-  manualReference: string;
-  taskCount: number;
-  level: AlertLevel;
-  aircraftAcronym: string;
-  aircraftSerial: string;
-  primaryMetric: MetricStatus;
-};
-
-const ALERT_LABELS: Record<AlertLevel, string> = {
-  OVERDUE: 'Vencido',
-  WARNING: 'Próximo',
-  OK: 'En tiempo',
-};
 
 const METRIC_LABELS: Record<MetricType, string> = {
   FH: 'Horas',
@@ -75,12 +51,6 @@ const METRIC_CONFIG: Record<MetricType, {
   FC: { icon: RefreshCw, intervalKey: 'interval_fc' },
   DAYS: { icon: Calendar, intervalKey: 'interval_days' },
 };
-
-function getLevelClass(level: AlertLevel): string {
-  if (level === 'OVERDUE') return 'bg-destructive/10 text-destructive border-destructive/20';
-  if (level === 'WARNING') return 'bg-amber-500/10 text-amber-600 border-amber-500/20 dark:text-amber-400';
-  return 'bg-emerald-500/10 text-emerald-700 border-emerald-500/20 dark:text-emerald-400';
-}
 
 const LEVEL_CONFIG: Record<AlertLevel, {
   icon: typeof TriangleAlert;
@@ -180,9 +150,7 @@ function AlertCard({ row }: { row: any }) {
               <p className="font-mono text-xs text-muted-foreground">{control.manual_reference}</p>
             </div>
           </div>
-          <Badge variant="outline" className={getLevelClass(row.status)}>
-            {ALERT_LABELS[row.status as AlertLevel]}
-          </Badge>
+          <AlertBadge status={row.status as AlertLevel} size="small" />
         </div>
         <div className="flex items-center gap-3 rounded-md border border-sky-200/60 bg-sky-50/50 px-3 py-2 dark:border-sky-800/40 dark:bg-sky-950/20">
           <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded border border-sky-200 bg-sky-100/80 dark:border-sky-800/60 dark:bg-sky-900/40">
@@ -584,9 +552,7 @@ export default function MaintenanceControlsAlertsDashboardPage() {
               return (
                 <section key={status} className="space-y-3">
                   <div className="flex items-center gap-2">
-                    <Badge variant="outline" className={getLevelClass(status)}>
-                      {ALERT_LABELS[status]}
-                    </Badge>
+                    <AlertBadge status={status} size="small" />
                     <span className="text-sm text-muted-foreground">{rows.length} controles</span>
                   </div>
                   <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
