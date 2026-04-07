@@ -522,6 +522,7 @@ export type StoreMaintenanceControlRequest = {
     old_task: string;
     new_task: string;
     description?: string | null;
+    applicable?: boolean;
   }> | null;
 };
 
@@ -530,7 +531,7 @@ export type StoreMaintenanceControlRequest = {
  */
 export type StorePurchaseOrderRequest = {
   order_number: string;
-  status?: 'PENDIENTE' | 'APROBADO' | 'PAGADO' | 'CREDITO' | 'ANULADO';
+  status?: 'PROCESO' | 'APROBADO' | 'PAGADO' | 'CREDITO' | 'ANULADO';
   justification?: string | null;
   purchase_date: string;
   sub_total: number;
@@ -618,13 +619,11 @@ export type StoreTaskMasterRequest = {
  * TaskCardResource
  */
 export type TaskCardResource = {
-  id: number;
+  id: string;
   old_task: string;
   new_task: string;
   description: string;
-  interval_fh: string;
-  interval_fc: string;
-  interval_days: string;
+  applicable: string;
   created_at: string;
   updated_at: string;
   manual_reference: string;
@@ -743,6 +742,7 @@ export type UpdateMaintenanceControlRequest = {
     old_task: string;
     new_task: string;
     description?: string | null;
+    applicable?: boolean;
   }> | null;
 };
 
