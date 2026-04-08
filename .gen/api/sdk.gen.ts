@@ -1065,9 +1065,6 @@ import type {
   WarehouseWarehouseWithUserData,
   WarehouseWarehouseWithUserErrors,
   WarehouseWarehouseWithUserResponses,
-  WorkOrdersDestroyData,
-  WorkOrdersDestroyErrors,
-  WorkOrdersDestroyResponses,
   WorkOrdersIndexData,
   WorkOrdersIndexErrors,
   WorkOrdersIndexResponses,
@@ -1077,9 +1074,6 @@ import type {
   WorkOrdersStoreData,
   WorkOrdersStoreErrors,
   WorkOrdersStoreResponses,
-  WorkOrdersUpdateData,
-  WorkOrdersUpdateErrors,
-  WorkOrdersUpdateResponses,
   WorkOrderTaskEventShowEventsByWorkOrderTaskData,
   WorkOrderTaskEventShowEventsByWorkOrderTaskErrors,
   WorkOrderTaskEventShowEventsByWorkOrderTaskResponses,
@@ -6086,38 +6080,15 @@ export const workOrdersStore = <ThrowOnError extends boolean = false>(
   });
 
 /**
- * Remove the specified resource from storage
- */
-export const workOrdersDestroy = <ThrowOnError extends boolean = false>(
-  options: Options<WorkOrdersDestroyData, ThrowOnError>,
-) =>
-  (options.client ?? client).delete<WorkOrdersDestroyResponses, WorkOrdersDestroyErrors, ThrowOnError>({
-    security: [{ scheme: 'bearer', type: 'http' }],
-    url: '/work-orders/{id}',
-    ...options,
-  });
-
-/**
- * Display the specified resource
+ * Display the specified resource by order number
  */
 export const workOrdersShow = <ThrowOnError extends boolean = false>(
   options: Options<WorkOrdersShowData, ThrowOnError>,
 ) =>
   (options.client ?? client).get<WorkOrdersShowResponses, WorkOrdersShowErrors, ThrowOnError>({
+    responseType: 'json',
     security: [{ scheme: 'bearer', type: 'http' }],
-    url: '/work-orders/{id}',
-    ...options,
-  });
-
-/**
- * Update the specified resource in storage
- */
-export const workOrdersUpdate = <ThrowOnError extends boolean = false>(
-  options: Options<WorkOrdersUpdateData, ThrowOnError>,
-) =>
-  (options.client ?? client).put<WorkOrdersUpdateResponses, WorkOrdersUpdateErrors, ThrowOnError>({
-    security: [{ scheme: 'bearer', type: 'http' }],
-    url: '/work-orders/{id}',
+    url: '/work-orders/{orderNumber}',
     ...options,
   });
 

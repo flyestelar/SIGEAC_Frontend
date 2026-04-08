@@ -1,36 +1,56 @@
 'use client';
 
-import { ContentLayout } from '@/components/layout/ContentLayout';
-import LoadingPage from '@/components/misc/LoadingPage';
 import { workOrdersIndexOptions } from '@api/queries';
 import { useQuery } from '@tanstack/react-query';
+import { AlertCircle, ClipboardList } from 'lucide-react';
+
+import { ContentLayout } from '@/components/layout/ContentLayout';
+import LoadingPage from '@/components/misc/LoadingPage';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
+
 import { columns } from './columns';
 import { DataTable } from './data-table';
 
 const WorkOrdersPage = () => {
   const {
-    data: work_orders,
+    data: workOrdersResponse,
     isLoading,
     isError,
   } = useQuery({
     ...workOrdersIndexOptions(),
   });
 
+  const workOrders = workOrdersResponse?.data ?? [];
+
   if (isLoading) return <LoadingPage />;
 
   return (
     <ContentLayout title="Ordenes de Trabajo">
-      <div className="flex flex-col gap-y-2">
-        <h1 className="text-5xl font-bold text-center">Gestión de Ord. de Trabajo</h1>
-        <p className="text-sm text-muted-foreground text-center">
-          Aquí puede observar todos las ordenes de trabajo realizadas. <br />
-          Filtre y/o busque sí desea una orden en específico.
-        </p>
-        {work_orders && <DataTable columns={columns} data={work_orders.data} />}
-        {isError && (
-          <p className="text-center text-muted-foreground text-sm">
-            Ha ocurrido un error al cargar las ordens de trabajo...
-          </p>
+      <div className="space-y-6">
+        {/* Page header */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg border bg-muted/30">
+              <ClipboardList className="size-4 text-muted-foreground" />
+            </div>
+            <div>
+              <h1 className="text-base font-semibold tracking-tight">Órdenes de Trabajo</h1>
+              <p className="text-xs text-muted-foreground">Planificación — Gestión de órdenes</p>
+            </div>
+          </div>
+          <Badge variant="outline" className="font-mono text-xs tabular-nums">
+            {workOrders.length} orden{workOrders.length !== 1 ? 'es' : ''}
+          </Badge>
+        </div>
+
+        {isError ? (
+          <Alert variant="destructive">
+            <AlertCircle className="size-4" />
+            <AlertDescription>Error al cargar las órdenes de trabajo. Intente recargar la página.</AlertDescription>
+          </Alert>
+        ) : (
+          <DataTable columns={columns} data={workOrders} />
         )}
       </div>
     </ContentLayout>

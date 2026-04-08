@@ -4,20 +4,18 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { maintenanceControlsIndexOptions } from '@api/queries';
 import { AircraftResource, MaintenanceControlResource, StoreWorkOrderRequest, TaskCardResource } from '@api/types';
 import { useQuery } from '@tanstack/react-query';
-import { AlertCircle, CalendarRange, ClipboardCheck, FileSpreadsheet, PlaneTakeoff } from 'lucide-react';
+import { AlertCircle, CalendarDays, MessageSquareText } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useCreateWorkOrder } from '@/actions/planificacion/ordenes_trabajo/actions';
 import LoadingPage from '@/components/misc/LoadingPage';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useGetMaintenanceAircrafts } from '@/hooks/planificacion/useGetMaintenanceAircrafts';
 import { useCompanyStore } from '@/stores/CompanyStore';
-import AircraftPicker from './AircraftPicker';
+import AircraftHeader from './AircraftHeader';
 import ControlsList from './ControlsList';
 import SelectionSummary from './SelectionSummary';
-import WorkOrderItemsDialog from './WorkOrderItemsDialog';
 
 export type SelectedControlItem = {
   taskCardIds: Set<number>;
@@ -37,16 +35,13 @@ const WorkOrderCreator = () => {
   const [selectedAircraftId, setSelectedAircraftId] = useState<number | null>(null);
   const [selectedControls, setSelectedControls] = useState<Map<number, SelectedControlItem>>(new Map());
   const [descriptionErrors, setDescriptionErrors] = useState<Record<number, string>>({});
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [remarks, setRemarks] = useState('');
   const [entryDate, setEntryDate] = useState('');
   const [exitDate, setExitDate] = useState('');
 
   const { data: controlsResponse, isLoading: isControlsLoading } = useQuery({
     ...maintenanceControlsIndexOptions({
-      query: {
-        aircraft_id: selectedAircraftId ?? undefined,
-      },
+      query: { aircraft_id: selectedAircraftId ?? undefined },
     }),
     enabled: !!selectedAircraftId,
   });
@@ -54,16 +49,14 @@ const WorkOrderCreator = () => {
   const controls = useMemo<MaintenanceControlResource[]>(() => controlsResponse?.data ?? [], [controlsResponse]);
 
   const selectedAircraft = useMemo<AircraftResource | null>(() => {
-    return aircrafts?.find((aircraft) => aircraft.id === selectedAircraftId) ?? null;
+    return aircrafts?.find((a) => a.id === selectedAircraftId) ?? null;
   }, [aircrafts, selectedAircraftId]);
 
   const selectedControlEntries = useMemo(
     () =>
       controls.reduce<Array<{ control: MaintenanceControlResource; item: SelectedControlItem }>>((acc, control) => {
         const item = selectedControls.get(control.id);
-        if (item) {
-          acc.push({ control, item });
-        }
+        if (item) acc.push({ control, item });
         return acc;
       }, []),
     [controls, selectedControls],
@@ -71,56 +64,28 @@ const WorkOrderCreator = () => {
 
   const totalSelectedTaskCards = useMemo(() => {
     let count = 0;
-    selectedControls.forEach((item) => {
-      count += item.taskCardIds.size;
-    });
+    selectedControls.forEach((item) => (count += item.taskCardIds.size));
     return count;
   }, [selectedControls]);
 
-  const pendingDescriptionsCount = useMemo(
-    () => selectedControlEntries.filter(({ item }) => !item.description.trim()).length,
-    [selectedControlEntries],
-  );
-
-  const coveragePercentage = useMemo(() => {
-    const totalAvailable = controls.reduce((acc, control) => acc + (control.task_cards?.length ?? 0), 0);
-    if (!totalAvailable) return 0;
-    return Math.round((totalSelectedTaskCards / totalAvailable) * 100);
-  }, [controls, totalSelectedTaskCards]);
-
+  // Sync selected controls when controls data changes
   useEffect(() => {
     setSelectedControls((prev) => {
       if (prev.size === 0) return prev;
-
       let changed = false;
       const next = new Map<number, SelectedControlItem>();
-
       prev.forEach((item, controlId) => {
-        const control = controls.find((entry) => entry.id === controlId);
-        if (!control) {
-          changed = true;
-          return;
-        }
-
-        const applicableTaskIds = new Set(
-          (control.task_cards ?? []).filter((taskCard) => taskCard.applicable).map((taskCard) => taskCard.id),
-        );
-        const filteredIds = new Set(Array.from(item.taskCardIds).filter((id) => applicableTaskIds.has(id)));
-
-        if (filteredIds.size !== item.taskCardIds.size) {
-          changed = true;
-        }
-
+        const control = controls.find((c) => c.id === controlId);
+        if (!control) { changed = true; return; }
+        const applicableIds = new Set((control.task_cards ?? []).filter((tc) => tc.applicable).map((tc) => tc.id));
+        const filteredIds = new Set(Array.from(item.taskCardIds).filter((id) => applicableIds.has(id)));
+        if (filteredIds.size !== item.taskCardIds.size) changed = true;
         if (filteredIds.size > 0) {
-          next.set(controlId, {
-            ...item,
-            taskCardIds: filteredIds,
-          });
+          next.set(controlId, { ...item, taskCardIds: filteredIds });
         } else {
           changed = true;
         }
       });
-
       return changed ? next : prev;
     });
   }, [controls]);
@@ -129,14 +94,15 @@ const WorkOrderCreator = () => {
     setSelectedAircraftId(aircraft.id);
     setSelectedControls(new Map());
     setDescriptionErrors({});
-    setIsDialogOpen(false);
+    setRemarks('');
+    setEntryDate('');
+    setExitDate('');
   };
 
   const handleClearAircraft = () => {
     setSelectedAircraftId(null);
     setSelectedControls(new Map());
     setDescriptionErrors({});
-    setIsDialogOpen(false);
     setRemarks('');
     setEntryDate('');
     setExitDate('');
@@ -155,32 +121,19 @@ const WorkOrderCreator = () => {
     setSelectedControls((prev) => {
       const next = new Map(prev);
       const current = next.get(controlId);
-      const nextTaskCardIds = new Set(current?.taskCardIds ?? []);
-      const control = controls.find((entry) => entry.id === controlId);
-      const taskCard = control?.task_cards?.find((entry) => entry.id === taskCardId);
+      const nextIds = new Set(current?.taskCardIds ?? []);
+      const control = controls.find((c) => c.id === controlId);
+      const tc = control?.task_cards?.find((t) => t.id === taskCardId);
+      if (!tc?.applicable) return prev;
 
-      if (!taskCard?.applicable) {
-        return prev;
-      }
-
-      if (nextTaskCardIds.has(taskCardId)) {
-        nextTaskCardIds.delete(taskCardId);
-        if (nextTaskCardIds.size === 0) {
-          next.delete(controlId);
-        } else {
-          next.set(controlId, {
-            taskCardIds: nextTaskCardIds,
-            description: current?.description ?? '',
-          });
-        }
+      if (nextIds.has(taskCardId)) {
+        nextIds.delete(taskCardId);
+        if (nextIds.size === 0) next.delete(controlId);
+        else next.set(controlId, { taskCardIds: nextIds, description: current?.description ?? '' });
       } else {
-        nextTaskCardIds.add(taskCardId);
-        next.set(controlId, {
-          taskCardIds: nextTaskCardIds,
-          description: current?.description ?? control?.title ?? '',
-        });
+        nextIds.add(taskCardId);
+        next.set(controlId, { taskCardIds: nextIds, description: current?.description ?? control?.title ?? '' });
       }
-
       return next;
     });
     clearDescriptionError(controlId);
@@ -190,23 +143,12 @@ const WorkOrderCreator = () => {
     setSelectedControls((prev) => {
       const next = new Map(prev);
       const current = next.get(controlId);
-      const taskCardIds = taskCards.filter((taskCard) => taskCard.applicable).map((taskCard) => taskCard.id);
-      const allSelected = taskCardIds.length > 0 && taskCardIds.every((id) => current?.taskCardIds.has(id));
+      const applicableIds = taskCards.filter((tc) => tc.applicable).map((tc) => tc.id);
+      const allSelected = applicableIds.length > 0 && applicableIds.every((id) => current?.taskCardIds.has(id));
 
-      if (taskCardIds.length === 0) {
-        next.delete(controlId);
-        return next;
-      }
-
-      if (allSelected) {
-        next.delete(controlId);
-      } else {
-        next.set(controlId, {
-          taskCardIds: new Set(taskCardIds),
-          description: current?.description ?? defaultDescription,
-        });
-      }
-
+      if (applicableIds.length === 0) { next.delete(controlId); return next; }
+      if (allSelected) next.delete(controlId);
+      else next.set(controlId, { taskCardIds: new Set(applicableIds), description: current?.description ?? defaultDescription });
       return next;
     });
     clearDescriptionError(controlId);
@@ -216,30 +158,19 @@ const WorkOrderCreator = () => {
     setSelectedControls((prev) => {
       const current = prev.get(controlId);
       if (!current) return prev;
-
       const next = new Map(prev);
-      next.set(controlId, {
-        ...current,
-        description,
-      });
+      next.set(controlId, { ...current, description });
       return next;
     });
     clearDescriptionError(controlId);
   };
 
-  const handleOpenDialog = () => {
-    if (!selectedAircraftId || totalSelectedTaskCards === 0 || createWorkOrder.isPending) return;
-    setDescriptionErrors({});
-    setIsDialogOpen(true);
-  };
-
   const handleSubmit = useCallback(async () => {
     if (!selectedAircraftId || !selectedCompany?.slug) return;
 
+    // Validate descriptions
     const nextErrors = selectedControlEntries.reduce<Record<number, string>>((acc, entry) => {
-      if (!entry.item.description.trim()) {
-        acc[entry.control.id] = 'La descripcion es obligatoria.';
-      }
+      if (!entry.item.description.trim()) acc[entry.control.id] = 'La descripción es obligatoria.';
       return acc;
     }, {});
 
@@ -260,151 +191,25 @@ const WorkOrderCreator = () => {
       })),
     };
 
-    await createWorkOrder.mutateAsync({ body: payload });
-    setIsDialogOpen(false);
-    router.push(`/${selectedCompany.slug}/planificacion/ordenes_trabajo`);
-  }, [createWorkOrder, entryDate, remarks, router, selectedAircraftId, selectedCompany, selectedControlEntries, exitDate]);
+    const res = await createWorkOrder.mutateAsync({ body: payload });
+    router.push(`/${selectedCompany.slug}/planificacion/ordenes_trabajo/${res.data.order_number}`);
+  }, [createWorkOrder, entryDate, exitDate, remarks, router, selectedAircraftId, selectedCompany, selectedControlEntries]);
 
-  if (isAircraftsLoading) {
-    return <LoadingPage />;
-  }
+  if (isAircraftsLoading) return <LoadingPage />;
 
   if (isAircraftsError) {
     return (
       <Alert variant="destructive">
         <AlertCircle className="size-4" />
-        <AlertDescription>Error al cargar las aeronaves. Intente recargar la pagina.</AlertDescription>
+        <AlertDescription>Error al cargar las aeronaves. Intente recargar la página.</AlertDescription>
       </Alert>
     );
   }
 
   return (
     <div className="max-w-7xl space-y-6">
-      <div className="rounded-lg border bg-background">
-        <div className="flex flex-col gap-4 border-b px-5 py-4 lg:flex-row lg:items-end lg:justify-between">
-          <div className="space-y-1.5">
-            <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
-              <FileSpreadsheet className="size-3.5" />
-              Preparacion documental
-            </div>
-            <div>
-              <h1 className="text-2xl font-semibold tracking-tight">Nueva Orden de Trabajo</h1>
-              <p className="text-sm text-muted-foreground">
-                Arme la WO como un manifiesto tecnico: seleccione task cards, revise cobertura y valide items antes de
-                emitir.
-              </p>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-            <div className="rounded-md border bg-muted/20 px-3 py-2.5">
-              <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">Aeronave</p>
-              <p className="mt-1 font-mono text-sm font-semibold">{selectedAircraft?.acronym ?? 'Pendiente'}</p>
-            </div>
-            <div className="rounded-md border bg-muted/20 px-3 py-2.5">
-              <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">Controles</p>
-              <p className="mt-1 font-mono text-sm font-semibold tabular-nums">{selectedControlEntries.length}</p>
-            </div>
-            <div className="rounded-md border bg-muted/20 px-3 py-2.5">
-              <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">Task cards</p>
-              <p className="mt-1 font-mono text-sm font-semibold tabular-nums">{totalSelectedTaskCards}</p>
-            </div>
-            <div className="rounded-md border bg-muted/20 px-3 py-2.5">
-              <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">Cobertura</p>
-              <p className="mt-1 font-mono text-sm font-semibold tabular-nums">{coveragePercentage}%</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="border-b px-5 py-4">
-          <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
-            <CalendarRange className="size-3.5" />
-            Datos generales de la orden
-          </div>
-
-          <div className="mt-3 grid gap-4 lg:grid-cols-12">
-            <div className="space-y-2 lg:col-span-5">
-              <Label htmlFor="wo-entry-date" className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
-                Fecha de entrada
-              </Label>
-              <Input
-                id="wo-entry-date"
-                type="date"
-                value={entryDate}
-                onChange={(event) => setEntryDate(event.target.value)}
-                className="bg-muted/20"
-              />
-            </div>
-
-            <div className="space-y-2 lg:col-span-5">
-              <Label htmlFor="wo-exit-date" className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
-                Fecha de salida
-              </Label>
-              <Input
-                id="wo-exit-date"
-                type="date"
-                value={exitDate}
-                onChange={(event) => setExitDate(event.target.value)}
-                className="bg-muted/20"
-              />
-            </div>
-
-            <div className="space-y-2 lg:col-span-12">
-              <Label htmlFor="wo-remarks" className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
-                Observaciones
-              </Label>
-              <Textarea
-                id="wo-remarks"
-                rows={3}
-                value={remarks}
-                onChange={(event) => setRemarks(event.target.value)}
-                placeholder="Registre observaciones operativas, restricciones o instrucciones para la orden"
-                className="bg-muted/20"
-              />
-            </div>
-          </div>
-        </div>
-
-        <div className="grid gap-3 px-5 py-3 md:grid-cols-3">
-          <div className="flex items-center gap-2 rounded-md border bg-muted/20 px-3 py-2">
-            <div className="flex h-7 w-7 items-center justify-center rounded border bg-muted/30">
-              <PlaneTakeoff className="size-3.5 text-muted-foreground" />
-            </div>
-            <div className="min-w-0">
-              <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">Contexto</p>
-              <p className="truncate text-sm">
-                {selectedAircraft ? 'Aeronave lista para planificar' : 'Seleccione una aeronave'}
-              </p>
-            </div>
-          </div>
-          <div className="flex items-center gap-2 rounded-md border bg-muted/20 px-3 py-2">
-            <div className="flex h-7 w-7 items-center justify-center rounded border bg-muted/30">
-              <ClipboardCheck className="size-3.5 text-muted-foreground" />
-            </div>
-            <div className="min-w-0">
-              <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">Validacion</p>
-              <p className="truncate text-sm">
-                {pendingDescriptionsCount > 0
-                  ? `${pendingDescriptionsCount} item${pendingDescriptionsCount !== 1 ? 's' : ''} pendiente${pendingDescriptionsCount !== 1 ? 's' : ''}`
-                  : 'Sin pendientes de descripcion'}
-              </p>
-            </div>
-          </div>
-          <div className="flex items-center gap-2 rounded-md border bg-muted/20 px-3 py-2">
-            <div className="flex h-7 w-7 items-center justify-center rounded border bg-muted/30">
-              <FileSpreadsheet className="size-3.5 text-muted-foreground" />
-            </div>
-            <div className="min-w-0">
-              <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">Emision</p>
-              <p className="truncate text-sm">
-                {totalSelectedTaskCards > 0 ? 'Documento en preparacion' : 'Sin seleccion para emitir'}
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <AircraftPicker
+      {/* 1. Aircraft header — full width */}
+      <AircraftHeader
         aircrafts={aircrafts ?? []}
         selectedAircraft={selectedAircraft}
         onSelect={handleSelectAircraft}
@@ -412,41 +217,85 @@ const WorkOrderCreator = () => {
       />
 
       {selectedAircraft && (
-        <div className="grid gap-4 lg:grid-cols-12">
-          <div className="lg:col-span-8">
+        <div className="grid gap-6 lg:grid-cols-12">
+          {/* Main column */}
+          <div className="space-y-6 lg:col-span-8">
+            {/* 2. Work order data */}
+            <div className="rounded-lg border bg-background">
+              <div className="border-b px-5 py-3">
+                <span className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+                  Datos de la Orden
+                </span>
+              </div>
+              <div className="grid gap-4 px-5 py-4 sm:grid-cols-2">
+                <div className="space-y-1.5">
+                  <label htmlFor="wo-entry-date" className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+                    <CalendarDays className="size-3" />
+                    Fecha de entrada
+                  </label>
+                  <Input
+                    id="wo-entry-date"
+                    type="date"
+                    value={entryDate}
+                    onChange={(e) => setEntryDate(e.target.value)}
+                    className="bg-muted/20"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label htmlFor="wo-exit-date" className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+                    <CalendarDays className="size-3" />
+                    Fecha de salida
+                  </label>
+                  <Input
+                    id="wo-exit-date"
+                    type="date"
+                    value={exitDate}
+                    onChange={(e) => setExitDate(e.target.value)}
+                    className="bg-muted/20"
+                  />
+                </div>
+                <div className="space-y-1.5 sm:col-span-2">
+                  <label htmlFor="wo-remarks" className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+                    <MessageSquareText className="size-3" />
+                    Observaciones
+                  </label>
+                  <Textarea
+                    id="wo-remarks"
+                    rows={2}
+                    value={remarks}
+                    onChange={(e) => setRemarks(e.target.value)}
+                    placeholder="Observaciones operativas, restricciones o instrucciones…"
+                    className="bg-muted/20"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* 3. Controls selection */}
             <ControlsList
               controls={controls}
               selectedControls={selectedControls}
               isLoading={isControlsLoading}
+              descriptionErrors={descriptionErrors}
               onToggleTaskCard={handleToggleTaskCard}
               onToggleAllTaskCards={handleToggleAllTaskCards}
+              onDescriptionChange={handleDescriptionChange}
             />
           </div>
 
+          {/* Sidebar */}
           <div className="lg:col-span-4">
             <SelectionSummary
-              aircraft={selectedAircraft}
               controls={controls}
               selectedControls={selectedControls}
               totalTaskCards={totalSelectedTaskCards}
-              pendingDescriptionsCount={pendingDescriptionsCount}
-              coveragePercentage={coveragePercentage}
-              onSubmit={handleOpenDialog}
+              onSubmit={handleSubmit}
               isSubmitting={createWorkOrder.isPending}
+              onCancel={() => router.push(`/${selectedCompany!.slug}/planificacion/ordenes_trabajo`)}
             />
           </div>
         </div>
       )}
-
-      <WorkOrderItemsDialog
-        open={isDialogOpen}
-        onOpenChange={setIsDialogOpen}
-        selectedControls={selectedControlEntries}
-        errors={descriptionErrors}
-        isSubmitting={createWorkOrder.isPending}
-        onDescriptionChange={handleDescriptionChange}
-        onConfirm={handleSubmit}
-      />
     </div>
   );
 };

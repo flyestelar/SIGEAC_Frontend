@@ -360,11 +360,9 @@ import {
   warehouseStore,
   warehouseUpdate,
   warehouseWarehouseWithUser,
-  workOrdersDestroy,
   workOrdersIndex,
   workOrdersShow,
   workOrdersStore,
-  workOrdersUpdate,
   workOrderTaskEventShowEventsByWorkOrderTask,
   workOrderTaskEventStore,
   workshopsDestroy,
@@ -1393,18 +1391,15 @@ import type {
   WarehouseWarehouseWithUserData,
   WarehouseWarehouseWithUserError,
   WarehouseWarehouseWithUserResponse,
-  WorkOrdersDestroyData,
-  WorkOrdersDestroyError,
   WorkOrdersIndexData,
   WorkOrdersIndexError,
   WorkOrdersIndexResponse,
   WorkOrdersShowData,
   WorkOrdersShowError,
+  WorkOrdersShowResponse,
   WorkOrdersStoreData,
   WorkOrdersStoreError,
   WorkOrdersStoreResponse,
-  WorkOrdersUpdateData,
-  WorkOrdersUpdateError,
   WorkOrderTaskEventShowEventsByWorkOrderTaskData,
   WorkOrderTaskEventShowEventsByWorkOrderTaskError,
   WorkOrderTaskEventStoreData,
@@ -10294,37 +10289,19 @@ export const workOrdersStoreMutation = (
   return mutationOptions;
 };
 
-/**
- * Remove the specified resource from storage
- */
-export const workOrdersDestroyMutation = (
-  options?: Partial<Options<WorkOrdersDestroyData>>,
-): UseMutationOptions<unknown, AxiosError<WorkOrdersDestroyError>, Options<WorkOrdersDestroyData>> => {
-  const mutationOptions: UseMutationOptions<
-    unknown,
-    AxiosError<WorkOrdersDestroyError>,
-    Options<WorkOrdersDestroyData>
-  > = {
-    mutationFn: async (fnOptions) => {
-      const { data } = await workOrdersDestroy({
-        ...options,
-        ...fnOptions,
-        throwOnError: true,
-      });
-      return data;
-    },
-  };
-  return mutationOptions;
-};
-
 export const workOrdersShowQueryKey = (options: Options<WorkOrdersShowData>) =>
   createQueryKey('workOrdersShow', options);
 
 /**
- * Display the specified resource
+ * Display the specified resource by order number
  */
 export const workOrdersShowOptions = (options: Options<WorkOrdersShowData>) =>
-  queryOptions<unknown, AxiosError<WorkOrdersShowError>, unknown, ReturnType<typeof workOrdersShowQueryKey>>({
+  queryOptions<
+    WorkOrdersShowResponse,
+    AxiosError<WorkOrdersShowError>,
+    WorkOrdersShowResponse,
+    ReturnType<typeof workOrdersShowQueryKey>
+  >({
     queryFn: async ({ queryKey, signal }) => {
       const { data } = await workOrdersShow({
         ...options,
@@ -10336,29 +10313,6 @@ export const workOrdersShowOptions = (options: Options<WorkOrdersShowData>) =>
     },
     queryKey: workOrdersShowQueryKey(options),
   });
-
-/**
- * Update the specified resource in storage
- */
-export const workOrdersUpdateMutation = (
-  options?: Partial<Options<WorkOrdersUpdateData>>,
-): UseMutationOptions<unknown, AxiosError<WorkOrdersUpdateError>, Options<WorkOrdersUpdateData>> => {
-  const mutationOptions: UseMutationOptions<
-    unknown,
-    AxiosError<WorkOrdersUpdateError>,
-    Options<WorkOrdersUpdateData>
-  > = {
-    mutationFn: async (fnOptions) => {
-      const { data } = await workOrdersUpdate({
-        ...options,
-        ...fnOptions,
-        throwOnError: true,
-      });
-      return data;
-    },
-  };
-  return mutationOptions;
-};
 
 /**
  * Store a newly created resource in storage
