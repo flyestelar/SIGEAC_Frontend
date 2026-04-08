@@ -1,12 +1,11 @@
 'use client';
 
-import { useMemo, useState } from 'react';
-import { AircraftResource } from '@api/types';
-import { Badge } from '@/components/ui/badge';
+import AircraftCard from '@/components/cards/AircraftCard';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { cn } from '@/lib/utils';
+import { AircraftResource } from '@api/types';
 import { Clock3, Plane, RotateCcw, Search, X } from 'lucide-react';
+import { useMemo, useState } from 'react';
 
 interface AircraftHeaderProps {
   aircrafts: AircraftResource[];
@@ -96,9 +95,9 @@ const AircraftHeader = ({ aircrafts, selectedAircraft, onSelect, onClear }: Airc
                 </div>
               </div>
               <Button
-                variant="ghost"
+                variant="destructive"
                 size="sm"
-                className="h-6 gap-1.5 text-[11px] text-muted-foreground hover:text-foreground"
+                className="h-6 gap-1.5 text-[11px]"
                 onClick={onClear}
               >
                 <X className="size-3" />
@@ -141,54 +140,7 @@ const AircraftHeader = ({ aircrafts, selectedAircraft, onSelect, onClear }: Airc
         ) : (
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
             {filtered.map((a) => (
-              <button
-                key={a.id}
-                type="button"
-                onClick={() => onSelect(a)}
-                className={cn(
-                  'group overflow-hidden rounded-lg border bg-background text-left transition-colors duration-150',
-                  'hover:border-sky-500/40 hover:bg-sky-500/5',
-                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500/40',
-                )}
-              >
-                {/* Mini hero image */}
-                <div className="relative">
-                  <img
-                    src="https://cdn.zbordirect.com/images/airlines/ES.webp"
-                    alt={a.acronym}
-                    className="aspect-[16/6] w-full object-cover brightness-[0.5] dark:brightness-[0.3] transition-all duration-300 group-hover:brightness-[0.7] group-hover:scale-[1.02]"
-                  />
-                  <div className="absolute inset-x-0 bottom-0 h-10 bg-gradient-to-t from-black/40 to-transparent" />
-                  <div className="absolute inset-x-0 bottom-0 flex items-end gap-2 px-3 pb-2">
-                    <div className="flex h-6 w-6 items-center justify-center rounded border border-white/20 bg-white/10 backdrop-blur-sm">
-                      <Plane className="size-3 text-white" />
-                    </div>
-                    <span className="font-mono text-sm font-bold tracking-widest text-white">{a.acronym}</span>
-                  </div>
-                </div>
-
-                {/* Info */}
-                <div className="px-3 py-2 space-y-1">
-                  <div className="flex items-center gap-2">
-                    <p className="text-xs font-medium truncate">{a.aircraft_type?.full_name ?? 'Sin tipo'}</p>
-                    {a.manufacturer?.name && (
-                      <Badge variant="outline" className="text-[10px] shrink-0">
-                        {a.manufacturer.name}
-                      </Badge>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
-                    <span className="flex items-center gap-1">
-                      <Clock3 className="size-2.5" />
-                      <span className="font-mono tabular-nums">{a.flight_hours?.toLocaleString?.() ?? '—'}</span> h
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <RotateCcw className="size-2.5" />
-                      <span className="font-mono tabular-nums">{a.flight_cycles?.toLocaleString?.() ?? '—'}</span> cyc
-                    </span>
-                  </div>
-                </div>
-              </button>
+              <AircraftCard key={a.id} aircraft={a} onSelect={onSelect} />
             ))}
           </div>
         )}
