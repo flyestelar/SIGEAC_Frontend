@@ -19,7 +19,6 @@ import SelectionSummary from './SelectionSummary';
 
 export type SelectedControlItem = {
   taskCardIds: Set<number>;
-  description: string;
 };
 
 const WorkOrderCreator = () => {
@@ -34,7 +33,6 @@ const WorkOrderCreator = () => {
 
   const [selectedAircraftId, setSelectedAircraftId] = useState<number | null>(null);
   const [selectedControls, setSelectedControls] = useState<Map<number, SelectedControlItem>>(new Map());
-  const [descriptionErrors, setDescriptionErrors] = useState<Record<number, string>>({});
   const [remarks, setRemarks] = useState('');
   const [entryDate, setEntryDate] = useState('');
   const [exitDate, setExitDate] = useState('');
@@ -93,7 +91,6 @@ const WorkOrderCreator = () => {
   const handleSelectAircraft = (aircraft: AircraftResource) => {
     setSelectedAircraftId(aircraft.id);
     setSelectedControls(new Map());
-    setDescriptionErrors({});
     setRemarks('');
     setEntryDate('');
     setExitDate('');
@@ -102,19 +99,9 @@ const WorkOrderCreator = () => {
   const handleClearAircraft = () => {
     setSelectedAircraftId(null);
     setSelectedControls(new Map());
-    setDescriptionErrors({});
     setRemarks('');
     setEntryDate('');
     setExitDate('');
-  };
-
-  const clearDescriptionError = (controlId: number) => {
-    setDescriptionErrors((prev) => {
-      if (!prev[controlId]) return prev;
-      const next = { ...prev };
-      delete next[controlId];
-      return next;
-    });
   };
 
   const handleToggleTaskCard = (controlId: number, taskCardId: number) => {
@@ -129,55 +116,35 @@ const WorkOrderCreator = () => {
       if (nextIds.has(taskCardId)) {
         nextIds.delete(taskCardId);
         if (nextIds.size === 0) next.delete(controlId);
-        else next.set(controlId, { taskCardIds: nextIds, description: current?.description ?? '' });
+        else next.set(controlId, { taskCardIds: nextIds });
       } else {
         nextIds.add(taskCardId);
-        next.set(controlId, { taskCardIds: nextIds, description: current?.description ?? control?.title ?? '' });
+        next.set(controlId, { taskCardIds: nextIds });
       }
       return next;
     });
-    clearDescriptionError(controlId);
   };
 
-  const handleToggleAllTaskCards = (controlId: number, taskCards: TaskCardResource[], defaultDescription: string) => {
+  const handleToggleAllTaskCards = (controlId: number, taskCards: TaskCardResource[]) => {
     setSelectedControls((prev) => {
       const next = new Map(prev);
       const current = next.get(controlId);
       const applicableIds = taskCards.filter((tc) => tc.applicable).map((tc) => tc.id);
       const allSelected = applicableIds.length > 0 && applicableIds.every((id) => current?.taskCardIds.has(id));
 
-      if (applicableIds.length === 0) { next.delete(controlId); return next; }
-      if (allSelected) next.delete(controlId);
-      else next.set(controlId, { taskCardIds: new Set(applicableIds), description: current?.description ?? defaultDescription });
-      return next;
-    });
-    clearDescriptionError(controlId);
-  };
+      if (applicableIds.length === 0) {
+        next.delete(controlId);
+        return next;
+      }
 
-  const handleDescriptionChange = (controlId: number, description: string) => {
-    setSelectedControls((prev) => {
-      const current = prev.get(controlId);
-      if (!current) return prev;
-      const next = new Map(prev);
-      next.set(controlId, { ...current, description });
+      if (allSelected) next.delete(controlId);
+      else next.set(controlId, { taskCardIds: new Set(applicableIds) });
       return next;
     });
-    clearDescriptionError(controlId);
   };
 
   const handleSubmit = useCallback(async () => {
     if (!selectedAircraftId || !selectedCompany?.slug) return;
-
-    // Validate descriptions
-    const nextErrors = selectedControlEntries.reduce<Record<number, string>>((acc, entry) => {
-      if (!entry.item.description.trim()) acc[entry.control.id] = 'La descripción es obligatoria.';
-      return acc;
-    }, {});
-
-    if (Object.keys(nextErrors).length > 0) {
-      setDescriptionErrors(nextErrors);
-      return;
-    }
 
     const payload: StoreWorkOrderRequest = {
       aircraft_id: selectedAircraftId,
@@ -185,7 +152,6 @@ const WorkOrderCreator = () => {
       entry_date: entryDate || undefined,
       exit_date: exitDate || undefined,
       items: selectedControlEntries.map(({ control, item }) => ({
-        description: item.description.trim(),
         maintenance_control_id: control.id,
         task_ids: Array.from(item.taskCardIds),
       })),
@@ -276,10 +242,8 @@ const WorkOrderCreator = () => {
               controls={controls}
               selectedControls={selectedControls}
               isLoading={isControlsLoading}
-              descriptionErrors={descriptionErrors}
               onToggleTaskCard={handleToggleTaskCard}
               onToggleAllTaskCards={handleToggleAllTaskCards}
-              onDescriptionChange={handleDescriptionChange}
             />
           </div>
 

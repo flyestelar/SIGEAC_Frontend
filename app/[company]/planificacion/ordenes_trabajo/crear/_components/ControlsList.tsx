@@ -1,40 +1,42 @@
 'use client';
 
-import { useMemo, useState } from 'react';
-import { MaintenanceControlResource, TaskCardResource } from '@api/types';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Progress } from '@/components/ui/progress';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
+import { MaintenanceControlResource, TaskCardResource } from '@api/types';
 import {
-  AlertTriangle,
   BookOpenCheck,
   CalendarDays,
   ChevronDown,
   Clock3,
   Loader2,
   RotateCcw,
-  Search,
+  Search
 } from 'lucide-react';
+import { useMemo, useState } from 'react';
 
 interface ControlsListProps {
   controls: MaintenanceControlResource[];
-  selectedControls: Map<number, { taskCardIds: Set<number>; description: string }>;
+  selectedControls: Map<number, { taskCardIds: Set<number> }>;
   isLoading: boolean;
-  descriptionErrors: Record<number, string>;
   onToggleTaskCard: (controlId: number, taskCardId: number) => void;
-  onToggleAllTaskCards: (controlId: number, taskCards: TaskCardResource[], defaultDescription: string) => void;
-  onDescriptionChange: (controlId: number, description: string) => void;
+  onToggleAllTaskCards: (controlId: number, taskCards: TaskCardResource[]) => void;
 }
 
 type MetricKind = 'FH' | 'FC' | 'DAYS';
 
 const METRIC_META: Record<
   MetricKind,
-  { label: string; icon: typeof Clock3; intervalKey: 'interval_fh' | 'interval_fc' | 'interval_days'; consumedKey: 'fh' | 'fc' | 'days'; unit: string }
+  {
+    label: string;
+    icon: typeof Clock3;
+    intervalKey: 'interval_fh' | 'interval_fc' | 'interval_days';
+    consumedKey: 'fh' | 'fc' | 'days';
+    unit: string;
+  }
 > = {
   FH: { label: 'Horas', icon: Clock3, intervalKey: 'interval_fh', consumedKey: 'fh', unit: 'FH' },
   FC: { label: 'Ciclos', icon: RotateCcw, intervalKey: 'interval_fc', consumedKey: 'fc', unit: 'FC' },
@@ -42,9 +44,23 @@ const METRIC_META: Record<
 };
 
 const getMetricTone = (percentage: number) => {
-  if (percentage >= 90) return { indicator: 'bg-red-500', text: 'text-red-600 dark:text-red-400', surface: 'border-red-500/20 bg-red-500/5' };
-  if (percentage >= 75) return { indicator: 'bg-amber-500', text: 'text-amber-600 dark:text-amber-400', surface: 'border-amber-500/20 bg-amber-500/5' };
-  return { indicator: 'bg-emerald-500', text: 'text-emerald-600 dark:text-emerald-400', surface: 'border-emerald-500/20 bg-emerald-500/5' };
+  if (percentage >= 90)
+    return {
+      indicator: 'bg-red-500',
+      text: 'text-red-600 dark:text-red-400',
+      surface: 'border-red-500/20 bg-red-500/5',
+    };
+  if (percentage >= 75)
+    return {
+      indicator: 'bg-amber-500',
+      text: 'text-amber-600 dark:text-amber-400',
+      surface: 'border-amber-500/20 bg-amber-500/5',
+    };
+  return {
+    indicator: 'bg-emerald-500',
+    text: 'text-emerald-600 dark:text-emerald-400',
+    surface: 'border-emerald-500/20 bg-emerald-500/5',
+  };
 };
 
 const buildControlMetrics = (control: MaintenanceControlResource) => {
@@ -71,10 +87,8 @@ const ControlsList = ({
   controls,
   selectedControls,
   isLoading,
-  descriptionErrors,
   onToggleTaskCard,
   onToggleAllTaskCards,
-  onDescriptionChange,
 }: ControlsListProps) => {
   const [expandedIds, setExpandedIds] = useState<Set<number>>(new Set());
   const [query, setQuery] = useState('');
@@ -125,7 +139,8 @@ const ControlsList = ({
             Controles de Mantenimiento
           </span>
           <p className="text-xs text-muted-foreground mt-0.5">
-            {filteredControls.length} control{filteredControls.length !== 1 ? 'es' : ''} disponible{filteredControls.length !== 1 ? 's' : ''}
+            {filteredControls.length} control{filteredControls.length !== 1 ? 'es' : ''} disponible
+            {filteredControls.length !== 1 ? 's' : ''}
           </p>
         </div>
         <div className="relative w-64">
@@ -163,7 +178,6 @@ const ControlsList = ({
             const allSelected = applicableCount > 0 && selectedCount === applicableCount;
             const someSelected = selectedCount > 0 && selectedCount < applicableCount;
             const isSelected = selectedCount > 0;
-            const descError = descriptionErrors[control.id];
 
             return (
               <div
@@ -177,7 +191,7 @@ const ControlsList = ({
                 <div className="flex items-start gap-3 px-4 py-3">
                   <Checkbox
                     checked={allSelected ? true : someSelected ? 'indeterminate' : false}
-                    onCheckedChange={() => onToggleAllTaskCards(control.id, taskCards, control.title)}
+                    onCheckedChange={() => onToggleAllTaskCards(control.id, taskCards)}
                     className="mt-0.5 shrink-0"
                   />
                   <div className="flex-1 min-w-0">
@@ -197,7 +211,10 @@ const ControlsList = ({
                         </Badge>
                       )}
                       {notApplicableCount > 0 && (
-                        <Badge variant="outline" className="text-[10px] border-red-500/30 bg-red-500/10 text-red-600 dark:text-red-400">
+                        <Badge
+                          variant="outline"
+                          className="text-[10px] border-red-500/30 bg-red-500/10 text-red-600 dark:text-red-400"
+                        >
                           {notApplicableCount} N/A
                         </Badge>
                       )}
@@ -219,7 +236,9 @@ const ControlsList = ({
                     </div>
                     <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs text-muted-foreground">
                       <span className="font-mono">{control.manual_reference ?? '—'}</span>
-                      <span>{taskCards.length} task card{taskCards.length !== 1 ? 's' : ''}</span>
+                      <span>
+                        {taskCards.length} task card{taskCards.length !== 1 ? 's' : ''}
+                      </span>
                     </div>
                   </div>
 
@@ -247,7 +266,12 @@ const ControlsList = ({
                         onClick={() => toggleExpanded(control.id)}
                         className="rounded p-1.5 hover:bg-muted/20 transition-colors"
                       >
-                        <ChevronDown className={cn('size-4 text-muted-foreground transition-transform duration-150', isExpanded && 'rotate-180')} />
+                        <ChevronDown
+                          className={cn(
+                            'size-4 text-muted-foreground transition-transform duration-150',
+                            isExpanded && 'rotate-180',
+                          )}
+                        />
                       </button>
                     )}
                   </div>
@@ -271,7 +295,11 @@ const ControlsList = ({
                               {Math.round(metric.percentage)}%
                             </span>
                           </div>
-                          <Progress value={metric.percentage} className="mt-1.5 h-1.5 bg-muted/40" indicatorClassName={tone.indicator} />
+                          <Progress
+                            value={metric.percentage}
+                            className="mt-1.5 h-1.5 bg-muted/40"
+                            indicatorClassName={tone.indicator}
+                          />
                           <div className="mt-1.5 flex items-end justify-between text-[11px]">
                             <span className="text-muted-foreground">
                               {metric.consumed.toFixed(metric.type === 'FH' ? 1 : 0)} / {metric.interval}
@@ -286,27 +314,6 @@ const ControlsList = ({
                   </div>
                 )}
 
-                {/* Inline description (visible when selected) */}
-                {isSelected && (
-                  <div className="border-t px-4 py-3">
-                    <label
-                      htmlFor={`ctrl-desc-${control.id}`}
-                      className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground"
-                    >
-                      Descripción del item
-                    </label>
-                    <Textarea
-                      id={`ctrl-desc-${control.id}`}
-                      rows={2}
-                      value={selected?.description ?? ''}
-                      onChange={(e) => onDescriptionChange(control.id, e.target.value)}
-                      placeholder="Describa el alcance del item para la orden de trabajo…"
-                      className={cn('mt-1 bg-muted/20', descError && 'border-destructive focus-visible:ring-destructive')}
-                    />
-                    {descError && <p className="mt-1 text-xs text-destructive">{descError}</p>}
-                  </div>
-                )}
-
                 {/* Expanded task cards */}
                 {isExpanded && taskCards.length > 0 && (
                   <div className="border-t">
@@ -314,7 +321,7 @@ const ControlsList = ({
                       <span className="font-semibold uppercase tracking-widest">Task cards</span>
                       <button
                         type="button"
-                        onClick={() => onToggleAllTaskCards(control.id, taskCards, control.title)}
+                        onClick={() => onToggleAllTaskCards(control.id, taskCards)}
                         className="font-medium text-sky-600 hover:text-sky-700 dark:text-sky-400 dark:hover:text-sky-300 transition-colors"
                       >
                         {allSelected ? 'Deseleccionar todas' : 'Seleccionar todas'}
@@ -345,21 +352,34 @@ const ControlsList = ({
                               />
                               <div className="flex-1 min-w-0">
                                 <div className="flex items-center gap-2">
-                                  <span className="font-mono text-xs font-semibold">{tc.manual_reference ?? `TC-${tc.id}`}</span>
+                                  <span className="font-mono text-xs font-semibold">
+                                    {tc.manual_reference ?? `TC-${tc.id}`}
+                                  </span>
                                   {!isApplicable && (
-                                    <Badge variant="outline" className="text-[10px] border-red-500/30 bg-red-500/10 text-red-600 dark:text-red-400">
+                                    <Badge
+                                      variant="outline"
+                                      className="text-[10px] border-red-500/30 bg-red-500/10 text-red-600 dark:text-red-400"
+                                    >
                                       No aplica
                                     </Badge>
                                   )}
                                 </div>
-                                <p className="mt-0.5 text-xs text-foreground/80 line-clamp-2">{tc.description ?? '—'}</p>
+                                <p className="mt-0.5 text-xs text-foreground/80 line-clamp-2">
+                                  {tc.description ?? '—'}
+                                </p>
                                 {(tc.old_task || tc.new_task) && (
                                   <div className="mt-1 flex items-center gap-3 text-[11px] text-muted-foreground">
                                     {tc.old_task && (
-                                      <span><span className="text-muted-foreground/60">Old:</span> <span className="font-mono">{tc.old_task}</span></span>
+                                      <span>
+                                        <span className="text-muted-foreground/60">Old:</span>{' '}
+                                        <span className="font-mono">{tc.old_task}</span>
+                                      </span>
                                     )}
                                     {tc.new_task && (
-                                      <span><span className="text-muted-foreground/60">New:</span> <span className="font-mono">{tc.new_task}</span></span>
+                                      <span>
+                                        <span className="text-muted-foreground/60">New:</span>{' '}
+                                        <span className="font-mono">{tc.new_task}</span>
+                                      </span>
                                     )}
                                   </div>
                                 )}

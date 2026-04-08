@@ -9,7 +9,7 @@ import { ClipboardList, FileCheck2, Loader2, ShieldCheck, Wrench } from 'lucide-
 
 interface SelectionSummaryProps {
   controls: MaintenanceControlResource[];
-  selectedControls: Map<number, { taskCardIds: Set<number>; description: string }>;
+  selectedControls: Map<number, { taskCardIds: Set<number> }>;
   totalTaskCards: number;
   onSubmit: () => void;
   isSubmitting: boolean;
@@ -28,21 +28,12 @@ const SelectionSummary = ({
     .filter((c) => selectedControls.has(c.id))
     .map((c) => ({ control: c, item: selectedControls.get(c.id)! }));
 
-  const pendingDescriptions = selectedControlEntries.filter((e) => !e.item.description.trim()).length;
-
-  const readinessLabel =
-    totalTaskCards === 0
-      ? 'Sin selección'
-      : pendingDescriptions > 0
-        ? 'Descripciones pendientes'
-        : 'Listo para crear';
+  const readinessLabel = totalTaskCards === 0 ? 'Sin selección' : 'Listo para crear';
 
   const readinessTone =
     totalTaskCards === 0
       ? 'border-border bg-muted/20 text-muted-foreground'
-      : pendingDescriptions > 0
-        ? 'border-amber-500/30 bg-amber-500/10 text-amber-600 dark:text-amber-400'
-        : 'border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400';
+      : 'border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400';
 
   return (
     <div className="lg:sticky lg:top-4 space-y-4">
@@ -90,7 +81,6 @@ const SelectionSummary = ({
                     const selectedCount = item.taskCardIds.size;
                     const totalCount = (control.task_cards ?? []).filter((tc) => tc.applicable).length;
                     const isComplete = selectedCount > 0 && selectedCount === totalCount;
-                    const hasDescription = !!item.description.trim();
 
                     return (
                       <div key={control.id} className="rounded-md border bg-background px-3 py-2">
@@ -115,16 +105,6 @@ const SelectionSummary = ({
                         </div>
 
                         <div className="mt-1.5 flex items-center gap-1.5">
-                          <span
-                            className={cn(
-                              'inline-flex items-center rounded-full border px-1.5 py-0.5 text-[10px]',
-                              hasDescription
-                                ? 'border-sky-500/30 bg-sky-500/10 text-sky-600 dark:text-sky-400'
-                                : 'border-amber-500/30 bg-amber-500/10 text-amber-600 dark:text-amber-400',
-                            )}
-                          >
-                            {hasDescription ? 'Desc. lista' : 'Desc. pendiente'}
-                          </span>
                           {(control.since_last?.fh || control.since_last?.fc || control.since_last?.days) && (
                             <span className="inline-flex items-center gap-0.5 rounded-full border px-1.5 py-0.5 text-[10px] text-muted-foreground">
                               <Wrench className="size-2.5" />
@@ -155,13 +135,6 @@ const SelectionSummary = ({
           <Button variant="outline" className="w-full" onClick={onCancel}>
             Cancelar
           </Button>
-          <p className="text-center text-[10px] text-muted-foreground">
-            {totalTaskCards === 0
-              ? 'Seleccione al menos una task card.'
-              : pendingDescriptions > 0
-                ? `${pendingDescriptions} descripción${pendingDescriptions !== 1 ? 'es' : ''} pendiente${pendingDescriptions !== 1 ? 's' : ''}.`
-                : 'Listo para enviar.'}
-          </p>
         </div>
       </div>
     </div>
