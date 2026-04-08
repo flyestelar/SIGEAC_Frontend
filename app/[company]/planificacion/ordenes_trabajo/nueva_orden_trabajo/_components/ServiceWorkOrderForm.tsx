@@ -298,7 +298,7 @@ const ServiceWorkOrderForm = () => {
                                   key={aircraft.id}
                                   onSelect={() => {
                                     form.setValue('aircraft_id', aircraft.id.toString());
-                                    setSelectedAircraft(aircraft.manufacturer.id.toString());
+                                    setSelectedAircraft(aircraft.id.toString());
                                   }}
                                 >
                                   <Check
@@ -309,7 +309,7 @@ const ServiceWorkOrderForm = () => {
                                   />
                                   {
                                     <p>
-                                      {aircraft.acronym} - {aircraft.manufacturer.name}
+                                      {aircraft.acronym} - {aircraft.aircraft_type?.full_name}
                                     </p>
                                   }
                                 </CommandItem>

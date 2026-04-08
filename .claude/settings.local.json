@@ -10,7 +10,9 @@
       "Bash(git diff:*)",
       "Bash(grep:*)",
       "Bash(npx:*)",
-      "Bash(npm run:*)"
+      "Bash(npm run:*)",
+      "Bash(git show:*)",
+      "Bash(cat:*)"
     ]
   }
 }

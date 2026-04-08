@@ -1,82 +1,84 @@
 'use client';
 
-import { useState, useMemo } from 'react';
-import { MaintenanceAircraft } from '@/types';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
+import { useMemo, useState } from 'react';
+import { AircraftResource } from '@api/types';
 import { Badge } from '@/components/ui/badge';
-import { Clock, Plane, RotateCcw, Search, X } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
+import { Clock3, Plane, RotateCcw, Search, Waypoints, X } from 'lucide-react';
 
 interface AircraftPickerProps {
-  aircrafts: MaintenanceAircraft[];
-  selectedAircraft: MaintenanceAircraft | null;
-  onSelect: (aircraft: MaintenanceAircraft) => void;
+  aircrafts: AircraftResource[];
+  selectedAircraft: AircraftResource | null;
+  onSelect: (aircraft: AircraftResource) => void;
   onClear: () => void;
 }
 
-const normalize = (v?: string | null) => (v ?? '').toLowerCase();
+const normalize = (value?: string | null) => (value ?? '').toLowerCase();
 
 const AircraftPicker = ({ aircrafts, selectedAircraft, onSelect, onClear }: AircraftPickerProps) => {
   const [query, setQuery] = useState('');
 
   const filtered = useMemo(() => {
-    const q = normalize(query);
-    if (!q) return aircrafts;
+    const search = normalize(query);
+    if (!search) return aircrafts;
+
     return aircrafts.filter(
-      (a) =>
-        normalize(a.acronym).includes(q) ||
-        normalize(a.manufacturer?.name).includes(q) ||
-        normalize(a.serial).includes(q) ||
-        normalize(a.aircraft_type?.full_name).includes(q),
+      (aircraft) =>
+        normalize(aircraft.acronym).includes(search) ||
+        normalize(aircraft.serial).includes(search) ||
+        normalize(aircraft.manufacturer?.name).includes(search) ||
+        normalize(aircraft.aircraft_type?.full_name).includes(search),
     );
   }, [aircrafts, query]);
 
-  // Collapsed state — aircraft already selected
   if (selectedAircraft) {
     return (
       <div className="rounded-lg border bg-background">
-        <div className="flex items-center justify-between border-b bg-muted/20 px-5 py-3">
-          <span className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
-            Aeronave seleccionada
-          </span>
-          <Button variant="ghost" size="sm" className="h-7 gap-1.5 text-xs text-muted-foreground" onClick={onClear}>
-            <X className="size-3" />
-            Cambiar
+        <div className="flex flex-col gap-3 border-b bg-muted/20 px-5 py-3 md:flex-row md:items-center md:justify-between">
+          <div>
+            <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">Contexto de aeronave</p>
+            <p className="text-sm text-muted-foreground">La mesa operativa esta filtrada por la aeronave seleccionada.</p>
+          </div>
+          <Button variant="outline" size="sm" className="gap-1.5" onClick={onClear}>
+            <X className="size-3.5" />
+            Cambiar aeronave
           </Button>
         </div>
-        <div className="flex items-center gap-5 px-5 py-4">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg border border-sky-500/20 bg-sky-500/10 shrink-0">
-            <Plane className="size-5 text-sky-600 dark:text-sky-400" />
-          </div>
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-3">
-              <span className="font-mono text-lg font-semibold tracking-widest">{selectedAircraft.acronym}</span>
-              {selectedAircraft.aircraft_type?.full_name && (
-                <Badge variant="outline" className="font-normal text-xs">
-                  {selectedAircraft.aircraft_type.full_name}
-                </Badge>
-              )}
+
+        <div className="grid gap-3 p-5 md:grid-cols-[minmax(0,1fr)_auto] md:items-center">
+          <div className="flex min-w-0 items-center gap-4">
+            <div className="flex h-11 w-11 items-center justify-center rounded border border-sky-500/20 bg-sky-500/10">
+              <Plane className="size-5 text-sky-600 dark:text-sky-400" />
             </div>
-            <p className="text-sm text-muted-foreground mt-0.5">
-              {selectedAircraft.manufacturer?.name ?? '—'} · S/N {selectedAircraft.serial || '—'}
-            </p>
-          </div>
-          <div className="hidden sm:flex items-center gap-4 text-xs text-muted-foreground shrink-0">
-            <div className="flex items-center gap-1.5">
-              <Clock className="size-3" />
-              <span className="font-mono font-medium tabular-nums text-foreground">
-                {selectedAircraft.flight_hours?.toLocaleString?.() ?? '—'}
-              </span>
-              <span>FH</span>
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="font-mono text-lg font-semibold tracking-widest">{selectedAircraft.acronym}</span>
+                {selectedAircraft.aircraft_type?.full_name && (
+                  <Badge variant="outline" className="text-[10px]">
+                    {selectedAircraft.aircraft_type.full_name}
+                  </Badge>
+                )}
+              </div>
+              <p className="truncate text-sm text-muted-foreground">
+                {selectedAircraft.manufacturer?.name ?? 'Fabricante no disponible'} · S/N {selectedAircraft.serial ?? '-'}
+              </p>
             </div>
-            <div className="h-3 w-px bg-border" />
-            <div className="flex items-center gap-1.5">
-              <RotateCcw className="size-3" />
-              <span className="font-mono font-medium tabular-nums text-foreground">
-                {selectedAircraft.flight_cycles?.toLocaleString?.() ?? '—'}
-              </span>
-              <span>FC</span>
+          </div>
+
+          <div className="grid grid-cols-3 gap-2">
+            <div className="rounded-md border bg-muted/20 px-3 py-2 text-center">
+              <p className="text-[11px] uppercase tracking-widest text-muted-foreground">FH</p>
+              <p className="font-mono text-sm font-semibold tabular-nums">{selectedAircraft.flight_hours ?? '-'}</p>
+            </div>
+            <div className="rounded-md border bg-muted/20 px-3 py-2 text-center">
+              <p className="text-[11px] uppercase tracking-widest text-muted-foreground">FC</p>
+              <p className="font-mono text-sm font-semibold tabular-nums">{selectedAircraft.flight_cycles ?? '-'}</p>
+            </div>
+            <div className="rounded-md border bg-muted/20 px-3 py-2 text-center">
+              <p className="text-[11px] uppercase tracking-widest text-muted-foreground">Estado</p>
+              <p className="text-sm font-semibold">Activa</p>
             </div>
           </div>
         </div>
@@ -84,58 +86,92 @@ const AircraftPicker = ({ aircrafts, selectedAircraft, onSelect, onClear }: Airc
     );
   }
 
-  // Expanded state — pick an aircraft
   return (
     <div className="rounded-lg border bg-background">
-      <div className="flex items-center justify-between gap-4 border-b px-5 py-3">
-        <span className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
-          Seleccionar aeronave
-        </span>
-        <div className="relative w-64">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground pointer-events-none" />
+      <div className="flex flex-col gap-4 border-b px-5 py-4 lg:flex-row lg:items-end lg:justify-between">
+        <div className="flex items-start gap-3">
+          <div className="flex h-9 w-9 items-center justify-center rounded border bg-muted/30">
+            <Waypoints className="size-4 text-muted-foreground" />
+          </div>
+          <div>
+            <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">Preparacion de contexto</p>
+            <h2 className="text-base font-semibold tracking-tight">Seleccione la aeronave</h2>
+            <p className="text-sm text-muted-foreground">
+              Defina la aeronave para cargar controles aplicables y construir la WO sobre su programa vigente.
+            </p>
+          </div>
+        </div>
+
+        <div className="relative w-full lg:w-72">
+          <Search className="pointer-events-none absolute left-3 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
           <Input
-            placeholder="Buscar acrónimo, serial…"
-            className="pl-9 h-8 text-sm"
             value={query}
-            onChange={(e) => setQuery(e.target.value)}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder="Buscar por acronimo, serial o fabricante..."
+            className="h-9 bg-muted/20 pl-9 text-sm"
           />
         </div>
       </div>
 
       <div className="p-4">
         {filtered.length === 0 ? (
-          <div className="flex flex-col items-center justify-center gap-1.5 py-10 text-muted-foreground">
-            <Plane className="size-8 opacity-20" />
+          <div className="flex min-h-[220px] flex-col items-center justify-center gap-2 rounded-lg border border-dashed text-center text-muted-foreground">
+            <Plane className="size-8 opacity-30" />
             <p className="text-sm">{query ? `Sin resultados para "${query}"` : 'No hay aeronaves registradas'}</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            {filtered.map((a) => (
+          <div className="grid grid-cols-1 gap-3 xl:grid-cols-2">
+            {filtered.map((aircraft) => (
               <button
-                key={a.id}
+                key={aircraft.id}
                 type="button"
-                onClick={() => onSelect(a)}
+                onClick={() => onSelect(aircraft)}
                 className={cn(
-                  'group flex items-start gap-3 rounded-md border px-4 py-3 text-left transition-colors duration-100',
-                  'hover:border-sky-500/40 hover:bg-sky-500/5',
-                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500/50',
+                  'group rounded-lg border bg-background px-4 py-4 text-left transition-colors',
+                  'hover:border-sky-500/30 hover:bg-sky-500/5',
+                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500/40',
                 )}
               >
-                <div className="flex h-8 w-8 items-center justify-center rounded border bg-muted/30 shrink-0 mt-0.5 group-hover:border-sky-500/20 group-hover:bg-sky-500/10 transition-colors">
-                  <Plane className="size-3.5 text-muted-foreground group-hover:text-sky-600 dark:group-hover:text-sky-400 transition-colors" />
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex min-w-0 items-start gap-3">
+                    <div className="mt-0.5 flex h-9 w-9 items-center justify-center rounded border bg-muted/30 transition-colors group-hover:border-sky-500/20 group-hover:bg-sky-500/10">
+                      <Plane className="size-4 text-muted-foreground transition-colors group-hover:text-sky-600 dark:group-hover:text-sky-400" />
+                    </div>
+                    <div className="min-w-0">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="font-mono text-sm font-semibold tracking-widest">{aircraft.acronym}</span>
+                        {aircraft.aircraft_type?.full_name && (
+                          <Badge variant="outline" className="text-[10px]">
+                            {aircraft.aircraft_type.full_name}
+                          </Badge>
+                        )}
+                      </div>
+                      <p className="mt-1 truncate text-xs text-muted-foreground">
+                        {aircraft.manufacturer?.name ?? 'Fabricante no disponible'}
+                      </p>
+                      <p className="truncate text-xs text-muted-foreground">Serial: {aircraft.serial ?? '-'}</p>
+                    </div>
+                  </div>
                 </div>
-                <div className="flex-1 min-w-0">
-                  <span className="font-mono text-sm font-semibold tracking-widest leading-none">{a.acronym}</span>
-                  <p className="text-xs text-muted-foreground mt-1 truncate">
-                    {a.manufacturer?.name ?? '—'} · {a.aircraft_type?.full_name ?? 'Sin tipo'}
-                  </p>
-                  <div className="flex items-center gap-3 mt-1.5 text-[11px] text-muted-foreground">
-                    <span className="font-mono tabular-nums">
-                      {a.flight_hours?.toLocaleString?.() ?? '—'} FH
-                    </span>
-                    <span className="font-mono tabular-nums">
-                      {a.flight_cycles?.toLocaleString?.() ?? '—'} FC
-                    </span>
+
+                <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
+                  <div className="rounded-md border bg-muted/20 px-2.5 py-2">
+                    <div className="flex items-center gap-1 text-[11px] uppercase tracking-widest text-muted-foreground">
+                      <Clock3 className="size-3" />
+                      FH
+                    </div>
+                    <p className="mt-1 font-mono text-xs font-semibold tabular-nums">{aircraft.flight_hours ?? '-'}</p>
+                  </div>
+                  <div className="rounded-md border bg-muted/20 px-2.5 py-2">
+                    <div className="flex items-center gap-1 text-[11px] uppercase tracking-widest text-muted-foreground">
+                      <RotateCcw className="size-3" />
+                      FC
+                    </div>
+                    <p className="mt-1 font-mono text-xs font-semibold tabular-nums">{aircraft.flight_cycles ?? '-'}</p>
+                  </div>
+                  <div className="rounded-md border bg-muted/20 px-2.5 py-2 sm:col-span-2">
+                    <p className="text-[11px] uppercase tracking-widest text-muted-foreground">Programa</p>
+                    <p className="mt-1 truncate text-xs font-medium">Controles aplicables por aeronave</p>
                   </div>
                 </div>
               </button>
