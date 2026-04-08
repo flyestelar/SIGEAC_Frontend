@@ -34,21 +34,8 @@ export default function MaintenanceDashboard() {
     <ContentLayout title="Control Mantenimiento">
       <main className="p-4 lg:p-6 max-w-[2080px]">
         <div className="mb-5 flex items-start justify-between">
-          <div>
-            <div className="flex items-center gap-3">
-              <h2 className="text-xl font-semibold text-foreground">Control de Mantenimiento</h2>
-              {selectedAircraft && (
-                <Badge variant="outline" className="font-mono text-xs border-primary/40 text-primary">
-                  {selectedAircraft.acronym}
-                </Badge>
-              )}
-            </div>
-            <p className="mt-1 text-sm text-muted-foreground">
-              {selectedAircraft
-                ? `${selectedAircraft.manufacturer?.name ?? ''} ${selectedAircraft.aircraft_type?.series ?? ''} — S/N ${selectedAircraft.serial}`
-                : 'Selecciona una aeronave para inspeccionar sus programas de mantenimiento'}
-            </p>
-          </div>
+          <h2 className="text-xl font-semibold text-foreground">Control de Mantenimiento</h2>
+
           <div className="flex items-center gap-2">
             <Button asChild variant="outline" className="gap-2">
               <Link href={`/${selectedCompany?.slug}/planificacion/control_mantenimiento/alertas`}>

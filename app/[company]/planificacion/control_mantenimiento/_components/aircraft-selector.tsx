@@ -29,7 +29,7 @@ export function AircraftSelector({ aircraft, selectedAircraftId, onSelectAircraf
 
   return (
     <Card className="border-border/60 bg-card">
-      <CardHeader className="pb-3">
+      <CardHeader className="p-2">
         <CardTitle className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
           <Plane className="h-4 w-4 text-primary" />
           Flota
@@ -47,7 +47,7 @@ export function AircraftSelector({ aircraft, selectedAircraftId, onSelectAircraf
           />
         </div>
       </CardHeader>
-      <CardContent className="p-3">
+      <CardContent className="p-1.5 pt-0">
         <div className="flex gap-3 overflow-x-auto p-1">
           {filtered.map((ac) => {
             const isSelected = selectedAircraftId === ac.id;
