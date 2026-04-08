@@ -11,8 +11,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -99,24 +98,17 @@ function ImportTasksConfirmDialogContent(props: ImportTasksConfirmDialogProps) {
     <>
       <div className="rounded-md border p-3 space-y-2">
         <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Como importar</p>
-        <RadioGroup
+        <ToggleGroup
+          type="single"
           value={importStrategy}
           onValueChange={(value) => setImportStrategy(value as ImportStrategy)}
-          className="space-y-2"
+          className="justify-start"
+          variant="outline"
         >
-          <div className="flex items-center space-x-2">
-            <RadioGroupItem value="replace" id="import-replace" />
-            <Label htmlFor="import-replace">Reemplazar tareas actuales</Label>
-          </div>
-          <div className="flex items-center space-x-2">
-            <RadioGroupItem value="prepend" id="import-prepend" />
-            <Label htmlFor="import-prepend">Agregar al inicio</Label>
-          </div>
-          <div className="flex items-center space-x-2">
-            <RadioGroupItem value="append" id="import-append" />
-            <Label htmlFor="import-append">Agregar al final</Label>
-          </div>
-        </RadioGroup>
+          <ToggleGroupItem value="replace" variant="outline">Reemplazar tareas actuales</ToggleGroupItem>
+          <ToggleGroupItem value="prepend" variant="outline">Agregar al inicio</ToggleGroupItem>
+          <ToggleGroupItem value="append" variant="outline">Agregar al final</ToggleGroupItem>
+        </ToggleGroup>
       </div>
 
       <div className="max-h-[60vh] overflow-auto rounded-md border bg-background">
@@ -124,7 +116,7 @@ function ImportTasksConfirmDialogContent(props: ImportTasksConfirmDialogProps) {
           <Input
             placeholder="Buscar tareas..."
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchTerm(e.target.value)}
             className="w-full"
           />
         </div>
