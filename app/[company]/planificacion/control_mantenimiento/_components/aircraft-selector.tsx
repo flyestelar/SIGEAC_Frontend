@@ -3,7 +3,6 @@
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Separator } from '@/components/ui/separator';
 import { AircraftResource } from '@api/types';
 import { Clock, Plane, RotateCcw, Search } from 'lucide-react';
 import { useState } from 'react';
@@ -49,7 +48,7 @@ export function AircraftSelector({ aircraft, selectedAircraftId, onSelectAircraf
         </div>
       </CardHeader>
       <CardContent className="p-3">
-        <div className="flex gap-3 overflow-x-auto pb-1">
+        <div className="flex gap-3 overflow-x-auto p-1">
           {filtered.map((ac) => {
             const isSelected = selectedAircraftId === ac.id;
 
@@ -58,53 +57,49 @@ export function AircraftSelector({ aircraft, selectedAircraftId, onSelectAircraf
                 key={ac.id}
                 onClick={() => onSelectAircraft(ac.id)}
                 className={cn(
-                  'group w-[280px] shrink-0 overflow-hidden rounded-lg border text-left transition-all',
+                  'group flex h-20 w-88 shrink-0 overflow-hidden rounded-lg border text-left transition-all',
                   isSelected
                     ? 'border-primary ring-2 ring-primary focus-visible:outline-none'
                     : 'border-border/60 hover:border-foreground/20',
                 )}
               >
-                {/* Image */}
-                <div className="relative">
+                <div className="relative h-full w-[124px] shrink-0">
                   <img
-                    src="https://cdn.zbordirect.com/images/airlines/ES.webp"
+                    src="/aircraft.webp"
                     alt={ac.acronym ?? 'Aircraft'}
                     className={cn(
-                      'aspect-[16/7] w-full object-cover',
+                      'h-full w-full object-cover',
                       isSelected ? 'brightness-1' : 'brightness-[0.5] dark:brightness-[0.4]',
                     )}
                   />
-                  {/* Acronym overlay */}
-                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent px-3 pb-2 pt-4">
-                    <div className="flex items-center justify-between">
-                      <span className="font-mono text-sm font-bold tracking-widest text-white">{ac.acronym}</span>
+                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent px-2 pb-1.5 pt-3">
+                    <span className="font-mono text-[11px] font-bold tracking-[0.2em] text-white">{ac.acronym}</span>
+                  </div>
+                </div>
+
+                <div className="flex min-w-0 flex-1 flex-col justify-between px-2 py-1.5">
+                  <div>
+                    <div className="flex items-start justify-between gap-1.5">
+                      <span className="truncate text-[11px] font-medium text-foreground">
+                        {ac.manufacturer?.name ?? '—'}
+                      </span>
                       {isSelected && (
-                        <Badge className="h-4 bg-primary/90 px-1.5 text-[9px] font-semibold text-primary-foreground">
+                        <Badge className="h-3.5 shrink-0 bg-primary/90 px-1 text-[9px] font-semibold text-primary-foreground">
                           Activa
                         </Badge>
                       )}
                     </div>
-                  </div>
-                </div>
 
-                {/* Info */}
-                <div className="space-y-2 px-3 py-2.5">
-                  <div className="flex items-start justify-between gap-2">
-                    <span className="truncate text-xs font-medium text-foreground">{ac.manufacturer?.name ?? '—'}</span>
+                    {ac.aircraft_type?.series && (
+                      <p className="truncate text-[10px] text-muted-foreground">
+                        {ac.aircraft_type.full_name ?? ac.aircraft_type.series}
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="flex items-center justify-between gap-1.5 text-[10px]">
                     <span className="shrink-0 font-mono text-[10px] text-muted-foreground">S/N {ac.serial || '—'}</span>
-                  </div>
-
-                  {ac.aircraft_type?.series && (
-                    <p className="truncate text-[11px] text-muted-foreground">
-                      {ac.aircraft_type.full_name ?? ac.aircraft_type.series}
-                    </p>
-                  )}
-
-                  <Separator className="!my-1.5" />
-
-                  {/* Telemetry + stats */}
-                  <div className="flex items-center gap-2 text-[11px]">
-                    <span className="flex items-center gap-1 text-muted-foreground">
+                    <span className="flex items-center gap-0.5 text-muted-foreground">
                       <Clock className="h-3 w-3" />
                       <span className="font-mono font-medium tabular-nums text-foreground">
                         {ac.flight_hours?.toLocaleString() ?? 0}
@@ -112,7 +107,7 @@ export function AircraftSelector({ aircraft, selectedAircraftId, onSelectAircraf
                       h
                     </span>
                     <span className="text-border">·</span>
-                    <span className="flex items-center gap-1 text-muted-foreground">
+                    <span className="flex items-center gap-0.5 text-muted-foreground">
                       <RotateCcw className="h-3 w-3" />
                       <span className="font-mono font-medium tabular-nums text-foreground">
                         {ac.flight_cycles?.toLocaleString() ?? 0}
