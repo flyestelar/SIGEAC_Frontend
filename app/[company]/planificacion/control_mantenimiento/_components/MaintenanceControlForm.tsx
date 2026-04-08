@@ -18,7 +18,7 @@ import { useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { useFieldArray, useForm } from 'react-hook-form';
 import { z } from 'zod';
-import ImportTasksConfirmDialog, { ImportStrategy } from './ImportTasksConfirmDialog';
+import ImportTasksConfirmDialog, { ImportedTask, ImportStrategy } from './ImportTasksConfirmDialog';
 
 const taskSchema = z.object({
   description: z.string().trim().min(1, 'La descripción es obligatoria').default(''),
@@ -72,6 +72,18 @@ const MaintenanceControlForm = ({ submitting, onCancel, onSubmit, initialValues 
     control,
     name: 'tasks',
   });
+
+  const [searchTerm, setSearchTerm] = useState('');
+
+  const filteredFields = fields
+    .map((field, index) => ({ field, index }))
+    .filter(
+      ({ field }) =>
+        field.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        field.old_task.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        field.new_task.toLowerCase().includes(searchTerm.toLowerCase()),
+    )
+    .map(({ field, index }) => ({ field, index }));
 
   const [newTask, setNewTask] = useState({
     description: '',
@@ -151,15 +163,15 @@ const MaintenanceControlForm = ({ submitting, onCancel, onSubmit, initialValues 
     }
   };
 
-  const confirmImport = (importStrategy: ImportStrategy) => {
+  const confirmImport = (importStrategy: ImportStrategy, editedTasks: ImportedTask[]) => {
     const currentTasks = form.getValues('tasks');
 
     if (importStrategy === 'replace') {
-      replace(pendingImportedTasks);
+      replace(editedTasks);
     } else if (importStrategy === 'prepend') {
-      replace([...pendingImportedTasks, ...currentTasks]);
+      replace([...editedTasks, ...currentTasks]);
     } else {
-      replace([...currentTasks, ...pendingImportedTasks]);
+      replace([...currentTasks, ...editedTasks]);
     }
 
     setPendingImportedTasks([]);
@@ -321,6 +333,14 @@ const MaintenanceControlForm = ({ submitting, onCancel, onSubmit, initialValues 
           />
 
           <div className="overflow-x-auto rounded-md border">
+            <div className="p-2 border-b">
+              <Input
+                placeholder="Buscar tareas..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full"
+              />
+            </div>
             <table className="w-full min-w-[720px] text-sm">
               <thead className="bg-muted/50">
                 <tr>
@@ -341,7 +361,7 @@ const MaintenanceControlForm = ({ submitting, onCancel, onSubmit, initialValues 
                   </tr>
                 )}
 
-                {fields.map((field, index) => (
+                {filteredFields.map(({ field, index }) => (
                   <tr key={field.id} className="border-t">
                     <td className="px-3 py-2 text-center text-sm text-muted-foreground align-middle">{index + 1}</td>
                     <td className="px-3 py-2 align-top">
@@ -501,8 +521,7 @@ function ExcelFormatHelpPopover() {
         <div>
           <p className="text-sm font-semibold">Formato esperado</p>
           <p className="text-xs text-muted-foreground">
-            El archivo debe incluir solo tareas con estas columnas: Old Task Card, Descripción, New Task Card y
-            Applicable.
+            El archivo debe incluir solo tareas con estas columnas: Old Task Card, Descripción y New Task Card
           </p>
         </div>
         <div className="rounded-md border overflow-x-auto">
@@ -512,7 +531,6 @@ function ExcelFormatHelpPopover() {
                 <th className="px-2 py-1 text-left">Old Task Card</th>
                 <th className="px-2 py-1 text-left">Descripción</th>
                 <th className="px-2 py-1 text-left">New Task Card</th>
-                <th className="px-2 py-1 text-center">Aplica</th>
               </tr>
             </thead>
             <tbody>
@@ -520,13 +538,11 @@ function ExcelFormatHelpPopover() {
                 <td className="px-2 py-1">H1-001</td>
                 <td className="px-2 py-1">Inspeccionar sistema hidráulico</td>
                 <td className="px-2 py-1">H1-002</td>
-                <td className="px-2 py-1 text-center">Sí</td>
               </tr>
               <tr className="border-t">
                 <td className="px-2 py-1">F2-001</td>
                 <td className="px-2 py-1">Verificar funcionamiento de flaps</td>
                 <td className="px-2 py-1">F2-002</td>
-                <td className="px-2 py-1 text-center">No</td>
               </tr>
             </tbody>
           </table>

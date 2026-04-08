@@ -1,6 +1,7 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   Dialog,
   DialogContent,
@@ -9,16 +10,32 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useState } from 'react';
+import { Controller, useForm } from 'react-hook-form';
+import { z } from 'zod';
 
 export type ImportStrategy = 'replace' | 'prepend' | 'append';
 
-type ImportedTask = {
+const taskSchema = z.object({
+  description: z.string().default(''),
+  old_task: z.string().default(''),
+  new_task: z.string().default(''),
+  applicable: z.boolean().default(true),
+});
+
+const importTasksSchema = z.object({
+  tasks: z.array(taskSchema),
+});
+
+type ImportTasksFormValues = z.infer<typeof importTasksSchema>;
+
+export type ImportedTask = {
   description: string;
-  old_task?: string;
-  new_task?: string;
+  old_task: string;
+  new_task: string;
   applicable: boolean;
 };
 
@@ -27,11 +44,11 @@ interface ImportTasksConfirmDialogProps {
   pendingImportedTasks: ImportedTask[];
   pendingFileName: string;
   onCancel: () => void;
-  onConfirm: (strategy: ImportStrategy) => void;
+  onConfirm: (strategy: ImportStrategy, editedTasks: ImportedTask[]) => void;
 }
 
 const ImportTasksConfirmDialog = (props: ImportTasksConfirmDialogProps) => {
-  const { open, pendingImportedTasks, pendingFileName, onCancel, onConfirm } = props;
+  const { open, pendingImportedTasks, pendingFileName, onCancel } = props;
 
   return (
     <Dialog
@@ -60,6 +77,23 @@ export default ImportTasksConfirmDialog;
 function ImportTasksConfirmDialogContent(props: ImportTasksConfirmDialogProps) {
   const { pendingImportedTasks, onCancel, onConfirm } = props;
   const [importStrategy, setImportStrategy] = useState<ImportStrategy>('replace');
+  const [searchTerm, setSearchTerm] = useState('');
+
+  const form = useForm<ImportTasksFormValues>({
+    values: {
+      tasks: pendingImportedTasks,
+    },
+  });
+
+  const filteredIndices = pendingImportedTasks
+    .map((task, index) => ({ task, index }))
+    .filter(
+      ({ task }) =>
+        task.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        task.old_task.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        task.new_task.toLowerCase().includes(searchTerm.toLowerCase()),
+    )
+    .map(({ index }) => index);
 
   return (
     <>
@@ -86,6 +120,14 @@ function ImportTasksConfirmDialogContent(props: ImportTasksConfirmDialogProps) {
       </div>
 
       <div className="max-h-[60vh] overflow-auto rounded-md border bg-background">
+        <div className="p-2 border-b">
+          <Input
+            placeholder="Buscar tareas..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full"
+          />
+        </div>
         <table className="w-full text-xs">
           <thead className="bg-muted/50 whitespace-nowrap">
             <tr>
@@ -96,14 +138,24 @@ function ImportTasksConfirmDialogContent(props: ImportTasksConfirmDialogProps) {
             </tr>
           </thead>
           <tbody>
-            {pendingImportedTasks.map((task, index) => (
-              <tr key={`preview-${index}`} className="border-t">
-                <td className="px-2 py-1 whitespace-nowrap">{task.old_task || '-'}</td>
-                <td className="px-2 py-1">{task.description}</td>
-                <td className="px-2 py-1 whitespace-nowrap">{task.new_task || '-'}</td>
-                <td className="px-2 py-1 text-center">{task.applicable ? 'Sí' : 'No'}</td>
-              </tr>
-            ))}
+            {filteredIndices.map((index) => {
+              const task = pendingImportedTasks[index];
+              return (
+                <tr key={`preview-${index}`} className="border-t">
+                  <td className="px-2 py-1 whitespace-nowrap">{task.old_task || '-'}</td>
+                  <td className="px-2 py-1">{task.description}</td>
+                  <td className="px-2 py-1 whitespace-nowrap">{task.new_task || '-'}</td>
+                  <td className="px-2 py-1 text-center">
+                    <Controller
+                      control={form.control}
+                      defaultValue={task.applicable}
+                      name={`tasks.${index}.applicable`}
+                      render={({ field }) => <Checkbox checked={field.value} onCheckedChange={field.onChange} />}
+                    />
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>
@@ -112,7 +164,7 @@ function ImportTasksConfirmDialogContent(props: ImportTasksConfirmDialogProps) {
         <Button type="button" variant="ghost" onClick={onCancel}>
           Cancelar
         </Button>
-        <Button type="button" onClick={() => onConfirm(importStrategy)}>
+        <Button type="button" onClick={form.handleSubmit((values) => onConfirm(importStrategy, values.tasks))}>
           Confirmar importacion
         </Button>
       </DialogFooter>
