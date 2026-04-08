@@ -3,9 +3,8 @@
 import { useState, useMemo, useCallback } from 'react';
 import { useGetMaintenanceAircrafts } from '@/hooks/planificacion/useGetMaintenanceAircrafts';
 import { maintenanceControlsIndexOptions } from '@api/queries';
-import { CreateWorkOrderData, useCreateWorkOrder } from '@/actions/planificacion/ordenes_trabajo/actions';
 import { useCompanyStore } from '@/stores/CompanyStore';
-import { AircraftResource, MaintenanceControlResource, TaskCardResource } from '@api/types';
+import { AircraftResource, MaintenanceControlResource, StoreWorkOrderRequest, TaskCardResource } from '@api/types';
 import LoadingPage from '@/components/misc/LoadingPage';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
@@ -14,6 +13,7 @@ import { AlertCircle, FileText, Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { useQuery } from '@tanstack/react-query';
+import { useCreateWorkOrder } from '@/actions/planificacion/ordenes_trabajo/actions';
 import AircraftDetailsCard from './AircraftDetailsCard';
 import MaintenanceControlDialog from './MaintenanceControlDialog';
 import TaskCardsTable from './TaskCardsTable';
@@ -102,20 +102,20 @@ const WorkOrderForm = () => {
     }
 
     if (!description.trim()) {
-      toast.error('La descripción de la orden es obligatoria.');
+      toast.error('Las observaciones de la orden son obligatorias.');
       return;
     }
 
-    const payload: CreateWorkOrderData = {
+    const payload: StoreWorkOrderRequest = {
       aircraft_id: selectedAircraftId,
-      items: Array.from(selectedControls.values()).map(({ control, description: desc }) => ({
-        description: desc.trim() || control.title,
+      remarks: description.trim(),
+      items: Array.from(selectedControls.values()).map(({ control }) => ({
         maintenance_control_id: control.id,
-        maintenance_control_tasks_ids: (control.task_cards ?? []).map((tc) => tc.id),
+        task_ids: (control.task_cards ?? []).map((tc) => tc.id),
       })),
     };
 
-    await createWorkOrder.mutateAsync({ data: payload, company: selectedCompany.slug });
+    await createWorkOrder.mutateAsync({ body: payload });
     router.push(`/${selectedCompany.slug}/planificacion/ordenes_trabajo`);
   }, [selectedAircraftId, selectedCompany, selectedControls, description, createWorkOrder, router]);
 
@@ -159,12 +159,12 @@ const WorkOrderForm = () => {
         {selectedAircraft && (
           <div className="border-t px-5 py-4">
             <label className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
-              Descripción de la Orden
+              Observaciones
             </label>
             <Textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Describa el alcance de esta orden de trabajo…"
+              placeholder="Escriba observaciones relevantes para la orden de trabajo…"
               rows={2}
               className="mt-1.5"
             />

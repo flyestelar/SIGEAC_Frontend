@@ -2,13 +2,16 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { maintenanceControlsIndexOptions } from '@api/queries';
-import { AircraftResource, MaintenanceControlResource, TaskCardResource } from '@api/types';
+import { AircraftResource, MaintenanceControlResource, StoreWorkOrderRequest, TaskCardResource } from '@api/types';
 import { useQuery } from '@tanstack/react-query';
-import { AlertCircle, ClipboardCheck, FileSpreadsheet, PlaneTakeoff } from 'lucide-react';
+import { AlertCircle, CalendarRange, ClipboardCheck, FileSpreadsheet, PlaneTakeoff } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { CreateWorkOrderData, useCreateWorkOrder } from '@/actions/planificacion/ordenes_trabajo/actions';
+import { useCreateWorkOrder } from '@/actions/planificacion/ordenes_trabajo/actions';
 import LoadingPage from '@/components/misc/LoadingPage';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { useGetMaintenanceAircrafts } from '@/hooks/planificacion/useGetMaintenanceAircrafts';
 import { useCompanyStore } from '@/stores/CompanyStore';
 import AircraftPicker from './AircraftPicker';
@@ -35,6 +38,9 @@ const WorkOrderCreator = () => {
   const [selectedControls, setSelectedControls] = useState<Map<number, SelectedControlItem>>(new Map());
   const [descriptionErrors, setDescriptionErrors] = useState<Record<number, string>>({});
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [remarks, setRemarks] = useState('');
+  const [entryDate, setEntryDate] = useState('');
+  const [exitDate, setExitDate] = useState('');
 
   const { data: controlsResponse, isLoading: isControlsLoading } = useQuery({
     ...maintenanceControlsIndexOptions({
@@ -45,10 +51,7 @@ const WorkOrderCreator = () => {
     enabled: !!selectedAircraftId,
   });
 
-  const controls = useMemo<MaintenanceControlResource[]>(
-    () => controlsResponse?.data ?? [],
-    [controlsResponse],
-  );
+  const controls = useMemo<MaintenanceControlResource[]>(() => controlsResponse?.data ?? [], [controlsResponse]);
 
   const selectedAircraft = useMemo<AircraftResource | null>(() => {
     return aircrafts?.find((aircraft) => aircraft.id === selectedAircraftId) ?? null;
@@ -134,6 +137,9 @@ const WorkOrderCreator = () => {
     setSelectedControls(new Map());
     setDescriptionErrors({});
     setIsDialogOpen(false);
+    setRemarks('');
+    setEntryDate('');
+    setExitDate('');
   };
 
   const clearDescriptionError = (controlId: number) => {
@@ -180,11 +186,7 @@ const WorkOrderCreator = () => {
     clearDescriptionError(controlId);
   };
 
-  const handleToggleAllTaskCards = (
-    controlId: number,
-    taskCards: TaskCardResource[],
-    defaultDescription: string,
-  ) => {
+  const handleToggleAllTaskCards = (controlId: number, taskCards: TaskCardResource[], defaultDescription: string) => {
     setSelectedControls((prev) => {
       const next = new Map(prev);
       const current = next.get(controlId);
@@ -246,19 +248,22 @@ const WorkOrderCreator = () => {
       return;
     }
 
-    const payload: CreateWorkOrderData = {
+    const payload: StoreWorkOrderRequest = {
       aircraft_id: selectedAircraftId,
+      remarks: remarks.trim() || undefined,
+      entry_date: entryDate || undefined,
+      exit_date: exitDate || undefined,
       items: selectedControlEntries.map(({ control, item }) => ({
         description: item.description.trim(),
         maintenance_control_id: control.id,
-        maintenance_control_tasks_ids: Array.from(item.taskCardIds),
+        task_ids: Array.from(item.taskCardIds),
       })),
     };
 
-    await createWorkOrder.mutateAsync({ data: payload, company: selectedCompany.slug });
+    await createWorkOrder.mutateAsync({ body: payload });
     setIsDialogOpen(false);
     router.push(`/${selectedCompany.slug}/planificacion/ordenes_trabajo`);
-  }, [createWorkOrder, router, selectedAircraftId, selectedCompany, selectedControlEntries]);
+  }, [createWorkOrder, entryDate, remarks, router, selectedAircraftId, selectedCompany, selectedControlEntries, exitDate]);
 
   if (isAircraftsLoading) {
     return <LoadingPage />;
@@ -285,7 +290,8 @@ const WorkOrderCreator = () => {
             <div>
               <h1 className="text-2xl font-semibold tracking-tight">Nueva Orden de Trabajo</h1>
               <p className="text-sm text-muted-foreground">
-                Arme la WO como un manifiesto tecnico: seleccione task cards, revise cobertura y valide items antes de emitir.
+                Arme la WO como un manifiesto tecnico: seleccione task cards, revise cobertura y valide items antes de
+                emitir.
               </p>
             </div>
           </div>
@@ -310,6 +316,55 @@ const WorkOrderCreator = () => {
           </div>
         </div>
 
+        <div className="border-b px-5 py-4">
+          <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+            <CalendarRange className="size-3.5" />
+            Datos generales de la orden
+          </div>
+
+          <div className="mt-3 grid gap-4 lg:grid-cols-12">
+            <div className="space-y-2 lg:col-span-5">
+              <Label htmlFor="wo-entry-date" className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+                Fecha de entrada
+              </Label>
+              <Input
+                id="wo-entry-date"
+                type="date"
+                value={entryDate}
+                onChange={(event) => setEntryDate(event.target.value)}
+                className="bg-muted/20"
+              />
+            </div>
+
+            <div className="space-y-2 lg:col-span-5">
+              <Label htmlFor="wo-exit-date" className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+                Fecha de salida
+              </Label>
+              <Input
+                id="wo-exit-date"
+                type="date"
+                value={exitDate}
+                onChange={(event) => setExitDate(event.target.value)}
+                className="bg-muted/20"
+              />
+            </div>
+
+            <div className="space-y-2 lg:col-span-12">
+              <Label htmlFor="wo-remarks" className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+                Observaciones
+              </Label>
+              <Textarea
+                id="wo-remarks"
+                rows={3}
+                value={remarks}
+                onChange={(event) => setRemarks(event.target.value)}
+                placeholder="Registre observaciones operativas, restricciones o instrucciones para la orden"
+                className="bg-muted/20"
+              />
+            </div>
+          </div>
+        </div>
+
         <div className="grid gap-3 px-5 py-3 md:grid-cols-3">
           <div className="flex items-center gap-2 rounded-md border bg-muted/20 px-3 py-2">
             <div className="flex h-7 w-7 items-center justify-center rounded border bg-muted/30">
@@ -317,7 +372,9 @@ const WorkOrderCreator = () => {
             </div>
             <div className="min-w-0">
               <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">Contexto</p>
-              <p className="truncate text-sm">{selectedAircraft ? 'Aeronave lista para planificar' : 'Seleccione una aeronave'}</p>
+              <p className="truncate text-sm">
+                {selectedAircraft ? 'Aeronave lista para planificar' : 'Seleccione una aeronave'}
+              </p>
             </div>
           </div>
           <div className="flex items-center gap-2 rounded-md border bg-muted/20 px-3 py-2">
