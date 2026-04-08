@@ -1,9 +1,6 @@
 import { workOrdersIndexQueryKey, workOrdersStoreMutation } from '@api/queries';
-import type { StoreWorkOrderRequest } from '@api/types';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-
-export type CreateWorkOrderData = StoreWorkOrderRequest;
 
 export const useCreateWorkOrder = () => {
   const queryClient = useQueryClient();

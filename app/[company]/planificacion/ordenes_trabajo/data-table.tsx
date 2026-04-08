@@ -69,7 +69,7 @@ export function DataTable<TData, TValue>({
     <div>
       <div className="flex items-center py-4">
         <div className="flex gap-x-2 items-center">
-          <Link href={`/${selectedCompany?.slug}/planificacion/ordenes_trabajo/nueva_orden_trabajo`}>
+          <Link href={`/${selectedCompany?.slug}/planificacion/ordenes_trabajo/crear`}>
             <Button variant="outline" className="flex items-center justify-center gap-2 h-8 border-dashed">Generar Orden de Trabajo</Button>
           </Link>
         </div>
