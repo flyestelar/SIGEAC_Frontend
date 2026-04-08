@@ -877,7 +877,7 @@ export type WorkOrderResource = {
   id: number;
   order_number: string;
   tally_number: string | null;
-  status: string | null;
+  status: WorkOrderStatus;
   aircraft_id: number | null;
   entry_date: string;
   exit_date: string;
@@ -888,6 +888,11 @@ export type WorkOrderResource = {
   created_at: string | null;
   updated_at: string | null;
 };
+
+/**
+ * WorkOrderStatus
+ */
+export type WorkOrderStatus = 'ABIERTO' | 'PROGRAMADO' | 'CERRADO';
 
 /**
  * WorkShop
