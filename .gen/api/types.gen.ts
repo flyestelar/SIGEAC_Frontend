@@ -630,22 +630,16 @@ export type StoreTaskMasterRequest = {
  * StoreWorkOrderRequest
  */
 export type StoreWorkOrderRequest = {
-  order_number: string;
+  order_number?: string;
   tally_number?: string | null;
-  status?: 'ABIERTO' | 'CERRADO';
-  aircraft_id?: number | null;
+  status?: string;
+  aircraft_id: number;
   entry_date?: string | null;
   exit_date?: string | null;
   remarks?: string | null;
   items?: Array<{
     maintenance_control_id: number;
-    order?: number | null;
-    tasks?: Array<{
-      task_id: number;
-      inspection_date?: string | null;
-      review_by?: string | null;
-      order?: number | null;
-    }> | null;
+    task_ids: Array<number>;
   }> | null;
 };
 
