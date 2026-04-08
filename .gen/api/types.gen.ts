@@ -351,6 +351,22 @@ export type Location = {
 export type MaintenanceAlertStatus = 'OVERDUE' | 'WARNING' | 'OK';
 
 /**
+ * MaintenanceControl
+ */
+export type MaintenanceControl = {
+  id: number;
+  manual_reference: string | null;
+  title: string;
+  description: string | null;
+  interval_fc: number | null;
+  interval_fh: number | null;
+  interval_days: number | null;
+  created_at: string | null;
+  updated_at: string | null;
+  deleted_at: string | null;
+};
+
+/**
  * MaintenanceControlExecutionResource
  */
 export type MaintenanceControlExecutionResource = {
@@ -415,11 +431,6 @@ export type Module = {
   registered_by: string;
   updated_by: string | null;
 };
-
-/**
- * NonRoutine
- */
-export type NonRoutine = Array<string>;
 
 /**
  * Permission
@@ -613,6 +624,29 @@ export type StoreTaskMasterRequest = {
     pn?: string;
     qty?: number;
   }>;
+};
+
+/**
+ * StoreWorkOrderRequest
+ */
+export type StoreWorkOrderRequest = {
+  order_number: string;
+  tally_number?: string | null;
+  status?: 'ABIERTO' | 'CERRADO';
+  aircraft_id?: number | null;
+  entry_date?: string | null;
+  exit_date?: string | null;
+  remarks?: string | null;
+  items?: Array<{
+    maintenance_control_id: number;
+    order?: number | null;
+    tasks?: Array<{
+      task_id: number;
+      inspection_date?: string | null;
+      review_by?: string | null;
+      order?: number | null;
+    }> | null;
+  }> | null;
 };
 
 /**
@@ -834,12 +868,11 @@ export type Vendor = Array<string>;
  * WorkOrderItemResource
  */
 export type WorkOrderItemResource = {
-  id: string;
-  work_order_id: string;
-  description: string;
-  maintenance_service_id: string;
-  order: string;
-  maintenance_service: string;
+  id: number;
+  work_order_id: number;
+  maintenance_control_id: number;
+  order: number;
+  maintenance_control?: MaintenanceControl;
   tasks?: Array<WorkOrderItemTaskResource>;
   created_at: string;
   updated_at: string;
@@ -851,8 +884,9 @@ export type WorkOrderItemResource = {
 export type WorkOrderItemTaskResource = {
   id: string;
   task_id: string;
-  tecnico: string;
-  inspector: string;
+  inspection_date: string;
+  review_by: string;
+  order: string;
   task?: TaskCardResource;
   created_at: string;
   updated_at: string;
@@ -864,17 +898,17 @@ export type WorkOrderItemTaskResource = {
 export type WorkOrderResource = {
   id: number;
   order_number: string;
-  description: string | null;
+  tally_number: string | null;
+  status: string | null;
   aircraft_id: number | null;
-  authorizing: string | null;
-  date: string | null;
-  created_by: string;
-  updated_by: string | null;
-  aircraft?: Aircraft;
+  entry_date: string;
+  exit_date: string;
+  remarks: string | null;
+  aircraft?: AircraftResource;
   items_count?: number;
   items?: Array<WorkOrderItemResource>;
-  created_at: string;
-  updated_at: string;
+  created_at: string | null;
+  updated_at: string | null;
 };
 
 /**
@@ -9092,314 +9126,6 @@ export type ModulesCompanyModuleResponses = {
 
 export type ModulesCompanyModuleResponse = ModulesCompanyModuleResponses[keyof ModulesCompanyModuleResponses];
 
-export type NoRoutineTaskIndexData = {
-  body?: never;
-  path: {
-    company: string;
-  };
-  query?: never;
-  url: '/{company}/no-routine-task';
-};
-
-export type NoRoutineTaskIndexErrors = {
-  /**
-   * Unauthenticated
-   */
-  401: {
-    /**
-     * Error overview.
-     */
-    message: string;
-  };
-};
-
-export type NoRoutineTaskIndexError = NoRoutineTaskIndexErrors[keyof NoRoutineTaskIndexErrors];
-
-export type NoRoutineTaskIndexResponses = {
-  200: unknown;
-};
-
-export type NoRoutineTaskStoreData = {
-  body?: never;
-  path: {
-    company: string;
-  };
-  query?: never;
-  url: '/{company}/no-routine-task';
-};
-
-export type NoRoutineTaskStoreErrors = {
-  /**
-   * Unauthenticated
-   */
-  401: {
-    /**
-     * Error overview.
-     */
-    message: string;
-  };
-};
-
-export type NoRoutineTaskStoreError = NoRoutineTaskStoreErrors[keyof NoRoutineTaskStoreErrors];
-
-export type NoRoutineTaskStoreResponses = {
-  200: unknown;
-};
-
-export type NoRoutineTaskDestroyData = {
-  body?: never;
-  path: {
-    id: string;
-    no_routine_task: string;
-  };
-  query?: never;
-  url: '/{id}/no-routine-task/{no_routine_task}';
-};
-
-export type NoRoutineTaskDestroyErrors = {
-  /**
-   * Unauthenticated
-   */
-  401: {
-    /**
-     * Error overview.
-     */
-    message: string;
-  };
-};
-
-export type NoRoutineTaskDestroyError = NoRoutineTaskDestroyErrors[keyof NoRoutineTaskDestroyErrors];
-
-export type NoRoutineTaskDestroyResponses = {
-  200: unknown;
-};
-
-export type NoRoutineTaskShowData = {
-  body?: never;
-  path: {
-    id: string;
-    no_routine_task: string;
-  };
-  query?: never;
-  url: '/{id}/no-routine-task/{no_routine_task}';
-};
-
-export type NoRoutineTaskShowErrors = {
-  /**
-   * Unauthenticated
-   */
-  401: {
-    /**
-     * Error overview.
-     */
-    message: string;
-  };
-};
-
-export type NoRoutineTaskShowError = NoRoutineTaskShowErrors[keyof NoRoutineTaskShowErrors];
-
-export type NoRoutineTaskShowResponses = {
-  200: unknown;
-};
-
-export type NoRoutineTaskUpdateData = {
-  body?: {
-    technician_responsable?: string;
-  };
-  path: {
-    company: string;
-    id: string;
-  };
-  query?: never;
-  url: '/{company}/no-routine-task/{id}';
-};
-
-export type NoRoutineTaskUpdateErrors = {
-  /**
-   * Unauthenticated
-   */
-  401: {
-    /**
-     * Error overview.
-     */
-    message: string;
-  };
-};
-
-export type NoRoutineTaskUpdateError = NoRoutineTaskUpdateErrors[keyof NoRoutineTaskUpdateErrors];
-
-export type NoRoutineTaskUpdateResponses = {
-  200: string;
-};
-
-export type NoRoutineTaskUpdateResponse = NoRoutineTaskUpdateResponses[keyof NoRoutineTaskUpdateResponses];
-
-export type NonRoutineIndexData = {
-  body?: never;
-  path: {
-    company: string;
-  };
-  query?: never;
-  url: '/{company}/non-routine';
-};
-
-export type NonRoutineIndexErrors = {
-  /**
-   * Unauthenticated
-   */
-  401: {
-    /**
-     * Error overview.
-     */
-    message: string;
-  };
-};
-
-export type NonRoutineIndexError = NonRoutineIndexErrors[keyof NonRoutineIndexErrors];
-
-export type NonRoutineIndexResponses = {
-  200: Array<NonRoutine>;
-};
-
-export type NonRoutineIndexResponse = NonRoutineIndexResponses[keyof NonRoutineIndexResponses];
-
-export type NonRoutineStoreData = {
-  body: {
-    work_order_task_id: string;
-    ata: string;
-    description: string;
-    action: string;
-    inspector_responsable: string;
-    needs_task: boolean;
-  };
-  path: {
-    company: string;
-  };
-  query?: never;
-  url: '/{company}/non-routine';
-};
-
-export type NonRoutineStoreErrors = {
-  /**
-   * Unauthenticated
-   */
-  401: {
-    /**
-     * Error overview.
-     */
-    message: string;
-  };
-  /**
-   * Validation error
-   */
-  422: {
-    /**
-     * Errors overview.
-     */
-    message: string;
-    /**
-     * A detailed description of each field that failed validation.
-     */
-    errors: {
-      [key: string]: Array<string>;
-    };
-  };
-};
-
-export type NonRoutineStoreError = NonRoutineStoreErrors[keyof NonRoutineStoreErrors];
-
-export type NonRoutineStoreResponses = {
-  200: string;
-};
-
-export type NonRoutineStoreResponse = NonRoutineStoreResponses[keyof NonRoutineStoreResponses];
-
-export type NonRoutineDestroyData = {
-  body?: never;
-  path: {
-    id: string;
-    non_routine: string;
-  };
-  query?: never;
-  url: '/{id}/non-routine/{non_routine}';
-};
-
-export type NonRoutineDestroyErrors = {
-  /**
-   * Unauthenticated
-   */
-  401: {
-    /**
-     * Error overview.
-     */
-    message: string;
-  };
-};
-
-export type NonRoutineDestroyError = NonRoutineDestroyErrors[keyof NonRoutineDestroyErrors];
-
-export type NonRoutineDestroyResponses = {
-  200: unknown;
-};
-
-export type NonRoutineShowData = {
-  body?: never;
-  path: {
-    id: string;
-    non_routine: string;
-  };
-  query?: never;
-  url: '/{id}/non-routine/{non_routine}';
-};
-
-export type NonRoutineShowErrors = {
-  /**
-   * Unauthenticated
-   */
-  401: {
-    /**
-     * Error overview.
-     */
-    message: string;
-  };
-};
-
-export type NonRoutineShowError = NonRoutineShowErrors[keyof NonRoutineShowErrors];
-
-export type NonRoutineShowResponses = {
-  200: unknown;
-};
-
-export type NonRoutineUpdateData = {
-  body?: never;
-  path: {
-    company: string;
-    id: string;
-  };
-  query?: never;
-  url: '/{company}/non-routine/{id}';
-};
-
-export type NonRoutineUpdateErrors = {
-  /**
-   * Unauthenticated
-   */
-  401: {
-    /**
-     * Error overview.
-     */
-    message: string;
-  };
-};
-
-export type NonRoutineUpdateError = NonRoutineUpdateErrors[keyof NonRoutineUpdateErrors];
-
-export type NonRoutineUpdateResponses = {
-  200: string;
-};
-
-export type NonRoutineUpdateResponse = NonRoutineUpdateResponses[keyof NonRoutineUpdateResponses];
-
 export type PermissionIndexData = {
   body?: never;
   path?: never;
@@ -13727,7 +13453,7 @@ export type WorkOrdersIndexResponses = {
 export type WorkOrdersIndexResponse = WorkOrdersIndexResponses[keyof WorkOrdersIndexResponses];
 
 export type WorkOrdersStoreData = {
-  body?: never;
+  body: StoreWorkOrderRequest;
   path?: never;
   query?: never;
   url: '/work-orders';
@@ -13743,13 +13469,44 @@ export type WorkOrdersStoreErrors = {
      */
     message: string;
   };
+  /**
+   * Authorization error
+   */
+  403: {
+    /**
+     * Error overview.
+     */
+    message: string;
+  };
+  /**
+   * Validation error
+   */
+  422: {
+    /**
+     * Errors overview.
+     */
+    message: string;
+    /**
+     * A detailed description of each field that failed validation.
+     */
+    errors: {
+      [key: string]: Array<string>;
+    };
+  };
 };
 
 export type WorkOrdersStoreError = WorkOrdersStoreErrors[keyof WorkOrdersStoreErrors];
 
 export type WorkOrdersStoreResponses = {
-  200: unknown;
+  /**
+   * `WorkOrderResource`
+   */
+  201: {
+    data: WorkOrderResource;
+  };
 };
+
+export type WorkOrdersStoreResponse = WorkOrdersStoreResponses[keyof WorkOrdersStoreResponses];
 
 export type WorkOrdersDestroyData = {
   body?: never;
@@ -13834,10 +13591,7 @@ export type WorkOrdersUpdateResponses = {
 
 export type WorkOrderTaskEventStoreData = {
   body?: never;
-  path: {
-    company: string;
-    work_order_task: string;
-  };
+  path?: never;
   query?: never;
   url: '/{company}/{work_order_task}/store-work-order-task-event';
 };
@@ -13857,17 +13611,12 @@ export type WorkOrderTaskEventStoreErrors = {
 export type WorkOrderTaskEventStoreError = WorkOrderTaskEventStoreErrors[keyof WorkOrderTaskEventStoreErrors];
 
 export type WorkOrderTaskEventStoreResponses = {
-  200: string;
+  200: unknown;
 };
-
-export type WorkOrderTaskEventStoreResponse = WorkOrderTaskEventStoreResponses[keyof WorkOrderTaskEventStoreResponses];
 
 export type WorkOrderTaskEventShowEventsByWorkOrderTaskData = {
   body?: never;
-  path: {
-    company: string;
-    work_order_task: string;
-  };
+  path?: never;
   query?: never;
   url: '/{company}/{work_order_task}/show-events-by-work-order-task';
 };
@@ -13888,11 +13637,8 @@ export type WorkOrderTaskEventShowEventsByWorkOrderTaskError =
   WorkOrderTaskEventShowEventsByWorkOrderTaskErrors[keyof WorkOrderTaskEventShowEventsByWorkOrderTaskErrors];
 
 export type WorkOrderTaskEventShowEventsByWorkOrderTaskResponses = {
-  200: string;
+  200: unknown;
 };
-
-export type WorkOrderTaskEventShowEventsByWorkOrderTaskResponse =
-  WorkOrderTaskEventShowEventsByWorkOrderTaskResponses[keyof WorkOrderTaskEventShowEventsByWorkOrderTaskResponses];
 
 export type WorkshopsIndexData = {
   body?: never;

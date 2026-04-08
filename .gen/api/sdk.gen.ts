@@ -699,36 +699,6 @@ import type {
   ModulesUpdateData,
   ModulesUpdateErrors,
   ModulesUpdateResponses,
-  NonRoutineDestroyData,
-  NonRoutineDestroyErrors,
-  NonRoutineDestroyResponses,
-  NonRoutineIndexData,
-  NonRoutineIndexErrors,
-  NonRoutineIndexResponses,
-  NonRoutineShowData,
-  NonRoutineShowErrors,
-  NonRoutineShowResponses,
-  NonRoutineStoreData,
-  NonRoutineStoreErrors,
-  NonRoutineStoreResponses,
-  NonRoutineUpdateData,
-  NonRoutineUpdateErrors,
-  NonRoutineUpdateResponses,
-  NoRoutineTaskDestroyData,
-  NoRoutineTaskDestroyErrors,
-  NoRoutineTaskDestroyResponses,
-  NoRoutineTaskIndexData,
-  NoRoutineTaskIndexErrors,
-  NoRoutineTaskIndexResponses,
-  NoRoutineTaskShowData,
-  NoRoutineTaskShowErrors,
-  NoRoutineTaskShowResponses,
-  NoRoutineTaskStoreData,
-  NoRoutineTaskStoreErrors,
-  NoRoutineTaskStoreResponses,
-  NoRoutineTaskUpdateData,
-  NoRoutineTaskUpdateErrors,
-  NoRoutineTaskUpdateResponses,
   PermissionDestroyData,
   PermissionDestroyErrors,
   PermissionDestroyResponses,
@@ -4418,138 +4388,6 @@ export const modulesCompanyModule = <ThrowOnError extends boolean = false>(
     ...options,
   });
 
-/**
- * Display a listing of the resource
- */
-export const noRoutineTaskIndex = <ThrowOnError extends boolean = false>(
-  options: Options<NoRoutineTaskIndexData, ThrowOnError>,
-) =>
-  (options.client ?? client).get<NoRoutineTaskIndexResponses, NoRoutineTaskIndexErrors, ThrowOnError>({
-    security: [{ scheme: 'bearer', type: 'http' }],
-    url: '/{company}/no-routine-task',
-    ...options,
-  });
-
-/**
- * Store a newly created resource in storage
- */
-export const noRoutineTaskStore = <ThrowOnError extends boolean = false>(
-  options: Options<NoRoutineTaskStoreData, ThrowOnError>,
-) =>
-  (options.client ?? client).post<NoRoutineTaskStoreResponses, NoRoutineTaskStoreErrors, ThrowOnError>({
-    security: [{ scheme: 'bearer', type: 'http' }],
-    url: '/{company}/no-routine-task',
-    ...options,
-  });
-
-/**
- * Remove the specified resource from storage
- */
-export const noRoutineTaskDestroy = <ThrowOnError extends boolean = false>(
-  options: Options<NoRoutineTaskDestroyData, ThrowOnError>,
-) =>
-  (options.client ?? client).delete<NoRoutineTaskDestroyResponses, NoRoutineTaskDestroyErrors, ThrowOnError>({
-    security: [{ scheme: 'bearer', type: 'http' }],
-    url: '/{id}/no-routine-task/{no_routine_task}',
-    ...options,
-  });
-
-/**
- * Display the specified resource
- */
-export const noRoutineTaskShow = <ThrowOnError extends boolean = false>(
-  options: Options<NoRoutineTaskShowData, ThrowOnError>,
-) =>
-  (options.client ?? client).get<NoRoutineTaskShowResponses, NoRoutineTaskShowErrors, ThrowOnError>({
-    security: [{ scheme: 'bearer', type: 'http' }],
-    url: '/{id}/no-routine-task/{no_routine_task}',
-    ...options,
-  });
-
-/**
- * Update the specified resource in storage
- */
-export const noRoutineTaskUpdate = <ThrowOnError extends boolean = false>(
-  options: Options<NoRoutineTaskUpdateData, ThrowOnError>,
-) =>
-  (options.client ?? client).put<NoRoutineTaskUpdateResponses, NoRoutineTaskUpdateErrors, ThrowOnError>({
-    responseType: 'json',
-    security: [{ scheme: 'bearer', type: 'http' }],
-    url: '/{company}/no-routine-task/{id}',
-    ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      ...options.headers,
-    },
-  });
-
-/**
- * Display a listing of the resource
- */
-export const nonRoutineIndex = <ThrowOnError extends boolean = false>(
-  options: Options<NonRoutineIndexData, ThrowOnError>,
-) =>
-  (options.client ?? client).get<NonRoutineIndexResponses, NonRoutineIndexErrors, ThrowOnError>({
-    responseType: 'json',
-    security: [{ scheme: 'bearer', type: 'http' }],
-    url: '/{company}/non-routine',
-    ...options,
-  });
-
-/**
- * Store a newly created resource in storage
- */
-export const nonRoutineStore = <ThrowOnError extends boolean = false>(
-  options: Options<NonRoutineStoreData, ThrowOnError>,
-) =>
-  (options.client ?? client).post<NonRoutineStoreResponses, NonRoutineStoreErrors, ThrowOnError>({
-    responseType: 'json',
-    security: [{ scheme: 'bearer', type: 'http' }],
-    url: '/{company}/non-routine',
-    ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      ...options.headers,
-    },
-  });
-
-/**
- * Remove the specified resource from storage
- */
-export const nonRoutineDestroy = <ThrowOnError extends boolean = false>(
-  options: Options<NonRoutineDestroyData, ThrowOnError>,
-) =>
-  (options.client ?? client).delete<NonRoutineDestroyResponses, NonRoutineDestroyErrors, ThrowOnError>({
-    security: [{ scheme: 'bearer', type: 'http' }],
-    url: '/{id}/non-routine/{non_routine}',
-    ...options,
-  });
-
-/**
- * Display the specified resource
- */
-export const nonRoutineShow = <ThrowOnError extends boolean = false>(
-  options: Options<NonRoutineShowData, ThrowOnError>,
-) =>
-  (options.client ?? client).get<NonRoutineShowResponses, NonRoutineShowErrors, ThrowOnError>({
-    security: [{ scheme: 'bearer', type: 'http' }],
-    url: '/{id}/non-routine/{non_routine}',
-    ...options,
-  });
-
-/**
- * Update the specified resource in storage
- */
-export const nonRoutineUpdate = <ThrowOnError extends boolean = false>(
-  options: Options<NonRoutineUpdateData, ThrowOnError>,
-) =>
-  (options.client ?? client).put<NonRoutineUpdateResponses, NonRoutineUpdateErrors, ThrowOnError>({
-    responseType: 'json',
-    security: [{ scheme: 'bearer', type: 'http' }],
-    url: '/{company}/non-routine/{id}',
-    ...options,
-  });
-
 export const permissionIndex = <ThrowOnError extends boolean = false>(
   options?: Options<PermissionIndexData, ThrowOnError>,
 ) =>
@@ -6234,12 +6072,17 @@ export const workOrdersIndex = <ThrowOnError extends boolean = false>(
  * Store a newly created resource in storage
  */
 export const workOrdersStore = <ThrowOnError extends boolean = false>(
-  options?: Options<WorkOrdersStoreData, ThrowOnError>,
+  options: Options<WorkOrdersStoreData, ThrowOnError>,
 ) =>
-  (options?.client ?? client).post<WorkOrdersStoreResponses, WorkOrdersStoreErrors, ThrowOnError>({
+  (options.client ?? client).post<WorkOrdersStoreResponses, WorkOrdersStoreErrors, ThrowOnError>({
+    responseType: 'json',
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/work-orders',
     ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    },
   });
 
 /**
@@ -6280,26 +6123,29 @@ export const workOrdersUpdate = <ThrowOnError extends boolean = false>(
 
 /**
  * Store a newly created resource in storage
+ *
+ * ⚠️ Cannot generate request documentation: include(/home/angeldaj/projects/SIGEAC_Backend/vendor/composer/../../app/Models/Planification/WorkOrderTask.php): Failed to open stream: No such file or directory
  */
 export const workOrderTaskEventStore = <ThrowOnError extends boolean = false>(
-  options: Options<WorkOrderTaskEventStoreData, ThrowOnError>,
+  options?: Options<WorkOrderTaskEventStoreData, ThrowOnError>,
 ) =>
-  (options.client ?? client).post<WorkOrderTaskEventStoreResponses, WorkOrderTaskEventStoreErrors, ThrowOnError>({
-    responseType: 'json',
+  (options?.client ?? client).post<WorkOrderTaskEventStoreResponses, WorkOrderTaskEventStoreErrors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/{company}/{work_order_task}/store-work-order-task-event',
     ...options,
   });
 
+/**
+ * ⚠️ Cannot generate request documentation: include(/home/angeldaj/projects/SIGEAC_Backend/vendor/composer/../../app/Models/Planification/WorkOrderTask.php): Failed to open stream: No such file or directory
+ */
 export const workOrderTaskEventShowEventsByWorkOrderTask = <ThrowOnError extends boolean = false>(
-  options: Options<WorkOrderTaskEventShowEventsByWorkOrderTaskData, ThrowOnError>,
+  options?: Options<WorkOrderTaskEventShowEventsByWorkOrderTaskData, ThrowOnError>,
 ) =>
-  (options.client ?? client).get<
+  (options?.client ?? client).get<
     WorkOrderTaskEventShowEventsByWorkOrderTaskResponses,
     WorkOrderTaskEventShowEventsByWorkOrderTaskErrors,
     ThrowOnError
   >({
-    responseType: 'json',
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/{company}/{work_order_task}/show-events-by-work-order-task',
     ...options,

@@ -237,16 +237,6 @@ import {
   modulesIndex,
   modulesStore,
   modulesUpdate,
-  nonRoutineDestroy,
-  nonRoutineIndex,
-  nonRoutineShow,
-  nonRoutineStore,
-  nonRoutineUpdate,
-  noRoutineTaskDestroy,
-  noRoutineTaskIndex,
-  noRoutineTaskShow,
-  noRoutineTaskStore,
-  noRoutineTaskUpdate,
   type Options,
   permissionDestroy,
   permissionIndex,
@@ -1047,30 +1037,6 @@ import type {
   ModulesUpdateData,
   ModulesUpdateError,
   ModulesUpdateResponse,
-  NonRoutineDestroyData,
-  NonRoutineDestroyError,
-  NonRoutineIndexData,
-  NonRoutineIndexError,
-  NonRoutineIndexResponse,
-  NonRoutineShowData,
-  NonRoutineShowError,
-  NonRoutineStoreData,
-  NonRoutineStoreError,
-  NonRoutineStoreResponse,
-  NonRoutineUpdateData,
-  NonRoutineUpdateError,
-  NonRoutineUpdateResponse,
-  NoRoutineTaskDestroyData,
-  NoRoutineTaskDestroyError,
-  NoRoutineTaskIndexData,
-  NoRoutineTaskIndexError,
-  NoRoutineTaskShowData,
-  NoRoutineTaskShowError,
-  NoRoutineTaskStoreData,
-  NoRoutineTaskStoreError,
-  NoRoutineTaskUpdateData,
-  NoRoutineTaskUpdateError,
-  NoRoutineTaskUpdateResponse,
   PermissionDestroyData,
   PermissionDestroyError,
   PermissionDestroyResponse,
@@ -1436,14 +1402,13 @@ import type {
   WorkOrdersShowError,
   WorkOrdersStoreData,
   WorkOrdersStoreError,
+  WorkOrdersStoreResponse,
   WorkOrdersUpdateData,
   WorkOrdersUpdateError,
   WorkOrderTaskEventShowEventsByWorkOrderTaskData,
   WorkOrderTaskEventShowEventsByWorkOrderTaskError,
-  WorkOrderTaskEventShowEventsByWorkOrderTaskResponse,
   WorkOrderTaskEventStoreData,
   WorkOrderTaskEventStoreError,
-  WorkOrderTaskEventStoreResponse,
   WorkshopsDestroyData,
   WorkshopsDestroyError,
   WorkshopsDestroyResponse,
@@ -7362,233 +7327,6 @@ export const modulesCompanyModuleMutation = (
   return mutationOptions;
 };
 
-export const noRoutineTaskIndexQueryKey = (options: Options<NoRoutineTaskIndexData>) =>
-  createQueryKey('noRoutineTaskIndex', options);
-
-/**
- * Display a listing of the resource
- */
-export const noRoutineTaskIndexOptions = (options: Options<NoRoutineTaskIndexData>) =>
-  queryOptions<unknown, AxiosError<NoRoutineTaskIndexError>, unknown, ReturnType<typeof noRoutineTaskIndexQueryKey>>({
-    queryFn: async ({ queryKey, signal }) => {
-      const { data } = await noRoutineTaskIndex({
-        ...options,
-        ...queryKey[0],
-        signal,
-        throwOnError: true,
-      });
-      return data;
-    },
-    queryKey: noRoutineTaskIndexQueryKey(options),
-  });
-
-/**
- * Store a newly created resource in storage
- */
-export const noRoutineTaskStoreMutation = (
-  options?: Partial<Options<NoRoutineTaskStoreData>>,
-): UseMutationOptions<unknown, AxiosError<NoRoutineTaskStoreError>, Options<NoRoutineTaskStoreData>> => {
-  const mutationOptions: UseMutationOptions<
-    unknown,
-    AxiosError<NoRoutineTaskStoreError>,
-    Options<NoRoutineTaskStoreData>
-  > = {
-    mutationFn: async (fnOptions) => {
-      const { data } = await noRoutineTaskStore({
-        ...options,
-        ...fnOptions,
-        throwOnError: true,
-      });
-      return data;
-    },
-  };
-  return mutationOptions;
-};
-
-/**
- * Remove the specified resource from storage
- */
-export const noRoutineTaskDestroyMutation = (
-  options?: Partial<Options<NoRoutineTaskDestroyData>>,
-): UseMutationOptions<unknown, AxiosError<NoRoutineTaskDestroyError>, Options<NoRoutineTaskDestroyData>> => {
-  const mutationOptions: UseMutationOptions<
-    unknown,
-    AxiosError<NoRoutineTaskDestroyError>,
-    Options<NoRoutineTaskDestroyData>
-  > = {
-    mutationFn: async (fnOptions) => {
-      const { data } = await noRoutineTaskDestroy({
-        ...options,
-        ...fnOptions,
-        throwOnError: true,
-      });
-      return data;
-    },
-  };
-  return mutationOptions;
-};
-
-export const noRoutineTaskShowQueryKey = (options: Options<NoRoutineTaskShowData>) =>
-  createQueryKey('noRoutineTaskShow', options);
-
-/**
- * Display the specified resource
- */
-export const noRoutineTaskShowOptions = (options: Options<NoRoutineTaskShowData>) =>
-  queryOptions<unknown, AxiosError<NoRoutineTaskShowError>, unknown, ReturnType<typeof noRoutineTaskShowQueryKey>>({
-    queryFn: async ({ queryKey, signal }) => {
-      const { data } = await noRoutineTaskShow({
-        ...options,
-        ...queryKey[0],
-        signal,
-        throwOnError: true,
-      });
-      return data;
-    },
-    queryKey: noRoutineTaskShowQueryKey(options),
-  });
-
-/**
- * Update the specified resource in storage
- */
-export const noRoutineTaskUpdateMutation = (
-  options?: Partial<Options<NoRoutineTaskUpdateData>>,
-): UseMutationOptions<
-  NoRoutineTaskUpdateResponse,
-  AxiosError<NoRoutineTaskUpdateError>,
-  Options<NoRoutineTaskUpdateData>
-> => {
-  const mutationOptions: UseMutationOptions<
-    NoRoutineTaskUpdateResponse,
-    AxiosError<NoRoutineTaskUpdateError>,
-    Options<NoRoutineTaskUpdateData>
-  > = {
-    mutationFn: async (fnOptions) => {
-      const { data } = await noRoutineTaskUpdate({
-        ...options,
-        ...fnOptions,
-        throwOnError: true,
-      });
-      return data;
-    },
-  };
-  return mutationOptions;
-};
-
-export const nonRoutineIndexQueryKey = (options: Options<NonRoutineIndexData>) =>
-  createQueryKey('nonRoutineIndex', options);
-
-/**
- * Display a listing of the resource
- */
-export const nonRoutineIndexOptions = (options: Options<NonRoutineIndexData>) =>
-  queryOptions<
-    NonRoutineIndexResponse,
-    AxiosError<NonRoutineIndexError>,
-    NonRoutineIndexResponse,
-    ReturnType<typeof nonRoutineIndexQueryKey>
-  >({
-    queryFn: async ({ queryKey, signal }) => {
-      const { data } = await nonRoutineIndex({
-        ...options,
-        ...queryKey[0],
-        signal,
-        throwOnError: true,
-      });
-      return data;
-    },
-    queryKey: nonRoutineIndexQueryKey(options),
-  });
-
-/**
- * Store a newly created resource in storage
- */
-export const nonRoutineStoreMutation = (
-  options?: Partial<Options<NonRoutineStoreData>>,
-): UseMutationOptions<NonRoutineStoreResponse, AxiosError<NonRoutineStoreError>, Options<NonRoutineStoreData>> => {
-  const mutationOptions: UseMutationOptions<
-    NonRoutineStoreResponse,
-    AxiosError<NonRoutineStoreError>,
-    Options<NonRoutineStoreData>
-  > = {
-    mutationFn: async (fnOptions) => {
-      const { data } = await nonRoutineStore({
-        ...options,
-        ...fnOptions,
-        throwOnError: true,
-      });
-      return data;
-    },
-  };
-  return mutationOptions;
-};
-
-/**
- * Remove the specified resource from storage
- */
-export const nonRoutineDestroyMutation = (
-  options?: Partial<Options<NonRoutineDestroyData>>,
-): UseMutationOptions<unknown, AxiosError<NonRoutineDestroyError>, Options<NonRoutineDestroyData>> => {
-  const mutationOptions: UseMutationOptions<
-    unknown,
-    AxiosError<NonRoutineDestroyError>,
-    Options<NonRoutineDestroyData>
-  > = {
-    mutationFn: async (fnOptions) => {
-      const { data } = await nonRoutineDestroy({
-        ...options,
-        ...fnOptions,
-        throwOnError: true,
-      });
-      return data;
-    },
-  };
-  return mutationOptions;
-};
-
-export const nonRoutineShowQueryKey = (options: Options<NonRoutineShowData>) =>
-  createQueryKey('nonRoutineShow', options);
-
-/**
- * Display the specified resource
- */
-export const nonRoutineShowOptions = (options: Options<NonRoutineShowData>) =>
-  queryOptions<unknown, AxiosError<NonRoutineShowError>, unknown, ReturnType<typeof nonRoutineShowQueryKey>>({
-    queryFn: async ({ queryKey, signal }) => {
-      const { data } = await nonRoutineShow({
-        ...options,
-        ...queryKey[0],
-        signal,
-        throwOnError: true,
-      });
-      return data;
-    },
-    queryKey: nonRoutineShowQueryKey(options),
-  });
-
-/**
- * Update the specified resource in storage
- */
-export const nonRoutineUpdateMutation = (
-  options?: Partial<Options<NonRoutineUpdateData>>,
-): UseMutationOptions<NonRoutineUpdateResponse, AxiosError<NonRoutineUpdateError>, Options<NonRoutineUpdateData>> => {
-  const mutationOptions: UseMutationOptions<
-    NonRoutineUpdateResponse,
-    AxiosError<NonRoutineUpdateError>,
-    Options<NonRoutineUpdateData>
-  > = {
-    mutationFn: async (fnOptions) => {
-      const { data } = await nonRoutineUpdate({
-        ...options,
-        ...fnOptions,
-        throwOnError: true,
-      });
-      return data;
-    },
-  };
-  return mutationOptions;
-};
-
 export const permissionIndexQueryKey = (options?: Options<PermissionIndexData>) =>
   createQueryKey('permissionIndex', options);
 
@@ -10538,8 +10276,12 @@ export const workOrdersIndexOptions = (options?: Options<WorkOrdersIndexData>) =
  */
 export const workOrdersStoreMutation = (
   options?: Partial<Options<WorkOrdersStoreData>>,
-): UseMutationOptions<unknown, AxiosError<WorkOrdersStoreError>, Options<WorkOrdersStoreData>> => {
-  const mutationOptions: UseMutationOptions<unknown, AxiosError<WorkOrdersStoreError>, Options<WorkOrdersStoreData>> = {
+): UseMutationOptions<WorkOrdersStoreResponse, AxiosError<WorkOrdersStoreError>, Options<WorkOrdersStoreData>> => {
+  const mutationOptions: UseMutationOptions<
+    WorkOrdersStoreResponse,
+    AxiosError<WorkOrdersStoreError>,
+    Options<WorkOrdersStoreData>
+  > = {
     mutationFn: async (fnOptions) => {
       const { data } = await workOrdersStore({
         ...options,
@@ -10620,16 +10362,14 @@ export const workOrdersUpdateMutation = (
 
 /**
  * Store a newly created resource in storage
+ *
+ * ⚠️ Cannot generate request documentation: include(/home/angeldaj/projects/SIGEAC_Backend/vendor/composer/../../app/Models/Planification/WorkOrderTask.php): Failed to open stream: No such file or directory
  */
 export const workOrderTaskEventStoreMutation = (
   options?: Partial<Options<WorkOrderTaskEventStoreData>>,
-): UseMutationOptions<
-  WorkOrderTaskEventStoreResponse,
-  AxiosError<WorkOrderTaskEventStoreError>,
-  Options<WorkOrderTaskEventStoreData>
-> => {
+): UseMutationOptions<unknown, AxiosError<WorkOrderTaskEventStoreError>, Options<WorkOrderTaskEventStoreData>> => {
   const mutationOptions: UseMutationOptions<
-    WorkOrderTaskEventStoreResponse,
+    unknown,
     AxiosError<WorkOrderTaskEventStoreError>,
     Options<WorkOrderTaskEventStoreData>
   > = {
@@ -10646,16 +10386,19 @@ export const workOrderTaskEventStoreMutation = (
 };
 
 export const workOrderTaskEventShowEventsByWorkOrderTaskQueryKey = (
-  options: Options<WorkOrderTaskEventShowEventsByWorkOrderTaskData>,
+  options?: Options<WorkOrderTaskEventShowEventsByWorkOrderTaskData>,
 ) => createQueryKey('workOrderTaskEventShowEventsByWorkOrderTask', options);
 
+/**
+ * ⚠️ Cannot generate request documentation: include(/home/angeldaj/projects/SIGEAC_Backend/vendor/composer/../../app/Models/Planification/WorkOrderTask.php): Failed to open stream: No such file or directory
+ */
 export const workOrderTaskEventShowEventsByWorkOrderTaskOptions = (
-  options: Options<WorkOrderTaskEventShowEventsByWorkOrderTaskData>,
+  options?: Options<WorkOrderTaskEventShowEventsByWorkOrderTaskData>,
 ) =>
   queryOptions<
-    WorkOrderTaskEventShowEventsByWorkOrderTaskResponse,
+    unknown,
     AxiosError<WorkOrderTaskEventShowEventsByWorkOrderTaskError>,
-    WorkOrderTaskEventShowEventsByWorkOrderTaskResponse,
+    unknown,
     ReturnType<typeof workOrderTaskEventShowEventsByWorkOrderTaskQueryKey>
   >({
     queryFn: async ({ queryKey, signal }) => {
