@@ -2,13 +2,10 @@
 
 import { ContentLayout } from '@/components/layout/ContentLayout';
 import LoadingPage from '@/components/misc/LoadingPage';
-import { useGetWorkOrders } from '@/hooks/planificacion/useGetWorkOrders';
-import { useCompanyStore } from '@/stores/CompanyStore';
-import { Loader2 } from 'lucide-react';
+import { workOrdersIndexOptions } from '@api/queries';
+import { useQuery } from '@tanstack/react-query';
 import { columns } from './columns';
 import { DataTable } from './data-table';
-import { useQuery } from '@tanstack/react-query';
-import { workOrdersIndexOptions } from '@api/queries';
 
 const WorkOrdersPage = () => {
   const {
