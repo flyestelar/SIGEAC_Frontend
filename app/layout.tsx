@@ -1,17 +1,21 @@
-import { Toaster } from "@/components/ui/sonner";
-import { AuthProvider } from "@/contexts/AuthContext";
-import QueryClientProvider from "@/providers/query-provider";
-import { ThemeProvider } from "@/providers/theme-provider";
-import type { Metadata } from "next";
-import { Poppins } from "next/font/google";
-import "./globals.css";
-import { RedirectHandler } from "@/components/misc/RedirectHandler";
+import { Toaster } from '@/components/ui/sonner';
+import { AuthProvider } from '@/contexts/AuthContext';
+import QueryClientProvider from '@/providers/query-provider';
+import { ThemeProvider } from '@/providers/theme-provider';
+import type { Metadata } from 'next';
+import { Poppins } from 'next/font/google';
+import './globals.css';
+import { RedirectHandler } from '@/components/misc/RedirectHandler';
 
-const inter = Poppins({ subsets: ["latin"], weight: ["100", "300", "400", "500", "700", "900"] });
+const inter = Poppins({
+  subsets: ['latin'],
+  weight: ['100', '300', '400', '500', '700', '900'],
+  variable: '--font-poppins',
+});
 
 export const metadata: Metadata = {
-  title: "SIGEAC",
-  description: "Sistema de Gestión Aeronáutica Civil",
+  title: 'SIGEAC',
+  description: 'Sistema de Gestión Aeronáutica Civil',
 };
 
 export default function RootLayout({
@@ -20,7 +24,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning className={inter.variable}>
       <head>
         <link rel="icon" href="/logo.png" sizes="any" />
       </head>
@@ -28,12 +32,7 @@ export default function RootLayout({
         <QueryClientProvider>
           <RedirectHandler />
           <AuthProvider>
-            <ThemeProvider
-              attribute="class"
-              defaultTheme="system"
-              enableSystem
-              disableTransitionOnChange
-            >
+            <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
               {children}
               <Toaster />
             </ThemeProvider>
