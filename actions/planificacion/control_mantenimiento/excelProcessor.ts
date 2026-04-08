@@ -126,8 +126,7 @@ export function parseMaintenanceInterval(interval: unknown): ParsedMaintenanceIn
 
 export async function processExcelFile(file: File): Promise<TaskCardData[]> {
   const buffer = await file.arrayBuffer();
-  const data = new Uint8Array(buffer);
-  const workbook = XLSX.read(data, { type: 'array' });
+  const workbook = XLSX.read(buffer);
 
   // Look for a sheet named "Tareas" or use the first sheet
   const sheetName = workbook.SheetNames[0];
