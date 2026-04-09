@@ -80,7 +80,8 @@ export function getMenuList(pathname: string, currentCompany: Company | null, us
     return (
       !menuItem.roles ||
       menuItem.roles.length === 0 ||
-      menuItem.roles.some((role) => userRoles.includes(role) || SUPERUSER_ROLES.includes(role))
+      menuItem.roles.some((role) => userRoles.includes(role)) ||
+      userRoles.some((role) => SUPERUSER_ROLES.includes(role)) // Acceso para SUPERUSER
     );
   };
 
@@ -560,15 +561,15 @@ export function getMenuList(pathname: string, currentCompany: Company | null, us
         },
         ...(process.env.NODE_ENV === 'development'
           ? [
-            {
-              href: companyPath('/planificacion/control_mantenimiento'),
-              label: 'Ctrl. de Mantenimiento',
-              active: isCompanyPath('/planificacion/control_mantenimiento', 'includes'),
-              icon: ClipboardList,
-              roles: ['ANALISTA_PLANIFICACION', 'JEFE_PLANIFICACION', 'SUPERUSER'],
-              submenus: [],
-            },
-          ]
+              {
+                href: companyPath('/planificacion/control_mantenimiento'),
+                label: 'Ctrl. de Mantenimiento',
+                active: isCompanyPath('/planificacion/control_mantenimiento', 'includes'),
+                icon: ClipboardList,
+                roles: ['ANALISTA_PLANIFICACION', 'JEFE_PLANIFICACION', 'SUPERUSER'],
+                submenus: [],
+              },
+            ]
           : []),
         {
           href: companyPath('/planificacion/control_vuelos'),
