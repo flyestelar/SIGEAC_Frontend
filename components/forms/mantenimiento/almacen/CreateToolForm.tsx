@@ -154,10 +154,17 @@ export default function CreateToolForm({
 
   useEffect(() => {
     if (!initialData) return;
+
+    const recDate = (initialData as any)?.reception_date
+      ? new Date((initialData as any).reception_date)
+      : undefined;
+
+    setReceptionDate(recDate);
+
     form.reset({
       part_number: initialData.part_number || '',
       inspector: (initialData as any).inspector || '',
-      reception_date: (initialData as any).reception_date || '',
+      reception_date: recDate ? format(recDate, 'yyyy-MM-dd') : '',
       alternative_part_number: initialData.alternative_part_number || [],
       serial: initialData.serial || '',
       description: initialData.description || '',

@@ -179,11 +179,30 @@ const CreateComponentForm = ({ initialData, isEditing }: { initialData?: Editing
   // Reset si cambia initialData
   useEffect(() => {
     if (!initialData) return;
+
+    const fabDate = initialData.component?.shell_time?.fabrication_date
+      ? new Date(initialData.component.shell_time.fabrication_date)
+      : undefined;
+    const cadDate = initialData.component?.shell_time?.caducate_date
+      ? new Date(initialData.component.shell_time.caducate_date)
+      : undefined;
+    const calDate = initialData.component?.shell_time?.calendar_date
+      ? new Date(initialData.component.shell_time.calendar_date)
+      : undefined;
+    const recDate = (initialData as any)?.reception_date
+      ? new Date((initialData as any).reception_date)
+      : undefined;
+
+    setFabricationDate(fabDate);
+    setCaducateDate(cadDate);
+    setCalendarDate(calDate);
+    setReceptionDate(recDate);
+
     form.reset({
       part_number: initialData.part_number ?? '',
       serial: initialData.serial ?? '',
       inspector: (initialData as any)?.inspector ?? '',
-      reception_date: (initialData as any)?.reception_date ?? '',
+      reception_date: recDate ? format(recDate, 'yyyy-MM-dd') : '',
       alternative_part_number: initialData.alternative_part_number ?? [],
       batch_id: initialData.batches?.id?.toString() ?? '',
       manufacturer_id: initialData.manufacturer?.id?.toString() ?? '',
@@ -196,12 +215,8 @@ const CreateComponentForm = ({ initialData, isEditing }: { initialData?: Editing
       cycle_date: initialData.component?.hard_time?.cycle_date
         ? parseInt(initialData.component.hard_time.cycle_date)
         : undefined,
-      caducate_date: initialData.component?.shell_time?.caducate_date
-        ? initialData.component?.shell_time?.caducate_date
-        : undefined,
-      fabrication_date: initialData.component?.shell_time?.fabrication_date
-        ? initialData.component?.shell_time?.fabrication_date
-        : undefined,
+      caducate_date: cadDate ? format(cadDate, 'yyyy-MM-dd') : undefined,
+      fabrication_date: fabDate ? format(fabDate, 'yyyy-MM-dd') : undefined,
     });
   }, [initialData, form]);
   const busy =
@@ -553,7 +568,13 @@ const CreateComponentForm = ({ initialData, isEditing }: { initialData?: Editing
                         locale={es}
                         mode="single"
                         selected={fabricationDate}
-                        onSelect={setFabricationDate}
+                        onSelect={(d) => {
+                          setFabricationDate(d);
+                          form.setValue('fabrication_date', d ? format(d, 'yyyy-MM-dd') : '', {
+                            shouldDirty: true,
+                            shouldValidate: true,
+                          });
+                        }}
                         initialFocus
                         month={fabricationDate}
                       />
@@ -599,7 +620,13 @@ const CreateComponentForm = ({ initialData, isEditing }: { initialData?: Editing
                         locale={es}
                         mode="single"
                         selected={caducateDate}
-                        onSelect={setCaducateDate}
+                        onSelect={(d) => {
+                          setCaducateDate(d);
+                          form.setValue('caducate_date', d ? format(d, 'yyyy-MM-dd') : '', {
+                            shouldDirty: true,
+                            shouldValidate: true,
+                          });
+                        }}
                         initialFocus
                         month={caducateDate}
                       />
@@ -646,7 +673,13 @@ const CreateComponentForm = ({ initialData, isEditing }: { initialData?: Editing
                         locale={es}
                         mode="single"
                         selected={calendarDate}
-                        onSelect={setCalendarDate}
+                        onSelect={(d) => {
+                          setCalendarDate(d);
+                          form.setValue('calendar_date', d ? format(d, 'yyyy-MM-dd') : '', {
+                            shouldDirty: true,
+                            shouldValidate: true,
+                          });
+                        }}
                         initialFocus
                         month={calendarDate}
                       />
