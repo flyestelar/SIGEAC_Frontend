@@ -1,12 +1,12 @@
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { maintenanceControlsIndexOptions } from '@api/queries';
+import { AircraftResource } from '@api/types';
+import { useQuery } from '@tanstack/react-query';
+import { useMemo } from 'react';
 import { ControlGrid } from './control-grid';
 import { EstimationsPanel } from './estimations-panel';
 import { ExecutionsTable } from './executions-table';
 import { TasksTable } from './tasks-table';
-import { useQuery } from '@tanstack/react-query';
-import { maintenanceControlsIndexOptions } from '@api/queries';
-import { useMemo } from 'react';
-import { AircraftResource } from '@api/types';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 interface MaintenanceControlsSectionProps {
   selectedControlId: number | null;
@@ -51,7 +51,6 @@ export function MaintenanceControlsSection({
             controls={controlsForAircraft}
             selectedControlId={selectedControlId}
             onSelectControl={onSelectControl}
-            aircraftAcronym={selectedAircraft?.acronym ?? ''}
             averages={selectedAircraft?.last_average_metric ?? null}
           />
 
