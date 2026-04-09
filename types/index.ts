@@ -53,6 +53,9 @@ export type Article = {
   status?: string;
   description?: string;
   zone?: string;
+  cost?: string | null;
+  inspector?: string;
+  reception_date?: string | null;
   manufacturer?: Manufacturer;
   condition?: Condition;
   batch?: Batch;

@@ -55,10 +55,23 @@ const formSchema = z
       .string({ message: 'Debe seleccionar un número de parte.' })
       .min(2, { message: 'El número de parte debe contener al menos 2 caracteres.' }),
     alternative_part_number: z
-      .array(
-        z.string().min(2, {
-          message: 'Cada número de parte alterno debe contener al menos 2 caracteres.',
-        }),
+      .preprocess(
+        (val) => {
+          if (val === '' || val == null) return [];
+          if (Array.isArray(val)) return val;
+          if (typeof val === 'string') {
+            return val
+              .split(/[\n,;]+/g)
+              .map((s) => s.trim())
+              .filter(Boolean);
+          }
+          return [];
+        },
+        z.array(
+          z.string().min(2, {
+            message: 'Cada número de parte alterno debe contener al menos 2 caracteres.',
+          }),
+        ),
       )
       .optional(),
     description: z.string().optional(),
@@ -113,22 +126,22 @@ const CreateComponentForm = ({ initialData, isEditing }: { initialData?: Editing
   const router = useRouter();
 
   const [fabricationDate, setFabricationDate] = useState<Date | undefined>(
-    initialData?.component?.shell_time?.fabrication_date
-      ? new Date(initialData.component.shell_time.fabrication_date)
+    initialData?.component?.fabrication_date
+      ? new Date(initialData.component.fabrication_date)
       : undefined,
   );
   const [caducateDate, setCaducateDate] = useState<Date | undefined>(
-    initialData?.component?.shell_time?.caducate_date
-      ? new Date(initialData.component.shell_time.caducate_date)
+    initialData?.component?.caducate_date
+      ? new Date(initialData.component.caducate_date)
       : undefined,
   );
   const [calendarDate, setCalendarDate] = useState<Date | undefined>(
-    initialData?.component?.shell_time?.calendar_date
-      ? new Date(initialData.component.shell_time?.calendar_date)
+    initialData?.component?.calendary_date
+      ? new Date(initialData.component.calendary_date)
       : undefined,
   );
   const [receptionDate, setReceptionDate] = useState<Date | undefined>(
-    (initialData as any)?.reception_date ? new Date((initialData as any).reception_date) : undefined,
+    initialData?.reception_date ? new Date(initialData.reception_date) : undefined,
   );
   const { selectedCompany } = useCompanyStore();
 
@@ -152,27 +165,24 @@ const CreateComponentForm = ({ initialData, isEditing }: { initialData?: Editing
     resolver: zodResolver(formSchema),
     defaultValues: {
       part_number: initialData?.part_number || '',
-      inspector: (initialData as any)?.inspector ?? '',
-      reception_date: (initialData as any)?.reception_date ?? '',
+      inspector: initialData?.inspector ?? '',
+      reception_date: initialData?.reception_date ?? '',
       serial: initialData?.serial || '',
-      alternative_part_number: initialData?.alternative_part_number || [],
+      alternative_part_number:
+        typeof initialData?.alternative_part_number === 'string' ? [] : (initialData?.alternative_part_number ?? []),
       batch_id: initialData?.batches?.id?.toString() || '',
       manufacturer_id: initialData?.manufacturer?.id?.toString() || '',
       condition_id: initialData?.condition?.id?.toString() || '',
       description: initialData?.description || '',
       zone: initialData?.zone || '',
-      hour_date: initialData?.component?.hard_time?.hour_date
-        ? parseInt(initialData.component.hard_time.hour_date)
+      hour_date: initialData?.component?.hour_date
+        ? parseInt(initialData.component.hour_date)
         : undefined,
-      cycle_date: initialData?.component?.hard_time?.cycle_date
-        ? parseInt(initialData.component.hard_time.cycle_date)
+      cycle_date: initialData?.component?.cycle_date
+        ? parseInt(initialData.component.cycle_date)
         : undefined,
-      caducate_date: initialData?.component?.shell_time?.caducate_date
-        ? initialData?.component?.shell_time?.caducate_date
-        : undefined,
-      fabrication_date: initialData?.component?.shell_time?.fabrication_date
-        ? initialData?.component?.shell_time?.fabrication_date
-        : undefined,
+      caducate_date: initialData?.component?.caducate_date ?? undefined,
+      fabrication_date: initialData?.component?.fabrication_date ?? undefined,
     },
   });
 
@@ -180,17 +190,17 @@ const CreateComponentForm = ({ initialData, isEditing }: { initialData?: Editing
   useEffect(() => {
     if (!initialData) return;
 
-    const fabDate = initialData.component?.shell_time?.fabrication_date
-      ? new Date(initialData.component.shell_time.fabrication_date)
+    const fabDate = initialData.component?.fabrication_date
+      ? new Date(initialData.component.fabrication_date)
       : undefined;
-    const cadDate = initialData.component?.shell_time?.caducate_date
-      ? new Date(initialData.component.shell_time.caducate_date)
+    const cadDate = initialData.component?.caducate_date
+      ? new Date(initialData.component.caducate_date)
       : undefined;
-    const calDate = initialData.component?.shell_time?.calendar_date
-      ? new Date(initialData.component.shell_time.calendar_date)
+    const calDate = initialData.component?.calendary_date
+      ? new Date(initialData.component.calendary_date)
       : undefined;
-    const recDate = (initialData as any)?.reception_date
-      ? new Date((initialData as any).reception_date)
+    const recDate = initialData.reception_date
+      ? new Date(initialData.reception_date)
       : undefined;
 
     setFabricationDate(fabDate);
@@ -201,7 +211,7 @@ const CreateComponentForm = ({ initialData, isEditing }: { initialData?: Editing
     form.reset({
       part_number: initialData.part_number ?? '',
       serial: initialData.serial ?? '',
-      inspector: (initialData as any)?.inspector ?? '',
+      inspector: initialData.inspector ?? '',
       reception_date: recDate ? format(recDate, 'yyyy-MM-dd') : '',
       alternative_part_number: initialData.alternative_part_number ?? [],
       batch_id: initialData.batches?.id?.toString() ?? '',
@@ -209,11 +219,11 @@ const CreateComponentForm = ({ initialData, isEditing }: { initialData?: Editing
       condition_id: initialData.condition?.id?.toString() ?? '',
       description: initialData.description ?? '',
       zone: initialData.zone ?? '',
-      hour_date: initialData.component?.hard_time?.hour_date
-        ? parseInt(initialData.component.hard_time.hour_date)
+      hour_date: initialData.component?.hour_date
+        ? parseInt(initialData.component.hour_date)
         : undefined,
-      cycle_date: initialData.component?.hard_time?.cycle_date
-        ? parseInt(initialData.component.hard_time.cycle_date)
+      cycle_date: initialData.component?.cycle_date
+        ? parseInt(initialData.component.cycle_date)
         : undefined,
       caducate_date: cadDate ? format(cadDate, 'yyyy-MM-dd') : undefined,
       fabrication_date: fabDate ? format(fabDate, 'yyyy-MM-dd') : undefined,
