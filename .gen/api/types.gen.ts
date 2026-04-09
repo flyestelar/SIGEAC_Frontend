@@ -13379,13 +13379,10 @@ export type WarehouseWarehouseWithUserResponse =
 export type WorkOrderCloseData = {
   body?: never;
   path: {
-    /**
-     * The work order ID
-     */
-    workOrder: number;
+    order_number: string;
   };
   query?: never;
-  url: '/work-orders/{workOrder}/close';
+  url: '/work-orders/{order_number}/close';
 };
 
 export type WorkOrderCloseErrors = {
@@ -13397,39 +13394,6 @@ export type WorkOrderCloseErrors = {
      * Error overview.
      */
     message: string;
-  };
-  /**
-   * Authorization error
-   */
-  403: {
-    /**
-     * Error overview.
-     */
-    message: string;
-  };
-  /**
-   * Not found
-   */
-  404: {
-    /**
-     * Error overview.
-     */
-    message: string;
-  };
-  /**
-   * Validation error
-   */
-  422: {
-    /**
-     * Errors overview.
-     */
-    message: string;
-    /**
-     * A detailed description of each field that failed validation.
-     */
-    errors: {
-      [key: string]: Array<string>;
-    };
   };
 };
 
@@ -13448,17 +13412,11 @@ export type WorkOrderCloseResponse = WorkOrderCloseResponses[keyof WorkOrderClos
 export type WorkOrderCompleteItemTaskData = {
   body: CompleteWorkOrderItemTaskRequest;
   path: {
-    /**
-     * The work order ID
-     */
-    workOrder: number;
-    /**
-     * The item task ID
-     */
-    itemTask: number;
+    order_number: string;
+    item_task_id: number;
   };
   query?: never;
-  url: '/work-orders/{workOrder}/item-tasks/{itemTask}/complete';
+  url: '/work-orders/{order_number}/item-tasks/{item_task_id}/complete';
 };
 
 export type WorkOrderCompleteItemTaskErrors = {

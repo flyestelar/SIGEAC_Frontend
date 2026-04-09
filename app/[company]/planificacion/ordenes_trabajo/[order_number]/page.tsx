@@ -1,31 +1,7 @@
+/* eslint-disable @next/next/no-img-element */
 'use client';
 
-import { workOrdersShowOptions } from '@api/queries';
-import { WorkOrderItemResource, WorkOrderResource } from '@api/types';
-import { useQuery } from '@tanstack/react-query';
-import { format } from 'date-fns';
-import { es } from 'date-fns/locale';
-import {
-  AlertCircle,
-  ArrowLeft,
-  CalendarDays,
-  ChevronDown,
-  Clock3,
-  ClipboardList,
-  Download,
-  Layers,
-  MessageSquareText,
-  Plane,
-  Printer,
-  RotateCcw,
-  Settings2,
-  ShieldCheck,
-  UserCheck,
-} from 'lucide-react';
-import Link from 'next/link';
-import { useParams } from 'next/navigation';
-import { toast } from 'sonner';
-
+import { CompleteTaskDialog } from '@/components/dialogs/mantenimiento/ordenes_trabajo/CompleteTaskDialog';
 import { ContentLayout } from '@/components/layout/ContentLayout';
 import LoadingPage from '@/components/misc/LoadingPage';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
@@ -36,6 +12,31 @@ import { Separator } from '@/components/ui/separator';
 import axiosInstance from '@/lib/axios';
 import { cn } from '@/lib/utils';
 import { useCompanyStore } from '@/stores/CompanyStore';
+import { workOrdersShowOptions } from '@api/queries';
+import { WorkOrderItemResource, WorkOrderItemTaskResource, WorkOrderResource } from '@api/types';
+import { useQuery } from '@tanstack/react-query';
+import { format } from 'date-fns';
+import { es } from 'date-fns/locale';
+import {
+  AlertCircle,
+  ArrowLeft,
+  CalendarDays,
+  Check,
+  ClipboardList,
+  Clock3,
+  Download,
+  Layers,
+  MessageSquareText,
+  Plane,
+  Printer,
+  RotateCcw,
+  Settings2,
+  ShieldCheck,
+} from 'lucide-react';
+import Link from 'next/link';
+import { useParams } from 'next/navigation';
+import { useState } from 'react';
+import { toast } from 'sonner';
 
 /* ─── Constants ─── */
 
@@ -189,14 +190,14 @@ const WorkOrderPage = () => {
         {/* Two-column layout */}
         <div className="grid gap-6 lg:grid-cols-12">
           {/* Main column */}
-          <div className="space-y-6 lg:col-span-8">
+          <div className="space-y-6 lg:col-span-8 min-w-0">
             {/* Aircraft card */}
             {aircraft && (
               <section className="overflow-hidden rounded-lg border bg-background">
                 <div className="flex items-stretch">
                   <div className="relative w-56 shrink-0">
                     <img
-                      src={aircraft.aircraft_type?.image}
+                      src={aircraft.aircraft_type?.image || 'https://cdn.zbordirect.com/images/airlines/ES.webp'}
                       alt={aircraft.acronym}
                       className="h-full w-full object-cover brightness-[0.55] dark:brightness-[0.35]"
                     />
@@ -215,19 +216,27 @@ const WorkOrderPage = () => {
                   <div className="flex flex-1 flex-col justify-between">
                     <div className="grid grid-cols-4 gap-x-4 px-4 py-2.5">
                       <div className="space-y-1">
-                        <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">Tipo</p>
+                        <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+                          Tipo
+                        </p>
                         <p className="text-sm font-medium line-clamp-1">{aircraft.aircraft_type?.full_name ?? '—'}</p>
                       </div>
                       <div className="space-y-1">
-                        <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">Fabricante</p>
+                        <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+                          Fabricante
+                        </p>
                         <p className="text-sm font-medium line-clamp-1">{aircraft.manufacturer?.name ?? '—'}</p>
                       </div>
                       <div className="space-y-1">
-                        <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">Serial</p>
+                        <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+                          Serial
+                        </p>
                         <p className="font-mono text-sm font-medium">{aircraft.serial || '—'}</p>
                       </div>
                       <div className="space-y-1">
-                        <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">Modelo</p>
+                        <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+                          Modelo
+                        </p>
                         <p className="text-sm font-medium">{aircraft.model || '—'}</p>
                       </div>
                     </div>
@@ -249,7 +258,11 @@ const WorkOrderPage = () => {
                       </div>
                       <div className="ml-auto">
                         <Link href={`/${selectedCompany?.slug}/planificacion/aeronaves/${aircraft.acronym}`}>
-                          <Button variant="ghost" size="sm" className="h-6 gap-1.5 text-[11px] text-muted-foreground hover:text-foreground">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-6 gap-1.5 text-[11px] text-muted-foreground hover:text-foreground"
+                          >
                             <Plane className="size-3" />
                             Ver aeronave
                           </Button>
@@ -308,7 +321,8 @@ const WorkOrderPage = () => {
                     Controles de Mantenimiento
                   </span>
                   <p className="mt-0.5 text-xs text-muted-foreground">
-                    {items.length} control{items.length !== 1 ? 'es' : ''} · {totalTasks} task card{totalTasks !== 1 ? 's' : ''}
+                    {items.length} control{items.length !== 1 ? 'es' : ''} · {totalTasks} task card
+                    {totalTasks !== 1 ? 's' : ''}
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
@@ -332,7 +346,7 @@ const WorkOrderPage = () => {
                 <div className="max-h-[680px] overflow-y-auto">
                   <Accordion type="multiple" className="divide-y">
                     {items.map((item) => (
-                      <ControlAccordionItem key={item.id} item={item} />
+                      <ControlAccordionItem key={item.id} item={item} orderNumber={order_number} />
                     ))}
                   </Accordion>
                 </div>
@@ -344,7 +358,12 @@ const WorkOrderPage = () => {
           <div className="lg:col-span-4 lg:sticky lg:top-4 self-start">
             <div className="rounded-lg border bg-background">
               {/* Status — prominent */}
-              <div className={cn('flex items-center justify-center gap-2 rounded-t-lg border-b px-4 py-3', statusCfg.className)}>
+              <div
+                className={cn(
+                  'flex items-center justify-center gap-2 rounded-t-lg border-b px-4 py-3',
+                  statusCfg.className,
+                )}
+              >
                 <ShieldCheck className="size-4" />
                 <span className="text-sm font-semibold">{statusCfg.label}</span>
               </div>
@@ -401,9 +420,21 @@ const WorkOrderPage = () => {
 
 /* ─── Control Accordion Item ─── */
 
-function ControlAccordionItem({ item }: { item: WorkOrderItemResource }) {
+function ControlAccordionItem({ item, orderNumber }: { item: WorkOrderItemResource; orderNumber: string }) {
   const control = item.maintenance_control;
   const tasks = item.tasks ?? [];
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [activeTask, setActiveTask] = useState<WorkOrderItemTaskResource | null>(null);
+
+  const openCompleteDialog = (task: WorkOrderItemTaskResource) => {
+    setActiveTask(task);
+    setDialogOpen(true);
+  };
+
+  const closeDialog = () => {
+    setDialogOpen(false);
+    setActiveTask(null);
+  };
 
   return (
     <AccordionItem value={`control-${item.id}`} className="border-none">
@@ -413,7 +444,9 @@ function ControlAccordionItem({ item }: { item: WorkOrderItemResource }) {
             <Settings2 className="size-3 text-muted-foreground" />
           </div>
           <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-medium">{control?.title ?? `Control #${item.maintenance_control_id}`}</p>
+            <p className="truncate text-sm font-medium">
+              {control?.title ?? `Control #${item.maintenance_control_id}`}
+            </p>
             {control?.manual_reference && (
               <p className="font-mono text-[11px] text-muted-foreground">{control.manual_reference}</p>
             )}
@@ -441,31 +474,24 @@ function ControlAccordionItem({ item }: { item: WorkOrderItemResource }) {
                     idx !== 0 && 'border-t border-border/50',
                   )}
                 >
-                  {/* Number */}
                   <span className="w-5 shrink-0 text-center font-mono text-[11px] text-muted-foreground/50">
                     {idx + 1}
                   </span>
 
-                  {/* Info */}
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-[13px]">{task.task?.description ?? `Task #${task.task_id}`}</p>
+                    <div className="flex flex-wrap items-center gap-2 text-[11px] text-muted-foreground">
+                      {task.inspection_date && <span>Inspección: {formatDate(task.inspection_date)}</span>}
+                      {task.review_by && <span>Revisado por: {task.review_by}</span>}
+                    </div>
                   </div>
 
-                  {/* Reference */}
                   {task.task?.manual_reference && (
                     <span className="hidden shrink-0 font-mono text-[11px] text-muted-foreground sm:inline">
                       {task.task.manual_reference}
                     </span>
                   )}
 
-                  {/* Date */}
-                  {task.inspection_date && (
-                    <span className="hidden shrink-0 text-[11px] text-muted-foreground lg:inline">
-                      {formatDate(task.inspection_date)}
-                    </span>
-                  )}
-
-                  {/* Actions — visible on hover */}
                   <div className="flex shrink-0 items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
                     <Button
                       variant="ghost"
@@ -473,17 +499,19 @@ function ControlAccordionItem({ item }: { item: WorkOrderItemResource }) {
                       className="h-6 w-6 text-muted-foreground hover:text-foreground"
                       onClick={(e) => {
                         e.stopPropagation();
-                        toast.info('Asignar revisión (próximamente)');
+                        openCompleteDialog(task);
                       }}
                     >
-                      <UserCheck className="size-3" />
+                      <Check className="size-3" />
                     </Button>
                   </div>
 
-                  {/* Status badge — always visible */}
                   <Badge
                     variant="outline"
-                    className={cn('shrink-0 cursor-pointer text-[10px] transition-colors hover:opacity-80', taskStatusCfg.className)}
+                    className={cn(
+                      'shrink-0 cursor-pointer text-[10px] transition-colors hover:opacity-80',
+                      taskStatusCfg.className,
+                    )}
                     onClick={(e) => {
                       e.stopPropagation();
                       toast.info('Cambiar estado (próximamente)');
@@ -497,6 +525,13 @@ function ControlAccordionItem({ item }: { item: WorkOrderItemResource }) {
           </div>
         )}
       </AccordionContent>
+
+      <CompleteTaskDialog
+        open={dialogOpen}
+        task={activeTask}
+        orderNumber={orderNumber}
+        onOpenChange={(open) => (open ? setDialogOpen(true) : closeDialog())}
+      />
     </AccordionItem>
   );
 }

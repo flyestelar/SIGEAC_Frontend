@@ -6061,7 +6061,7 @@ export const workOrderClose = <ThrowOnError extends boolean = false>(
   (options.client ?? client).patch<WorkOrderCloseResponses, WorkOrderCloseErrors, ThrowOnError>({
     responseType: 'json',
     security: [{ scheme: 'bearer', type: 'http' }],
-    url: '/work-orders/{workOrder}/close',
+    url: '/work-orders/{order_number}/close',
     ...options,
   });
 
@@ -6071,7 +6071,7 @@ export const workOrderCompleteItemTask = <ThrowOnError extends boolean = false>(
   (options.client ?? client).patch<WorkOrderCompleteItemTaskResponses, WorkOrderCompleteItemTaskErrors, ThrowOnError>({
     responseType: 'json',
     security: [{ scheme: 'bearer', type: 'http' }],
-    url: '/work-orders/{workOrder}/item-tasks/{itemTask}/complete',
+    url: '/work-orders/{order_number}/item-tasks/{item_task_id}/complete',
     ...options,
     headers: {
       'Content-Type': 'application/json',
