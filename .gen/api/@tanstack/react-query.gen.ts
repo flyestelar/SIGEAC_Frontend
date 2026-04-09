@@ -360,6 +360,8 @@ import {
   warehouseStore,
   warehouseUpdate,
   warehouseWarehouseWithUser,
+  workOrderClose,
+  workOrderCompleteItemTask,
   workOrdersIndex,
   workOrdersShow,
   workOrdersStore,
@@ -1391,6 +1393,12 @@ import type {
   WarehouseWarehouseWithUserData,
   WarehouseWarehouseWithUserError,
   WarehouseWarehouseWithUserResponse,
+  WorkOrderCloseData,
+  WorkOrderCloseError,
+  WorkOrderCloseResponse,
+  WorkOrderCompleteItemTaskData,
+  WorkOrderCompleteItemTaskError,
+  WorkOrderCompleteItemTaskResponse,
   WorkOrdersIndexData,
   WorkOrdersIndexError,
   WorkOrdersIndexResponse,
@@ -10240,6 +10248,50 @@ export const warehouseWarehouseWithUserOptions = (options: Options<WarehouseWare
     },
     queryKey: warehouseWarehouseWithUserQueryKey(options),
   });
+
+export const workOrderCloseMutation = (
+  options?: Partial<Options<WorkOrderCloseData>>,
+): UseMutationOptions<WorkOrderCloseResponse, AxiosError<WorkOrderCloseError>, Options<WorkOrderCloseData>> => {
+  const mutationOptions: UseMutationOptions<
+    WorkOrderCloseResponse,
+    AxiosError<WorkOrderCloseError>,
+    Options<WorkOrderCloseData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await workOrderClose({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+export const workOrderCompleteItemTaskMutation = (
+  options?: Partial<Options<WorkOrderCompleteItemTaskData>>,
+): UseMutationOptions<
+  WorkOrderCompleteItemTaskResponse,
+  AxiosError<WorkOrderCompleteItemTaskError>,
+  Options<WorkOrderCompleteItemTaskData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    WorkOrderCompleteItemTaskResponse,
+    AxiosError<WorkOrderCompleteItemTaskError>,
+    Options<WorkOrderCompleteItemTaskData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await workOrderCompleteItemTask({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
 
 export const workOrdersIndexQueryKey = (options?: Options<WorkOrdersIndexData>) =>
   createQueryKey('workOrdersIndex', options);

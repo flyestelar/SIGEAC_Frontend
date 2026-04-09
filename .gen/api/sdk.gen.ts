@@ -1065,6 +1065,12 @@ import type {
   WarehouseWarehouseWithUserData,
   WarehouseWarehouseWithUserErrors,
   WarehouseWarehouseWithUserResponses,
+  WorkOrderCloseData,
+  WorkOrderCloseErrors,
+  WorkOrderCloseResponses,
+  WorkOrderCompleteItemTaskData,
+  WorkOrderCompleteItemTaskErrors,
+  WorkOrderCompleteItemTaskResponses,
   WorkOrdersIndexData,
   WorkOrdersIndexErrors,
   WorkOrdersIndexResponses,
@@ -6047,6 +6053,30 @@ export const warehouseWarehouseWithUser = <ThrowOnError extends boolean = false>
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/{company}/{location}/warehouses-by-location',
     ...options,
+  });
+
+export const workOrderClose = <ThrowOnError extends boolean = false>(
+  options: Options<WorkOrderCloseData, ThrowOnError>,
+) =>
+  (options.client ?? client).patch<WorkOrderCloseResponses, WorkOrderCloseErrors, ThrowOnError>({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/work-orders/{workOrder}/close',
+    ...options,
+  });
+
+export const workOrderCompleteItemTask = <ThrowOnError extends boolean = false>(
+  options: Options<WorkOrderCompleteItemTaskData, ThrowOnError>,
+) =>
+  (options.client ?? client).patch<WorkOrderCompleteItemTaskResponses, WorkOrderCompleteItemTaskErrors, ThrowOnError>({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/work-orders/{workOrder}/item-tasks/{itemTask}/complete',
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    },
   });
 
 /**
