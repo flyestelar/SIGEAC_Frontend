@@ -3,9 +3,9 @@
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { AircraftAverageMetric } from '@api/types';
-import { format } from 'date-fns';
+import { differenceInCalendarDays, format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { ComputedControl, computeMetricEstimation, EnCursoBadge } from './control-grid-shared';
 
@@ -20,6 +20,20 @@ function formatDate(value: string | Date | null | undefined) {
   const date = value instanceof Date ? value : new Date(value);
   if (Number.isNaN(date.getTime())) return '-';
   return format(date, 'dd/MM/yyyy', { locale: es });
+}
+
+function formatLastComplianceDate(value: string | Date | null | undefined) {
+  if (!value) return '-';
+  const date = value instanceof Date ? value : new Date(value);
+  if (Number.isNaN(date.getTime())) return '-';
+
+  const daysAgo = differenceInCalendarDays(new Date(), date);
+  if (daysAgo === 0) return 'hoy';
+  if (daysAgo === 1) return 'ayer';
+  if (daysAgo === -1) return 'mañana';
+  const absDays = Math.abs(daysAgo);
+  if (daysAgo < 0) return `en ${absDays} día`;
+  return `hace ${absDays} días`;
 }
 
 function formatNumber(value: number | null | undefined, decimals = 1) {
@@ -69,13 +83,13 @@ export function ControlTableView({ averages, controls, onSelectControl }: Contro
                   rowSpan={2}
                   className="border-x-0 text-[10px] leading-tight font-semibold uppercase tracking-wide"
                 >
-                  Intervalo (FH)
+                  Intervalo (Horas)
                 </TableHead>
                 <TableHead
                   rowSpan={2}
                   className="border-x-0 text-[10px] leading-tight font-semibold uppercase tracking-wide"
                 >
-                  Intervalo (FC)
+                  Intervalo (Ciclos)
                 </TableHead>
                 <TableHead rowSpan={2} className="text-[10px] leading-tight font-semibold uppercase tracking-wide">
                   Intervalo (Días)
@@ -113,9 +127,9 @@ export function ControlTableView({ averages, controls, onSelectControl }: Contro
                 <TableHead className="h-8 text-[10px] leading-tight font-semibold">Horas</TableHead>
                 <TableHead className="h-8 text-[10px] leading-tight font-semibold">Ciclos</TableHead>
                 <TableHead className="border-border/60 border-l  h-8 text-[10px] leading-tight font-semibold">
-                  FH
+                  Horas
                 </TableHead>
-                <TableHead className="h-8 text-[10px] leading-tight font-semibold">FC</TableHead>
+                <TableHead className="h-8 text-[10px] leading-tight font-semibold">Ciclos</TableHead>
                 <TableHead className="h-8 text-[10px] leading-tight font-semibold">Días</TableHead>
               </TableRow>
             </TableHeader>
@@ -146,7 +160,7 @@ export function ControlTableView({ averages, controls, onSelectControl }: Contro
                     onClick={() => onSelectControl(control.id)}
                   >
                     <TableCell className="pl-5">
-                      <div className="space-y-1">
+                      <div className="space-y-1 min-w-28">
                         <p className="text-sm font-semibold leading-none text-foreground">{control.title}</p>
                         <p className="font-mono text-xs text-muted-foreground">{control.manual_reference || '-'}</p>
                         {isActive && <EnCursoBadge />}
@@ -156,7 +170,14 @@ export function ControlTableView({ averages, controls, onSelectControl }: Contro
                     <TableCell className="font-mono text-xs">{formatNumber(interval_fc, 1)}</TableCell>
                     <TableCell className="font-mono text-xs">{formatNumber(interval_days, 0)}</TableCell>
                     {/* Último cumplimiento */}
-                    <TableCell className="font-mono text-xs">{formatDate(lastComplianceDate)}</TableCell>
+                    <TableCell className="pr-5">
+                      <div className="space-y-1">
+                        <p className="font-mono text-xs">{formatDate(lastComplianceDate)}</p>
+                        <p className="text-[10px] leading-tight text-muted-foreground">
+                          {formatLastComplianceDate(lastComplianceDate)}
+                        </p>
+                      </div>
+                    </TableCell>
                     <TableCell className="pr-5 font-mono text-xs">{formatNumber(lastComplianceHrs, 1)}</TableCell>
                     <TableCell className="font-mono text-xs">{formatNumber(lastComplianceFc, 1)}</TableCell>
                     {/* Próximo cumplimiento */}
