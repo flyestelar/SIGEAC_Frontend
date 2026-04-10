@@ -107,7 +107,10 @@ export const LEVEL_PRIORITY: Record<AlertLevel, number> = { OVERDUE: 0, WARNING:
 
 export function EnCursoBadge() {
   return (
-    <Badge variant="outline" className="h-5 border-sky-500/30 bg-sky-500/10 px-1.5 text-[10px] text-sky-600 dark:text-sky-400">
+    <Badge
+      variant="outline"
+      className="whitespace-nowrap h-5 border-sky-500/30 bg-sky-500/10 px-1.5 text-[10px] text-sky-600 dark:text-sky-400"
+    >
       <Wrench className="mr-0.5 h-2.5 w-2.5" />
       En curso
     </Badge>
@@ -118,7 +121,7 @@ export function AlertBadge({ status, size = 'small' }: { status: AlertLevel; siz
   const cfg = LEVEL_CONFIG[status];
   const sizeClasses = size === 'small' ? 'h-5 px-1.5 text-[10px]' : 'h-6 px-2 text-[11px]';
   return (
-    <Badge variant="outline" className={`${sizeClasses} ${cfg.badgeClass}`}>
+    <Badge variant="outline" className={`whitespace-nowrap ${sizeClasses} ${cfg.badgeClass}`}>
       {ALERT_LABELS[status]}
     </Badge>
   );
@@ -126,13 +129,13 @@ export function AlertBadge({ status, size = 'small' }: { status: AlertLevel; siz
 
 export function computeMetrics(control: MaintenanceControlResource): ComputedMetric[] {
   const metrics: ComputedMetric[] = [];
-  if (!control.since_last) return metrics;
+  if (!control.consumed) return metrics;
 
   for (const type of ALL_METRIC_TYPES) {
     const interval = control[INTERVAL_KEYS[type]];
     if (interval === null || interval === undefined || interval === 0) continue;
 
-    const consumed = control.since_last[SINCE_LAST_KEYS[type]];
+    const consumed = control.consumed[SINCE_LAST_KEYS[type]];
     const remaining = interval - consumed;
     const percentage = Math.min((consumed / interval) * 100, 100);
 
@@ -156,20 +159,29 @@ export function worstStatus(metrics: ComputedMetric[]): AlertLevel {
 
 export type MetricEstimation = { date: Date; days: number; avg?: number } | null;
 
-export function computeMetricEstimation(metric: ComputedMetric, averages: AircraftAverageMetric | null): MetricEstimation {
-  if (!averages || metric.remaining <= 0) return null;
+export function computeMetricEstimation(
+  metric: ComputedMetric,
+  averages: AircraftAverageMetric | null,
+): MetricEstimation {
+  const averageHrs = averages?.average_daily_flight_hours;
+  const averageFc = averages?.average_daily_flight_cycles;
+  // if (metric.remaining <= 0) {
+  //   const avg = metric.type === 'FH' ? averageHrs : metric.type === 'FC' ? averageFc : undefined;
+
+  //   return { date: new Date(), days: 0, avg };
+  // }
 
   let days: number | null = null;
   let avg: number | undefined;
 
   if (metric.type === 'DAYS') {
     days = metric.remaining;
-  } else if (metric.type === 'FH' && averages.average_daily_flight_hours > 0) {
-    days = metric.remaining / averages.average_daily_flight_hours;
-    avg = averages.average_daily_flight_hours;
-  } else if (metric.type === 'FC' && averages.average_daily_flight_cycles > 0) {
-    days = metric.remaining / averages.average_daily_flight_cycles;
-    avg = averages.average_daily_flight_cycles;
+  } else if (metric.type === 'FH' && averageHrs && averageHrs > 0) {
+    days = metric.remaining / averageHrs;
+    avg = averageHrs;
+  } else if (metric.type === 'FC' && averageFc && averageFc > 0) {
+    days = metric.remaining / averageFc;
+    avg = averageFc;
   }
 
   if (days === null || !isFinite(days)) return null;

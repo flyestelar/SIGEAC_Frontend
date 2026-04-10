@@ -11,6 +11,7 @@ import { AircraftAverageMetric, MaintenanceControlResource } from '@api/types';
 import { ArrowLeft, BookOpen, ClipboardList, Edit, LayoutGrid, Table2 } from 'lucide-react';
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
+import { AircraftAverageSummaryCard } from './aircraft-average-summary-card';
 import { ControlCardView } from './control-card-view';
 import {
   AlertBadge,
@@ -201,6 +202,8 @@ export function ControlGrid({ controls, selectedControlId, onSelectControl, aver
   return (
     <div className="space-y-4">
       <div className="space-y-4">
+        <AircraftAverageSummaryCard averages={averages} />
+
         <div className="flex items-center gap-2">
           <BookOpen className="h-4 w-4 text-primary" />
           <span className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
@@ -231,8 +234,9 @@ export function ControlGrid({ controls, selectedControlId, onSelectControl, aver
             </ToggleGroupItem>
           </ToggleGroup>
         </div>
+
         {viewMode === 'table' ? (
-          <ControlTableView controls={sortedControls} onSelectControl={onSelectControl} />
+          <ControlTableView controls={sortedControls} onSelectControl={onSelectControl} averages={averages} />
         ) : (
           <ControlCardView controls={sortedControls} onSelectControl={onSelectControl} averages={averages} />
         )}

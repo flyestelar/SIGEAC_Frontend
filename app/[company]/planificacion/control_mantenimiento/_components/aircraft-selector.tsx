@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 'use client';
 
 import { Badge } from '@/components/ui/badge';
@@ -7,6 +8,7 @@ import { AircraftResource } from '@api/types';
 import { Clock, Plane, RotateCcw, Search } from 'lucide-react';
 import { useState } from 'react';
 import { cn } from '../_data/utils';
+import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 
 interface AircraftSelectorProps {
   aircraft: AircraftResource[];
@@ -48,85 +50,106 @@ export function AircraftSelector({ aircraft, selectedAircraftId, onSelectAircraf
         </div>
       </CardHeader>
       <CardContent className="p-1.5 pt-0">
-        <div className="flex gap-3 overflow-x-auto p-1">
-          {filtered.map((ac) => {
-            const isSelected = selectedAircraftId === ac.id;
+        <ScrollArea>
+          <div className="flex gap-3 px-1 py-3">
+            {filtered.map((ac) => {
+              const isSelected = selectedAircraftId === ac.id;
 
-            return (
-              <button
-                key={ac.id}
-                onClick={() => onSelectAircraft(ac.id)}
-                className={cn(
-                  'group flex h-20 w-88 shrink-0 overflow-hidden rounded-lg border text-left transition-all',
-                  isSelected
-                    ? 'border-primary ring-2 ring-primary focus-visible:outline-none'
-                    : 'border-border/60 hover:border-foreground/20',
-                )}
-              >
-                <div className="relative h-full w-[124px] shrink-0">
-                  <img
-                    src="/aircraft.webp"
-                    alt={ac.acronym ?? 'Aircraft'}
-                    className={cn(
-                      'h-full w-full object-cover',
-                      isSelected ? 'brightness-1' : 'brightness-[0.5] dark:brightness-[0.4]',
-                    )}
-                  />
-                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent px-2 pb-1.5 pt-3">
-                    <span className="font-mono text-[11px] font-bold tracking-[0.2em] text-white">{ac.acronym}</span>
-                  </div>
-                </div>
-
-                <div className="flex min-w-0 flex-1 flex-col justify-between px-2 py-1.5">
-                  <div>
-                    <div className="flex items-start justify-between gap-1.5">
-                      <span className="truncate text-[11px] font-medium text-foreground">
-                        {ac.manufacturer?.name ?? '—'}
-                      </span>
-                      {isSelected && (
-                        <Badge className="h-3.5 shrink-0 bg-primary/90 px-1 text-[9px] font-semibold text-primary-foreground">
-                          Activa
-                        </Badge>
-                      )}
-                    </div>
-
-                    {ac.aircraft_type?.series && (
-                      <p className="truncate text-[10px] text-muted-foreground">
-                        {ac.aircraft_type.full_name ?? ac.aircraft_type.series}
-                      </p>
-                    )}
-                  </div>
-
-                  <div className="flex items-center justify-between gap-1.5 text-[10px]">
-                    <span className="shrink-0 font-mono text-[10px] text-muted-foreground">S/N {ac.serial || '—'}</span>
-                    <span className="flex items-center gap-0.5 text-muted-foreground">
-                      <Clock className="h-3 w-3" />
-                      <span className="font-mono font-medium tabular-nums text-foreground">
-                        {ac.flight_hours?.toLocaleString() ?? 0}
-                      </span>
-                      h
-                    </span>
-                    <span className="text-border">·</span>
-                    <span className="flex items-center gap-0.5 text-muted-foreground">
-                      <RotateCcw className="h-3 w-3" />
-                      <span className="font-mono font-medium tabular-nums text-foreground">
-                        {ac.flight_cycles?.toLocaleString() ?? 0}
-                      </span>
-                      cyc
-                    </span>
-                  </div>
-                </div>
-              </button>
-            );
-          })}
-          {filtered.length === 0 && (
-            <div className="flex min-h-[180px] w-full flex-col items-center justify-center gap-1.5 rounded-lg border border-dashed border-border/60 text-center">
-              <Plane className="h-6 w-6 text-muted-foreground/30" />
-              <p className="text-xs text-muted-foreground">No se encontraron aeronaves</p>
-            </div>
-          )}
-        </div>
+              return (
+                <AircraftItem
+                  key={ac.id}
+                  aircraft={ac}
+                  isSelected={isSelected}
+                  onSelect={() => onSelectAircraft(ac.id)}
+                />
+              );
+            })}
+            {filtered.length === 0 && (
+              <div className="flex min-h-[180px] w-full flex-col items-center justify-center gap-1.5 rounded-lg border border-dashed border-border/60 text-center">
+                <Plane className="h-6 w-6 text-muted-foreground/30" />
+                <p className="text-xs text-muted-foreground">No se encontraron aeronaves</p>
+              </div>
+            )}
+          </div>
+          <ScrollBar orientation="horizontal" />
+        </ScrollArea>
       </CardContent>
     </Card>
+  );
+}
+
+function AircraftItem({
+  aircraft,
+  isSelected,
+  onSelect,
+}: {
+  aircraft: AircraftResource;
+  isSelected: boolean;
+  onSelect: () => void;
+}) {
+  return (
+    <button
+      onClick={onSelect}
+      className={cn(
+        'group flex h-16 w-88 shrink-0 overflow-hidden rounded-lg border text-left transition-all',
+        isSelected
+          ? 'border-primary ring-2 ring-primary focus-visible:outline-none'
+          : 'border-border/60 hover:border-foreground/20',
+      )}
+    >
+      <div className="relative h-full w-26 shrink-0">
+        <img
+          src="/aircraft.webp"
+          alt={aircraft.acronym ?? 'Aircraft'}
+          className={cn(
+            'h-full w-full object-cover',
+            isSelected ? 'brightness-1' : 'brightness-[0.5] dark:brightness-[0.4]',
+          )}
+        />
+        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent px-2 pb-1.5 pt-3">
+          <span className="font-mono text-[11px] font-bold tracking-[0.2em] text-white">{aircraft.acronym}</span>
+        </div>
+      </div>
+
+      <div className="flex min-w-0 flex-1 flex-col justify-between px-2 py-1.5">
+        <div>
+          <div className="flex items-start justify-between gap-1.5">
+            <span className="truncate text-[11px] font-medium text-foreground">
+              {aircraft.manufacturer?.name ?? '—'}
+            </span>
+            {isSelected && (
+              <Badge className="h-3.5 shrink-0 bg-primary/90 px-1 text-[9px] font-semibold text-primary-foreground">
+                Activa
+              </Badge>
+            )}
+          </div>
+
+          {aircraft.aircraft_type?.series && (
+            <p className="truncate text-[10px] text-muted-foreground">
+              {aircraft.aircraft_type.full_name ?? aircraft.aircraft_type.series}
+            </p>
+          )}
+        </div>
+
+        <div className="flex items-center justify-between gap-1.5 text-[10px]">
+          <span className="shrink-0 font-mono text-[10px] text-muted-foreground">S/N {aircraft.serial || '—'}</span>
+          <span className="flex items-center gap-0.5 text-muted-foreground">
+            <Clock className="h-3 w-3" />
+            <span className="font-mono font-medium tabular-nums text-foreground">
+              {aircraft.flight_hours?.toLocaleString() ?? 0}
+            </span>
+            h
+          </span>
+          <span className="text-border">·</span>
+          <span className="flex items-center gap-0.5 text-muted-foreground">
+            <RotateCcw className="h-3 w-3" />
+            <span className="font-mono font-medium tabular-nums text-foreground">
+              {aircraft.flight_cycles?.toLocaleString() ?? 0}
+            </span>
+            cyc
+          </span>
+        </div>
+      </div>
+    </button>
   );
 }

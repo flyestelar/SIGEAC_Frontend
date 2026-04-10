@@ -54,7 +54,7 @@ export function MaintenanceControlsSection({
             averages={selectedAircraft?.last_average_metric ?? null}
           />
 
-          {selectedControl && (
+          {selectedControl && selectedAircraft && (
             <Tabs defaultValue="tasks" className="w-full">
               <div className="flex justify-center">
                 <TabsList className="mx-auto">
