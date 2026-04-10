@@ -9,6 +9,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import axiosInstance from '@/lib/axios';
 import { cn } from '@/lib/utils';
 import { useCompanyStore } from '@/stores/CompanyStore';
@@ -225,7 +226,7 @@ const WorkOrderPage = () => {
                         <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
                           Fabricante
                         </p>
-                        <p className="text-sm font-medium line-clamp-1">{aircraft.manufacturer?.name ?? '—'}</p>
+                        <p className="text-sm font-medium line-clamp-1">{aircraft.aircraft_type?.manufacturer?.name ?? '—'}</p>
                       </div>
                       <div className="space-y-1">
                         <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
@@ -461,7 +462,7 @@ function ControlAccordionItem({ item, orderNumber }: { item: WorkOrderItemResour
         {tasks.length === 0 ? (
           <p className="px-5 pb-3 ml-10 text-xs text-muted-foreground">Sin task cards.</p>
         ) : (
-          <div className="ml-10 mr-5 overflow-hidden rounded-md border">
+          <div className="ml-5 mr-5 overflow-hidden rounded-md border">
             {tasks.map((task, idx) => {
               const taskStatusRaw = (task.review_by ? 'COMPLETADO' : 'PENDIENTE').toUpperCase();
               const taskStatusCfg = TASK_STATUS_CONFIG[taskStatusRaw] ?? fallbackStatus;
@@ -492,18 +493,27 @@ function ControlAccordionItem({ item, orderNumber }: { item: WorkOrderItemResour
                     </span>
                   )}
 
-                  <div className="flex shrink-0 items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-6 w-6 text-muted-foreground hover:text-foreground"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        openCompleteDialog(task);
-                      }}
-                    >
-                      <Check className="size-3" />
-                    </Button>
+                  <div className="flex shrink-0 items-center gap-1">
+                    {!task.review_by ? (
+                      <TooltipProvider>
+                        <Tooltip delayDuration={100}>
+                          <TooltipTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-6 w-6 text-muted-foreground hover:text-foreground"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                openCompleteDialog(task);
+                              }}
+                            >
+                              <Check className="size-3" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent side="top">Completar task</TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    ) : null}
                   </div>
 
                   <Badge
