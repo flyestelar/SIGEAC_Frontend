@@ -180,6 +180,15 @@ export type BankAccount = {
 export type Batch = Array<string>;
 
 /**
+ * BulkCompleteWorkOrderItemTaskRequest
+ */
+export type BulkCompleteWorkOrderItemTaskRequest = {
+  inspection_date: string;
+  review_by: string;
+  items: Array<number>;
+};
+
+/**
  * Card
  */
 export type Card = {
@@ -247,11 +256,9 @@ export type CompanyResource = {
  * CompleteWorkOrderItemTaskRequest
  */
 export type CompleteWorkOrderItemTaskRequest = {
-  items: Array<{
-    id: number;
-    inspection_date: string;
-    review_by: string;
-  }>;
+  id: number;
+  inspection_date: string;
+  review_by: string;
 };
 
 /**
@@ -13406,7 +13413,7 @@ export type WorkOrderCloseError = WorkOrderCloseErrors[keyof WorkOrderCloseError
 
 export type WorkOrderCloseResponses = {
   200: {
-    message: 'Work order cerrado correctamente.';
+    message: 'Orden de trabajo completada exitosamente.';
     work_order: WorkOrderResource;
     maintenance_control_executions: Array<MaintenanceControlExecutionResource>;
   };
@@ -13414,7 +13421,7 @@ export type WorkOrderCloseResponses = {
 
 export type WorkOrderCloseResponse = WorkOrderCloseResponses[keyof WorkOrderCloseResponses];
 
-export type WorkOrderCompleteItemTasksData = {
+export type WorkOrderCompleteItemTaskData = {
   body: CompleteWorkOrderItemTaskRequest;
   path: {
     order_number: string;
@@ -13423,7 +13430,59 @@ export type WorkOrderCompleteItemTasksData = {
   url: '/work-orders/{order_number}/item-tasks/complete';
 };
 
-export type WorkOrderCompleteItemTasksErrors = {
+export type WorkOrderCompleteItemTaskErrors = {
+  /**
+   * Unauthenticated
+   */
+  401: {
+    /**
+     * Error overview.
+     */
+    message: string;
+  };
+  404: {
+    message: 'La tarea no pertenece a este work order o no existe.';
+    missing_id: string;
+  };
+  /**
+   * Validation error
+   */
+  422: {
+    /**
+     * Errors overview.
+     */
+    message: string;
+    /**
+     * A detailed description of each field that failed validation.
+     */
+    errors: {
+      [key: string]: Array<string>;
+    };
+  };
+};
+
+export type WorkOrderCompleteItemTaskError = WorkOrderCompleteItemTaskErrors[keyof WorkOrderCompleteItemTaskErrors];
+
+export type WorkOrderCompleteItemTaskResponses = {
+  200: {
+    message: 'Tarea completada exitosamente.';
+    completed_id: string;
+  };
+};
+
+export type WorkOrderCompleteItemTaskResponse =
+  WorkOrderCompleteItemTaskResponses[keyof WorkOrderCompleteItemTaskResponses];
+
+export type WorkOrderBulkCompleteItemTasksData = {
+  body: BulkCompleteWorkOrderItemTaskRequest;
+  path: {
+    order_number: string;
+  };
+  query?: never;
+  url: '/work-orders/{order_number}/item-tasks/complete-bulk';
+};
+
+export type WorkOrderBulkCompleteItemTasksErrors = {
   /**
    * Unauthenticated
    */
@@ -13454,17 +13513,18 @@ export type WorkOrderCompleteItemTasksErrors = {
   };
 };
 
-export type WorkOrderCompleteItemTasksError = WorkOrderCompleteItemTasksErrors[keyof WorkOrderCompleteItemTasksErrors];
+export type WorkOrderBulkCompleteItemTasksError =
+  WorkOrderBulkCompleteItemTasksErrors[keyof WorkOrderBulkCompleteItemTasksErrors];
 
-export type WorkOrderCompleteItemTasksResponses = {
+export type WorkOrderBulkCompleteItemTasksResponses = {
   200: {
-    message: 'Tarea(s) completada(s) exitosamente.';
-    completed_ids: Array<string>;
+    message: 'Tarea(s) completada(s) con la misma fecha y revisión.';
+    completed_ids: string;
   };
 };
 
-export type WorkOrderCompleteItemTasksResponse =
-  WorkOrderCompleteItemTasksResponses[keyof WorkOrderCompleteItemTasksResponses];
+export type WorkOrderBulkCompleteItemTasksResponse =
+  WorkOrderBulkCompleteItemTasksResponses[keyof WorkOrderBulkCompleteItemTasksResponses];
 
 export type WorkOrdersIndexData = {
   body?: never;

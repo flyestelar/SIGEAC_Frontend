@@ -1065,12 +1065,15 @@ import type {
   WarehouseWarehouseWithUserData,
   WarehouseWarehouseWithUserErrors,
   WarehouseWarehouseWithUserResponses,
+  WorkOrderBulkCompleteItemTasksData,
+  WorkOrderBulkCompleteItemTasksErrors,
+  WorkOrderBulkCompleteItemTasksResponses,
   WorkOrderCloseData,
   WorkOrderCloseErrors,
   WorkOrderCloseResponses,
-  WorkOrderCompleteItemTasksData,
-  WorkOrderCompleteItemTasksErrors,
-  WorkOrderCompleteItemTasksResponses,
+  WorkOrderCompleteItemTaskData,
+  WorkOrderCompleteItemTaskErrors,
+  WorkOrderCompleteItemTaskResponses,
   WorkOrdersIndexData,
   WorkOrdersIndexErrors,
   WorkOrdersIndexResponses,
@@ -6065,21 +6068,37 @@ export const workOrderClose = <ThrowOnError extends boolean = false>(
     ...options,
   });
 
-export const workOrderCompleteItemTasks = <ThrowOnError extends boolean = false>(
-  options: Options<WorkOrderCompleteItemTasksData, ThrowOnError>,
+export const workOrderCompleteItemTask = <ThrowOnError extends boolean = false>(
+  options: Options<WorkOrderCompleteItemTaskData, ThrowOnError>,
 ) =>
-  (options.client ?? client).patch<WorkOrderCompleteItemTasksResponses, WorkOrderCompleteItemTasksErrors, ThrowOnError>(
-    {
-      responseType: 'json',
-      security: [{ scheme: 'bearer', type: 'http' }],
-      url: '/work-orders/{order_number}/item-tasks/complete',
-      ...options,
-      headers: {
-        'Content-Type': 'application/json',
-        ...options.headers,
-      },
+  (options.client ?? client).patch<WorkOrderCompleteItemTaskResponses, WorkOrderCompleteItemTaskErrors, ThrowOnError>({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/work-orders/{order_number}/item-tasks/complete',
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers,
     },
-  );
+  });
+
+export const workOrderBulkCompleteItemTasks = <ThrowOnError extends boolean = false>(
+  options: Options<WorkOrderBulkCompleteItemTasksData, ThrowOnError>,
+) =>
+  (options.client ?? client).patch<
+    WorkOrderBulkCompleteItemTasksResponses,
+    WorkOrderBulkCompleteItemTasksErrors,
+    ThrowOnError
+  >({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/work-orders/{order_number}/item-tasks/complete-bulk',
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    },
+  });
 
 /**
  * Display a listing of the resource

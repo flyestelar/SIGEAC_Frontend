@@ -360,8 +360,9 @@ import {
   warehouseStore,
   warehouseUpdate,
   warehouseWarehouseWithUser,
+  workOrderBulkCompleteItemTasks,
   workOrderClose,
-  workOrderCompleteItemTasks,
+  workOrderCompleteItemTask,
   workOrdersIndex,
   workOrdersShow,
   workOrdersStore,
@@ -1393,12 +1394,15 @@ import type {
   WarehouseWarehouseWithUserData,
   WarehouseWarehouseWithUserError,
   WarehouseWarehouseWithUserResponse,
+  WorkOrderBulkCompleteItemTasksData,
+  WorkOrderBulkCompleteItemTasksError,
+  WorkOrderBulkCompleteItemTasksResponse,
   WorkOrderCloseData,
   WorkOrderCloseError,
   WorkOrderCloseResponse,
-  WorkOrderCompleteItemTasksData,
-  WorkOrderCompleteItemTasksError,
-  WorkOrderCompleteItemTasksResponse,
+  WorkOrderCompleteItemTaskData,
+  WorkOrderCompleteItemTaskError,
+  WorkOrderCompleteItemTaskResponse,
   WorkOrdersIndexData,
   WorkOrdersIndexError,
   WorkOrdersIndexResponse,
@@ -10269,20 +10273,44 @@ export const workOrderCloseMutation = (
   return mutationOptions;
 };
 
-export const workOrderCompleteItemTasksMutation = (
-  options?: Partial<Options<WorkOrderCompleteItemTasksData>>,
+export const workOrderCompleteItemTaskMutation = (
+  options?: Partial<Options<WorkOrderCompleteItemTaskData>>,
 ): UseMutationOptions<
-  WorkOrderCompleteItemTasksResponse,
-  AxiosError<WorkOrderCompleteItemTasksError>,
-  Options<WorkOrderCompleteItemTasksData>
+  WorkOrderCompleteItemTaskResponse,
+  AxiosError<WorkOrderCompleteItemTaskError>,
+  Options<WorkOrderCompleteItemTaskData>
 > => {
   const mutationOptions: UseMutationOptions<
-    WorkOrderCompleteItemTasksResponse,
-    AxiosError<WorkOrderCompleteItemTasksError>,
-    Options<WorkOrderCompleteItemTasksData>
+    WorkOrderCompleteItemTaskResponse,
+    AxiosError<WorkOrderCompleteItemTaskError>,
+    Options<WorkOrderCompleteItemTaskData>
   > = {
     mutationFn: async (fnOptions) => {
-      const { data } = await workOrderCompleteItemTasks({
+      const { data } = await workOrderCompleteItemTask({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+export const workOrderBulkCompleteItemTasksMutation = (
+  options?: Partial<Options<WorkOrderBulkCompleteItemTasksData>>,
+): UseMutationOptions<
+  WorkOrderBulkCompleteItemTasksResponse,
+  AxiosError<WorkOrderBulkCompleteItemTasksError>,
+  Options<WorkOrderBulkCompleteItemTasksData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    WorkOrderBulkCompleteItemTasksResponse,
+    AxiosError<WorkOrderBulkCompleteItemTasksError>,
+    Options<WorkOrderBulkCompleteItemTasksData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await workOrderBulkCompleteItemTasks({
         ...options,
         ...fnOptions,
         throwOnError: true,

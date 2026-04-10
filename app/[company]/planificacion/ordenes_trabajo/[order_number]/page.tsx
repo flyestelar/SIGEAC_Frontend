@@ -2,6 +2,7 @@
 'use client';
 
 import { CompleteTaskDialog } from '@/components/dialogs/mantenimiento/ordenes_trabajo/CompleteTaskDialog';
+import { CompleteTasksBulkDialog } from '@/components/dialogs/mantenimiento/ordenes_trabajo/CompleteTasksBulkDialog';
 import { CompleteWorkOrderDialog } from '@/components/dialogs/mantenimiento/ordenes_trabajo/CompleteWorkOrderDialog';
 import { ContentLayout } from '@/components/layout/ContentLayout';
 import LoadingPage from '@/components/misc/LoadingPage';
@@ -109,6 +110,7 @@ const WorkOrderPage = () => {
   const { order_number } = useParams<{ order_number: string }>();
   const { selectedCompany } = useCompanyStore();
   const [completeOrderOpen, setCompleteOrderOpen] = useState(false);
+  const [bulkCompleteOpen, setBulkCompleteOpen] = useState(false);
 
   const {
     data: response,
@@ -119,6 +121,15 @@ const WorkOrderPage = () => {
   });
 
   const wo: WorkOrderResource | undefined = response?.data;
+  const statusRaw = wo?.status?.toUpperCase() ?? '';
+  const statusCfg = STATUS_CONFIG[statusRaw] ?? fallbackStatus;
+  const aircraft = wo?.aircraft;
+  const items = wo?.items ?? [];
+  const totalTasks = items.reduce((sum, item) => sum + (item.tasks?.length ?? 0), 0);
+  const pendingTasksCount = items.reduce(
+    (sum, item) => sum + (item.tasks ?? []).filter((task) => !task.review_by).length,
+    0,
+  );
 
   const handleDownloadPdf = async () => {
     try {
@@ -150,12 +161,6 @@ const WorkOrderPage = () => {
       </ContentLayout>
     );
   }
-
-  const statusRaw = wo.status?.toUpperCase() ?? '';
-  const statusCfg = STATUS_CONFIG[statusRaw] ?? fallbackStatus;
-  const aircraft = wo.aircraft;
-  const items = wo.items ?? [];
-  const totalTasks = items.reduce((sum, item) => sum + (item.tasks?.length ?? 0), 0);
 
   return (
     <ContentLayout title="Orden de Trabajo">
@@ -241,7 +246,9 @@ const WorkOrderPage = () => {
                         <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
                           Fabricante
                         </p>
-                        <p className="text-sm font-medium line-clamp-1">{aircraft.aircraft_type?.manufacturer?.name ?? '—'}</p>
+                        <p className="text-sm font-medium line-clamp-1">
+                          {aircraft.aircraft_type?.manufacturer?.name ?? '—'}
+                        </p>
                       </div>
                       <div className="space-y-1">
                         <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
@@ -342,6 +349,17 @@ const WorkOrderPage = () => {
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="h-7 gap-1.5 text-[11px]"
+                    onClick={() => setBulkCompleteOpen(true)}
+                    disabled={pendingTasksCount === 0}
+                  >
+                    <Check className="size-3" />
+                    Completar por lote
+                  </Button>
                   <Badge variant="outline" className="gap-1 text-[11px] tabular-nums">
                     <Settings2 className="size-2.5" />
                     {items.length}
@@ -447,6 +465,13 @@ const WorkOrderPage = () => {
         orderNumber={order_number}
         onOpenChange={setCompleteOrderOpen}
       />
+
+      <CompleteTasksBulkDialog
+        open={bulkCompleteOpen}
+        items={items}
+        orderNumber={order_number}
+        onOpenChange={setBulkCompleteOpen}
+      />
     </ContentLayout>
   );
 };
@@ -513,6 +538,12 @@ function ControlAccordionItem({ item, orderNumber }: { item: WorkOrderItemResour
 
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-[13px]">{task.task?.description ?? `Task #${task.task_id}`}</p>
+                    {(task.task?.old_task || task.task?.new_task) && (
+                      <div className="mt-0.5 flex flex-wrap items-center gap-2 text-[11px] text-muted-foreground">
+                        {task.task?.old_task && <span>Old Task: {task.task.old_task}</span>}
+                        {task.task?.new_task && <span>New Task: {task.task.new_task}</span>}
+                      </div>
+                    )}
                     <div className="flex flex-wrap items-center gap-2 text-[11px] text-muted-foreground">
                       {task.inspection_date && <span>Inspección: {formatDate(task.inspection_date)}</span>}
                       {task.review_by && <span>Revisado por: {task.review_by}</span>}
@@ -554,10 +585,6 @@ function ControlAccordionItem({ item, orderNumber }: { item: WorkOrderItemResour
                       'shrink-0 cursor-pointer text-[10px] transition-colors hover:opacity-80',
                       taskStatusCfg.className,
                     )}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      toast.info('Cambiar estado (próximamente)');
-                    }}
                   >
                     {taskStatusCfg.label}
                   </Badge>
