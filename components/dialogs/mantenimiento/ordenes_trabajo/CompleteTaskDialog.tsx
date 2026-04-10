@@ -11,7 +11,7 @@ import {
 } from '@/components/ui/dialog';
 import { Field, FieldLabel } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
-import { workOrderCompleteItemTaskMutation, workOrdersShowQueryKey } from '@api/queries';
+import { workOrderCompleteItemTasksMutation, workOrdersShowQueryKey } from '@api/queries';
 import { WorkOrderItemTaskResource } from '@api/types';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Loader2 } from 'lucide-react';
@@ -53,7 +53,7 @@ function CompleteTaskDialogContent({
   const reviewDate = watch('inspection_date');
 
   const completeTaskMutation = useMutation({
-    ...workOrderCompleteItemTaskMutation(),
+    ...workOrderCompleteItemTasksMutation(),
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: workOrdersShowQueryKey({ path: { orderNumber } }) });
     },
@@ -71,11 +71,15 @@ function CompleteTaskDialogContent({
       {
         path: {
           order_number: orderNumber,
-          item_task_id: task.id,
         },
         body: {
-          review_by: data.review_by.trim() || '',
-          inspection_date: data.inspection_date,
+          items: [
+            {
+              id: task.id,
+              review_by: data.review_by.trim() || '',
+              inspection_date: data.inspection_date,
+            },
+          ],
         },
       },
       {

@@ -91,7 +91,6 @@ export type AircraftResource = {
   flight_cycles: number;
   fabricant_date: string;
   comments: string | null;
-  manufacturer?: ManufacturerResource;
   location?: {
     id: number;
     address: string;
@@ -248,8 +247,11 @@ export type CompanyResource = {
  * CompleteWorkOrderItemTaskRequest
  */
 export type CompleteWorkOrderItemTaskRequest = {
-  inspection_date: string;
-  review_by: string;
+  items: Array<{
+    id: number;
+    inspection_date: string;
+    review_by: string;
+  }>;
 };
 
 /**
@@ -13412,17 +13414,16 @@ export type WorkOrderCloseResponses = {
 
 export type WorkOrderCloseResponse = WorkOrderCloseResponses[keyof WorkOrderCloseResponses];
 
-export type WorkOrderCompleteItemTaskData = {
+export type WorkOrderCompleteItemTasksData = {
   body: CompleteWorkOrderItemTaskRequest;
   path: {
     order_number: string;
-    item_task_id: number;
   };
   query?: never;
-  url: '/work-orders/{order_number}/item-tasks/{item_task_id}/complete';
+  url: '/work-orders/{order_number}/item-tasks/complete';
 };
 
-export type WorkOrderCompleteItemTaskErrors = {
+export type WorkOrderCompleteItemTasksErrors = {
   /**
    * Unauthenticated
    */
@@ -13433,7 +13434,8 @@ export type WorkOrderCompleteItemTaskErrors = {
     message: string;
   };
   404: {
-    message: 'La tarea no pertenece a este work order.';
+    message: 'Algunas tareas no pertenecen a este work order o no existen.';
+    missing_ids: Array<unknown>;
   };
   /**
    * Validation error
@@ -13452,16 +13454,17 @@ export type WorkOrderCompleteItemTaskErrors = {
   };
 };
 
-export type WorkOrderCompleteItemTaskError = WorkOrderCompleteItemTaskErrors[keyof WorkOrderCompleteItemTaskErrors];
+export type WorkOrderCompleteItemTasksError = WorkOrderCompleteItemTasksErrors[keyof WorkOrderCompleteItemTasksErrors];
 
-export type WorkOrderCompleteItemTaskResponses = {
+export type WorkOrderCompleteItemTasksResponses = {
   200: {
-    message: 'Tarea completada exitosamente.';
+    message: 'Tarea(s) completada(s) exitosamente.';
+    completed_ids: Array<string>;
   };
 };
 
-export type WorkOrderCompleteItemTaskResponse =
-  WorkOrderCompleteItemTaskResponses[keyof WorkOrderCompleteItemTaskResponses];
+export type WorkOrderCompleteItemTasksResponse =
+  WorkOrderCompleteItemTasksResponses[keyof WorkOrderCompleteItemTasksResponses];
 
 export type WorkOrdersIndexData = {
   body?: never;

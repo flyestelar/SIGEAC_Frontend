@@ -361,7 +361,7 @@ import {
   warehouseUpdate,
   warehouseWarehouseWithUser,
   workOrderClose,
-  workOrderCompleteItemTask,
+  workOrderCompleteItemTasks,
   workOrdersIndex,
   workOrdersShow,
   workOrdersStore,
@@ -1396,9 +1396,9 @@ import type {
   WorkOrderCloseData,
   WorkOrderCloseError,
   WorkOrderCloseResponse,
-  WorkOrderCompleteItemTaskData,
-  WorkOrderCompleteItemTaskError,
-  WorkOrderCompleteItemTaskResponse,
+  WorkOrderCompleteItemTasksData,
+  WorkOrderCompleteItemTasksError,
+  WorkOrderCompleteItemTasksResponse,
   WorkOrdersIndexData,
   WorkOrdersIndexError,
   WorkOrdersIndexResponse,
@@ -10269,20 +10269,20 @@ export const workOrderCloseMutation = (
   return mutationOptions;
 };
 
-export const workOrderCompleteItemTaskMutation = (
-  options?: Partial<Options<WorkOrderCompleteItemTaskData>>,
+export const workOrderCompleteItemTasksMutation = (
+  options?: Partial<Options<WorkOrderCompleteItemTasksData>>,
 ): UseMutationOptions<
-  WorkOrderCompleteItemTaskResponse,
-  AxiosError<WorkOrderCompleteItemTaskError>,
-  Options<WorkOrderCompleteItemTaskData>
+  WorkOrderCompleteItemTasksResponse,
+  AxiosError<WorkOrderCompleteItemTasksError>,
+  Options<WorkOrderCompleteItemTasksData>
 > => {
   const mutationOptions: UseMutationOptions<
-    WorkOrderCompleteItemTaskResponse,
-    AxiosError<WorkOrderCompleteItemTaskError>,
-    Options<WorkOrderCompleteItemTaskData>
+    WorkOrderCompleteItemTasksResponse,
+    AxiosError<WorkOrderCompleteItemTasksError>,
+    Options<WorkOrderCompleteItemTasksData>
   > = {
     mutationFn: async (fnOptions) => {
-      const { data } = await workOrderCompleteItemTask({
+      const { data } = await workOrderCompleteItemTasks({
         ...options,
         ...fnOptions,
         throwOnError: true,

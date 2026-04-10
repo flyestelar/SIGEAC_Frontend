@@ -2,6 +2,7 @@
 'use client';
 
 import { CompleteTaskDialog } from '@/components/dialogs/mantenimiento/ordenes_trabajo/CompleteTaskDialog';
+import { CompleteWorkOrderDialog } from '@/components/dialogs/mantenimiento/ordenes_trabajo/CompleteWorkOrderDialog';
 import { ContentLayout } from '@/components/layout/ContentLayout';
 import LoadingPage from '@/components/misc/LoadingPage';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
@@ -33,6 +34,7 @@ import {
   RotateCcw,
   Settings2,
   ShieldCheck,
+  CheckCircle2,
 } from 'lucide-react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
@@ -106,6 +108,7 @@ function formatDate(dateStr: string | null | undefined) {
 const WorkOrderPage = () => {
   const { order_number } = useParams<{ order_number: string }>();
   const { selectedCompany } = useCompanyStore();
+  const [completeOrderOpen, setCompleteOrderOpen] = useState(false);
 
   const {
     data: response,
@@ -182,10 +185,22 @@ const WorkOrderPage = () => {
               </div>
             </div>
           </div>
-          <Button variant="outline" size="sm" className="h-8 gap-1.5 text-xs" onClick={handleDownloadPdf}>
-            <Download className="size-3.5" />
-            PDF
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="default"
+              size="sm"
+              className="h-8 gap-1.5 text-xs"
+              onClick={() => setCompleteOrderOpen(true)}
+              disabled={statusRaw === 'CERRADO'}
+            >
+              <CheckCircle2 className="size-3.5" />
+              {statusRaw === 'CERRADO' ? 'Orden completada' : 'Completar orden'}
+            </Button>
+            <Button variant="outline" size="sm" className="h-8 gap-1.5 text-xs" onClick={handleDownloadPdf}>
+              <Download className="size-3.5" />
+              PDF
+            </Button>
+          </div>
         </div>
 
         {/* Two-column layout */}
@@ -379,7 +394,7 @@ const WorkOrderPage = () => {
                     <div className="min-w-0">
                       <p className="font-mono text-sm font-semibold tracking-widest">{aircraft.acronym}</p>
                       <p className="truncate text-[11px] text-muted-foreground">
-                        {aircraft.manufacturer?.name ?? 'Sin fabricante'} · S/N {aircraft.serial ?? '—'}
+                        {aircraft.aircraft_type?.manufacturer?.name ?? 'Sin fabricante'} · S/N {aircraft.serial ?? '—'}
                       </p>
                     </div>
                   </div>
@@ -406,15 +421,32 @@ const WorkOrderPage = () => {
                 <Separator />
 
                 {/* Action */}
-                <Button variant="outline" className="w-full gap-2" onClick={handleDownloadPdf}>
-                  <Printer className="size-3.5" />
-                  Descargar PDF
-                </Button>
+                <div className="space-y-2">
+                  <Button
+                    className="w-full gap-2"
+                    onClick={() => setCompleteOrderOpen(true)}
+                    disabled={statusRaw === 'CERRADO'}
+                  >
+                    <CheckCircle2 className="size-3.5" />
+                    {statusRaw === 'CERRADO' ? 'Orden completada' : 'Completar orden'}
+                  </Button>
+                  <Button variant="outline" className="w-full gap-2" onClick={handleDownloadPdf}>
+                    <Printer className="size-3.5" />
+                    Descargar PDF
+                  </Button>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
+
+      <CompleteWorkOrderDialog
+        open={completeOrderOpen}
+        workOrder={wo}
+        orderNumber={order_number}
+        onOpenChange={setCompleteOrderOpen}
+      />
     </ContentLayout>
   );
 };

@@ -1068,9 +1068,9 @@ import type {
   WorkOrderCloseData,
   WorkOrderCloseErrors,
   WorkOrderCloseResponses,
-  WorkOrderCompleteItemTaskData,
-  WorkOrderCompleteItemTaskErrors,
-  WorkOrderCompleteItemTaskResponses,
+  WorkOrderCompleteItemTasksData,
+  WorkOrderCompleteItemTasksErrors,
+  WorkOrderCompleteItemTasksResponses,
   WorkOrdersIndexData,
   WorkOrdersIndexErrors,
   WorkOrdersIndexResponses,
@@ -6065,19 +6065,21 @@ export const workOrderClose = <ThrowOnError extends boolean = false>(
     ...options,
   });
 
-export const workOrderCompleteItemTask = <ThrowOnError extends boolean = false>(
-  options: Options<WorkOrderCompleteItemTaskData, ThrowOnError>,
+export const workOrderCompleteItemTasks = <ThrowOnError extends boolean = false>(
+  options: Options<WorkOrderCompleteItemTasksData, ThrowOnError>,
 ) =>
-  (options.client ?? client).patch<WorkOrderCompleteItemTaskResponses, WorkOrderCompleteItemTaskErrors, ThrowOnError>({
-    responseType: 'json',
-    security: [{ scheme: 'bearer', type: 'http' }],
-    url: '/work-orders/{order_number}/item-tasks/{item_task_id}/complete',
-    ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      ...options.headers,
+  (options.client ?? client).patch<WorkOrderCompleteItemTasksResponses, WorkOrderCompleteItemTasksErrors, ThrowOnError>(
+    {
+      responseType: 'json',
+      security: [{ scheme: 'bearer', type: 'http' }],
+      url: '/work-orders/{order_number}/item-tasks/complete',
+      ...options,
+      headers: {
+        'Content-Type': 'application/json',
+        ...options.headers,
+      },
     },
-  });
+  );
 
 /**
  * Display a listing of the resource
