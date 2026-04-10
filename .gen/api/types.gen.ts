@@ -3043,9 +3043,13 @@ export type LoginData = {
 };
 
 export type LoginErrors = {
-  401: {
-    message: 'Credencial invalida';
-  };
+  401:
+    | {
+        message: 'Not logged in or guard did not return a User object';
+      }
+    | {
+        message: 'Credencial invalida';
+      };
   /**
    * Validation error
    */
@@ -3066,13 +3070,12 @@ export type LoginErrors = {
 export type LoginError = LoginErrors[keyof LoginErrors];
 
 export type LoginResponses = {
-  200:
-    | {
-        message: 'success';
-        userId: string;
-        company: string | null;
-      }
-    | 'Not logged in or guard did not return a User object';
+  200: {
+    message: 'success';
+    userId: string;
+    company: string | null;
+    token: string;
+  };
 };
 
 export type LoginResponse = LoginResponses[keyof LoginResponses];
@@ -13429,14 +13432,8 @@ export type WorkOrderCompleteItemTaskErrors = {
      */
     message: string;
   };
-  /**
-   * Not found
-   */
   404: {
-    /**
-     * Error overview.
-     */
-    message: string;
+    message: 'La tarea no pertenece a este work order.';
   };
   /**
    * Validation error
