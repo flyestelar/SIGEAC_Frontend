@@ -1162,3 +1162,41 @@ export type ThirdPartyRole = {
   value: string;
   label: string;
 };
+
+export type SafetyBulletin = {
+  id: number;
+  title: string;
+  description: string;
+  date: string;
+  document: string | null;
+  image: string | null;
+};
+
+export type SurveyOption = {
+  id: number;
+  text: string;
+  is_correct?: boolean;
+  question_id: string;
+};
+
+export type SurveyQuestion = {
+  id: number;
+  text: string;
+  type: 'SINGLE' | 'MULTIPLE' | 'OPEN';
+  is_required: boolean;
+  survey_id: string;
+  options: SurveyOption[];
+};
+
+export type Survey = {
+  id: number;
+  title: string;
+  type: 'QUIZ' | 'SURVEY';
+  survey_number: string;
+  description: string;
+  is_active: boolean | string;
+  registered_by: string;
+  updated_by: string | null;
+  location_id: string;
+  questions: SurveyQuestion[];
+};

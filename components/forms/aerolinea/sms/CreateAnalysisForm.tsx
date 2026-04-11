@@ -31,6 +31,7 @@ import { Separator } from "@radix-ui/react-select";
 import RiskMatrix from "../../../misc/RiskMatrix";
 import { useRouter } from "next/navigation";
 import { useCompanyStore } from "@/stores/CompanyStore";
+import { useEffect, useState } from "react";
 
 const FormSchema = z.object({
   severity: z.string(),
@@ -73,6 +74,7 @@ export default function CreateAnalysisForm({
     { name: "IMPROBABLE", value: "2" },
     { name: "EXTREMADAMENTE_IMPROBABLE", value: "1" },
   ];
+
   const form = useForm<FormSchemaType>({
     resolver: zodResolver(FormSchema),
     defaultValues: initialData
@@ -80,8 +82,27 @@ export default function CreateAnalysisForm({
           probability: initialData.probability,
           severity: initialData.severity,
         }
-      : {},
+      : { probability: "", severity: "" },
   });
+
+  const [currentSelection, setCurrentSelection] = useState("");
+
+  // Actualizar la selección actual cuando cambian los valores
+  const watchedProbability = form.watch("probability");
+  const watchedSeverity = form.watch("severity");
+
+  useEffect(() => {
+    if (watchedProbability && watchedSeverity) {
+      setCurrentSelection(`${watchedProbability}${watchedSeverity}`);
+    } else {
+      setCurrentSelection("");
+    }
+  }, [watchedProbability, watchedSeverity, form]);
+
+  const handleCellClick = (probability: string, severity: string) => {
+    form.setValue("probability", probability);
+    form.setValue("severity", severity);
+  };
 
   const onSubmit = async (data: FormSchemaType) => {
     if (isEditing && initialData) {
@@ -118,7 +139,7 @@ export default function CreateAnalysisForm({
         try {
           await createAnalysis.mutateAsync(values);
           router.push(
-            `/${selectedCompany}/sms/gestion_reportes/planes_de_mitigacion`
+            `/${selectedCompany?.slug}/sms/gestion_reportes/planes_de_mitigacion`,
           );
         } catch (error) {
           console.error("Error al crear el análisis:", error);
@@ -128,6 +149,10 @@ export default function CreateAnalysisForm({
 
     onClose();
   };
+
+  // Obtener valores actuales del formulario
+  const currentProbability = form.watch("probability");
+  const currentSeverity = form.watch("severity");
 
   return (
     <Form {...form}>
@@ -143,7 +168,13 @@ export default function CreateAnalysisForm({
           render={({ field }) => (
             <FormItem>
               <FormLabel>Probabilidad del riesgo</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
+              <Select
+                onValueChange={(value) => {
+                  field.onChange(value);
+                  setCurrentSelection(value + (currentSeverity || ""));
+                }}
+                value={field.value}
+              >
                 <FormControl>
                   <SelectTrigger>
                     <SelectValue placeholder="Seleccionar probabilidad de riesgo" />
@@ -152,7 +183,9 @@ export default function CreateAnalysisForm({
                 <SelectContent>
                   {PROBABILITY.map((probability, index) => (
                     <SelectItem key={index} value={probability.value}>
-                      {probability.name} ({probability.value})
+                      <span>
+                        {probability.name} ({probability.value})
+                      </span>
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -170,16 +203,25 @@ export default function CreateAnalysisForm({
           render={({ field }) => (
             <FormItem>
               <FormLabel>Severidad del riesgo</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
+              <Select
+                onValueChange={(value) => {
+                  field.onChange(value);
+                  setCurrentSelection((currentProbability || "") + value);
+                }}
+                value={field.value}
+              >
                 <FormControl>
-                  <SelectTrigger>
+                  <SelectTrigger
+                  >
                     <SelectValue placeholder="Seleccionar severidad del peligro" />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
                   {SEVERITY.map((severity, index) => (
                     <SelectItem key={index} value={severity.value}>
-                      {severity.name} ({severity.value})
+                      <span>
+                        {severity.name} ({severity.value})
+                      </span>
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -190,13 +232,23 @@ export default function CreateAnalysisForm({
           )}
         />
 
-        <RiskMatrix></RiskMatrix>
+        <RiskMatrix
+          onCellClick={handleCellClick}
+          selectedProbability={currentProbability}
+          selectedSeverity={currentSeverity}
+        />
+
         <div className="flex justify-between items-center gap-x-4">
           <Separator className="flex-1" />
           <p className="text-muted-foreground">SIGEAC</p>
           <Separator className="flex-1" />
         </div>
-        <Button>Enviar</Button>
+        <Button
+          type="submit"
+          disabled={updateAnalyses.isPending || createAnalysis.isPending}
+        >
+          {isEditing ? "Actualizar" : "Enviar"}
+        </Button>
       </form>
     </Form>
   );

@@ -15,32 +15,11 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 
-import {
-  useCreateObligatoryReport,
-  useUpdateObligatoryReport,
-  useGetNextReportNumber,
-} from "@/actions/sms/reporte_obligatorio/actions";
+import { useCreateObligatoryReport } from "@/actions/sms/reporte_obligatorio/actions";
 import { Calendar } from "@/components/ui/calendar";
 import { Checkbox } from "@/components/ui/checkbox";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { Separator } from "@/components/ui/separator";
-import { useAuth } from "@/contexts/AuthContext";
-import { useGetAircraftAcronyms } from "@/hooks/aerolinea/aeronaves/useGetAircraftAcronyms";
-import { useGetPilots } from "@/hooks/sms/useGetPilots";
-import { cn } from "@/lib/utils";
-import { useCompanyStore } from "@/stores/CompanyStore";
-import { ObligatoryReport } from "@/types";
-import { format } from "date-fns";
-import { es } from "date-fns/locale";
-import { CalendarIcon, Check, ChevronsUpDown, Loader2 } from "lucide-react";
-import Image from "next/image";
-import { useRouter } from "next/navigation";
 import {
   Command,
   CommandEmpty,
@@ -50,47 +29,41 @@ import {
   CommandList,
 } from "@/components/ui/command";
 import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Separator } from "@/components/ui/separator";
+import { useGetAircraftAcronyms } from "@/hooks/aerolinea/aeronaves/useGetAircraftAcronyms";
+import { useGetPilots } from "@/hooks/sms/useGetPilots";
+import { cn } from "@/lib/utils";
+import { useCompanyStore } from "@/stores/CompanyStore";
+import { ObligatoryReport } from "@/types";
+import { format } from "date-fns";
+import { es } from "date-fns/locale";
+import { CalendarIcon, Check, ChevronsUpDown, Loader2 } from "lucide-react";
+import Image from "next/image";
+import { useParams, useRouter } from "next/navigation";
 interface FormProps {
   isEditing?: boolean;
   initialData?: ObligatoryReport;
   onClose: () => void;
 }
-import { ScrollArea } from "@/components/ui/scroll-area";
 
-export function CreateObligatoryReportForm({
+export function CreateGeneralObligatoryReportForm({
   onClose,
   isEditing,
   initialData,
 }: FormProps) {
-  const { user } = useAuth();
-
-  const userRoles = user?.roles?.map((role) => role.name) || [];
-
-  const shouldEnableField = userRoles.some((role) =>
-    ["SUPERUSER", "ANALISTA_SMS", "JEFE_SMS"].includes(role),
-  );
-
   const FormSchema = z
     .object({
-      report_number: shouldEnableField
-        ? z
-            .string()
-            .min(1, "El número de reporte es obligatorio")
-            .refine((val) => !isNaN(Number(val)), {
-              message: "El valor debe ser un número",
-            })
-        : z
-            .string()
-            .refine((val) => val === "" || !isNaN(Number(val)), {
-              message: "El valor debe ser un número o estar vacío",
-            })
-            .optional(),
       incident_location: z
         .string()
         .min(3, {
@@ -151,22 +124,22 @@ export function CreateObligatoryReportForm({
       incidents: z.array(z.string()).optional(),
       other_incidents: z.preprocess(
         (val) => (val === null || val === undefined ? "" : val),
-        z.string().optional(),
+        z.string().optional()
       ),
       image: z
         .instanceof(File)
-        .refine((file) => file.size <= 10 * 1024 * 1024, "Max 10MB")
+        .refine((file) => file.size <= 5 * 1024 * 1024, "Max 5MB")
         .refine(
           (file) => ["image/jpeg", "image/png"].includes(file.type),
-          "Solo JPEG/PNG",
+          "Solo JPEG/PNG"
         )
         .optional(),
       document: z
         .instanceof(File)
-        .refine((file) => file.size <= 10 * 1024 * 1024, "Máximo 10MB")
+        .refine((file) => file.size <= 5 * 1024 * 1024, "Máximo 5MB")
         .refine(
           (file) => file.type === "application/pdf",
-          "Solo se permiten archivos PDF",
+          "Solo se permiten archivos PDF"
         )
         .optional(),
     })
@@ -179,17 +152,17 @@ export function CreateObligatoryReportForm({
       {
         message: "Debe proporcionar al menos un incidente o descripción",
         path: ["incidents"],
-      },
+      }
     );
 
   type FormSchemaType = z.infer<typeof FormSchema>;
 
   const { createObligatoryReport } = useCreateObligatoryReport();
-  const { updateObligatoryReport } = useUpdateObligatoryReport();
   const router = useRouter();
+  const { company } = useParams<{ company: string }>();
 
   const [showOtherInput, setShowOtherInput] = useState(
-    initialData?.other_incidents ? true : false,
+    initialData?.other_incidents ? true : false
   );
 
   const [open, setOpen] = useState(false);
@@ -205,13 +178,9 @@ export function CreateObligatoryReportForm({
     return []; // Devuelve un array vacío si initialData?.incidents es null o undefined
   });
 
-  // No estoy seguro si esto va aca lol
-  const { selectedCompany } = useCompanyStore();
-  const { data: pilots, isLoading: isLoadingPilots } = useGetPilots(
-    selectedCompany?.slug,
-  );
+  const { data: pilots, isLoading: isLoadingPilots } = useGetPilots(company);
   const { data: aircrafts, isLoading: isLoadingAircrafts } =
-    useGetAircraftAcronyms(selectedCompany?.slug);
+    useGetAircraftAcronyms(company);
 
   const OPTIONS_LIST = [
     "La aereonave aterriza quedándose solo con el combustible de reserva o menos",
@@ -234,13 +203,9 @@ export function CreateObligatoryReportForm({
     "Parametros de vuelo anormales",
   ];
 
-  const { data: nextNumberData, isPending: isLoadingNextNumber } =
-    useGetNextReportNumber(selectedCompany?.slug || null);
-
   const form = useForm<FormSchemaType>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
-      report_number: initialData?.report_number,
       description: initialData?.description,
       incident_location: initialData?.incident_location,
       aircraft_id: initialData?.aircraft?.id.toString(),
@@ -270,69 +235,33 @@ export function CreateObligatoryReportForm({
   });
 
   const onSubmit = async (data: FormSchemaType) => {
-    if (isEditing && initialData && data.report_number) {
-      const value = {
-        company: selectedCompany!.slug,
-        id: initialData.id.toString(),
-        data: {
-          image: data.image,
-          document: data.document,
-          status: initialData.status,
-          danger_identification_id: initialData.danger_identification?.id,
-          report_number: data.report_number,
-          incident_location: data.incident_location,
-          description: data.description,
-          incident_date: data.incident_date,
-          report_date: data.report_date,
-          incident_time: `${data.incident_time}:00`, // Añadimos segundos para el backend
-          flight_time: `${data.flight_time}:00`, // Añadimos segundos para el backend
-          pilot_id: data.pilot_id,
-          copilot_id: data.copilot_id,
-          aircraft_id: data.aircraft_id,
-          flight_number: data.flight_number,
-          flight_origin: data.flight_origin,
-          flight_destiny: data.flight_destiny,
-          flight_alt_destiny: data.flight_alt_destiny,
-          incidents: data.incidents,
-          other_incidents: data.other_incidents,
-        },
-      };
-      await updateObligatoryReport.mutateAsync(value);
-    } else {
-      const value = {
-        report_number: data.report_number,
-        incident_location: data.incident_location,
-        description: data.description,
-        incident_date: data.incident_date,
-        report_date: data.report_date,
-        incident_time: `${data.incident_time}:00`, // Añadimos segundos para el backend
-        flight_time: `${data.flight_time}:00`, // Añadimos segundos para el backend
-        pilot_id: data.pilot_id,
-        copilot_id: data.copilot_id,
-        aircraft_id: data.aircraft_id,
-        flight_number: data.flight_number,
-        flight_origin: data.flight_origin,
-        flight_destiny: data.flight_destiny,
-        flight_alt_destiny: data.flight_alt_destiny,
-        incidents: data.incidents,
-        other_incidents: data.other_incidents,
-        image: data.image,
-        document: data.document,
-        status: shouldEnableField ? "ABIERTO" : "PROCESO",
-      };
+    const value = {
+      incident_location: data.incident_location,
+      description: data.description,
+      incident_date: data.incident_date,
+      report_date: data.report_date,
+      incident_time: `${data.incident_time}:00`, // Añadimos segundos para el backend
+      flight_time: `${data.flight_time}:00`, // Añadimos segundos para el backend
+      pilot_id: data.pilot_id,
+      copilot_id: data.copilot_id,
+      aircraft_id: data.aircraft_id,
+      flight_number: data.flight_number,
+      flight_origin: data.flight_origin,
+      flight_destiny: data.flight_destiny,
+      flight_alt_destiny: data.flight_alt_destiny,
+      incidents: data.incidents,
+      other_incidents: data.other_incidents,
+      image: data.image,
+      document: data.document,
+      status: "PROCESO",
+    };
 
-      try {
-        const response = await createObligatoryReport.mutateAsync(value);
-        if (shouldEnableField) {
-          router.push(
-            `/${selectedCompany?.slug}/sms/reportes/reportes_obligatorios/${response.obligatory_report_id}`,
-          );
-        } else {
-          router.push(`/${selectedCompany?.slug}/dashboard`);
-        }
-      } catch (error) {
-        console.error("Error al crear reporte:", error);
-      }
+    try {
+      createObligatoryReport.mutateAsync(value);
+      //router.push(`/${company}/dashboard`);
+      router.push(`https://sigeac-one.vercel.app/login`);
+    } catch (error) {
+      console.error("Error al crear reporte:", error);
     }
     onClose();
   };
@@ -345,67 +274,22 @@ export function CreateObligatoryReportForm({
   };
 
   const handleOtherInputChange = (
-    event: React.ChangeEvent<HTMLInputElement>,
+    event: React.ChangeEvent<HTMLInputElement>
   ) => {
     form.setValue("other_incidents", event.target.value);
   };
-
-  useEffect(() => {
-    if (initialData && isEditing) {
-      if (initialData.report_number) {
-        form.setValue("report_number", initialData.report_number);
-      }
-    } else if (!isEditing && nextNumberData?.next_number) {
-      form.setValue("report_number", String(nextNumberData.next_number));
-    }
-  }, [initialData, isEditing, nextNumberData, form]);
 
   return (
     <Form {...form}>
       <form
         onSubmit={form.handleSubmit(onSubmit)}
-        className={cn(
-          "flex w-full flex-col space-y-3",
-          isEditing && "max-h-[calc(100vh-10rem)]  overflow-auto",
-        )}
+        className="flex flex-col space-y-3 w-full"
       >
-        <FormLabel className="text-lg text-center m-2">
+        <FormLabel className="text-lg text-center m-2 font-bold">
           Reporte Obligatorio de suceso
         </FormLabel>
 
-        <div className="flex gap-2 items-center justify-evenly">
-          {shouldEnableField && (
-            <FormField
-              control={form.control}
-              name="report_number"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Codigo del Reporte</FormLabel>
-                  <FormControl>
-                    <div className="relative flex items-center text-muted-foreground cursor-not-allowed select-none">
-                      <span className="absolute left-2 select-none pointer-events-none">
-                        ROS-
-                      </span>
-                      <Input
-                        {...field}
-                        placeholder={isLoadingNextNumber ? "Cargando..." : ""}
-                        readOnly={true}
-                        tabIndex={-1}
-                        className="bg-muted pl-12 font-bold pointer-events-none select-none"
-                      />
-                      {isLoadingNextNumber && (
-                        <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                          <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-                        </div>
-                      )}
-                    </div>
-                  </FormControl>
-                  <FormMessage className="text-xs" />
-                </FormItem>
-              )}
-            />
-          )}
-
+        <div className="grid grid-cols-2 gap-4 ">
           <FormField
             control={form.control}
             name="incident_location"
@@ -419,22 +303,22 @@ export function CreateObligatoryReportForm({
               </FormItem>
             )}
           />
-        </div>
-        <FormField
-          control={form.control}
-          name="description"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Descripcion del Suceso</FormLabel>
-              <FormControl>
-                <Input placeholder="" {...field} />
-              </FormControl>
-              <FormMessage className="text-xs" />
-            </FormItem>
-          )}
-        />
 
-        <div className="flex gap-2 items-center justify-center">
+          <FormField
+            control={form.control}
+            name="description"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Descripcion del Suceso</FormLabel>
+                <FormControl>
+                  <Input placeholder="" {...field} />
+                </FormControl>
+                <FormMessage className="text-xs" />
+              </FormItem>
+            )}
+          />
+        </div>
+        <div className="flex flex-col sm:flex-row gap-2 items-center justify-center">
           <FormField
             control={form.control}
             name="incident_date"
@@ -448,7 +332,7 @@ export function CreateObligatoryReportForm({
                         variant={"outline"}
                         className={cn(
                           "w-full pl-3 text-left font-normal",
-                          !field.value && "text-muted-foreground",
+                          !field.value && "text-muted-foreground"
                         )}
                       >
                         {field.value ? (
@@ -467,7 +351,6 @@ export function CreateObligatoryReportForm({
                       mode="single"
                       selected={field.value}
                       onSelect={field.onChange}
-                      disabled={(date) => date > new Date()} // Solo deshabilitar fechas futuras
                       initialFocus
                       fromYear={1980} // Año mínimo que se mostrará
                       toYear={new Date().getFullYear()} // Año máximo (actual)
@@ -502,7 +385,7 @@ export function CreateObligatoryReportForm({
                         variant={"outline"}
                         className={cn(
                           "w-full pl-3 text-left font-normal",
-                          !field.value && "text-muted-foreground",
+                          !field.value && "text-muted-foreground"
                         )}
                       >
                         {field.value ? (
@@ -521,7 +404,7 @@ export function CreateObligatoryReportForm({
                       mode="single"
                       selected={field.value}
                       onSelect={field.onChange}
-                      disabled={(date) => date > new Date()} // Solo deshabilitar fechas futuras
+
                       initialFocus
                       fromYear={1980} // Año mínimo que se mostrará
                       toYear={new Date().getFullYear()} // Año máximo (actual)
@@ -545,13 +428,13 @@ export function CreateObligatoryReportForm({
           />
         </div>
 
-        <div className="flex gap-2 justify-center items-center">
+        <div className="flex flex-col sm:flex-row gap-2 justify-center items-center">
           <FormField
             control={form.control}
             name="pilot_id"
             render={({ field }) => (
               <FormItem className="w-full">
-                <FormLabel>Piloto (Capitan)</FormLabel>
+                <FormLabel>Piloto</FormLabel>
                 {isLoadingPilots ? (
                   <div className="flex items-center gap-2 p-2 border rounded-md bg-muted">
                     <Loader2 className="h-4 w-4 animate-spin " />
@@ -587,7 +470,7 @@ export function CreateObligatoryReportForm({
             name="copilot_id"
             render={({ field }) => (
               <FormItem className="w-full">
-                <FormLabel>Piloto (Primer Oficial)</FormLabel>
+                <FormLabel>Piloto</FormLabel>
                 {isLoadingPilots ? (
                   <div className="flex items-center gap-2 p-2 border rounded-md bg-muted">
                     <Loader2 className="h-4 w-4 animate-spin" />{" "}
@@ -617,8 +500,49 @@ export function CreateObligatoryReportForm({
               </FormItem>
             )}
           />
+
+          <FormField
+            control={form.control}
+            name="aircraft_id"
+            render={({ field }) => (
+              <FormItem className="w-full">
+                <FormLabel>Aeronave</FormLabel>
+                {isLoadingAircrafts ? (
+                  <div className="flex items-center gap-2 p-2 border rounded-md bg-muted">
+                    <Loader2 className="h-4 w-4 animate-spin" />{" "}
+                    <span className="text-sm">Cargando Aeronaves...</span>
+                  </div>
+                ) : (
+                  <Select
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                    disabled={isLoadingAircrafts} // Deshabilitar durante carga
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Seleccionar Matricula de la Aeronave" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {aircrafts?.map((aircraft) => (
+                        <SelectItem
+                          key={aircraft.id}
+                          value={aircraft.id.toString()}
+                        >
+                          <p className="font-bold">
+                            Matricula : {aircraft.acronym}{" "}
+                          </p>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+                <FormMessage />
+              </FormItem>
+            )}
+          />
         </div>
-        <div className="flex gap-4 justify-center items-center">
+        <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
           <FormField
             control={form.control}
             name="flight_time"
@@ -668,49 +592,7 @@ export function CreateObligatoryReportForm({
               </FormItem>
             )}
           />
-        </div>
-        <FormField
-          control={form.control}
-          name="aircraft_id"
-          render={({ field }) => (
-            <FormItem className="w-full">
-              <FormLabel>Aeronave</FormLabel>
-              {isLoadingAircrafts ? (
-                <div className="flex items-center gap-2 p-2 border rounded-md bg-muted">
-                  <Loader2 className="h-4 w-4 animate-spin" />{" "}
-                  <span className="text-sm">Cargando Aeronaves...</span>
-                </div>
-              ) : (
-                <Select
-                  onValueChange={field.onChange}
-                  defaultValue={field.value}
-                  disabled={isLoadingAircrafts} // Deshabilitar durante carga
-                >
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Seleccionar Matricula de la Aeronave" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {aircrafts?.map((aircraft) => (
-                      <SelectItem
-                        key={aircraft.id}
-                        value={aircraft.id.toString()}
-                      >
-                        <p className="font-bold">
-                          Matricula : {aircraft.acronym}{" "}
-                        </p>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
-              <FormMessage />
-            </FormItem>
-          )}
-        />
 
-        <div className="flex gap-2 justify-center items-center">
           <FormField
             control={form.control}
             name="flight_number"
@@ -728,6 +610,9 @@ export function CreateObligatoryReportForm({
               </FormItem>
             )}
           />
+        </div>
+
+        <div className="grid grid-cols-1  sm:grid-cols-3 gap-4 justify-center items-center">
           <FormField
             control={form.control}
             name="flight_origin"
@@ -741,9 +626,7 @@ export function CreateObligatoryReportForm({
               </FormItem>
             )}
           />
-        </div>
 
-        <div className="flex gap-2 justify-center items-center">
           <FormField
             control={form.control}
             name="flight_destiny"
@@ -813,13 +696,13 @@ export function CreateObligatoryReportForm({
                                     selectedValues.includes(currentValue);
                                   const newValues = isSelected
                                     ? selectedValues.filter(
-                                        (v) => v !== currentValue,
+                                        (v) => v !== currentValue
                                       )
                                     : [...selectedValues, currentValue];
 
                                   setSelectedValues(newValues);
                                   field.onChange(
-                                    newValues.length > 0 ? newValues : [],
+                                    newValues.length > 0 ? newValues : []
                                   ); // Actualizar el valor del campo de formulario
                                 }}
                               >
@@ -830,7 +713,7 @@ export function CreateObligatoryReportForm({
                                       "ml-auto",
                                       selectedValues.includes(option)
                                         ? "opacity-100"
-                                        : "opacity-0",
+                                        : "opacity-0"
                                     )}
                                   />
                                 )}
@@ -888,33 +771,44 @@ export function CreateObligatoryReportForm({
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Imagen General</FormLabel>
-                <div className="flex flex-col gap-4">
-                  {/* Vista previa de imagen — solo si hay una fuente válida */}
-                  {(field.value instanceof File || initialData?.imageUrl) && (
-                    <div className="relative w-24 h-24 border rounded-md overflow-hidden">
+
+                <div className="flex items-center gap-4">
+                  {field.value ? (
+                    <div className="relative h-16 w-16">
                       <Image
-                        src={
-                          field.value instanceof File
-                            ? URL.createObjectURL(field.value)
-                            : initialData?.imageUrl || ""
-                        }
+                        src={URL.createObjectURL(field.value)}
                         alt="Preview"
-                        fill
-                        className="object-contain"
+                        width={64}
+                        height={64}
+                        className="rounded-md object-contain"
                       />
                     </div>
-                  )}
+                  ) : initialData?.image &&
+                    typeof initialData.image === "string" ? (
+                    <div className="relative h-16 w-16">
+                      <Image
+                        src={
+                          initialData.image.startsWith("data:image")
+                            ? initialData.image
+                            : `data:image/jpeg;base64,${initialData.image}`
+                        }
+                        alt="Preview"
+                        width={64}
+                        height={64}
+                        className="rounded-md object-contain"
+                      />
+                    </div>
+                  ) : null}
+
                   <FormControl>
                     <Input
                       type="file"
-                      accept="image/jpeg, image/png, image/jpg"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) field.onChange(file);
-                      }}
+                      accept="image/jpeg, image/png"
+                      onChange={(e) => field.onChange(e.target.files?.[0])}
                     />
                   </FormControl>
                 </div>
+
                 <FormMessage />
               </FormItem>
             )}

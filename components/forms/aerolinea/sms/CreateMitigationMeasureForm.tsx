@@ -35,9 +35,10 @@ import {
 } from "@/actions/sms/medida_de_mitigacion/actions";
 import { MitigationMeasure } from "@/types";
 import { useCompanyStore } from "@/stores/CompanyStore";
+import { Textarea } from "@/components/ui/textarea";
 
 const FormSchema = z.object({
-  description: z.string().min(5),
+  description: z.string().min(3),
 
   implementation_supervisor: z
     .string()
@@ -135,7 +136,7 @@ export default function CreateMitigationMeasureForm({
             <FormItem>
               <FormLabel>Descripcion de la medida</FormLabel>
               <FormControl>
-                <Input placeholder="Descripcion de la medida" {...field} />
+                <Textarea placeholder="Descripcion de la medida" {...field} />
               </FormControl>
               <FormMessage className="text-xs" />
             </FormItem>
@@ -210,9 +211,8 @@ export default function CreateMitigationMeasureForm({
                       mode="single"
                       selected={field.value}
                       onSelect={field.onChange}
-                      disabled={(date) => date > new Date()} // Solo deshabilitar fechas futuras
                       initialFocus
-                      fromYear={1980} // Año mínimo que se mostrará
+                      fromYear={2000} // Año mínimo que se mostrará
                       toYear={new Date().getFullYear()} // Año máximo (actual)
                       captionLayout="dropdown-buttons" // Selectores de año/mes
                       components={{
@@ -265,9 +265,8 @@ export default function CreateMitigationMeasureForm({
                       mode="single"
                       selected={field.value || undefined} // Convert null to undefined
                       onSelect={field.onChange}
-                      disabled={(date) => date > new Date()}
                       initialFocus
-                      fromYear={1980}
+                      fromYear={2000}
                       toYear={new Date().getFullYear()}
                       captionLayout="dropdown-buttons"
                       components={{
@@ -293,7 +292,14 @@ export default function CreateMitigationMeasureForm({
           <p className="text-muted-foreground">SIGEAC</p>
           <Separator className="flex-1" />
         </div>
-        <Button>Enviar</Button>
+        <Button
+          type="submit"
+          disabled={
+            createMitigationMeasure.isPending || updateMitigationMeasure.isPending
+          }
+        >
+          {isEditing ? "Actualizar" : "Crear"}
+        </Button>
       </form>
     </Form>
   );

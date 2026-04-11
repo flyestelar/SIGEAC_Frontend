@@ -205,9 +205,8 @@ export default function CreateMitigationPlanForm({
                     mode="single"
                     selected={field.value}
                     onSelect={field.onChange}
-                    disabled={(date) => date > new Date()} // Solo deshabilitar fechas futuras
                     initialFocus
-                    fromYear={1980} // Año mínimo que se mostrará
+                    fromYear={2000} // Año mínimo que se mostrará
                     toYear={new Date().getFullYear()} // Año máximo (actual)
                     captionLayout="dropdown-buttons" // Selectores de año/mes
                     components={{
@@ -233,7 +232,14 @@ export default function CreateMitigationPlanForm({
           <p className="text-muted-foreground">SIGEAC</p>
           <Separator className="flex-1" />
         </div>
-        <Button>Enviar</Button>
+        <Button
+          type="submit"
+          disabled={
+            createMitigationPlan.isPending || updateMitigationPlan.isPending
+          }
+        >
+          {isEditing ? "Actualizar" : "Crear"}
+        </Button>
       </form>
     </Form>
   );

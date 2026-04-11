@@ -60,7 +60,7 @@ export const columns: ColumnDef<FollowUpControl>[] = [
       return (
         <div className="flex justify-center items-center">
           {row.original?.image && typeof row.original?.image === 'string' ? (
-            <ImageDisplayDialog base64Image={row.original.image} />
+            <ImageDisplayDialog fileName={row.original.image as string} />
           ) : (
             <Button variant="outline" size="sm" className=" hidden h-8 lg:flex" disabled={true}>
               Sin imagen
