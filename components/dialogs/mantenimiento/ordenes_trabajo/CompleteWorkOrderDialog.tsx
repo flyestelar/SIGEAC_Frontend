@@ -22,11 +22,11 @@ import {
 } from '@/components/ui/dialog';
 import { Field, FieldLabel } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
-import { workOrderCloseMutation, workOrdersShowQueryKey } from '@api/queries';
+import { workOrderBulkCompleteItemTasksMutation, workOrderCloseMutation, workOrdersShowQueryKey } from '@api/queries';
 import { WorkOrderItemTaskResource, WorkOrderResource } from '@api/types';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { AlertCircle, Loader2 } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import { AlertCircle, FileUp, Loader2, Trash2 } from 'lucide-react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
 type CompleteWorkOrderDialogProps = {
@@ -60,6 +60,41 @@ export function CompleteWorkOrderDialog({ open, workOrder, orderNumber, onOpenCh
     review_by: '',
     inspection_date: todayDate(),
   });
+  const [csmFile, setCsmFile] = useState<File | null>(null);
+  const csmInputRef = useRef<HTMLInputElement>(null);
+
+  const csmPreviewUrl = useMemo(() => {
+    if (!csmFile) return null;
+    return URL.createObjectURL(csmFile);
+  }, [csmFile]);
+
+  useEffect(() => {
+    return () => {
+      if (csmPreviewUrl) URL.revokeObjectURL(csmPreviewUrl);
+    };
+  }, [csmPreviewUrl]);
+
+  const handleCsmChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.type !== 'application/pdf') {
+      toast.error('Solo se permiten archivos PDF.');
+      return;
+    }
+
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error('El archivo no debe superar los 10 MB.');
+      return;
+    }
+
+    setCsmFile(file);
+  }, []);
+
+  const removeCsmFile = useCallback(() => {
+    setCsmFile(null);
+    if (csmInputRef.current) csmInputRef.current.value = '';
+  }, []);
 
   const pendingTasks = useMemo<PendingTaskWithContext[]>(() => {
     const items = workOrder?.items ?? [];
@@ -125,6 +160,8 @@ export function CompleteWorkOrderDialog({ open, workOrder, orderNumber, onOpenCh
       review_by: '',
       inspection_date: todayDate(),
     });
+    setCsmFile(null);
+    if (csmInputRef.current) csmInputRef.current.value = '';
     setConfirmOpen(false);
   }, [open, pendingTasks]);
 
@@ -148,6 +185,18 @@ export function CompleteWorkOrderDialog({ open, workOrder, orderNumber, onOpenCh
     },
   });
 
+  const bulkCompleteMutation = useMutation({
+    ...workOrderBulkCompleteItemTasksMutation(),
+    async onSuccess(_data, _variables, _onMutateResult, context) {
+      await context.client.invalidateQueries({ queryKey: workOrdersShowQueryKey({ path: { orderNumber } }) });
+      toast.success('Tareas completadas correctamente.');
+    },
+    onError(error) {
+      const message = error.response?.data.message;
+      toast.error(message || 'No se pudieron completar las tareas.');
+    },
+  });
+
   const handleConfirmComplete = async () => {
     await closeWorkOrderMutation.mutateAsync({
       path: {
@@ -157,6 +206,7 @@ export function CompleteWorkOrderDialog({ open, workOrder, orderNumber, onOpenCh
   };
 
   const isSubmitting = closeWorkOrderMutation.isPending;
+  const isBulkApplying = bulkCompleteMutation.isPending;
 
   const toggleTaskSelection = (taskId: number, checked: boolean) => {
     setSelectedTaskIds((prev) => {
@@ -177,7 +227,7 @@ export function CompleteWorkOrderDialog({ open, workOrder, orderNumber, onOpenCh
     });
   };
 
-  const applyBulkToSelected = () => {
+  const applyBulkToSelected = async () => {
     if (selectedTaskIds.length === 0) {
       toast.error('Seleccione al menos una task card para aplicar el llenado.');
       return;
@@ -188,15 +238,13 @@ export function CompleteWorkOrderDialog({ open, workOrder, orderNumber, onOpenCh
       return;
     }
 
-    setTaskValues((prev) => {
-      const next = { ...prev };
-      selectedTaskIds.forEach((taskId) => {
-        next[taskId] = {
-          review_by: bulkValues.review_by,
-          inspection_date: bulkValues.inspection_date,
-        };
-      });
-      return next;
+    await bulkCompleteMutation.mutateAsync({
+      path: { order_number: orderNumber },
+      body: {
+        review_by: bulkValues.review_by,
+        inspection_date: bulkValues.inspection_date,
+        items: selectedTaskIds,
+      },
     });
 
     setSelectedTaskIds([]);
@@ -219,15 +267,67 @@ export function CompleteWorkOrderDialog({ open, workOrder, orderNumber, onOpenCh
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="max-w-5xl h-[95vh] flex-col no-scrollbar">
+        <DialogContent className="max-w-5xl max-h-[95vh] flex-col no-scrollbar">
           <DialogHeader>
             <DialogTitle>Completar orden de trabajo</DialogTitle>
             <DialogDescription>
               {pendingTasks.length > 0
                 ? 'Debe completar las task cards pendientes antes de cerrar la orden.'
-                : 'No hay task cards pendientes. Puede completar la orden de trabajo.'}
+                : 'Todas las task cards han sido completadas. Adjunte el documento CSM para cerrar la orden.'}
             </DialogDescription>
           </DialogHeader>
+
+          {pendingTasks.length === 0 && (
+            <div className="space-y-4">
+              <div className="flex items-start gap-2 rounded-md border border-emerald-500/30 bg-emerald-500/10 px-3 py-2.5 text-xs text-emerald-700 dark:text-emerald-300">
+                <AlertCircle className="mt-0.5 size-4 shrink-0" />
+                <p>No hay task cards pendientes. La orden está lista para ser completada.</p>
+              </div>
+
+              <div className="space-y-3 rounded-md border p-3">
+                <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+                  Documento CSM
+                </p>
+
+                {!csmFile ? (
+                  <label className="flex cursor-pointer flex-col items-center gap-2 rounded-md border border-dashed border-muted-foreground/30 p-6 transition-colors hover:border-muted-foreground/50 hover:bg-muted/30">
+                    <FileUp className="size-8 text-muted-foreground/60" />
+                    <span className="text-sm font-medium text-muted-foreground">
+                      Haga clic para seleccionar el archivo PDF
+                    </span>
+                    <span className="text-xs text-muted-foreground/60">PDF, máximo 10 MB</span>
+                    <input
+                      ref={csmInputRef}
+                      type="file"
+                      accept="application/pdf"
+                      className="hidden"
+                      onChange={handleCsmChange}
+                    />
+                  </label>
+                ) : (
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between gap-2 rounded-md border bg-muted/20 px-3 py-2">
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-medium">{csmFile.name}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {(csmFile.size / (1024 * 1024)).toFixed(2)} MB
+                        </p>
+                      </div>
+                      <Button type="button" variant="ghost" size="sm" className="shrink-0" onClick={removeCsmFile}>
+                        <Trash2 className="size-4" />
+                      </Button>
+                    </div>
+
+                    {csmPreviewUrl && (
+                      <div className="overflow-hidden rounded-md border">
+                        <iframe src={csmPreviewUrl} className="h-[400px] w-full" title="Vista previa del CSM" />
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
 
           {pendingTasks.length > 0 && (
             <div className="space-y-4 overflow-auto min-h-0 flex flex-col">
@@ -282,8 +382,15 @@ export function CompleteWorkOrderDialog({ open, workOrder, orderNumber, onOpenCh
                   >
                     Limpiar selección
                   </Button>
-                  <Button type="button" variant="outline" size="sm" onClick={applyBulkToSelected}>
-                    Aplicar a seleccionadas ({selectedTaskIds.length})
+                  <Button type="button" variant="outline" size="sm" onClick={applyBulkToSelected} disabled={isBulkApplying}>
+                    {isBulkApplying ? (
+                      <>
+                        <Loader2 className="mr-1.5 size-3.5 animate-spin" />
+                        Aplicando...
+                      </>
+                    ) : (
+                      `Aplicar a seleccionadas (${selectedTaskIds.length})`
+                    )}
                   </Button>
                 </div>
               </div>
