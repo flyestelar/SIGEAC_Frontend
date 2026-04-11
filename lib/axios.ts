@@ -20,9 +20,9 @@ client.setConfig({
 });
 
 function requestInterceptor(config: InternalAxiosRequestConfig) {
-  const token = Cookies.get('auth_token');
+  const token = Cookies.get('auth_token')?.replace('Bearer ', '');
   if (token) {
-    config.headers.Authorization = `${token}`;
+    config.headers.Authorization = `Bearer ${token}`;
   }
 
   const { selectedCompany } = useCompanyStore.getState();
