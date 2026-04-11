@@ -1,16 +1,5 @@
 'use client';
 
-import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import { Field, FieldLabel } from '@/components/ui/field';
-import { Input } from '@/components/ui/input';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -21,6 +10,18 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Field, FieldLabel } from '@/components/ui/field';
+import { Input } from '@/components/ui/input';
 import { workOrderCloseMutation, workOrdersShowQueryKey } from '@api/queries';
 import { WorkOrderItemTaskResource, WorkOrderResource } from '@api/types';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
@@ -36,6 +37,7 @@ type CompleteWorkOrderDialogProps = {
 };
 
 type PendingTaskWithContext = WorkOrderItemTaskResource & {
+  controlId: number;
   controlTitle: string;
 };
 
@@ -46,10 +48,18 @@ type PendingTaskFormValues = {
 
 const todayDate = () => new Date().toISOString().slice(0, 10);
 
+const hasCompleteValues = (values?: PendingTaskFormValues) =>
+  Boolean(values?.review_by?.trim() && values?.inspection_date);
+
 export function CompleteWorkOrderDialog({ open, workOrder, orderNumber, onOpenChange }: CompleteWorkOrderDialogProps) {
   const queryClient = useQueryClient();
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [taskValues, setTaskValues] = useState<Record<number, PendingTaskFormValues>>({});
+  const [selectedTaskIds, setSelectedTaskIds] = useState<number[]>([]);
+  const [bulkValues, setBulkValues] = useState<PendingTaskFormValues>({
+    review_by: '',
+    inspection_date: todayDate(),
+  });
 
   const pendingTasks = useMemo<PendingTaskWithContext[]>(() => {
     const items = workOrder?.items ?? [];
@@ -59,10 +69,44 @@ export function CompleteWorkOrderDialog({ open, workOrder, orderNumber, onOpenCh
         .filter((task) => !task.review_by)
         .map((task) => ({
           ...task,
+          controlId: item.maintenance_control_id,
           controlTitle,
         }));
     });
   }, [workOrder]);
+
+  const groupTasksByControl = (tasks: PendingTaskWithContext[]) => {
+    const groups = new Map<number, { controlId: number; controlTitle: string; tasks: PendingTaskWithContext[] }>();
+
+    tasks.forEach((task) => {
+      const current = groups.get(task.controlId);
+      if (!current) {
+        groups.set(task.controlId, {
+          controlId: task.controlId,
+          controlTitle: task.controlTitle,
+          tasks: [task],
+        });
+        return;
+      }
+
+      current.tasks.push(task);
+    });
+
+    return Array.from(groups.values());
+  };
+
+  const unfilledPendingTasks = useMemo(
+    () => pendingTasks.filter((task) => !hasCompleteValues(taskValues[task.id])),
+    [pendingTasks, taskValues],
+  );
+
+  const filledPendingTasks = useMemo(
+    () => pendingTasks.filter((task) => hasCompleteValues(taskValues[task.id])),
+    [pendingTasks, taskValues],
+  );
+
+  const groupedUnfilledTasks = useMemo(() => groupTasksByControl(unfilledPendingTasks), [unfilledPendingTasks]);
+  const groupedFilledTasks = useMemo(() => groupTasksByControl(filledPendingTasks), [filledPendingTasks]);
 
   useEffect(() => {
     if (!open) return;
@@ -76,8 +120,18 @@ export function CompleteWorkOrderDialog({ open, workOrder, orderNumber, onOpenCh
     });
 
     setTaskValues(nextValues);
+    setSelectedTaskIds([]);
+    setBulkValues({
+      review_by: '',
+      inspection_date: todayDate(),
+    });
     setConfirmOpen(false);
   }, [open, pendingTasks]);
+
+  useEffect(() => {
+    const unfilledIds = new Set(unfilledPendingTasks.map((task) => task.id));
+    setSelectedTaskIds((prev) => prev.filter((taskId) => unfilledIds.has(taskId)));
+  }, [unfilledPendingTasks]);
 
   const closeWorkOrderMutation = useMutation({
     ...workOrderCloseMutation(),
@@ -85,15 +139,48 @@ export function CompleteWorkOrderDialog({ open, workOrder, orderNumber, onOpenCh
 
   const isSubmitting = closeWorkOrderMutation.isPending;
 
-  const updateTaskField = (taskId: number, field: keyof PendingTaskFormValues, value: string) => {
-    setTaskValues((prev) => ({
-      ...prev,
-      [taskId]: {
-        review_by: prev[taskId]?.review_by ?? '',
-        inspection_date: prev[taskId]?.inspection_date ?? todayDate(),
-        [field]: value,
-      },
-    }));
+  const toggleTaskSelection = (taskId: number, checked: boolean) => {
+    setSelectedTaskIds((prev) => {
+      if (checked) return prev.includes(taskId) ? prev : [...prev, taskId];
+      return prev.filter((id) => id !== taskId);
+    });
+  };
+
+  const toggleControlSelection = (taskIds: number[], checked: boolean) => {
+    setSelectedTaskIds((prev) => {
+      const next = new Set(prev);
+      if (checked) {
+        taskIds.forEach((id) => next.add(id));
+      } else {
+        taskIds.forEach((id) => next.delete(id));
+      }
+      return Array.from(next);
+    });
+  };
+
+  const applyBulkToSelected = () => {
+    if (selectedTaskIds.length === 0) {
+      toast.error('Seleccione al menos una task card para aplicar el llenado.');
+      return;
+    }
+
+    if (!bulkValues.review_by.trim() || !bulkValues.inspection_date) {
+      toast.error('Indique revisado por y fecha para aplicar en lote.');
+      return;
+    }
+
+    setTaskValues((prev) => {
+      const next = { ...prev };
+      selectedTaskIds.forEach((taskId) => {
+        next[taskId] = {
+          review_by: bulkValues.review_by,
+          inspection_date: bulkValues.inspection_date,
+        };
+      });
+      return next;
+    });
+
+    setSelectedTaskIds([]);
   };
 
   const hasInvalidPendingTask = pendingTasks.some((task) => {
@@ -131,7 +218,7 @@ export function CompleteWorkOrderDialog({ open, workOrder, orderNumber, onOpenCh
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-5xl h-[95vh] flex-col no-scrollbar">
           <DialogHeader>
             <DialogTitle>Completar orden de trabajo</DialogTitle>
             <DialogDescription>
@@ -142,7 +229,7 @@ export function CompleteWorkOrderDialog({ open, workOrder, orderNumber, onOpenCh
           </DialogHeader>
 
           {pendingTasks.length > 0 && (
-            <div className="space-y-4">
+            <div className="space-y-4 overflow-auto min-h-0 flex flex-col">
               <div className="flex items-start gap-2 rounded-md border border-amber-500/30 bg-amber-500/10 px-3 py-2.5 text-xs text-amber-700 dark:text-amber-300">
                 <AlertCircle className="mt-0.5 size-4 shrink-0" />
                 <p>
@@ -151,46 +238,144 @@ export function CompleteWorkOrderDialog({ open, workOrder, orderNumber, onOpenCh
                 </p>
               </div>
 
-              <div className="max-h-[360px] space-y-3 overflow-y-auto pr-1">
-                {pendingTasks.map((task, idx) => {
-                  const values = taskValues[task.id] ?? {
-                    review_by: '',
-                    inspection_date: todayDate(),
-                  };
+              <div className="space-y-3 rounded-md border bg-muted/20 p-3">
+                <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+                  Llenado masivo
+                </p>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <Field>
+                    <FieldLabel>Revisado por</FieldLabel>
+                    <Input
+                      value={bulkValues.review_by}
+                      onChange={(e) => setBulkValues((prev) => ({ ...prev, review_by: e.target.value }))}
+                      placeholder="Nombre del revisor"
+                    />
+                  </Field>
 
-                  return (
-                    <div key={task.id} className="space-y-3 rounded-md border bg-muted/20 p-3">
-                      <div>
-                        <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
-                          {task.controlTitle}
-                        </p>
-                        <p className="text-sm font-medium">
-                          {idx + 1}. {task.task?.description ?? `Task #${task.task_id}`}
-                        </p>
-                      </div>
+                  <Field>
+                    <FieldLabel>Fecha</FieldLabel>
+                    <Input
+                      type="date"
+                      value={bulkValues.inspection_date}
+                      onChange={(e) => setBulkValues((prev) => ({ ...prev, inspection_date: e.target.value }))}
+                    />
+                  </Field>
+                </div>
 
-                      <div className="grid gap-3 sm:grid-cols-2">
-                        <Field>
-                          <FieldLabel>Review by</FieldLabel>
-                          <Input
-                            value={values.review_by}
-                            onChange={(e) => updateTaskField(task.id, 'review_by', e.target.value)}
-                            placeholder="Nombre del revisor"
-                          />
-                        </Field>
+                <div className="flex flex-wrap items-center gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setSelectedTaskIds(unfilledPendingTasks.map((task) => task.id))}
+                    disabled={unfilledPendingTasks.length === 0}
+                  >
+                    Seleccionar todas
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setSelectedTaskIds([])}
+                    disabled={selectedTaskIds.length === 0}
+                  >
+                    Limpiar selección
+                  </Button>
+                  <Button type="button" variant="outline" size="sm" onClick={applyBulkToSelected}>
+                    Aplicar a seleccionadas ({selectedTaskIds.length})
+                  </Button>
+                </div>
+              </div>
 
-                        <Field>
-                          <FieldLabel>Fecha</FieldLabel>
-                          <Input
-                            type="date"
-                            value={values.inspection_date}
-                            onChange={(e) => updateTaskField(task.id, 'inspection_date', e.target.value)}
-                          />
-                        </Field>
-                      </div>
-                    </div>
-                  );
-                })}
+              <div className="grid gap-4 lg:grid-cols-2">
+                <section className="space-y-3 rounded-md border p-3">
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+                      No rellenadas ({unfilledPendingTasks.length})
+                    </p>
+                  </div>
+
+                  <div className="max-h-[360px] space-y-3 overflow-y-auto pr-1">
+                    {groupedUnfilledTasks.length === 0 ? (
+                      <p className="text-xs text-muted-foreground">No hay task cards pendientes sin rellenar.</p>
+                    ) : (
+                      groupedUnfilledTasks.map((group) => {
+                        const controlTaskIds = group.tasks.map((task) => task.id);
+                        const allControlSelected =
+                          controlTaskIds.length > 0 && controlTaskIds.every((taskId) => selectedTaskIds.includes(taskId));
+
+                        return (
+                          <div key={`left-${group.controlId}`} className="space-y-3 rounded-md border bg-muted/20 p-3">
+                            <div className="flex items-center justify-between gap-2">
+                              <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+                                {group.controlTitle}
+                              </p>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                className="h-7 text-xs"
+                                onClick={() => toggleControlSelection(controlTaskIds, !allControlSelected)}
+                              >
+                                {allControlSelected ? 'Quitar control' : 'Seleccionar control'}
+                              </Button>
+                            </div>
+
+                            {group.tasks.map((task, idx) => (
+                              <div key={task.id} className="rounded-md border bg-background p-3">
+                                <div className="flex items-center gap-2">
+                                  <Checkbox
+                                    checked={selectedTaskIds.includes(task.id)}
+                                    onCheckedChange={(checked) => toggleTaskSelection(task.id, !!checked)}
+                                    aria-label={`Seleccionar task ${task.id}`}
+                                  />
+                                  <span className="text-sm font-medium">
+                                    {idx + 1}. {task.task?.description ?? `Task #${task.task_id}`}
+                                  </span>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        );
+                      })
+                    )}
+                  </div>
+                </section>
+
+                <section className="space-y-3 rounded-md border p-3">
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+                      Rellenadas ({filledPendingTasks.length})
+                    </p>
+                  </div>
+
+                  <div className="max-h-[360px] space-y-3 overflow-y-auto pr-1">
+                    {groupedFilledTasks.length === 0 ? (
+                      <p className="text-xs text-muted-foreground">Aun no hay task cards rellenadas.</p>
+                    ) : (
+                      groupedFilledTasks.map((group) => (
+                        <div key={`right-${group.controlId}`} className="space-y-3 rounded-md border bg-muted/20 p-3">
+                          <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+                            {group.controlTitle}
+                          </p>
+
+                          {group.tasks.map((task, idx) => {
+                            const values = taskValues[task.id];
+                            return (
+                              <div key={task.id} className="space-y-1 rounded-md border bg-background p-3">
+                                <p className="text-sm font-medium">
+                                  {idx + 1}. {task.task?.description ?? `Task #${task.task_id}`}
+                                </p>
+                                <p className="text-xs text-muted-foreground">Revisado por: {values?.review_by ?? '—'}</p>
+                                <p className="text-xs text-muted-foreground">Fecha: {values?.inspection_date ?? '—'}</p>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </section>
               </div>
             </div>
           )}
