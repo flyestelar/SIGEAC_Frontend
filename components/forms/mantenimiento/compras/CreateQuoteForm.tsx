@@ -332,12 +332,9 @@ export function CreateQuoteForm({
                         <FormItem className="space-y-1.5">
                           <p className={cn(fieldLabel, 'lg:hidden')}>Nro. Parte</p>
                           <FormControl>
-                            <Input
-                              disabled
-                              title={field.value}
-                              className="h-10 border-border/70 bg-muted/30 font-mono text-xs disabled:cursor-default disabled:opacity-100"
-                              {...field}
-                            />
+                            <div className="flex min-h-10 items-center rounded-md border border-border/70 bg-muted/30 px-3 py-2">
+                              <span className="break-all font-mono text-xs font-medium">{field.value}</span>
+                            </div>
                           </FormControl>
                         </FormItem>
                       )}
