@@ -135,7 +135,26 @@ export function CompleteWorkOrderDialog({ open, workOrder, orderNumber, onOpenCh
 
   const closeWorkOrderMutation = useMutation({
     ...workOrderCloseMutation(),
+    async onSuccess(data, variables, onMutateResult, context) {
+      await context.client.invalidateQueries({ queryKey: workOrdersShowQueryKey({ path: { orderNumber } }) });
+
+      toast.success('Orden de trabajo completada correctamente.');
+      setConfirmOpen(false);
+      onOpenChange(false);
+    },
+    onError(error) {
+      const message = error.response?.data.message;
+      toast.error(message || 'No se pudo completar la orden de trabajo.');
+    },
   });
+
+  const handleConfirmComplete = async () => {
+    await closeWorkOrderMutation.mutateAsync({
+      path: {
+        order_number: orderNumber,
+      },
+    });
+  };
 
   const isSubmitting = closeWorkOrderMutation.isPending;
 
@@ -195,24 +214,6 @@ export function CompleteWorkOrderDialog({ open, workOrder, orderNumber, onOpenCh
     }
 
     setConfirmOpen(true);
-  };
-
-  const handleConfirmComplete = async () => {
-    try {
-      await closeWorkOrderMutation.mutateAsync({
-        path: {
-          order_number: orderNumber,
-        },
-      });
-
-      await queryClient.invalidateQueries({ queryKey: workOrdersShowQueryKey({ path: { orderNumber } }) });
-
-      toast.success('Orden de trabajo completada correctamente.');
-      setConfirmOpen(false);
-      onOpenChange(false);
-    } catch {
-      toast.error('No se pudo completar la orden de trabajo.');
-    }
   };
 
   return (
@@ -302,7 +303,8 @@ export function CompleteWorkOrderDialog({ open, workOrder, orderNumber, onOpenCh
                       groupedUnfilledTasks.map((group) => {
                         const controlTaskIds = group.tasks.map((task) => task.id);
                         const allControlSelected =
-                          controlTaskIds.length > 0 && controlTaskIds.every((taskId) => selectedTaskIds.includes(taskId));
+                          controlTaskIds.length > 0 &&
+                          controlTaskIds.every((taskId) => selectedTaskIds.includes(taskId));
 
                         return (
                           <div key={`left-${group.controlId}`} className="space-y-3 rounded-md border bg-muted/20 p-3">
@@ -366,7 +368,9 @@ export function CompleteWorkOrderDialog({ open, workOrder, orderNumber, onOpenCh
                                 <p className="text-sm font-medium">
                                   {idx + 1}. {task.task?.description ?? `Task #${task.task_id}`}
                                 </p>
-                                <p className="text-xs text-muted-foreground">Revisado por: {values?.review_by ?? '—'}</p>
+                                <p className="text-xs text-muted-foreground">
+                                  Revisado por: {values?.review_by ?? '—'}
+                                </p>
                                 <p className="text-xs text-muted-foreground">Fecha: {values?.inspection_date ?? '—'}</p>
                               </div>
                             );
