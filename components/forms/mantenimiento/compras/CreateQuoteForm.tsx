@@ -334,6 +334,7 @@ export function CreateQuoteForm({
                           <FormControl>
                             <Input
                               disabled
+                              title={field.value}
                               className="h-10 border-border/70 bg-muted/30 font-mono text-xs disabled:cursor-default disabled:opacity-100"
                               {...field}
                             />
