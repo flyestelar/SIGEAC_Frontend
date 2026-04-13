@@ -5,12 +5,10 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { InformationSource, SafetyBulletin } from "@/types";
+import { SafetyBulletinResource } from "@/.gen/api/types.gen";
 import { ClipboardPen, Loader2, MoreHorizontal, Trash2 } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { EditInformationSourceForm } from "../../../forms/sms/EditInformationSourceForm";
-import { Button } from "../../../ui/button";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -18,7 +16,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "../../../ui/dialog";
+} from "@/components/ui/dialog";
 import { useDeleteSafetyBulletin } from "@/actions/sms/boletin/actions";
 import { CreateSafetyBulletinForm } from "@/components/forms/sms/CreateSafetyBulletinForm";
 import { useCompanyStore } from "@/stores/CompanyStore";
@@ -26,7 +24,7 @@ import { useCompanyStore } from "@/stores/CompanyStore";
 const SafetyBulletinDropdownActions = ({
   safetyBulletin,
 }: {
-  safetyBulletin: SafetyBulletin;
+  safetyBulletin: SafetyBulletinResource;
 }) => {
   const { selectedCompany } = useCompanyStore();
 
@@ -39,7 +37,7 @@ const SafetyBulletinDropdownActions = ({
   const handleDelete = async () => {
     await deleteSafetyBulletin.mutateAsync({
       company: selectedCompany!.slug,
-      id: safetyBulletin.id,
+      id: String(safetyBulletin.id),
     });
     setOpenDelete(false);
   };

@@ -600,9 +600,30 @@ export type SmsActivityResource = {
 };
 
 /**
+ * SafetyBulletinResource
+ */
+export type SafetyBulletinResource = {
+  id: number;
+  date: string;
+  title: string;
+  description: string;
+  image: string | null;
+  document: string | null;
+};
+
+/**
  * SafetyBulletins
  */
-export type SafetyBulletins = Array<string>;
+export type SafetyBulletins = {
+  id: number;
+  date: string;
+  title: string;
+  description: string;
+  image: string | null;
+  document: string | null;
+  created_at: string | null;
+  updated_at: string | null;
+};
 
 /**
  * StoreAircraftTypeRequest
@@ -14908,7 +14929,12 @@ export type SafetyBulletinIndexErrors = {
 export type SafetyBulletinIndexError = SafetyBulletinIndexErrors[keyof SafetyBulletinIndexErrors];
 
 export type SafetyBulletinIndexResponses = {
-  200: Array<SafetyBulletins>;
+  /**
+   * Array of `SafetyBulletinResource`
+   */
+  200: {
+    data: Array<SafetyBulletinResource>;
+  };
 };
 
 export type SafetyBulletinIndexResponse = SafetyBulletinIndexResponses[keyof SafetyBulletinIndexResponses];
@@ -15012,7 +15038,12 @@ export type SafetyBulletinShowErrors = {
 export type SafetyBulletinShowError = SafetyBulletinShowErrors[keyof SafetyBulletinShowErrors];
 
 export type SafetyBulletinShowResponses = {
-  200: string;
+  /**
+   * `SafetyBulletinResource`
+   */
+  200: {
+    data: SafetyBulletinResource;
+  };
 };
 
 export type SafetyBulletinShowResponse = SafetyBulletinShowResponses[keyof SafetyBulletinShowResponses];

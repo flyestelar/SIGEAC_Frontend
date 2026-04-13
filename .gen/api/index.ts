@@ -2378,6 +2378,7 @@ export type {
   SafetyBulletinIndexErrors,
   SafetyBulletinIndexResponse,
   SafetyBulletinIndexResponses,
+  SafetyBulletinResource,
   SafetyBulletins,
   SafetyBulletinShowData,
   SafetyBulletinShowError,

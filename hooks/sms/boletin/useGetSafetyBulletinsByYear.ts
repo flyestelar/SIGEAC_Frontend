@@ -1,5 +1,5 @@
 import axiosInstance from "@/lib/axios";
-import { SafetyBulletin } from "@/types";
+import { SafetyBulletinResource } from "@/.gen/api/types.gen";
 import { useQuery } from "@tanstack/react-query";
 
 const fetchSafetyBulletinsByYear = async ({
@@ -8,7 +8,7 @@ const fetchSafetyBulletinsByYear = async ({
 }: {
   company?: string;
   year: string;
-}): Promise<SafetyBulletin[]> => {
+}): Promise<SafetyBulletinResource[]> => {
   const { data } = await axiosInstance.get(`/${company}/sms/bulletins-by-year/${year}`);
   return data;
 };
@@ -20,7 +20,7 @@ export const useGetSafetyBulletinsByYear = ({
   company?: string;
   year: string;
 }) => {
-  return useQuery<SafetyBulletin[]>({
+  return useQuery<SafetyBulletinResource[]>({
     queryKey: ["safety-bulletins", company, year],
     queryFn: () => fetchSafetyBulletinsByYear({ company, year }),
     staleTime: 1000 * 60 * 5, // 5 minutos

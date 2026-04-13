@@ -11360,9 +11360,6 @@ export const safetyBulletinGetBulletinsByYearOptions = (options: Options<SafetyB
 export const safetyBulletinIndexQueryKey = (options: Options<SafetyBulletinIndexData>) =>
   createQueryKey('safetyBulletinIndex', options);
 
-/**
- * Display a listing of the resource
- */
 export const safetyBulletinIndexOptions = (options: Options<SafetyBulletinIndexData>) =>
   queryOptions<
     SafetyBulletinIndexResponse,

@@ -6832,9 +6832,6 @@ export const safetyBulletinGetBulletinsByYear = <ThrowOnError extends boolean = 
     ...options,
   });
 
-/**
- * Display a listing of the resource
- */
 export const safetyBulletinIndex = <ThrowOnError extends boolean = false>(
   options: Options<SafetyBulletinIndexData, ThrowOnError>,
 ) =>

@@ -5,12 +5,12 @@ import { ColumnDef } from "@tanstack/react-table";
 import { DataTableColumnHeader } from "@/components/tables/DataTableHeader";
 
 import { dateFormat } from "@/lib/utils";
-import { SafetyBulletin } from "@/types";
+import { SafetyBulletinResource } from "@/.gen/api/types.gen";
 import DocumentDisplayDialog from "@/components/dialogs/sms/DocumentDisplayDialog";
 import { Button } from "@/components/ui/button";
 import SafetyBulletinDropdownActions from "@/components/dropdowns/sms/SafetyBulletinDropDownActions";
 
-export const columns: ColumnDef<SafetyBulletin>[] = [
+export const columns: ColumnDef<SafetyBulletinResource>[] = [
   {
     accessorKey: "title",
     header: ({ column }) => (

@@ -35,10 +35,10 @@ import { addDays, format } from "date-fns";
 import { es } from "date-fns/locale";
 import { CalendarIcon, FileText, Loader2, X } from "lucide-react";
 import Image from "next/image";
-import { SafetyBulletin } from "@/types";
+import { SafetyBulletinResource } from "@/.gen/api/types.gen";
 interface FormProps {
   onClose: (open: boolean) => void;
-  initialData?: SafetyBulletin;
+  initialData?: SafetyBulletinResource;
   isEditing?: boolean;
   selectedDate?: string;
 }

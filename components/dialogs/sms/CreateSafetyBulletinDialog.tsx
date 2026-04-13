@@ -11,12 +11,12 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { SafetyBulletin } from "@/types";
+import { SafetyBulletinResource } from "@/.gen/api/types.gen";
 import { useState } from "react";
 
 interface FormProps {
   title: string;
-  initialData?: SafetyBulletin;
+  initialData?: SafetyBulletinResource;
   isEditing?: boolean;
 }
 
