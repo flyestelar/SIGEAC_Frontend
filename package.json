@@ -6,6 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
+    "api:generate": "openapi-ts",
     "lint": "next lint"
   },
   "dependencies": {
