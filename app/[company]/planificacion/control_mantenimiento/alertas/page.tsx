@@ -10,21 +10,34 @@ import { Input } from '@/components/ui/input';
 import { Progress } from '@/components/ui/progress';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
-import { format } from 'date-fns';
-import { es } from 'date-fns/locale';
+import { useGetAircraftAverage } from '@/hooks/planificacion/useGetAircraftDailyAverage';
 import { useGetMaintenanceAircrafts } from '@/hooks/planificacion/useGetMaintenanceAircrafts';
 import { useCompanyStore } from '@/stores/CompanyStore';
 import { maintenanceControlsAlertsOptions } from '@api/queries';
+import { HoverCardPortal } from '@radix-ui/react-hover-card';
 import { useQuery } from '@tanstack/react-query';
+import { addDays, format } from 'date-fns';
+import { es } from 'date-fns/locale';
 import {
-  AlertTriangle, ArrowLeft, Calendar, CalendarClock, Clock, FileText, Gauge, Plane, RefreshCw, Search, ShieldCheck, Siren, TriangleAlert, Wrench,
+  AlertTriangle,
+  ArrowLeft,
+  Calendar,
+  CalendarClock,
+  Clock,
+  FileText,
+  Gauge,
+  Plane,
+  RefreshCw,
+  Search,
+  ShieldCheck,
+  Siren,
+  TriangleAlert,
+  Wrench,
 } from 'lucide-react';
 import Link from 'next/link';
-import { addDays } from 'date-fns';
-import { useMemo, useCallback, useState } from 'react';
-import { useGetAircraftAverage } from '@/hooks/planificacion/useGetAircraftDailyAverage';
-import { HoverCardPortal } from '@radix-ui/react-hover-card';
-import { AlertBadge } from '../_components/control-grid';
+import { useCallback, useMemo, useState } from 'react';
+import { AlertBadge } from '../_components/control-grid-shared';
+import { MaintenanceControlsAlertsResponse } from '@api/types';
 
 type AlertLevel = 'OVERDUE' | 'WARNING' | 'OK';
 type MetricType = 'FH' | 'FC' | 'DAYS';
@@ -43,23 +56,29 @@ const METRIC_UNITS: Record<MetricType, string> = {
 
 const ALL_METRIC_TYPES: MetricType[] = ['FH', 'FC', 'DAYS'];
 
-const METRIC_CONFIG: Record<MetricType, {
-  icon: typeof Clock;
-  intervalKey: 'interval_fh' | 'interval_fc' | 'interval_days';
-}> = {
+const METRIC_CONFIG: Record<
+  MetricType,
+  {
+    icon: typeof Clock;
+    intervalKey: 'interval_fh' | 'interval_fc' | 'interval_days';
+  }
+> = {
   FH: { icon: Clock, intervalKey: 'interval_fh' },
   FC: { icon: RefreshCw, intervalKey: 'interval_fc' },
   DAYS: { icon: Calendar, intervalKey: 'interval_days' },
 };
 
-const LEVEL_CONFIG: Record<AlertLevel, {
-  icon: typeof TriangleAlert;
-  cardBorder: string;
-  cardBg: string;
-  iconBg: string;
-  iconText: string;
-  progressIndicator: string;
-}> = {
+const LEVEL_CONFIG: Record<
+  AlertLevel,
+  {
+    icon: typeof TriangleAlert;
+    cardBorder: string;
+    cardBg: string;
+    iconBg: string;
+    iconText: string;
+    progressIndicator: string;
+  }
+> = {
   OVERDUE: {
     icon: TriangleAlert,
     cardBorder: 'border-l-4 border-l-red-500 border-red-500/20',
@@ -123,9 +142,9 @@ function computeMetricEstimation(
 
 // ── AlertCard ────────────────────────────────────────────────────────────────
 
-function AlertCard({ row }: { row: any }) {
+function AlertCard({ row }: { row: MaintenanceControlsAlertsResponse['alerts'][number] }) {
   const { control, aircraft } = row;
-  const cfg = LEVEL_CONFIG[row.status as AlertLevel];
+  const cfg = LEVEL_CONFIG[row.status];
   const LevelIcon = cfg.icon;
 
   const [requested, setRequested] = useState(false);
@@ -150,7 +169,7 @@ function AlertCard({ row }: { row: any }) {
               <p className="font-mono text-xs text-muted-foreground">{control.manual_reference}</p>
             </div>
           </div>
-          <AlertBadge status={row.status as AlertLevel} size="small" />
+          <AlertBadge status={row.status} size="small" />
         </div>
         <div className="flex items-center gap-3 rounded-md border border-sky-200/60 bg-sky-50/50 px-3 py-2 dark:border-sky-800/40 dark:bg-sky-950/20">
           <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded border border-sky-200 bg-sky-100/80 dark:border-sky-800/60 dark:bg-sky-900/40">
@@ -161,9 +180,7 @@ function AlertCard({ row }: { row: any }) {
               <span className="font-mono text-sm font-bold tracking-wide text-sky-700 dark:text-sky-300">
                 {aircraft.acronym}
               </span>
-              <span className="font-mono text-xs tabular-nums text-muted-foreground">
-                S/N {aircraft.serial}
-              </span>
+              <span className="font-mono text-xs tabular-nums text-muted-foreground">S/N {aircraft.serial}</span>
             </div>
             {aircraft.aircraft_type && (
               <span className="text-[11px] text-muted-foreground">{aircraft.aircraft_type.full_name}</span>
@@ -236,9 +253,9 @@ function AlertCard({ row }: { row: any }) {
             const interval = control[METRIC_CONFIG[type].intervalKey];
             return interval !== null && interval !== undefined;
           }).map((type) => {
-            const metric = row.metrics.find((m: AlertMetric) => m.type === type);
+            const metric = row.metrics.find((m) => m.type === type);
             const interval = control[METRIC_CONFIG[type].intervalKey];
-            const metricCfg = metric ? LEVEL_CONFIG[metric.status as AlertLevel] : null;
+            const metricCfg = metric ? LEVEL_CONFIG[metric.status] : null;
             const MetricIcon = METRIC_CONFIG[type].icon;
             const estimation = requested && averages && metric ? computeMetricEstimation(metric, averages) : null;
 
@@ -253,9 +270,7 @@ function AlertCard({ row }: { row: any }) {
                     <p className="mt-0.5 font-mono text-xs font-semibold tabular-nums">
                       <span className={metricCfg?.iconText}>{metric.consumed.toFixed(1)}</span>
                       <span className="text-muted-foreground">/{interval}</span>
-                      <span className="ml-0.5 text-[10px] font-normal text-muted-foreground">
-                        {METRIC_UNITS[type]}
-                      </span>
+                      <span className="ml-0.5 text-[10px] font-normal text-muted-foreground">{METRIC_UNITS[type]}</span>
                     </p>
                     <p className="font-mono text-[9px] text-muted-foreground">
                       ({metric.remaining.toFixed(1)} {METRIC_UNITS[type]} rest.)
@@ -270,9 +285,7 @@ function AlertCard({ row }: { row: any }) {
                   <p className="mt-0.5 font-mono text-xs font-semibold tabular-nums">
                     <span>0</span>
                     <span className="text-muted-foreground">/{interval}</span>
-                    <span className="ml-0.5 text-[10px] font-normal text-muted-foreground">
-                      {METRIC_UNITS[type]}
-                    </span>
+                    <span className="ml-0.5 text-[10px] font-normal text-muted-foreground">{METRIC_UNITS[type]}</span>
                   </p>
                 )}
                 {/* Próximo estimado inline */}
@@ -522,7 +535,10 @@ export default function MaintenanceControlsAlertsDashboardPage() {
                         {/* Metrics grid */}
                         <div className="grid auto-cols-fr grid-flow-col gap-2">
                           {Array.from({ length: 2 }).map((_, i) => (
-                            <div key={i} className="rounded-md border border-border/40 bg-muted/10 px-2 py-1.5 space-y-1.5">
+                            <div
+                              key={i}
+                              className="rounded-md border border-border/40 bg-muted/10 px-2 py-1.5 space-y-1.5"
+                            >
                               <Skeleton className="h-3 w-16" />
                               <Skeleton className="h-3 w-20" />
                               <Skeleton className="h-1.5 w-full rounded-full" />
@@ -566,6 +582,6 @@ export default function MaintenanceControlsAlertsDashboardPage() {
           </div>
         )}
       </main>
-    </ContentLayout >
+    </ContentLayout>
   );
 }

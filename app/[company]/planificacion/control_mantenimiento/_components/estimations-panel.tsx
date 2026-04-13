@@ -101,7 +101,7 @@ function fmt(value: number, digits = 1) {
 }
 
 function computeEstimation(metric: EstimationMetric): ComputedEstimation | null {
-  if (!metric.interval || metric.consumed === null || metric.consumed === undefined) return null;
+  if (!metric.interval || metric.consumed == null) return null;
 
   const remaining = Math.max(metric.interval - metric.consumed, 0);
   const percentage = Math.min((metric.consumed / metric.interval) * 100, 100);
@@ -127,6 +127,7 @@ function computeEstimation(metric: EstimationMetric): ComputedEstimation | null 
 
 function EstimationRow({ metric }: { metric: EstimationMetric }) {
   const estimation = computeEstimation(metric);
+  console.log('Estimation for', metric, estimation);
   const Icon = METRIC_ICONS[metric.key];
 
   if (!estimation) {
@@ -275,7 +276,7 @@ export function EstimationsPanel({ control, aircraft }: EstimationsPanelProps) {
       label: 'Horas de vuelo',
       unit: 'FH',
       interval: control.interval_fh ?? null,
-      consumed: control.since_last?.fh ?? null,
+      consumed: control.consumed?.fh ?? null,
       averagePerDay: aircraft?.last_average_metric?.average_daily_flight_hours ?? null,
     },
     {
@@ -283,7 +284,7 @@ export function EstimationsPanel({ control, aircraft }: EstimationsPanelProps) {
       label: 'Ciclos de vuelo',
       unit: 'FC',
       interval: control.interval_fc ?? null,
-      consumed: control.since_last?.fc ?? null,
+      consumed: control.consumed?.fc ?? null,
       averagePerDay: aircraft?.last_average_metric?.average_daily_flight_cycles ?? null,
     },
   ];

@@ -645,9 +645,6 @@ import type {
   MaintenanceControlExecutionsIndexData,
   MaintenanceControlExecutionsIndexErrors,
   MaintenanceControlExecutionsIndexResponses,
-  MaintenanceControlExecutionsStoreData,
-  MaintenanceControlExecutionsStoreErrors,
-  MaintenanceControlExecutionsStoreResponses,
   MaintenanceControlsAlertsData,
   MaintenanceControlsAlertsErrors,
   MaintenanceControlsAlertsResponses,
@@ -4157,27 +4154,6 @@ export const maintenanceControlExecutionsIndex = <ThrowOnError extends boolean =
   });
 
 /**
- * Store a newly created resource in storage
- */
-export const maintenanceControlExecutionsStore = <ThrowOnError extends boolean = false>(
-  options: Options<MaintenanceControlExecutionsStoreData, ThrowOnError>,
-) =>
-  (options.client ?? client).post<
-    MaintenanceControlExecutionsStoreResponses,
-    MaintenanceControlExecutionsStoreErrors,
-    ThrowOnError
-  >({
-    responseType: 'json',
-    security: [{ scheme: 'bearer', type: 'http' }],
-    url: '/maintenance-controls/executions',
-    ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      ...options.headers,
-    },
-  });
-
-/**
  * Get tasks for a specific maintenance control and aircraft
  */
 export const maintenanceControlsDetails = <ThrowOnError extends boolean = false>(
@@ -6066,6 +6042,10 @@ export const workOrderClose = <ThrowOnError extends boolean = false>(
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/work-orders/{order_number}/close',
     ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    },
   });
 
 export const workOrderCompleteItemTask = <ThrowOnError extends boolean = false>(

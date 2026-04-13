@@ -21,7 +21,6 @@ export type ComputedControl = {
   control: MaintenanceControlResource;
   metrics: ComputedMetric[];
   status: AlertLevel;
-  isActive: boolean;
 };
 
 const ALERT_LABELS: Record<AlertLevel, string> = {

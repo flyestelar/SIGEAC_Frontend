@@ -105,7 +105,7 @@ const SelectionSummary = ({
                         </div>
 
                         <div className="mt-1.5 flex items-center gap-1.5">
-                          {(control.since_last?.fh || control.since_last?.fc || control.since_last?.days) && (
+                          {(control.consumed?.fh || control.consumed?.fc || control.consumed?.days) && (
                             <span className="inline-flex items-center gap-0.5 rounded-full border px-1.5 py-0.5 text-[10px] text-muted-foreground">
                               <Wrench className="size-2.5" />
                               Consumo

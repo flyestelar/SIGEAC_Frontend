@@ -30,7 +30,7 @@ import { ControlTableView } from './control-table-view';
 
 function SelectedControlHeader({ computed, onBack }: { computed: ComputedControl; onBack: () => void }) {
   const { selectedCompany } = useCompanyStore();
-  const { control, metrics, status, isActive } = computed;
+  const { control, metrics, status } = computed;
   const cfg = LEVEL_CONFIG[status];
   const LevelIcon = cfg.icon;
 
@@ -56,7 +56,7 @@ function SelectedControlHeader({ computed, onBack }: { computed: ComputedControl
           </div>
 
           <div className="flex items-center gap-1.5">
-            {isActive && <EnCursoBadge />}
+            {control.in_progress && <EnCursoBadge />}
             <AlertBadge status={status} size="small" />
             <Button asChild variant="ghost" size="icon" className="h-6 w-6">
               <Link href={`/${selectedCompany?.slug}/planificacion/control_mantenimiento/${control.id}/editar`}>
@@ -155,8 +155,7 @@ export function ControlGrid({ controls, selectedControlId, onSelectControl, aver
     return controls.map((control) => {
       const metrics = computeMetrics(control);
       const status = worstStatus(metrics);
-      const isActive = control.last_execution?.status === 'IN_PROGRESS';
-      return { control, metrics, status, isActive };
+      return { control, metrics, status };
     });
   }, [controls]);
 

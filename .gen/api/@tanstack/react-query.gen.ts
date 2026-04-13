@@ -219,7 +219,6 @@ import {
   login,
   logout,
   maintenanceControlExecutionsIndex,
-  maintenanceControlExecutionsStore,
   maintenanceControlsAlerts,
   maintenanceControlsDestroy,
   maintenanceControlsDetails,
@@ -984,9 +983,6 @@ import type {
   MaintenanceControlExecutionsIndexData,
   MaintenanceControlExecutionsIndexError,
   MaintenanceControlExecutionsIndexResponse,
-  MaintenanceControlExecutionsStoreData,
-  MaintenanceControlExecutionsStoreError,
-  MaintenanceControlExecutionsStoreResponse,
   MaintenanceControlsAlertsData,
   MaintenanceControlsAlertsError,
   MaintenanceControlsAlertsResponse,
@@ -6889,33 +6885,6 @@ export const maintenanceControlExecutionsIndexInfiniteOptions = (
       queryKey: maintenanceControlExecutionsIndexInfiniteQueryKey(options),
     },
   );
-
-/**
- * Store a newly created resource in storage
- */
-export const maintenanceControlExecutionsStoreMutation = (
-  options?: Partial<Options<MaintenanceControlExecutionsStoreData>>,
-): UseMutationOptions<
-  MaintenanceControlExecutionsStoreResponse,
-  AxiosError<MaintenanceControlExecutionsStoreError>,
-  Options<MaintenanceControlExecutionsStoreData>
-> => {
-  const mutationOptions: UseMutationOptions<
-    MaintenanceControlExecutionsStoreResponse,
-    AxiosError<MaintenanceControlExecutionsStoreError>,
-    Options<MaintenanceControlExecutionsStoreData>
-  > = {
-    mutationFn: async (fnOptions) => {
-      const { data } = await maintenanceControlExecutionsStore({
-        ...options,
-        ...fnOptions,
-        throwOnError: true,
-      });
-      return data;
-    },
-  };
-  return mutationOptions;
-};
 
 export const maintenanceControlsDetailsQueryKey = (options: Options<MaintenanceControlsDetailsData>) =>
   createQueryKey('maintenanceControlsDetails', options);

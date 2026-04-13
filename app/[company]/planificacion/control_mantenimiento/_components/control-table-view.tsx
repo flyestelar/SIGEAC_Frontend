@@ -135,7 +135,7 @@ export function ControlTableView({ averages, controls, onSelectControl }: Contro
             </TableHeader>
             <TableBody className="[&_tr:last-child>td]:border-0 [&_td]:border-border/60 [&_td]:border-b">
               {controls.map((computed) => {
-                const { control, metrics, isActive } = computed;
+                const { control, metrics } = computed;
                 const { interval_fh, interval_fc, interval_days } = control;
                 const fhMetric = metrics.find((m) => m.type === 'FH');
                 const fcMetric = metrics.find((m) => m.type === 'FC');
@@ -163,7 +163,7 @@ export function ControlTableView({ averages, controls, onSelectControl }: Contro
                       <div className="space-y-1 min-w-28">
                         <p className="text-sm font-semibold leading-none text-foreground">{control.title}</p>
                         <p className="font-mono text-xs text-muted-foreground">{control.manual_reference || '-'}</p>
-                        {isActive && <EnCursoBadge />}
+                        {control.in_progress && <EnCursoBadge />}
                       </div>
                     </TableCell>
                     <TableCell className="font-mono text-xs">{formatNumber(interval_fh, 1)}</TableCell>

@@ -6,10 +6,10 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { useCompanyStore } from '@/stores/CompanyStore';
 import { AircraftAverageMetric } from '@api/types';
-import { BookOpen, CalendarClock, ClipboardList, Edit } from 'lucide-react';
-import Link from 'next/link';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { CalendarClock, ClipboardList, Edit } from 'lucide-react';
+import Link from 'next/link';
 import {
   AlertBadge,
   ComputedControl,
@@ -31,7 +31,7 @@ function ControlCard({
   averages: AircraftAverageMetric | null;
 }) {
   const { selectedCompany } = useCompanyStore();
-  const { control, metrics, status, isActive } = computed;
+  const { control, metrics, status } = computed;
   const cfg = LEVEL_CONFIG[status];
   const LevelIcon = cfg.icon;
 
@@ -52,7 +52,7 @@ function ControlCard({
             </div>
           </div>
           <div className="flex shrink-0 items-center gap-1.5">
-            {isActive && <EnCursoBadge />}
+            {control.in_progress && <EnCursoBadge />}
             <AlertBadge status={status} size="medium" />
           </div>
         </div>

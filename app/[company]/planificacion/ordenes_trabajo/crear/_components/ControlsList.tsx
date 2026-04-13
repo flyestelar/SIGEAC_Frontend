@@ -64,13 +64,13 @@ const getMetricTone = (percentage: number) => {
 };
 
 const buildControlMetrics = (control: MaintenanceControlResource) => {
-  if (!control.since_last) return [];
+  if (!control.consumed) return [];
   return (Object.keys(METRIC_META) as MetricKind[]).reduce<
     Array<{ type: MetricKind; consumed: number; interval: number; remaining: number; percentage: number }>
   >((acc, type) => {
     const meta = METRIC_META[type];
     const interval = control[meta.intervalKey];
-    const consumed = control.since_last?.[meta.consumedKey];
+    const consumed = control.consumed?.[meta.consumedKey];
     if (!interval || interval <= 0 || consumed === undefined || consumed === null) return acc;
     acc.push({
       type,

@@ -392,13 +392,13 @@ export default function MaintenanceControlTestPage() {
                       <p className="text-xs text-muted-foreground">Fecha de ejecución</p>
                     </div>
                   </div>
-                  {selectedControl.since_last && (
+                  {selectedControl.consumed && (
                     <div className="border-t pt-4">
                       <h4 className="text-sm font-medium mb-3 text-center">Consumo desde la última ejecución</h4>
                       <div className="grid gap-4 md:grid-cols-3">
                         <div className="text-center">
                           <p className="text-lg font-semibold text-blue-600">
-                            {selectedControl.since_last.fh.toFixed(1)}
+                            {selectedControl.consumed.fh.toFixed(1)}
                           </p>
                           <p className="text-xs text-muted-foreground">Horas de vuelo consumidas</p>
                           <p className="text-xs text-muted-foreground mt-1">
@@ -406,14 +406,14 @@ export default function MaintenanceControlTestPage() {
                           </p>
                         </div>
                         <div className="text-center">
-                          <p className="text-lg font-semibold text-blue-600">{selectedControl.since_last.fc}</p>
+                          <p className="text-lg font-semibold text-blue-600">{selectedControl.consumed.fc}</p>
                           <p className="text-xs text-muted-foreground">Ciclos de vuelo consumidos</p>
                           <p className="text-xs text-muted-foreground mt-1">
                             / {selectedControl.interval_fc || 'N/A'} requerido
                           </p>
                         </div>
                         <div className="text-center">
-                          <p className="text-lg font-semibold text-blue-600">{selectedControl.since_last.days}</p>
+                          <p className="text-lg font-semibold text-blue-600">{selectedControl.consumed.days}</p>
                           <p className="text-xs text-muted-foreground">Días transcurridos</p>
                           <p className="text-xs text-muted-foreground mt-1">
                             / {selectedControl.interval_days || 'N/A'} requerido
