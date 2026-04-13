@@ -9,7 +9,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { SMSActivity } from "@/types";
+import { SmsActivityResource } from "@/.gen/api/types.gen";
 import {
   ClipboardPen,
   EyeIcon,
@@ -32,16 +32,16 @@ import {
 } from "@/components/ui/dialog";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import CreateSMSActivityForm from "@/components/forms/aerolinea/sms/CreateSMSActivityForm";
-import { AddToSMSActivity } from "@/components/forms/aerolinea/sms/AddToSMSActivityForm";
+import CreateSMSActivityForm from "@/components/forms/sms/CreateSMSActivityForm";
+import { AddToSMSActivity } from "@/components/forms/sms/AddToSMSActivityForm";
 import { useCompanyStore } from "@/stores/CompanyStore";
 import { startOfDay } from "date-fns";
-import { AddSMSActivityAttendanceForm } from "@/components/forms/aerolinea/sms/AddSMSActivityAttendanceForm";
+import { AddSMSActivityAttendanceForm } from "@/components/forms/sms/AddSMSActivityAttendanceForm";
 
 const SMSActivityDropDownActions = ({
   smsActivity,
 }: {
-  smsActivity: SMSActivity;
+  smsActivity: SmsActivityResource;
 }) => {
   const [openDelete, setOpenDelete] = useState<boolean>(false);
   const { selectedCompany } = useCompanyStore();

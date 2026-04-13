@@ -1,22 +1,22 @@
 import axiosInstance from "@/lib/axios";
 import { useCompanyStore } from "@/stores/CompanyStore";
-import { Survey } from "@/types";
+import { SurveyResource } from "@/.gen/api/types.gen";
 import { useQuery } from "@tanstack/react-query";
 
 const fetchSurveys = async (
   company?: string,
   location_id?: string
-): Promise<Survey[]> => {
+): Promise<SurveyResource[]> => {
   const { data } = await axiosInstance.get(
-    `/${company}/${location_id}/sms/survey`
+    `/${company}/sms/${location_id}/survey`
   );
-  return data;
+  return data.data;
 };
 
 export const useGetSurveys = () => {
   const { selectedCompany, selectedStation } = useCompanyStore();
 
-  return useQuery<Survey[]>({
+  return useQuery<SurveyResource[]>({
     queryKey: ["surveys", selectedCompany?.slug, selectedStation],
     queryFn: () => fetchSurveys(selectedCompany?.slug, selectedStation!),
     staleTime: 1000 * 60 * 5, // 5 minutos

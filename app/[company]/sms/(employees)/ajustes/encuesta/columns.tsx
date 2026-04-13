@@ -6,7 +6,7 @@ import { DataTableColumnHeader } from "@/components/tables/DataTableHeader";
 
 import SurveySettingDropdownActions from "@/components/dropdowns/sms/survey/surveySettingDropDownActions";
 import { Badge } from "@/components/ui/badge";
-import { Survey } from "@/.gen/api/types.gen";
+import { SurveyResource } from "@/.gen/api/types.gen";
 import { useCompanyStore } from "@/stores/CompanyStore";
 import Link from "next/link";
 
@@ -27,7 +27,7 @@ const SurveyNumberCell = ({ surveyNumber }: { surveyNumber: string }) => {
   );
 };
 
-export const columns: ColumnDef<Survey>[] = [
+export const columns: ColumnDef<SurveyResource>[] = [
   {
     accessorKey: "survey_number",
     header: ({ column }) => (

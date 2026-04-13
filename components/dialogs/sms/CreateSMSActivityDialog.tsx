@@ -1,5 +1,5 @@
 "use client";
-import CreateSMSActivityForm from "@/components/forms/aerolinea/sms/CreateSMSActivityForm";
+import CreateSMSActivityForm from "@/components/forms/sms/CreateSMSActivityForm";
 import {
   Dialog,
   DialogContent,
@@ -7,10 +7,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { SMSActivity } from "@/types";
+import { SmsActivityResource } from "@/.gen/api/types.gen";
 
 interface FormProps {
-  initialData?: SMSActivity;
+  initialData?: SmsActivityResource;
   isEditing?: boolean;
   selectedDate?: string;
   open: boolean;

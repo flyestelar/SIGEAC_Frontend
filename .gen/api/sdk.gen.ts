@@ -692,9 +692,6 @@ import type {
   GeneralLocationIndex0Data,
   GeneralLocationIndex0Errors,
   GeneralLocationIndex0Responses,
-  GetMailableData,
-  GetMailableErrors,
-  GetMailableResponses,
   InformationSourcesDestroyData,
   InformationSourcesDestroyErrors,
   InformationSourcesDestroyResponses,
@@ -947,9 +944,6 @@ import type {
   PlanificationReportWorkOrderPreInspectionData,
   PlanificationReportWorkOrderPreInspectionErrors,
   PlanificationReportWorkOrderPreInspectionResponses,
-  PostByCompanyBatchesData,
-  PostByCompanyBatchesErrors,
-  PostByCompanyBatchesResponses,
   PreliminaryInspectionDestroyData,
   PreliminaryInspectionDestroyErrors,
   PreliminaryInspectionDestroyResponses,
@@ -1007,9 +1001,6 @@ import type {
   PurchaseQuoteOrderUpdate2Data,
   PurchaseQuoteOrderUpdate2Errors,
   PurchaseQuoteOrderUpdate2Responses,
-  PutByCompanyUpdateToolStatusByIdData,
-  PutByCompanyUpdateToolStatusByIdErrors,
-  PutByCompanyUpdateToolStatusByIdResponses,
   QuestionsDestroyData,
   QuestionsDestroyErrors,
   QuestionsDestroyResponses,
@@ -1181,7 +1172,6 @@ import type {
   SurveyGetQuestionStatisticsErrors,
   SurveyGetQuestionStatisticsResponses,
   SurveyGetSurveyNumberBySettingData,
-  SurveyGetSurveyNumberBySettingErrors,
   SurveyGetSurveyNumberBySettingResponses,
   SurveyGetSurveyRespondentsData,
   SurveyGetSurveyRespondentsErrors,
@@ -1455,46 +1445,6 @@ export type Options<
    */
   meta?: Record<string, unknown>;
 };
-
-export const batchesIndex = <ThrowOnError extends boolean = false>(options: Options<BatchesIndexData, ThrowOnError>) =>
-  (options.client ?? client).get<BatchesIndexResponses, BatchesIndexErrors, ThrowOnError>({
-    responseType: 'json',
-    security: [{ scheme: 'bearer', type: 'http' }],
-    url: '/{company}/batches',
-    ...options,
-  });
-
-export const postByCompanyBatches = <ThrowOnError extends boolean = false>(
-  options: Options<PostByCompanyBatchesData, ThrowOnError>,
-) =>
-  (options.client ?? client).post<PostByCompanyBatchesResponses, PostByCompanyBatchesErrors, ThrowOnError>({
-    responseType: 'json',
-    security: [{ scheme: 'bearer', type: 'http' }],
-    url: '/{company}/batches',
-    ...options,
-  });
-
-export const putByCompanyUpdateToolStatusById = <ThrowOnError extends boolean = false>(
-  options: Options<PutByCompanyUpdateToolStatusByIdData, ThrowOnError>,
-) =>
-  (options.client ?? client).put<
-    PutByCompanyUpdateToolStatusByIdResponses,
-    PutByCompanyUpdateToolStatusByIdErrors,
-    ThrowOnError
-  >({
-    responseType: 'json',
-    security: [{ scheme: 'bearer', type: 'http' }],
-    url: '/{company}/update-tool-status/{id}',
-    ...options,
-  });
-
-export const getMailable = <ThrowOnError extends boolean = false>(options?: Options<GetMailableData, ThrowOnError>) =>
-  (options?.client ?? client).get<GetMailableResponses, GetMailableErrors, ThrowOnError>({
-    responseType: 'json',
-    security: [{ scheme: 'bearer', type: 'http' }],
-    url: '/mailable',
-    ...options,
-  });
 
 /**
  * Method: Get
@@ -2608,6 +2558,14 @@ export const bankAccountAccountByBank = <ThrowOnError extends boolean = false>(
     responseType: 'json',
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/bank-accounts-by-bank/{bank_id}',
+    ...options,
+  });
+
+export const batchesIndex = <ThrowOnError extends boolean = false>(options: Options<BatchesIndexData, ThrowOnError>) =>
+  (options.client ?? client).get<BatchesIndexResponses, BatchesIndexErrors, ThrowOnError>({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/{company}/batches',
     ...options,
   });
 
@@ -6962,6 +6920,16 @@ export const safetyBulletinDeleteDocument = <ThrowOnError extends boolean = fals
     ...options,
   });
 
+export const surveyGetSurveyNumberBySetting = <ThrowOnError extends boolean = false>(
+  options: Options<SurveyGetSurveyNumberBySettingData, ThrowOnError>,
+) =>
+  (options.client ?? client).get<SurveyGetSurveyNumberBySettingResponses, unknown, ThrowOnError>({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/{company}/sms/survey/setting',
+    ...options,
+  });
+
 export const surveySurveyAnswers = <ThrowOnError extends boolean = false>(
   options: Options<SurveySurveyAnswersData, ThrowOnError>,
 ) =>
@@ -7048,20 +7016,6 @@ export const surveyDestroy = <ThrowOnError extends boolean = false>(
     responseType: 'json',
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/{company}/sms/{location_id}/survey/{survey_number}',
-    ...options,
-  });
-
-export const surveyGetSurveyNumberBySetting = <ThrowOnError extends boolean = false>(
-  options: Options<SurveyGetSurveyNumberBySettingData, ThrowOnError>,
-) =>
-  (options.client ?? client).get<
-    SurveyGetSurveyNumberBySettingResponses,
-    SurveyGetSurveyNumberBySettingErrors,
-    ThrowOnError
-  >({
-    responseType: 'json',
-    security: [{ scheme: 'bearer', type: 'http' }],
-    url: '/{company}/sms/survey/setting',
     ...options,
   });
 

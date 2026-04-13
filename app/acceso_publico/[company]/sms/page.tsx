@@ -2,9 +2,9 @@
 import { CustomCard } from "@/components/cards/CustomCard";
 import { PolicyCard } from "@/components/cards/PolicyCard";
 import { StrategyCard } from "@/components/cards/StrategyCard";
-import ActionPlanDialog from "@/components/dialogs/aerolinea/sms/ActionPlanDialog";
-import FeaturesDialog from "@/components/dialogs/aerolinea/sms/FeaturedDialog";
-import { SMSConceptsDialog } from "@/components/dialogs/aerolinea/sms/SMSConceptsDialog";
+import ActionPlanDialog from "@/components/dialogs/sms/ActionPlanDialog";
+import FeaturesDialog from "@/components/dialogs/sms/FeaturedDialog";
+import { SMSConceptsDialog } from "@/components/dialogs/sms/SMSConceptsDialog";
 import { ImageGalleryDialog } from "@/components/dialogs/general/ImageGalleryDialog";
 import { GuestContentLayout } from "@/components/layout/GuestContentLayout";
 import { MissionVision } from "@/components/misc/MissionVision";

@@ -206,7 +206,7 @@ const ShowSMSActivity = () => {
                               : "bg-gray-500 text-white"
                       }`}
                     >
-                      {activity.status.replace("_", " ")}
+                      {activity.status?.replace("_", " ")}
                     </Badge>
                   </div>
                   <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -215,12 +215,12 @@ const ShowSMSActivity = () => {
                         Autorizado por:
                       </p>
                       <p className="text-base">
-                        {activity.authorized_by.first_name || "N/A"}{" "}
-                        {activity.authorized_by.last_name || "N/A"}
+                        {activity.authorized_by?.first_name || "N/A"}{" "}
+                        {activity.authorized_by?.last_name || "N/A"}
                       </p>
                       <p className="text-sm text-gray-500 dark:text-gray-400">
-                        {activity.authorized_by.job_title?.name || "N/A"}{" "}
-                        {activity.authorized_by.department?.name || ""}
+                        {(activity.authorized_by as any)?.job_title?.name || "N/A"}{" "}
+                        {(activity.authorized_by as any)?.department?.name || ""}
                       </p>
                     </div>
                     <div className="flex flex-col">
@@ -228,12 +228,12 @@ const ShowSMSActivity = () => {
                         Elaborado por:
                       </p>
                       <p className="text-base">
-                        {activity.planned_by.first_name || "N/A"}{" "}
-                        {activity.planned_by.last_name || "N/A"}
+                        {activity.planned_by?.first_name || "N/A"}{" "}
+                        {activity.planned_by?.last_name || "N/A"}
                       </p>
                       <p className="text-sm text-gray-500 dark:text-gray-400">
-                        {activity.planned_by.job_title?.name || "N/A"}{" "}
-                        {activity.planned_by.department?.name || ""}
+                        {(activity.planned_by as any)?.job_title?.name || "N/A"}{" "}
+                        {(activity.planned_by as any)?.department?.name || ""}
                       </p>
                     </div>
                     <div className="flex flex-col">
@@ -352,9 +352,9 @@ const ShowSMSActivity = () => {
 
 
               {/* Sección de Imagen y Documento */}
-              {(activity?.imageUrl || activity?.documentUrl) && (
+              {(activity?.image || activity?.document) && (
                 <div className="space-y-4">
-                  {activity?.imageUrl && (
+                  {activity?.image && (
                     <div className="rounded-lg border border-gray-300 p-5 dark:border-gray-700 dark:bg-gray-800">
                       <h3 className="mb-3 text-lg font-semibold text-gray-800 dark:text-gray-200">
                         Imagen Adjunta
@@ -363,7 +363,7 @@ const ShowSMSActivity = () => {
                         <DialogTrigger asChild>
                           <div className="relative group w-full max-w-sm h-64 mx-auto cursor-pointer">
                             <Image
-                              src={activity.imageUrl}
+                              src={activity.image}
                               alt="Imagen de la actividad"
                               fill
                               className="w-full h-full object-contain rounded-md border group-hover:border-gray-400 transition-all"
@@ -381,7 +381,7 @@ const ShowSMSActivity = () => {
                           </DialogHeader>
                           <div className="relative h-[60vh] flex justify-center">
                             <Image
-                              src={activity.imageUrl}
+                              src={activity.image}
                               fill
                               alt="Imagen completa de la actividad"
                               className="max-w-full max-h-full object-contain rounded-lg border"
@@ -392,13 +392,13 @@ const ShowSMSActivity = () => {
                     </div>
                   )}
 
-                  {activity?.documentUrl && (
+                  {activity?.document && (
                     <div className="rounded-lg border border-gray-300 p-5 dark:border-gray-700 dark:bg-gray-800 text-center">
                       <h3 className="text-lg font-semibold mb-4 text-gray-800 dark:text-gray-200">
                         Documento Adjunto
                       </h3>
                       <a
-                        href={activity.documentUrl}
+                        href={activity.document}
                         download={`ACT-${activity.activity_number}.pdf`}
                         className="inline-flex items-center px-5 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700"
                       >

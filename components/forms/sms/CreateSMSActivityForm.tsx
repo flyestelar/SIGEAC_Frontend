@@ -33,7 +33,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useGetEmployeesByDepartment } from "@/hooks/sistema/useGetEmployeesByDepartament";
 import { cn } from "@/lib/utils";
 import { useCompanyStore } from "@/stores/CompanyStore";
-import { SMSActivity } from "@/types";
+import { SmsActivityResource } from "@/.gen/api/types.gen";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Separator } from "@radix-ui/react-select";
 import { format } from "date-fns";
@@ -85,7 +85,7 @@ type FormSchemaType = z.infer<typeof FormSchema>;
 
 interface FormProps {
     onClose: (open: boolean) => void;
-    initialData?: SMSActivity;
+    initialData?: SmsActivityResource;
     isEditing?: boolean;
     selectedDate?: string;
 }
@@ -210,7 +210,7 @@ export default function CreateSMSActivityForm({
                 id: initialData.id.toString(),
                 data: {
                     ...data,
-                    status: initialData.status,
+                    status: initialData.status ?? "",
                 },
             };
             await updateSMSActivity.mutateAsync(value);
@@ -637,13 +637,13 @@ export default function CreateSMSActivityForm({
                                 <FormLabel>Imagen de la Actividad</FormLabel>
                                 <div className="flex flex-col gap-4">
                                     {/* Vista previa de la imagen */}
-                                    {(field.value instanceof File || initialData?.imageUrl) && (
+                                    {(field.value instanceof File || initialData?.image) && (
                                         <div className="relative w-24 h-24 border rounded-md overflow-hidden">
                                             <Image
                                                 src={
                                                     field.value instanceof File
                                                         ? URL.createObjectURL(field.value)
-                                                        : initialData?.imageUrl || ""
+                                                        : initialData?.image || ""
                                                 }
                                                 alt="Preview"
                                                 fill

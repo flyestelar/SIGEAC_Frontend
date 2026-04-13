@@ -1,6 +1,6 @@
 "use client";
 import { useUpdateCalendarSMSActivity } from "@/actions/sms/sms_actividades/actions";
-import CreateSMSActivityDialog from "@/components/dialogs/aerolinea/sms/CreateSMSActivityDialog";
+import CreateSMSActivityDialog from "@/components/dialogs/sms/CreateSMSActivityDialog";
 import { Button } from "@/components/ui/button";
 import { useCompanyStore } from "@/stores/CompanyStore";
 import {

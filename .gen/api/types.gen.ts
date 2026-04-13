@@ -285,6 +285,22 @@ export type Document = Array<string>;
 export type Employee = Array<string>;
 
 /**
+ * EmployeeResource
+ */
+export type EmployeeResource = {
+  id: number;
+  dni: string;
+  dni_type: string | null;
+  first_name: string;
+  middle_name: string | null;
+  last_name: string;
+  second_last_name: string | null;
+  email: string | null;
+  phone: string | null;
+  isActive: boolean;
+};
+
+/**
  * EmployeeTraining
  */
 export type EmployeeTraining = Array<string>;
@@ -463,6 +479,16 @@ export type ObligatoryReportRequest = {
 export type Option = Array<string>;
 
 /**
+ * OptionResource
+ */
+export type OptionResource = {
+  id: number;
+  text: string;
+  is_correct: boolean | null;
+  question_id: number;
+};
+
+/**
  * Permission
  */
 export type Permission = {
@@ -500,6 +526,18 @@ export type PurchaseOrder = Array<string>;
 export type Question = Array<string>;
 
 /**
+ * QuestionResource
+ */
+export type QuestionResource = {
+  id: number;
+  text: string;
+  type: 'SINGLE' | 'MULTIPLE' | 'OPEN';
+  is_required: boolean;
+  survey_id: number;
+  options?: Array<OptionResource>;
+};
+
+/**
  * Renting
  */
 export type Renting = Array<string>;
@@ -515,11 +553,6 @@ export type RoleRequest = {
  * Route
  */
 export type Route = Array<string>;
-
-/**
- * SMSActivity
- */
-export type SmsActivity = Array<string>;
 
 /**
  * SMSActivityRequest
@@ -538,6 +571,32 @@ export type SmsActivityRequest = {
   planned_by: string;
   executed_by: string;
   hour: string;
+};
+
+/**
+ * SMSActivityResource
+ */
+export type SmsActivityResource = {
+  id: number;
+  activity_name: string;
+  activity_number: string;
+  title: string | null;
+  start_date: string;
+  end_date: string;
+  start_time: string | null;
+  end_time: string | null;
+  place: string;
+  topics: string;
+  objetive: string;
+  description: string;
+  authorized_by?: EmployeeResource;
+  planned_by?: EmployeeResource;
+  executed_by: string;
+  status: string | null;
+  registered_by: string;
+  updated_by: string | null;
+  image: string | null;
+  document: string | null;
 };
 
 /**
@@ -728,27 +787,35 @@ export type StoreTaskMasterRequest = {
 export type Survey = {
   id: number;
   title: string;
-  type: 'QUIZ' | 'SURVEY';
+  type: string;
   survey_number: string;
   description: string;
-  is_active: boolean | string;
+  is_active: boolean;
+  sms_quiz: string;
+  opened_at: string | null;
+  closed_at: string | null;
+  setting: string | null;
+  registered_by: string;
+  updated_by: string | null;
+  location_id: number;
+};
+
+/**
+ * SurveyResource
+ */
+export type SurveyResource = {
+  id: number;
+  title: string;
+  type: 'QUIZ' | 'SURVEY';
+  survey_number: string;
+  description: string | null;
+  is_active: boolean;
   registered_by: string;
   updated_by: string | null;
   location_id: string;
-  setting?: string | null;
-  questions: Array<{
-    id: number;
-    text: string;
-    type: 'SINGLE' | 'MULTIPLE' | 'OPEN';
-    is_required: boolean;
-    survey_id: string;
-    options: Array<{
-      id: number;
-      text: string;
-      is_correct?: boolean;
-      question_id: string;
-    }>;
-  }>;
+  setting: string | null;
+  answers_count: number;
+  questions?: Array<QuestionResource>;
 };
 
 /**
@@ -1129,125 +1196,6 @@ export type VoluntaryReportRequest = {
  * WorkShop
  */
 export type WorkShop = Array<string>;
-
-export type BatchesIndexData = {
-  body?: never;
-  path: {
-    company: string;
-  };
-  query?: never;
-  url: '/{company}/batches';
-};
-
-export type BatchesIndexErrors = {
-  /**
-   * Unauthenticated
-   */
-  401: {
-    /**
-     * Error overview.
-     */
-    message: string;
-  };
-};
-
-export type BatchesIndexError = BatchesIndexErrors[keyof BatchesIndexErrors];
-
-export type BatchesIndexResponses = {
-  200: Array<Batch>;
-};
-
-export type BatchesIndexResponse = BatchesIndexResponses[keyof BatchesIndexResponses];
-
-export type PostByCompanyBatchesData = {
-  body?: never;
-  path: {
-    company: string;
-  };
-  query?: never;
-  url: '/{company}/batches';
-};
-
-export type PostByCompanyBatchesErrors = {
-  /**
-   * Unauthenticated
-   */
-  401: {
-    /**
-     * Error overview.
-     */
-    message: string;
-  };
-};
-
-export type PostByCompanyBatchesError = PostByCompanyBatchesErrors[keyof PostByCompanyBatchesErrors];
-
-export type PostByCompanyBatchesResponses = {
-  200: string;
-};
-
-export type PostByCompanyBatchesResponse = PostByCompanyBatchesResponses[keyof PostByCompanyBatchesResponses];
-
-export type PutByCompanyUpdateToolStatusByIdData = {
-  body?: never;
-  path: {
-    company: string;
-    id: string;
-  };
-  query?: never;
-  url: '/{company}/update-tool-status/{id}';
-};
-
-export type PutByCompanyUpdateToolStatusByIdErrors = {
-  /**
-   * Unauthenticated
-   */
-  401: {
-    /**
-     * Error overview.
-     */
-    message: string;
-  };
-};
-
-export type PutByCompanyUpdateToolStatusByIdError =
-  PutByCompanyUpdateToolStatusByIdErrors[keyof PutByCompanyUpdateToolStatusByIdErrors];
-
-export type PutByCompanyUpdateToolStatusByIdResponses = {
-  200: string;
-};
-
-export type PutByCompanyUpdateToolStatusByIdResponse =
-  PutByCompanyUpdateToolStatusByIdResponses[keyof PutByCompanyUpdateToolStatusByIdResponses];
-
-export type GetMailableData = {
-  body?: never;
-  path?: never;
-  query?: never;
-  url: '/mailable';
-};
-
-export type GetMailableErrors = {
-  /**
-   * Unauthenticated
-   */
-  401: {
-    /**
-     * Error overview.
-     */
-    message: string;
-  };
-};
-
-export type GetMailableError = GetMailableErrors[keyof GetMailableErrors];
-
-export type GetMailableResponses = {
-  200: {
-    [key: string]: unknown;
-  };
-};
-
-export type GetMailableResponse = GetMailableResponses[keyof GetMailableResponses];
 
 export type AccountantsIndexData = {
   body?: never;
@@ -3981,6 +3929,35 @@ export type BankAccountAccountByBankResponses = {
 
 export type BankAccountAccountByBankResponse =
   BankAccountAccountByBankResponses[keyof BankAccountAccountByBankResponses];
+
+export type BatchesIndexData = {
+  body?: never;
+  path: {
+    company: string;
+  };
+  query?: never;
+  url: '/{company}/batches';
+};
+
+export type BatchesIndexErrors = {
+  /**
+   * Unauthenticated
+   */
+  401: {
+    /**
+     * Error overview.
+     */
+    message: string;
+  };
+};
+
+export type BatchesIndexError = BatchesIndexErrors[keyof BatchesIndexErrors];
+
+export type BatchesIndexResponses = {
+  200: Array<Batch>;
+};
+
+export type BatchesIndexResponse = BatchesIndexResponses[keyof BatchesIndexResponses];
 
 export type BatchesDestroyData = {
   body?: never;
@@ -14731,7 +14708,12 @@ export type SMsActivityIndexErrors = {
 export type SMsActivityIndexError = SMsActivityIndexErrors[keyof SMsActivityIndexErrors];
 
 export type SMsActivityIndexResponses = {
-  200: Array<SmsActivity>;
+  /**
+   * Array of `SMSActivityResource`
+   */
+  200: {
+    data: Array<SmsActivityResource>;
+  };
 };
 
 export type SMsActivityIndexResponse = SMsActivityIndexResponses[keyof SMsActivityIndexResponses];
@@ -14805,7 +14787,12 @@ export type SMsActivityShowErrors = {
 export type SMsActivityShowError = SMsActivityShowErrors[keyof SMsActivityShowErrors];
 
 export type SMsActivityShowResponses = {
-  200: string;
+  /**
+   * `SMSActivityResource`
+   */
+  200: {
+    data: SmsActivityResource;
+  };
 };
 
 export type SMsActivityShowResponse = SMsActivityShowResponses[keyof SMsActivityShowResponses];
@@ -15184,6 +15171,22 @@ export type SafetyBulletinDeleteDocumentResponses = {
 export type SafetyBulletinDeleteDocumentResponse =
   SafetyBulletinDeleteDocumentResponses[keyof SafetyBulletinDeleteDocumentResponses];
 
+export type SurveyGetSurveyNumberBySettingData = {
+  body?: never;
+  path: {
+    company: string;
+  };
+  query?: never;
+  url: '/{company}/sms/survey/setting';
+};
+
+export type SurveyGetSurveyNumberBySettingResponses = {
+  200: Array<unknown>;
+};
+
+export type SurveyGetSurveyNumberBySettingResponse =
+  SurveyGetSurveyNumberBySettingResponses[keyof SurveyGetSurveyNumberBySettingResponses];
+
 export type SurveySurveyAnswersData = {
   body: {
     email?: string | null;
@@ -15270,9 +15273,11 @@ export type SurveyShowData = {
 
 export type SurveyShowResponses = {
   /**
-   * `Survey`
+   * `SurveyResource`
    */
-  200: Survey | null;
+  200: {
+    data: SurveyResource;
+  };
 };
 
 export type SurveyShowResponse = SurveyShowResponses[keyof SurveyShowResponses];
@@ -15320,7 +15325,12 @@ export type SurveyIndexErrors = {
 export type SurveyIndexError = SurveyIndexErrors[keyof SurveyIndexErrors];
 
 export type SurveyIndexResponses = {
-  200: Array<Survey>;
+  /**
+   * Array of `SurveyResource`
+   */
+  200: {
+    data: Array<SurveyResource>;
+  };
 };
 
 export type SurveyIndexResponse = SurveyIndexResponses[keyof SurveyIndexResponses];
@@ -15485,37 +15495,6 @@ export type SurveyDestroyResponses = {
 };
 
 export type SurveyDestroyResponse = SurveyDestroyResponses[keyof SurveyDestroyResponses];
-
-export type SurveyGetSurveyNumberBySettingData = {
-  body?: never;
-  path: {
-    company: string;
-  };
-  query?: never;
-  url: '/{company}/sms/survey/setting';
-};
-
-export type SurveyGetSurveyNumberBySettingErrors = {
-  /**
-   * Unauthenticated
-   */
-  401: {
-    /**
-     * Error overview.
-     */
-    message: string;
-  };
-};
-
-export type SurveyGetSurveyNumberBySettingError =
-  SurveyGetSurveyNumberBySettingErrors[keyof SurveyGetSurveyNumberBySettingErrors];
-
-export type SurveyGetSurveyNumberBySettingResponses = {
-  200: Array<unknown>;
-};
-
-export type SurveyGetSurveyNumberBySettingResponse =
-  SurveyGetSurveyNumberBySettingResponses[keyof SurveyGetSurveyNumberBySettingResponses];
 
 export type SurveyGetUserSurveyResponsesData = {
   body?: never;

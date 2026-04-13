@@ -14,8 +14,8 @@ import {
   Trash2,
 } from "lucide-react";
 import { useState } from "react";
-import CreateFollowUpControlForm from "../../../forms/aerolinea/sms/CreateFollowUpControlForm";
-import CreateMitigationMeasureForm from "../../../forms/aerolinea/sms/CreateMitigationMeasureForm";
+import CreateFollowUpControlForm from "../../../forms/sms/CreateFollowUpControlForm";
+import CreateMitigationMeasureForm from "../../../forms/sms/CreateMitigationMeasureForm";
 import { Button } from "../../../ui/button";
 import {
   Dialog,

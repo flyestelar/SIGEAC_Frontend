@@ -49,7 +49,7 @@ export const useCreateSurvey = () => {
   const createMutation = useMutation({
     mutationFn: async (surveyData: surveyData) => {
       const response = await axiosInstance.post(
-        `/${selectedCompany?.slug}/${selectedStation}/sms/survey`,
+        `/${selectedCompany?.slug}/sms/${selectedStation}/survey`,
         surveyData
       );
       return response.data;
@@ -115,7 +115,7 @@ export const useDeleteSurvey = () => {
       survey_number: string;
     }) => {
       await axiosInstance.delete(
-        `/${company}/${location_id}/sms/survey/${survey_number}`
+        `/${company}/sms/${location_id}/survey/${survey_number}`
       );
     },
     onSuccess: (_, data) => {
@@ -154,7 +154,7 @@ export const useUpdateSurvey = () => {
       data,
     }: UpdateSurveyData) => {
       const response = await axiosInstance.put(
-        `/${company}/${location_id}/sms/survey/${survey_number}`,
+        `/${company}/sms/${location_id}/survey/${survey_number}`,
         data
       );
       return response.data;
@@ -226,7 +226,7 @@ export const useUpdateQuestion = () => {
       data,
     }: UpdateQuestionData) => {
       const response = await axiosInstance.patch(
-        `/${company}/${location_id}/sms/survey/${survey_number}/question/${question_id}`,
+        `/${company}/sms/${location_id}/survey/${survey_number}/question/${question_id}`,
         data
       );
       return response.data;
@@ -282,7 +282,7 @@ export const useDeleteQuestion = () => {
       question_id,
     }: DeleteQuestionData) => {
       const response = await axiosInstance.delete(
-        `/${company}/${location_id}/sms/survey/${survey_number}/question/${question_id}`
+        `/${company}/sms/${location_id}/survey/${survey_number}/question/${question_id}`
       );
       return response.data;
     },

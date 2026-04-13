@@ -9,7 +9,7 @@ import { InformationSource } from "@/types";
 import { ClipboardPen, Loader2, MoreHorizontal, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { EditInformationSourceForm } from "../../../forms/aerolinea/sms/EditInformationSourceForm";
+import { EditInformationSourceForm } from "../../../forms/sms/EditInformationSourceForm";
 import { Button } from "../../../ui/button";
 import {
   Dialog,

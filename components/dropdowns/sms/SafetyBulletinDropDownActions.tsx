@@ -9,7 +9,7 @@ import { InformationSource, SafetyBulletin } from "@/types";
 import { ClipboardPen, Loader2, MoreHorizontal, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { EditInformationSourceForm } from "../../../forms/aerolinea/sms/EditInformationSourceForm";
+import { EditInformationSourceForm } from "../../../forms/sms/EditInformationSourceForm";
 import { Button } from "../../../ui/button";
 import {
   Dialog,
@@ -20,7 +20,7 @@ import {
   DialogTitle,
 } from "../../../ui/dialog";
 import { useDeleteSafetyBulletin } from "@/actions/sms/boletin/actions";
-import { CreateSafetyBulletinForm } from "@/components/forms/aerolinea/sms/CreateSafetyBulletinForm";
+import { CreateSafetyBulletinForm } from "@/components/forms/sms/CreateSafetyBulletinForm";
 import { useCompanyStore } from "@/stores/CompanyStore";
 
 const SafetyBulletinDropdownActions = ({

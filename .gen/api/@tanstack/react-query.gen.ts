@@ -235,7 +235,6 @@ import {
   followUpControllStore,
   followUpControllUpdate,
   generalLocationIndex0,
-  getMailable,
   informationSourcesDestroy,
   informationSourcesIndex,
   informationSourcesStore,
@@ -321,7 +320,6 @@ import {
   planificationReportPdfWorkOrder,
   planificationReportPdfWorkOrderReport,
   planificationReportWorkOrderPreInspection,
-  postByCompanyBatches,
   preliminaryInspectionDestroy,
   preliminaryInspectionIndex,
   preliminaryInspectionShow,
@@ -341,7 +339,6 @@ import {
   purchaseQuoteOrderDestroy3,
   purchaseQuoteOrderUpdate1,
   purchaseQuoteOrderUpdate2,
-  putByCompanyUpdateToolStatusById,
   questionsDestroy,
   questionsIndex,
   questionsShow,
@@ -1142,9 +1139,6 @@ import type {
   GeneralLocationIndex0Data,
   GeneralLocationIndex0Error,
   GeneralLocationIndex0Response,
-  GetMailableData,
-  GetMailableError,
-  GetMailableResponse,
   InformationSourcesDestroyData,
   InformationSourcesDestroyError,
   InformationSourcesDestroyResponse,
@@ -1386,9 +1380,6 @@ import type {
   PlanificationReportWorkOrderPreInspectionData,
   PlanificationReportWorkOrderPreInspectionError,
   PlanificationReportWorkOrderPreInspectionResponse,
-  PostByCompanyBatchesData,
-  PostByCompanyBatchesError,
-  PostByCompanyBatchesResponse,
   PreliminaryInspectionDestroyData,
   PreliminaryInspectionDestroyError,
   PreliminaryInspectionIndexData,
@@ -1445,9 +1436,6 @@ import type {
   PurchaseQuoteOrderUpdate2Data,
   PurchaseQuoteOrderUpdate2Error,
   PurchaseQuoteOrderUpdate2Response,
-  PutByCompanyUpdateToolStatusByIdData,
-  PutByCompanyUpdateToolStatusByIdError,
-  PutByCompanyUpdateToolStatusByIdResponse,
   QuestionsDestroyData,
   QuestionsDestroyError,
   QuestionsIndexData,
@@ -1615,7 +1603,6 @@ import type {
   SurveyGetQuestionStatisticsError,
   SurveyGetQuestionStatisticsResponse,
   SurveyGetSurveyNumberBySettingData,
-  SurveyGetSurveyNumberBySettingError,
   SurveyGetSurveyNumberBySettingResponse,
   SurveyGetSurveyRespondentsData,
   SurveyGetSurveyRespondentsError,
@@ -1905,96 +1892,6 @@ const createQueryKey = <TOptions extends Options>(
   }
   return [params];
 };
-
-export const batchesIndexQueryKey = (options: Options<BatchesIndexData>) => createQueryKey('batchesIndex', options);
-
-export const batchesIndexOptions = (options: Options<BatchesIndexData>) =>
-  queryOptions<
-    BatchesIndexResponse,
-    AxiosError<BatchesIndexError>,
-    BatchesIndexResponse,
-    ReturnType<typeof batchesIndexQueryKey>
-  >({
-    queryFn: async ({ queryKey, signal }) => {
-      const { data } = await batchesIndex({
-        ...options,
-        ...queryKey[0],
-        signal,
-        throwOnError: true,
-      });
-      return data;
-    },
-    queryKey: batchesIndexQueryKey(options),
-  });
-
-export const postByCompanyBatchesMutation = (
-  options?: Partial<Options<PostByCompanyBatchesData>>,
-): UseMutationOptions<
-  PostByCompanyBatchesResponse,
-  AxiosError<PostByCompanyBatchesError>,
-  Options<PostByCompanyBatchesData>
-> => {
-  const mutationOptions: UseMutationOptions<
-    PostByCompanyBatchesResponse,
-    AxiosError<PostByCompanyBatchesError>,
-    Options<PostByCompanyBatchesData>
-  > = {
-    mutationFn: async (fnOptions) => {
-      const { data } = await postByCompanyBatches({
-        ...options,
-        ...fnOptions,
-        throwOnError: true,
-      });
-      return data;
-    },
-  };
-  return mutationOptions;
-};
-
-export const putByCompanyUpdateToolStatusByIdMutation = (
-  options?: Partial<Options<PutByCompanyUpdateToolStatusByIdData>>,
-): UseMutationOptions<
-  PutByCompanyUpdateToolStatusByIdResponse,
-  AxiosError<PutByCompanyUpdateToolStatusByIdError>,
-  Options<PutByCompanyUpdateToolStatusByIdData>
-> => {
-  const mutationOptions: UseMutationOptions<
-    PutByCompanyUpdateToolStatusByIdResponse,
-    AxiosError<PutByCompanyUpdateToolStatusByIdError>,
-    Options<PutByCompanyUpdateToolStatusByIdData>
-  > = {
-    mutationFn: async (fnOptions) => {
-      const { data } = await putByCompanyUpdateToolStatusById({
-        ...options,
-        ...fnOptions,
-        throwOnError: true,
-      });
-      return data;
-    },
-  };
-  return mutationOptions;
-};
-
-export const getMailableQueryKey = (options?: Options<GetMailableData>) => createQueryKey('getMailable', options);
-
-export const getMailableOptions = (options?: Options<GetMailableData>) =>
-  queryOptions<
-    GetMailableResponse,
-    AxiosError<GetMailableError>,
-    GetMailableResponse,
-    ReturnType<typeof getMailableQueryKey>
-  >({
-    queryFn: async ({ queryKey, signal }) => {
-      const { data } = await getMailable({
-        ...options,
-        ...queryKey[0],
-        signal,
-        throwOnError: true,
-      });
-      return data;
-    },
-    queryKey: getMailableQueryKey(options),
-  });
 
 export const accountantsIndexQueryKey = (options: Options<AccountantsIndexData>) =>
   createQueryKey('accountantsIndex', options);
@@ -3938,6 +3835,27 @@ export const bankAccountAccountByBankOptions = (options: Options<BankAccountAcco
       return data;
     },
     queryKey: bankAccountAccountByBankQueryKey(options),
+  });
+
+export const batchesIndexQueryKey = (options: Options<BatchesIndexData>) => createQueryKey('batchesIndex', options);
+
+export const batchesIndexOptions = (options: Options<BatchesIndexData>) =>
+  queryOptions<
+    BatchesIndexResponse,
+    AxiosError<BatchesIndexError>,
+    BatchesIndexResponse,
+    ReturnType<typeof batchesIndexQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await batchesIndex({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: batchesIndexQueryKey(options),
   });
 
 /**
@@ -11594,6 +11512,28 @@ export const safetyBulletinDeleteDocumentMutation = (
   return mutationOptions;
 };
 
+export const surveyGetSurveyNumberBySettingQueryKey = (options: Options<SurveyGetSurveyNumberBySettingData>) =>
+  createQueryKey('surveyGetSurveyNumberBySetting', options);
+
+export const surveyGetSurveyNumberBySettingOptions = (options: Options<SurveyGetSurveyNumberBySettingData>) =>
+  queryOptions<
+    SurveyGetSurveyNumberBySettingResponse,
+    AxiosError<DefaultError>,
+    SurveyGetSurveyNumberBySettingResponse,
+    ReturnType<typeof surveyGetSurveyNumberBySettingQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await surveyGetSurveyNumberBySetting({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: surveyGetSurveyNumberBySettingQueryKey(options),
+  });
+
 export const surveySurveyAnswersMutation = (
   options?: Partial<Options<SurveySurveyAnswersData>>,
 ): UseMutationOptions<
@@ -11753,28 +11693,6 @@ export const surveyDestroyMutation = (
   };
   return mutationOptions;
 };
-
-export const surveyGetSurveyNumberBySettingQueryKey = (options: Options<SurveyGetSurveyNumberBySettingData>) =>
-  createQueryKey('surveyGetSurveyNumberBySetting', options);
-
-export const surveyGetSurveyNumberBySettingOptions = (options: Options<SurveyGetSurveyNumberBySettingData>) =>
-  queryOptions<
-    SurveyGetSurveyNumberBySettingResponse,
-    AxiosError<SurveyGetSurveyNumberBySettingError>,
-    SurveyGetSurveyNumberBySettingResponse,
-    ReturnType<typeof surveyGetSurveyNumberBySettingQueryKey>
-  >({
-    queryFn: async ({ queryKey, signal }) => {
-      const { data } = await surveyGetSurveyNumberBySetting({
-        ...options,
-        ...queryKey[0],
-        signal,
-        throwOnError: true,
-      });
-      return data;
-    },
-    queryKey: surveyGetSurveyNumberBySettingQueryKey(options),
-  });
 
 export const surveyGetUserSurveyResponsesQueryKey = (options: Options<SurveyGetUserSurveyResponsesData>) =>
   createQueryKey('surveyGetUserSurveyResponses', options);

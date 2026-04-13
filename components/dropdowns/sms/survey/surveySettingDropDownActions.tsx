@@ -20,7 +20,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useCompanyStore } from "@/stores/CompanyStore";
-import { Survey } from "@/types";
+import { SurveyResource } from "@/.gen/api/types.gen";
 import {
   EyeIcon,
   Loader2,
@@ -39,7 +39,7 @@ type SettingType = "OMA_QUIZ" | "SMS_QUIZ" | "SMS_SURVEY";
 const SurveySettingDropdownActions = ({
   surveyData,
 }: {
-  surveyData: Survey;
+  surveyData: SurveyResource;
 }) => {
   const { selectedCompany } = useCompanyStore();
   const [open, setOpen] = useState(false);
@@ -57,7 +57,7 @@ const SurveySettingDropdownActions = ({
 
     const value = {
       company: selectedCompany?.slug,
-      id: surveyData.id,
+      id: String(surveyData.id),
       setting: currentSetting,
     };
 

@@ -1,7 +1,23 @@
 "use client";
 
-import { useMarkSMSActivityAttendance } from "@/actions/sms/sms_asistencia_actividades/actions";
+import { useCreateSMSActivityAttendance } from "@/actions/sms/sms_asistencia_actividades/actions";
 import { Button } from "@/components/ui/button";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { useGetEnrolledStatus } from "@/hooks/sms/useGetEnrolledStatus";
+import { cn } from "@/lib/utils";
+import { SmsActivityResource } from "@/.gen/api/types.gen";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Check, ChevronsUpDown, Loader2 } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
 import {
   Command,
   CommandEmpty,
@@ -11,31 +27,15 @@ import {
   CommandList,
 } from "@/components/ui/command";
 import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { useGetSMSActivityAttendanceStatus } from "@/hooks/sms/useGetSMSActivityAttendanceStatus";
-import { cn } from "@/lib/utils";
 import { useCompanyStore } from "@/stores/CompanyStore";
-import { SMSActivity } from "@/types";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Check, ChevronsUpDown } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
 
 interface FormProps {
   onClose: () => void;
-  initialData: SMSActivity;
+  initialData: SmsActivityResource;
 }
 
 interface EmployeeSelection {
@@ -67,24 +67,20 @@ const FormSchema = z.object({
 
 type FormSchemaType = z.infer<typeof FormSchema>;
 
-export function AddSMSActivityAttendanceForm({
-  onClose,
-  initialData,
-}: FormProps) {
-  const [open, setOpen] = useState(false);
+export function AddToSMSActivity({ onClose, initialData }: FormProps) {
   const { selectedCompany } = useCompanyStore();
-  const { markSMSActivityAttendance } = useMarkSMSActivityAttendance();
+  const [open, setOpen] = useState(false);
+  const { createSMSActivityAttendance } = useCreateSMSActivityAttendance();
   const [employeeSelections, setEmployeeSelections] = useState<
     EmployeeSelection[]
   >([]);
   const [searchQuery, setSearchQuery] = useState("");
 
-  const value = {
-    activity_id: initialData.id.toString(),
-    company: selectedCompany!.slug,
-  };
   const { data: employeesData, isLoading: isLoadingEnrolledEmployee } =
-    useGetSMSActivityAttendanceStatus(value);
+    useGetEnrolledStatus({
+      company: selectedCompany!.slug,
+      activity_id: initialData.id.toString(),
+    });
 
   const form = useForm<FormSchemaType>({
     resolver: zodResolver(FormSchema),
@@ -94,7 +90,6 @@ export function AddSMSActivityAttendanceForm({
     },
   });
 
-  // Ahora 'form' completo es la dependencia de useCallback
   const updateFormValues = useCallback(
     (selections: EmployeeSelection[]) => {
       const added = selections.filter((e) => e.isSelected && !e.wasEnrolled);
@@ -118,13 +113,13 @@ export function AddSMSActivityAttendanceForm({
         }))
       );
     },
-    [form] // La dependencia ahora es el objeto 'form'
+    [form]
   );
 
   useEffect(() => {
     if (employeesData) {
       const selections: EmployeeSelection[] = [
-        ...(employeesData.attended?.map((e) => ({
+        ...(employeesData.enrolled?.map((e) => ({
           dni: e.dni,
           first_name: e.first_name,
           last_name: e.last_name,
@@ -133,7 +128,7 @@ export function AddSMSActivityAttendanceForm({
           isSelected: true,
           wasEnrolled: true,
         })) || []),
-        ...(employeesData.not_attended?.map((e) => ({
+        ...(employeesData.not_enrolled?.map((e) => ({
           dni: e.dni,
           first_name: e.first_name,
           last_name: e.last_name,
@@ -158,6 +153,18 @@ export function AddSMSActivityAttendanceForm({
     updateFormValues(newSelections);
   };
 
+  const toggleAllEmployees = () => {
+    const allSelected = employeeSelections.every((emp) => emp.isSelected);
+
+    const newSelections = employeeSelections.map((emp) => ({
+      ...emp,
+      isSelected: !allSelected,
+    }));
+
+    setEmployeeSelections(newSelections);
+    updateFormValues(newSelections);
+  };
+
   // Filtrar empleados basado en la búsqueda
   const filteredEmployees = employeeSelections.filter((employee) => {
     const searchLower = searchQuery.toLowerCase();
@@ -172,16 +179,17 @@ export function AddSMSActivityAttendanceForm({
 
   const onSubmit = async (data: FormSchemaType) => {
     const value = {
+      company: selectedCompany!.slug,
       activity_id: initialData?.id.toString(),
-      employees_list: {
+      data: {
         addedEmployees: data.addedEmployees,
         removedEmployees: data.removedEmployees,
       },
     };
     try {
-      await markSMSActivityAttendance.mutateAsync(value);
+      await createSMSActivityAttendance.mutateAsync(value);
     } catch (error) {
-      console.error("Error en asistencia", error);
+      console.error("Error al inscribir", error);
     }
     onClose();
   };
@@ -194,7 +202,7 @@ export function AddSMSActivityAttendanceForm({
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
         <FormLabel className="text-lg font-semibold">
-          Gestionar asistentes al curso
+          Gestionar participantes de la actividad
         </FormLabel>
 
         <FormField
@@ -234,6 +242,18 @@ export function AddSMSActivityAttendanceForm({
                         value={searchQuery}
                         onValueChange={setSearchQuery}
                       />
+                      <div className="p-2 border-b">
+                        <Button
+                          variant="ghost"
+                          className="w-full justify-start h-8"
+                          onClick={toggleAllEmployees}
+                        >
+                          <Check className="mr-2 h-4 w-4" />
+                          {employeeSelections.every((emp) => emp.isSelected)
+                            ? "Deseleccionar todos"
+                            : "Seleccionar todos"}
+                        </Button>
+                      </div>
                       <CommandList>
                         <CommandEmpty>No se encontraron empleados</CommandEmpty>
 
@@ -255,11 +275,10 @@ export function AddSMSActivityAttendanceForm({
                                 )}
                               />
                               {employee.first_name} {employee.last_name} -{" "}
-                              {employee.dni} <br />({employee.job_title}
-                              {employee.department})
+                              {employee.dni}
                               {employee.wasEnrolled && (
                                 <span className="ml-2 text-xs text-muted-foreground">
-                                  (Asistió)
+                                  (inscrito)
                                 </span>
                               )}
                             </CommandItem>
@@ -279,7 +298,15 @@ export function AddSMSActivityAttendanceForm({
           <Button variant="outline" onClick={onClose}>
             Cancelar
           </Button>
-          <Button type="submit">Guardar cambios</Button>
+          <Button
+            type="submit"
+            disabled={createSMSActivityAttendance.isPending}
+          >
+            {createSMSActivityAttendance.isPending ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : null}
+            Guardar cambios
+          </Button>
         </div>
       </form>
     </Form>

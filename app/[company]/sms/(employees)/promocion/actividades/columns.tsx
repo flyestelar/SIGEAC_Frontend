@@ -2,13 +2,13 @@
 
 import { ColumnDef } from "@tanstack/react-table";
 import { DataTableColumnHeader } from "@/components/tables/DataTableHeader";
-import { SMSActivity } from "@/types";
+import { SmsActivityResource } from "@/.gen/api/types.gen";
 import { dateFormat } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import SMSActivityDropDownActions from "@/components/dropdowns/sms/SMSActivityDropDownActions";
 
 // Columnas de la tabla
-export const columns: ColumnDef<SMSActivity>[] = [
+export const columns: ColumnDef<SmsActivityResource>[] = [
   {
     accessorKey: "activity_number",
     header: ({ column }) => (

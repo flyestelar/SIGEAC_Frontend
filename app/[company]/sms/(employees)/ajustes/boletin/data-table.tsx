@@ -1,6 +1,6 @@
 "use client";
 
-import CreateSafetyBulletinDialog from "@/components/dialogs/aerolinea/sms/CreateSafetyBulletinDialog";
+import CreateSafetyBulletinDialog from "@/components/dialogs/sms/CreateSafetyBulletinDialog";
 import { DataTablePagination } from "@/components/tables/DataTablePagination";
 import { DataTableViewOptions } from "@/components/tables/DataTableViewOptions";
 import {

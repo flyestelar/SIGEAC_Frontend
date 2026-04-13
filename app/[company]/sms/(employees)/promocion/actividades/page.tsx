@@ -20,7 +20,7 @@ const SMSActivitiesPage = () => {
     data: activities,
     isLoading,
     isError,
-  } = useGetSMSActivities(selectedCompany?.slug, fromDate, toDate);
+  } = useGetSMSActivities(selectedCompany?.slug);
 
   return (
     <ContentLayout title="Actividades de SMS">

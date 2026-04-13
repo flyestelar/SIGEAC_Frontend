@@ -1007,6 +1007,7 @@ export type SMSActivity = {
   id: number;
   activity_name: string;
   activity_number: string;
+  title?: string | null;
   start_date: Date;
   end_date: Date;
   hour: string;
@@ -1199,5 +1200,5 @@ export type Survey = {
   updated_by: string | null;
   location_id: string;
   setting?: string | null;
-  questions: SurveyQuestion[];
+  questions?: SurveyQuestion[];
 };
