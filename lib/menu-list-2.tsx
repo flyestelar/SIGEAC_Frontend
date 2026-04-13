@@ -540,6 +540,14 @@ export function getMenuList(pathname: string, currentCompany: Company | null, us
           icon: PackagePlus,
           submenus: [],
         },
+        {
+          href: companyPath('/almacen/gestion_cantidades'),
+          label: 'Gestión de Cantidades',
+          active: isCompanyPath('/almacen/gestion_cantidades', 'includes'),
+          icon: ClipboardPen,
+          roles: ['ANALISTA_ALMACEN', 'JEFE_ALMACEN', 'SUPERUSER'],
+          submenus: [],
+        },
       ],
     },
     {
