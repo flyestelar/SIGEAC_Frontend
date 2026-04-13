@@ -50,10 +50,13 @@ function getClosestEstimatedMetric(metrics: ComputedControl['metrics'], averages
       let explanation = '';
       if (metric.type === 'DAYS') {
         explanation = 'Por intervalo calendario';
-      } else if (metric.type === 'FH') {
-        explanation = estimation.avg ? `Por promedio ${estimation.avg.toFixed(1)} FH/día` : 'Por FH restante';
-      } else if (metric.type === 'FC') {
-        explanation = estimation.avg ? `Por promedio ${estimation.avg.toFixed(1)} FC/día` : 'Por FC restante';
+      } else {
+        if (estimation.avg) {
+          const avg = estimation.avg.toLocaleString(undefined, { maximumFractionDigits: 2 });
+          explanation = `Por promedio ${avg} ${metric.type}/día`;
+        } else {
+          explanation = `Por ${metric.type} restante`;
+        }
       }
 
       return { date: estimation.date, explanation };
