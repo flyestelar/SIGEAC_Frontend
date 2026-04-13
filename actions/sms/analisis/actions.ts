@@ -35,11 +35,11 @@ export const useCreateAnalysis = () => {
         },
       });
     },
-    onSuccess: () => {
+    onSuccess: (_,data) => {
       queryClient.invalidateQueries({ queryKey: ["analysis"] });
-      queryClient.invalidateQueries({ queryKey: ["danger-identifications"] });
+      queryClient.invalidateQueries({ queryKey: ["danger-identifications", data.company] });
       queryClient.invalidateQueries({
-        queryKey: ["danger-identification-by-id"],
+        queryKey: ["danger-identification"],
       });
       toast.success("¡Creado!", {
         description: ` El análisis ha sido creado correctamente.`,
@@ -89,9 +89,9 @@ export const useUpdateAnalyses = () => {
     mutationFn: async ({ company, data, id }: UpdateAnalysisData) => {
       await axiosInstance.patch(`/${company}/sms/analysis/${id}`, data);
     },
-    onSuccess: () => {
+    onSuccess: (_,data) => {
       queryClient.invalidateQueries({ queryKey: ["analysis"] });
-      queryClient.invalidateQueries({ queryKey: ["danger-identifications"] });
+      queryClient.invalidateQueries({ queryKey: ["danger-identifications", data.company] });
       toast.success("¡Actualizado!", {
         description: `El analisis ha sido actualizada correctamente.`,
       });

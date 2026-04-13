@@ -72,8 +72,8 @@ const SMSPage = () => {
               {/* Imagen */}
               <div className="relative h-64 lg:h-full min-h-[300px]">
                 <Image
-                  src={`${process.env.NEXT_PUBLIC_STORAGE_BASE_URL}images/sms/LOGO_TMD.png`}
-                  alt="Logo Transmandu"
+                  src={`${process.env.NEXT_PUBLIC_STORAGE_BASE_URL}/images/sms/estelar_technik.png`}
+                  alt="Logo Estelar"
                   fill
                   className="object-cover"
                   priority
@@ -222,7 +222,7 @@ const SMSPage = () => {
                     }
                   />
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 items-stretch transition-all duration-500 ease-out opacity-0 animate-fade-in">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 items-stretch">
                   {policyCardsData.map((policy, index) => (
                     <div key={index} className="h-full">
                       <PolicyCard
@@ -241,17 +241,17 @@ const SMSPage = () => {
 
           {/* CONTENIDO PARA NUESTRA EMPRESA */}
           <TabsContent value="empresa" className="space-y-4 mt-4 sm:mt-6">
-            <Card className="min-h-[300px] sm:min-h-[400px] transition-all duration-700 ease-out opacity-0 animate-fade-in">
+            <Card className="min-h-[300px] sm:min-h-[400px]">
               <CardHeader>
-                <CardTitle className="text-lg sm:text-xl flex items-center gap-2 transition-all duration-800 ease-out opacity-0 animate-fade-in delay-100">
+                <CardTitle className="text-lg sm:text-xl flex items-center gap-2">
                   Nuestra Empresa
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3 sm:space-y-4 text-sm sm:text-base">
-                <div className="transition-all duration-900 ease-out opacity-0 animate-fade-in delay-200">
+                <div>
                   <MissionVision />
                 </div>
-                <div className="pt-4 border-t transition-all duration-1000 ease-out opacity-0 animate-fade-in delay-300">
+                <div className="pt-4 border-t">
                   <div className="flex justify-center">
                     <Image
                       src={`${process.env.NEXT_PUBLIC_STORAGE_BASE_URL}images/sms/sms_airplane_page.jpg`}
@@ -275,7 +275,7 @@ const SMSPage = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3 sm:space-y-4 text-sm sm:text-base">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-stretch transition-all duration-900 ease-out opacity-0 animate-fade-in delay-200">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-stretch">
                   {/* Términos SMS */}
                   <div
                     className="border-l-4 border-l-blue-500 pl-4 flex flex-col cursor-pointer"
@@ -309,12 +309,15 @@ const SMSPage = () => {
 
                   {/* Encuestas SMS */}
                   <div
-                    className="border-l-4 border-l-blue-500 pl-4 cursor-pointer flex flex-col"
-                    onClick={() =>
-                      router.push(
-                        `/acceso_publico/${company}/sms/encuesta/${surveyNumbers?.SMS_SURVEY}`,
-                      )
-                    }
+                    className="border-l-4 border-l-blue-500 pl-4 flex flex-col"
+                    onClick={() => {
+                      if (surveyNumbers?.SMS_SURVEY) {
+                        router.push(
+                          `/acceso_publico/${company}/sms/encuesta/${surveyNumbers.SMS_SURVEY}`,
+                        );
+                      }
+                    }}
+                    style={{ cursor: surveyNumbers?.SMS_SURVEY ? 'pointer' : 'default' }}
                   >
                     <StrategyCard
                       title="Encuestas SMS"
@@ -325,12 +328,15 @@ const SMSPage = () => {
 
                   {/* Trivia SMS */}
                   <div
-                    className="border-l-4 border-l-blue-500 pl-4 cursor-pointer flex flex-col"
-                    onClick={() =>
-                      router.push(
-                        `/acceso_publico/${company}/sms/encuesta/${surveyNumbers?.SMS_QUIZ}`,
-                      )
-                    }
+                    className="border-l-4 border-l-blue-500 pl-4 flex flex-col"
+                    onClick={() => {
+                      if (surveyNumbers?.SMS_QUIZ) {
+                        router.push(
+                          `/acceso_publico/${company}/sms/encuesta/${surveyNumbers.SMS_QUIZ}`,
+                        );
+                      }
+                    }}
+                    style={{ cursor: surveyNumbers?.SMS_QUIZ ? 'pointer' : 'default' }}
                   >
                     <StrategyCard
                       title="Trivia SMS"

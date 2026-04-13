@@ -1198,5 +1198,6 @@ export type Survey = {
   registered_by: string;
   updated_by: string | null;
   location_id: string;
+  setting?: string | null;
   questions: SurveyQuestion[];
 };

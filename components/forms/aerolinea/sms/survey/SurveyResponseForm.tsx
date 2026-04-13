@@ -5,7 +5,7 @@ import { useCreateSurveyAnswers } from "@/actions/sms/survey/actions";
 import {
   QuizResults,
   QuizResultsDialog,
-} from "@/components/dialogs/aerolinea/sms/QuizResultDialog";
+} from "@/components/dialogs/sms/QuizResultDialog";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import {

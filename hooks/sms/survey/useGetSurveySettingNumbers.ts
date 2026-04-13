@@ -13,7 +13,7 @@ export type SurveyResponse = SurveyNumbers;
 const fetchSurveySettingNumbers = async (
   company: string) => {
   const { data } = await axiosInstance.get(
-    `/${company}/sms/survey-setting`
+    `/${company}/sms/survey/setting`
   );
   return data;
 };
