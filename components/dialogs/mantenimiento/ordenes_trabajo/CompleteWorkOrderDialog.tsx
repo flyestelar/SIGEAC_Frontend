@@ -22,7 +22,12 @@ import {
 } from '@/components/ui/dialog';
 import { Field, FieldLabel } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
-import { workOrderBulkCompleteItemTasksMutation, workOrderCloseMutation, workOrdersShowQueryKey } from '@api/queries';
+import {
+  maintenanceControlExecutionsIndexQueryKey,
+  workOrderBulkCompleteItemTasksMutation,
+  workOrderCloseMutation,
+  workOrdersShowQueryKey,
+} from '@api/queries';
 import { WorkOrderItemTaskResource, WorkOrderResource } from '@api/types';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { AlertCircle, FileUp, Loader2, Trash2 } from 'lucide-react';
@@ -173,7 +178,18 @@ export function CompleteWorkOrderDialog({ open, workOrder, orderNumber, onOpenCh
   const closeWorkOrderMutation = useMutation({
     ...workOrderCloseMutation(),
     async onSuccess(data, variables, onMutateResult, context) {
-      await context.client.invalidateQueries({ queryKey: workOrdersShowQueryKey({ path: { orderNumber } }) });
+      await Promise.all([
+        context.client.invalidateQueries({ queryKey: workOrdersShowQueryKey({ path: { orderNumber } }) }),
+        ...(workOrder?.aircraft_id
+          ? [
+              context.client.invalidateQueries({
+                queryKey: maintenanceControlExecutionsIndexQueryKey({
+                  query: { aircraft_id: workOrder.aircraft_id },
+                }),
+              }),
+            ]
+          : []),
+      ]);
 
       toast.success('Orden de trabajo completada correctamente.');
       setConfirmOpen(false);
