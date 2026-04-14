@@ -3,9 +3,11 @@
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { AircraftAverageMetric, MaintenanceControlResource } from '@api/types';
-import { AlertTriangle, Calendar, Clock, RefreshCw, ShieldCheck, TriangleAlert, Wrench } from 'lucide-react';
+import { AlertTriangle, Calendar, ClipboardPenLine, Clock, RefreshCw, ShieldCheck, TriangleAlert, Wrench } from 'lucide-react';
 import { addDays } from 'date-fns';
 import { TooltipPortal } from '@radix-ui/react-tooltip';
+import Link from 'next/link';
+import { useCompanyStore } from '@/stores/CompanyStore';
 
 export type AlertLevel = 'OVERDUE' | 'WARNING' | 'OK';
 export type MetricType = 'FH' | 'FC' | 'DAYS';
@@ -107,14 +109,17 @@ export const LEVEL_CONFIG: Record<
 export const LEVEL_PRIORITY: Record<AlertLevel, number> = { OVERDUE: 0, WARNING: 1, OK: 2 };
 
 export function EnCursoBadge({ workOrderLabel }: { workOrderLabel?: string }) {
+  const { selectedCompany } = useCompanyStore()
   const badge = (
-    <Badge
-      variant="outline"
-      className="whitespace-nowrap h-5 border-sky-500/30 bg-sky-500/10 px-1.5 text-[10px] text-sky-600 dark:text-sky-400"
-    >
-      <Wrench className="mr-0.5 h-2.5 w-2.5" />
-      En curso
-    </Badge>
+    <Link className='z-100' href={`/${selectedCompany?.slug}/planificacion/ordenes_trabajo/${workOrderLabel}`} onClick={(e) => e.stopPropagation()}>
+      <Badge
+        variant="outline"
+        className="whitespace-nowrap h-5 border-sky-500/30 bg-sky-500/10 px-1.5 text-[10px] text-sky-600 dark:text-sky-400"
+      >
+        <Wrench className="mr-0.5 h-2.5 w-2.5" />
+        En curso
+      </Badge>
+    </Link >
   );
 
   if (!workOrderLabel) {
@@ -128,10 +133,12 @@ export function EnCursoBadge({ workOrderLabel }: { workOrderLabel?: string }) {
           <div>{badge}</div>
         </TooltipTrigger>
         <TooltipPortal>
-          <TooltipContent side="top">Orden de trabajo: {workOrderLabel}</TooltipContent>
+          <TooltipContent side="top" className='text-muted-foreground flex gap-2 items-center'>
+            <ClipboardPenLine className='size-4' /> <strong>{workOrderLabel}</strong>
+          </TooltipContent>
         </TooltipPortal>
       </Tooltip>
-    </TooltipProvider>
+    </TooltipProvider >
   );
 }
 
