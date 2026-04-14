@@ -5,6 +5,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { AircraftAverageMetric, MaintenanceControlResource } from '@api/types';
 import { AlertTriangle, Calendar, Clock, RefreshCw, ShieldCheck, TriangleAlert, Wrench } from 'lucide-react';
 import { addDays } from 'date-fns';
+import { TooltipPortal } from '@radix-ui/react-tooltip';
 
 export type AlertLevel = 'OVERDUE' | 'WARNING' | 'OK';
 export type MetricType = 'FH' | 'FC' | 'DAYS';
@@ -123,8 +124,12 @@ export function EnCursoBadge({ workOrderLabel }: { workOrderLabel?: string }) {
   return (
     <TooltipProvider>
       <Tooltip delayDuration={80}>
-        <TooltipTrigger asChild>{badge}</TooltipTrigger>
-        <TooltipContent side="top">Orden de trabajo: {workOrderLabel}</TooltipContent>
+        <TooltipTrigger asChild>
+          <div>{badge}</div>
+        </TooltipTrigger>
+        <TooltipPortal>
+          <TooltipContent side="top">Orden de trabajo: {workOrderLabel}</TooltipContent>
+        </TooltipPortal>
       </Tooltip>
     </TooltipProvider>
   );
