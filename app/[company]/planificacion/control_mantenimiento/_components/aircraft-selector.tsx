@@ -115,7 +115,7 @@ function AircraftItem({
         <div>
           <div className="flex items-start justify-between gap-1.5">
             <span className="truncate text-[11px] font-medium text-foreground">
-              {aircraft.manufacturer?.name ?? '—'}
+              {aircraft.aircraft_type?.manufacturer?.name ?? '—'}
             </span>
             {isSelected && (
               <Badge className="h-3.5 shrink-0 bg-primary/90 px-1 text-[9px] font-semibold text-primary-foreground">
