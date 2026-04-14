@@ -12,7 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import axiosInstance from '@/lib/axios';
+import { workOrderTestDocument } from '@api/index';
 import { cn } from '@/lib/utils';
 import { useCompanyStore } from '@/stores/CompanyStore';
 import { workOrdersShowOptions } from '@api/queries';
@@ -133,13 +133,13 @@ const WorkOrderPage = () => {
 
   const handleDownloadPdf = async () => {
     try {
-      const res = await axiosInstance.get(`/${selectedCompany?.slug}/work-order-pdf/${order_number}`, {
-        responseType: 'blob',
+      const res = await workOrderTestDocument({
+        path: { order_number: order_number },
       });
-      const url = window.URL.createObjectURL(new Blob([res.data]));
+      const url = window.URL.createObjectURL(res.data);
       const link = document.createElement('a');
       link.href = url;
-      link.setAttribute('download', `WO-${order_number}.pdf`);
+      link.setAttribute('download', `WO-${order_number}.docx`);
       document.body.appendChild(link);
       link.click();
       link.parentNode?.removeChild(link);
