@@ -37,7 +37,7 @@ import { cn } from '@/lib/utils';
 import { useCompanyStore } from '@/stores/CompanyStore';
 import { Batch } from '@/types';
 
-import loadingGif from '@/public/loading2.gif';
+import loadingGif from '@/public/images/loading2.gif';
 import { EditingArticle } from './RegisterArticleForm';
 
 /* ------------------------------- Schema ------------------------------- */

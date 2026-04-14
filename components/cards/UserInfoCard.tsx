@@ -11,7 +11,7 @@ const UserInfoCard = ({ user }: { user: User }) => {
     <Card className="w-[380px]">
       <CardHeader>
         <div className="flex flex-col items-center justify-between">
-          <Image className="rounded-full" alt="profile picture" src={'/kanye.png'} width={250} height={250} />
+          <Image className="rounded-full" alt="profile picture" src={'/images/kanye.png'} width={250} height={250} />
           <div className="flex flex-col gap-2 items-center">
             <CardTitle className="text-4xl text-center">
               {user.first_name} {user.last_name}

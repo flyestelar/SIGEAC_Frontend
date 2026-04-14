@@ -99,7 +99,7 @@ function AircraftItem({
     >
       <div className="relative h-full w-26 shrink-0">
         <img
-          src="/aircraft.webp"
+          src="/images/aircraft.webp"
           alt={aircraft.acronym ?? 'Aircraft'}
           className={cn(
             'h-full w-full object-cover',

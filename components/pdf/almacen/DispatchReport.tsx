@@ -217,8 +217,7 @@ const DispatchReportPdf = ({
             <View style={styles.headerTable}>
               {/* Columna 1: Logo */}
               <View style={[styles.headerCell, { width: "33%", alignItems: "center" }]}>
-                <PDFImage src="/logo.png" style={styles.logo} />
-              </View>
+                <PDFImage src="/images/logo.png" style={styles.logo} />
 
               {/* Columna 2: Título */}
               <View style={[styles.headerCell, { width: "34%", alignItems: "center" }]}>

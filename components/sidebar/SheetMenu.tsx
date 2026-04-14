@@ -1,4 +1,3 @@
-/* eslint-disable @next/next/no-img-element */
 'use client';
 
 import { MenuIcon } from "lucide-react";
@@ -35,7 +34,7 @@ export function SheetMenu() {
             asChild
           >
             <Link href={`/${selectedCompany?.slug}/dashboard`} className="flex items-center gap-2">
-              <img src={'/logo.png'} width={150} height={150} alt="Logo" />
+              <Image src={'/images/logo.png'} width={150} height={150} alt="Logo" />
             </Link>
           </Button>
         </SheetHeader>

@@ -1,8 +1,8 @@
 "use client";
 import { useTheme } from 'next-themes';
 import Image from 'next/image';
-import logo from '@/public/logo.png';
-import logoDark from '@/public/logo-dark.png'
+import logo from '@/public/images/logo.png';
+import logoDark from '@/public/images/logo-dark.png'
 
 const Logo = () => {
   const {theme} = useTheme();

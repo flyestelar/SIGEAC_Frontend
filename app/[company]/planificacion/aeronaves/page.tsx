@@ -8,7 +8,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useGetMaintenanceAircrafts } from '@/hooks/planificacion/useGetMaintenanceAircrafts';
 import { useCompanyStore } from '@/stores/CompanyStore';
-import { MaintenanceAircraft } from '@/types';
 import { AlertCircle, ArrowRight, Clock, MapPin, Plane, PlusCircle, RotateCcw, Search } from 'lucide-react';
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
@@ -20,7 +19,7 @@ const AircraftsPage = () => {
   const { data: aircrafts, isLoading, isError } = useGetMaintenanceAircrafts(selectedCompany?.slug);
   const [query, setQuery] = useState<string>('');
 
-  const filteredAircrafts = useMemo<MaintenanceAircraft[]>(() => {
+  const filteredAircrafts = useMemo(() => {
     if (!aircrafts) return [];
 
     let filtered = aircrafts;
@@ -28,9 +27,8 @@ const AircraftsPage = () => {
     const q = normalize(query);
     if (q) {
       filtered = filtered.filter(
-        (a: MaintenanceAircraft) =>
+        (a) =>
           normalize(a.acronym).includes(q) ||
-          normalize(a.manufacturer?.name).includes(q) ||
           normalize(a.serial).includes(q) ||
           normalize(a.aircraft_type?.full_name).includes(q),
       );
@@ -101,6 +99,7 @@ const AircraftsPage = () => {
                 >
                   {/* Hero image with overlay registration badge */}
                   <div className="relative">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src="https://cdn.zbordirect.com/images/airlines/ES.webp"
                       alt={a.acronym}
@@ -146,7 +145,7 @@ const AircraftsPage = () => {
                           Fabricante
                         </span>
                         <p className="text-sm font-medium leading-tight line-clamp-1">
-                          {a.manufacturer?.name ?? '—'}
+                          {a.aircraft_type?.manufacturer?.name ?? '—'}
                         </p>
                       </div>
                     </div>
