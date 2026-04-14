@@ -125,7 +125,9 @@ export function CreateQuoteForm({
 
   return (
     <Form {...form}>
-      <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-5">
+      <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col overflow-hidden">
+        <ScrollArea className="max-h-[calc(90vh-8rem)]">
+          <div className="flex flex-col gap-5 px-5 py-4">
         {/* Cabecera: fecha · proveedor · destino */}
         <div className="grid gap-4 md:grid-cols-2">
           {/* Fecha */}
@@ -276,17 +278,17 @@ export function CreateQuoteForm({
         />
 
         {/* Artículos */}
-        <div className="overflow-hidden rounded-2xl border border-border/70 bg-gradient-to-b from-background to-muted/10 shadow-sm">
+        <div className="overflow-hidden rounded-lg border bg-background">
           {/* Header de sección */}
-          <div className="flex flex-col gap-3 border-b border-border/70 bg-muted/20 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-col gap-3 border-b bg-muted/20 px-5 py-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-start gap-3">
-              <span className="mt-0.5 flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                <Package2 className="h-4 w-4" />
+              <span className="mt-0.5 flex h-8 w-8 items-center justify-center rounded border bg-muted/30">
+                <Package2 className="h-4 w-4 text-muted-foreground" />
               </span>
-              <div className="space-y-1">
+              <div className="space-y-0.5">
                 <p className={fieldLabel}>Artículos</p>
-                <p className="text-sm text-muted-foreground">
-                  El número de parte alterno se precarga desde la requisición cuando exista y puede ajustarse aquí.
+                <p className="text-xs text-muted-foreground">
+                  El P/N alterno se precarga desde la requisición y puede ajustarse.
                 </p>
               </div>
             </div>
@@ -295,7 +297,7 @@ export function CreateQuoteForm({
             </span>
           </div>
 
-          <div className="hidden border-b border-border/70 bg-muted/10 px-5 py-3 lg:block">
+          <div className="hidden border-b bg-muted/10 px-5 py-2.5 lg:block">
             <div className="grid grid-cols-[minmax(0,1.2fr)_minmax(0,1.2fr)_72px_120px_148px_108px] items-center gap-3">
               {(['Nro. Parte', 'Nro. Parte Alterno', 'Cant.', 'Condición', 'Precio Unit.', 'Total'] as const).map(
                 (col, i) => (
@@ -308,7 +310,6 @@ export function CreateQuoteForm({
           </div>
 
           {/* Filas */}
-          <ScrollArea className={cn(fields.length > 4 && 'h-[420px]')}>
             <div className="divide-y">
               {fields.map((field, index) => (
                 <div key={field.id} className="px-5 py-4">
@@ -418,7 +419,7 @@ export function CreateQuoteForm({
                       )}
                     />
 
-                    <div className="hidden h-10 items-center justify-end rounded-xl bg-muted/30 px-3 lg:flex">
+                    <div className="hidden h-10 items-center justify-end rounded-md bg-muted/30 px-3 lg:flex">
                       <p className="text-right text-sm font-semibold tabular-nums">
                         {new Intl.NumberFormat('es-AR', {
                           style: 'currency',
@@ -430,10 +431,9 @@ export function CreateQuoteForm({
                 </div>
               ))}
             </div>
-          </ScrollArea>
 
           {/* Total general */}
-          <div className="flex items-center justify-between border-t border-border/70 bg-muted/20 px-5 py-4">
+          <div className="flex items-center justify-between border-t bg-muted/20 px-5 py-3">
             <span className={fieldLabel}>Total General</span>
             <span className="text-lg font-bold tabular-nums">
               {new Intl.NumberFormat('es-AR', {
@@ -443,14 +443,34 @@ export function CreateQuoteForm({
             </span>
           </div>
         </div>
+          </div>
+        </ScrollArea>
 
-        {/* Enviar */}
-        <Button disabled={createQuote.isPending || updateStatusRequisition.isPending} type="submit" className="w-full">
-          {createQuote.isPending || updateStatusRequisition.isPending ? (
-            <Loader2 className="mr-2 size-4 animate-spin" />
-          ) : null}
-          {createQuote.isPending || updateStatusRequisition.isPending ? 'Procesando...' : 'Crear Cotización'}
-        </Button>
+        {/* Enviar — sticky footer */}
+        <div className="flex justify-end gap-2 border-t px-5 py-3">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={onClose}
+          >
+            Cancelar
+          </Button>
+          <Button
+            size="sm"
+            disabled={createQuote.isPending || updateStatusRequisition.isPending}
+            type="submit"
+          >
+            {createQuote.isPending || updateStatusRequisition.isPending ? (
+              <>
+                <Loader2 className="mr-2 size-3.5 animate-spin" />
+                Procesando…
+              </>
+            ) : (
+              'Crear Cotización'
+            )}
+          </Button>
+        </div>
       </form>
     </Form>
   );

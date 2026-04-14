@@ -163,13 +163,22 @@ const RequisitionsDropdownActions = ({ req }: { req: Requisition }) => {
 
       {/* ── Generar Cotización ───────────────────────────────────────── */}
       <Dialog open={openConfirm} onOpenChange={setOpenConfirm}>
-        <DialogContent className="max-w-3xl">
-          <DialogHeader>
-            <DialogTitle className="text-center text-3xl">Generar Cotización</DialogTitle>
-            <p className="text-center text-sm text-muted-foreground">
-              Ingrese la información necesaria para generar la cotización.
-            </p>
-          </DialogHeader>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-hidden p-0 gap-0">
+          <div className="border-b border-emerald-500/20 bg-emerald-500/5 px-5 py-4">
+            <div className="flex items-center gap-3">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded border border-emerald-500/30 bg-emerald-500/10">
+                <ClipboardCheck className="h-4 w-4 text-emerald-500" />
+              </div>
+              <div>
+                <DialogTitle className="text-base font-semibold leading-tight">
+                  Generar Cotización
+                </DialogTitle>
+                <p className="mt-0.5 font-mono text-[11px] text-muted-foreground">
+                  {req.order_number}
+                </p>
+              </div>
+            </div>
+          </div>
           <CreateQuoteForm req={req} initialData={initialData} onClose={() => setOpenConfirm(false)} />
         </DialogContent>
       </Dialog>
