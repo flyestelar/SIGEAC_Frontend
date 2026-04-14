@@ -4,9 +4,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Commands
 
+- `npx eslint ./npx eslint {file}`: run the linter to check for code quality and style issues.
+- `npx prettier --check .`: verify that code formatting matches the Prettier configuration.
 - `npm run dev` — start dev server on `http://localhost:3000`
 - `npm run build` — production build (also catches TypeScript/compile errors)
-- `npm run lint` — run ESLint with `next/core-web-vitals` ruleset
 - `npm run start` — serve the production build locally
 
 There is no automated test suite. Before PRs, run `npm run lint` and `npm run build`, and manually verify the affected route under `app/[company]/...`.

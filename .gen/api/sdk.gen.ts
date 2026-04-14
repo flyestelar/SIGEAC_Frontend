@@ -168,6 +168,9 @@ import type {
   ArticleUpdateArticleCostData,
   ArticleUpdateArticleCostErrors,
   ArticleUpdateArticleCostResponses,
+  ArticleUpdateArticleQuantitiesAndZonesData,
+  ArticleUpdateArticleQuantitiesAndZonesErrors,
+  ArticleUpdateArticleQuantitiesAndZonesResponses,
   ArticleUpdateArticleStatusData,
   ArticleUpdateArticleStatusErrors,
   ArticleUpdateArticleStatusResponses,
@@ -1086,6 +1089,9 @@ import type {
   WorkOrderTaskEventStoreData,
   WorkOrderTaskEventStoreErrors,
   WorkOrderTaskEventStoreResponses,
+  WorkOrderTestDocumentData,
+  WorkOrderTestDocumentErrors,
+  WorkOrderTestDocumentResponses,
   WorkshopsDestroyData,
   WorkshopsDestroyErrors,
   WorkshopsDestroyResponses,
@@ -1868,6 +1874,20 @@ export const warehouseAeronauticalArticleIndex02 = <ThrowOnError extends boolean
     responseType: 'json',
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/{company}/{location_id}/articles',
+    ...options,
+  });
+
+export const articleUpdateArticleQuantitiesAndZones = <ThrowOnError extends boolean = false>(
+  options: Options<ArticleUpdateArticleQuantitiesAndZonesData, ThrowOnError>,
+) =>
+  (options.client ?? client).put<
+    ArticleUpdateArticleQuantitiesAndZonesResponses,
+    ArticleUpdateArticleQuantitiesAndZonesErrors,
+    ThrowOnError
+  >({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/{company}/articles/update-quantity-zone',
     ...options,
   });
 
@@ -6080,6 +6100,16 @@ export const workOrderBulkCompleteItemTasks = <ThrowOnError extends boolean = fa
     },
   });
 
+export const workOrderTestDocument = <ThrowOnError extends boolean = false>(
+  options: Options<WorkOrderTestDocumentData, ThrowOnError>,
+) =>
+  (options.client ?? client).get<WorkOrderTestDocumentResponses, WorkOrderTestDocumentErrors, ThrowOnError>({
+    responseType: 'blob',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/work-orders/{order_number}/test-document',
+    ...options,
+  });
+
 /**
  * Display a listing of the resource
  */
@@ -6125,29 +6155,26 @@ export const workOrdersShow = <ThrowOnError extends boolean = false>(
 
 /**
  * Store a newly created resource in storage
- *
- * ⚠️ Cannot generate request documentation: include(/home/angeldaj/projects/SIGEAC_Backend/vendor/composer/../../app/Models/Planification/WorkOrderTask.php): Failed to open stream: No such file or directory
  */
 export const workOrderTaskEventStore = <ThrowOnError extends boolean = false>(
-  options?: Options<WorkOrderTaskEventStoreData, ThrowOnError>,
+  options: Options<WorkOrderTaskEventStoreData, ThrowOnError>,
 ) =>
-  (options?.client ?? client).post<WorkOrderTaskEventStoreResponses, WorkOrderTaskEventStoreErrors, ThrowOnError>({
+  (options.client ?? client).post<WorkOrderTaskEventStoreResponses, WorkOrderTaskEventStoreErrors, ThrowOnError>({
+    responseType: 'json',
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/{company}/{work_order_task}/store-work-order-task-event',
     ...options,
   });
 
-/**
- * ⚠️ Cannot generate request documentation: include(/home/angeldaj/projects/SIGEAC_Backend/vendor/composer/../../app/Models/Planification/WorkOrderTask.php): Failed to open stream: No such file or directory
- */
 export const workOrderTaskEventShowEventsByWorkOrderTask = <ThrowOnError extends boolean = false>(
-  options?: Options<WorkOrderTaskEventShowEventsByWorkOrderTaskData, ThrowOnError>,
+  options: Options<WorkOrderTaskEventShowEventsByWorkOrderTaskData, ThrowOnError>,
 ) =>
-  (options?.client ?? client).get<
+  (options.client ?? client).get<
     WorkOrderTaskEventShowEventsByWorkOrderTaskResponses,
     WorkOrderTaskEventShowEventsByWorkOrderTaskErrors,
     ThrowOnError
   >({
+    responseType: 'json',
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/{company}/{work_order_task}/show-events-by-work-order-task',
     ...options,

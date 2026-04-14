@@ -61,6 +61,7 @@ import {
   articleUpdate,
   articleUpdate2,
   articleUpdateArticleCost,
+  articleUpdateArticleQuantitiesAndZones,
   articleUpdateArticleStatus,
   authStoreLocationUser,
   bankAccountAccountByBank,
@@ -367,6 +368,7 @@ import {
   workOrdersStore,
   workOrderTaskEventShowEventsByWorkOrderTask,
   workOrderTaskEventStore,
+  workOrderTestDocument,
   workshopsDestroy,
   workshopsIndex,
   workshopsShow,
@@ -530,6 +532,9 @@ import type {
   ArticleUpdateArticleCostData,
   ArticleUpdateArticleCostError,
   ArticleUpdateArticleCostResponse,
+  ArticleUpdateArticleQuantitiesAndZonesData,
+  ArticleUpdateArticleQuantitiesAndZonesError,
+  ArticleUpdateArticleQuantitiesAndZonesResponse,
   ArticleUpdateArticleStatusData,
   ArticleUpdateArticleStatusError,
   ArticleUpdateArticleStatusResponse,
@@ -1410,8 +1415,13 @@ import type {
   WorkOrdersStoreResponse,
   WorkOrderTaskEventShowEventsByWorkOrderTaskData,
   WorkOrderTaskEventShowEventsByWorkOrderTaskError,
+  WorkOrderTaskEventShowEventsByWorkOrderTaskResponse,
   WorkOrderTaskEventStoreData,
   WorkOrderTaskEventStoreError,
+  WorkOrderTaskEventStoreResponse,
+  WorkOrderTestDocumentData,
+  WorkOrderTestDocumentError,
+  WorkOrderTestDocumentResponse,
   WorkshopsDestroyData,
   WorkshopsDestroyError,
   WorkshopsDestroyResponse,
@@ -2749,6 +2759,30 @@ export const warehouseAeronauticalArticleIndex02Options = (options: Options<Ware
     },
     queryKey: warehouseAeronauticalArticleIndex02QueryKey(options),
   });
+
+export const articleUpdateArticleQuantitiesAndZonesMutation = (
+  options?: Partial<Options<ArticleUpdateArticleQuantitiesAndZonesData>>,
+): UseMutationOptions<
+  ArticleUpdateArticleQuantitiesAndZonesResponse,
+  AxiosError<ArticleUpdateArticleQuantitiesAndZonesError>,
+  Options<ArticleUpdateArticleQuantitiesAndZonesData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    ArticleUpdateArticleQuantitiesAndZonesResponse,
+    AxiosError<ArticleUpdateArticleQuantitiesAndZonesError>,
+    Options<ArticleUpdateArticleQuantitiesAndZonesData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await articleUpdateArticleQuantitiesAndZones({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
 
 export const articleUpdateArticleCostMutation = (
   options?: Partial<Options<ArticleUpdateArticleCostData>>,
@@ -10290,6 +10324,28 @@ export const workOrderBulkCompleteItemTasksMutation = (
   return mutationOptions;
 };
 
+export const workOrderTestDocumentQueryKey = (options: Options<WorkOrderTestDocumentData>) =>
+  createQueryKey('workOrderTestDocument', options);
+
+export const workOrderTestDocumentOptions = (options: Options<WorkOrderTestDocumentData>) =>
+  queryOptions<
+    WorkOrderTestDocumentResponse,
+    AxiosError<WorkOrderTestDocumentError>,
+    WorkOrderTestDocumentResponse,
+    ReturnType<typeof workOrderTestDocumentQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await workOrderTestDocument({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: workOrderTestDocumentQueryKey(options),
+  });
+
 export const workOrdersIndexQueryKey = (options?: Options<WorkOrdersIndexData>) =>
   createQueryKey('workOrdersIndex', options);
 
@@ -10314,6 +10370,46 @@ export const workOrdersIndexOptions = (options?: Options<WorkOrdersIndexData>) =
     },
     queryKey: workOrdersIndexQueryKey(options),
   });
+
+export const workOrdersIndexInfiniteQueryKey = (
+  options?: Options<WorkOrdersIndexData>,
+): QueryKey<Options<WorkOrdersIndexData>> => createQueryKey('workOrdersIndex', options, true);
+
+/**
+ * Display a listing of the resource
+ */
+export const workOrdersIndexInfiniteOptions = (options?: Options<WorkOrdersIndexData>) =>
+  infiniteQueryOptions<
+    WorkOrdersIndexResponse,
+    AxiosError<WorkOrdersIndexError>,
+    InfiniteData<WorkOrdersIndexResponse>,
+    QueryKey<Options<WorkOrdersIndexData>>,
+    number | null | Pick<QueryKey<Options<WorkOrdersIndexData>>[0], 'body' | 'headers' | 'path' | 'query'>
+  >(
+    // @ts-ignore
+    {
+      queryFn: async ({ pageParam, queryKey, signal }) => {
+        // @ts-ignore
+        const page: Pick<QueryKey<Options<WorkOrdersIndexData>>[0], 'body' | 'headers' | 'path' | 'query'> =
+          typeof pageParam === 'object'
+            ? pageParam
+            : {
+                query: {
+                  page: pageParam,
+                },
+              };
+        const params = createInfiniteParams(queryKey, page);
+        const { data } = await workOrdersIndex({
+          ...options,
+          ...params,
+          signal,
+          throwOnError: true,
+        });
+        return data;
+      },
+      queryKey: workOrdersIndexInfiniteQueryKey(options),
+    },
+  );
 
 /**
  * Store a newly created resource in storage
@@ -10365,14 +10461,16 @@ export const workOrdersShowOptions = (options: Options<WorkOrdersShowData>) =>
 
 /**
  * Store a newly created resource in storage
- *
- * ⚠️ Cannot generate request documentation: include(/home/angeldaj/projects/SIGEAC_Backend/vendor/composer/../../app/Models/Planification/WorkOrderTask.php): Failed to open stream: No such file or directory
  */
 export const workOrderTaskEventStoreMutation = (
   options?: Partial<Options<WorkOrderTaskEventStoreData>>,
-): UseMutationOptions<unknown, AxiosError<WorkOrderTaskEventStoreError>, Options<WorkOrderTaskEventStoreData>> => {
+): UseMutationOptions<
+  WorkOrderTaskEventStoreResponse,
+  AxiosError<WorkOrderTaskEventStoreError>,
+  Options<WorkOrderTaskEventStoreData>
+> => {
   const mutationOptions: UseMutationOptions<
-    unknown,
+    WorkOrderTaskEventStoreResponse,
     AxiosError<WorkOrderTaskEventStoreError>,
     Options<WorkOrderTaskEventStoreData>
   > = {
@@ -10389,19 +10487,16 @@ export const workOrderTaskEventStoreMutation = (
 };
 
 export const workOrderTaskEventShowEventsByWorkOrderTaskQueryKey = (
-  options?: Options<WorkOrderTaskEventShowEventsByWorkOrderTaskData>,
+  options: Options<WorkOrderTaskEventShowEventsByWorkOrderTaskData>,
 ) => createQueryKey('workOrderTaskEventShowEventsByWorkOrderTask', options);
 
-/**
- * ⚠️ Cannot generate request documentation: include(/home/angeldaj/projects/SIGEAC_Backend/vendor/composer/../../app/Models/Planification/WorkOrderTask.php): Failed to open stream: No such file or directory
- */
 export const workOrderTaskEventShowEventsByWorkOrderTaskOptions = (
-  options?: Options<WorkOrderTaskEventShowEventsByWorkOrderTaskData>,
+  options: Options<WorkOrderTaskEventShowEventsByWorkOrderTaskData>,
 ) =>
   queryOptions<
-    unknown,
+    WorkOrderTaskEventShowEventsByWorkOrderTaskResponse,
     AxiosError<WorkOrderTaskEventShowEventsByWorkOrderTaskError>,
-    unknown,
+    WorkOrderTaskEventShowEventsByWorkOrderTaskResponse,
     ReturnType<typeof workOrderTaskEventShowEventsByWorkOrderTaskQueryKey>
   >({
     queryFn: async ({ queryKey, signal }) => {

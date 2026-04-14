@@ -2689,6 +2689,37 @@ export type WarehouseAeronauticalArticleIndex02Responses = {
 export type WarehouseAeronauticalArticleIndex02Response =
   WarehouseAeronauticalArticleIndex02Responses[keyof WarehouseAeronauticalArticleIndex02Responses];
 
+export type ArticleUpdateArticleQuantitiesAndZonesData = {
+  body?: never;
+  path: {
+    company: string;
+  };
+  query?: never;
+  url: '/{company}/articles/update-quantity-zone';
+};
+
+export type ArticleUpdateArticleQuantitiesAndZonesErrors = {
+  /**
+   * Unauthenticated
+   */
+  401: {
+    /**
+     * Error overview.
+     */
+    message: string;
+  };
+};
+
+export type ArticleUpdateArticleQuantitiesAndZonesError =
+  ArticleUpdateArticleQuantitiesAndZonesErrors[keyof ArticleUpdateArticleQuantitiesAndZonesErrors];
+
+export type ArticleUpdateArticleQuantitiesAndZonesResponses = {
+  200: string;
+};
+
+export type ArticleUpdateArticleQuantitiesAndZonesResponse =
+  ArticleUpdateArticleQuantitiesAndZonesResponses[keyof ArticleUpdateArticleQuantitiesAndZonesResponses];
+
 export type ArticleUpdateArticleCostData = {
   body?: never;
   path: {
@@ -13491,10 +13522,43 @@ export type WorkOrderBulkCompleteItemTasksResponses = {
 export type WorkOrderBulkCompleteItemTasksResponse =
   WorkOrderBulkCompleteItemTasksResponses[keyof WorkOrderBulkCompleteItemTasksResponses];
 
+export type WorkOrderTestDocumentData = {
+  body?: never;
+  path: {
+    order_number: string;
+  };
+  query?: never;
+  url: '/work-orders/{order_number}/test-document';
+};
+
+export type WorkOrderTestDocumentErrors = {
+  /**
+   * Unauthenticated
+   */
+  401: {
+    /**
+     * Error overview.
+     */
+    message: string;
+  };
+};
+
+export type WorkOrderTestDocumentError = WorkOrderTestDocumentErrors[keyof WorkOrderTestDocumentErrors];
+
+export type WorkOrderTestDocumentResponses = {
+  200: Blob | File;
+};
+
+export type WorkOrderTestDocumentResponse = WorkOrderTestDocumentResponses[keyof WorkOrderTestDocumentResponses];
+
 export type WorkOrdersIndexData = {
   body?: never;
   path?: never;
-  query?: never;
+  query?: {
+    search?: string | null;
+    per_page?: number | null;
+    page?: number | null;
+  };
   url: '/work-orders';
 };
 
@@ -13507,6 +13571,21 @@ export type WorkOrdersIndexErrors = {
      * Error overview.
      */
     message: string;
+  };
+  /**
+   * Validation error
+   */
+  422: {
+    /**
+     * Errors overview.
+     */
+    message: string;
+    /**
+     * A detailed description of each field that failed validation.
+     */
+    errors: {
+      [key: string]: Array<string>;
+    };
   };
 };
 
@@ -13650,7 +13729,10 @@ export type WorkOrdersShowResponse = WorkOrdersShowResponses[keyof WorkOrdersSho
 
 export type WorkOrderTaskEventStoreData = {
   body?: never;
-  path?: never;
+  path: {
+    company: string;
+    work_order_task: string;
+  };
   query?: never;
   url: '/{company}/{work_order_task}/store-work-order-task-event';
 };
@@ -13670,12 +13752,17 @@ export type WorkOrderTaskEventStoreErrors = {
 export type WorkOrderTaskEventStoreError = WorkOrderTaskEventStoreErrors[keyof WorkOrderTaskEventStoreErrors];
 
 export type WorkOrderTaskEventStoreResponses = {
-  200: unknown;
+  200: string;
 };
+
+export type WorkOrderTaskEventStoreResponse = WorkOrderTaskEventStoreResponses[keyof WorkOrderTaskEventStoreResponses];
 
 export type WorkOrderTaskEventShowEventsByWorkOrderTaskData = {
   body?: never;
-  path?: never;
+  path: {
+    company: string;
+    work_order_task: string;
+  };
   query?: never;
   url: '/{company}/{work_order_task}/show-events-by-work-order-task';
 };
@@ -13696,8 +13783,11 @@ export type WorkOrderTaskEventShowEventsByWorkOrderTaskError =
   WorkOrderTaskEventShowEventsByWorkOrderTaskErrors[keyof WorkOrderTaskEventShowEventsByWorkOrderTaskErrors];
 
 export type WorkOrderTaskEventShowEventsByWorkOrderTaskResponses = {
-  200: unknown;
+  200: string;
 };
+
+export type WorkOrderTaskEventShowEventsByWorkOrderTaskResponse =
+  WorkOrderTaskEventShowEventsByWorkOrderTaskResponses[keyof WorkOrderTaskEventShowEventsByWorkOrderTaskResponses];
 
 export type WorkshopsIndexData = {
   body?: never;
