@@ -99,6 +99,20 @@ export type AircraftTypeResource = {
 export type Analysis = Array<string>;
 
 /**
+ * AnalysisResource
+ */
+export type AnalysisResource = {
+  id: number;
+  severity: string;
+  probability: string;
+  result: string;
+  danger_identification_id: number;
+  mitigation_plan_id: number | null;
+  registered_by: string;
+  updated_by: string | null;
+};
+
+/**
  * Article
  */
 export type Article = Array<string>;
@@ -270,6 +284,28 @@ export type DangerIdentificationRequest = {
 };
 
 /**
+ * DangerIdentificationResource
+ */
+export type DangerIdentificationResource = {
+  id: number;
+  danger: string;
+  danger_area: string;
+  danger_type: string | null;
+  risk_management_start_date: string | null;
+  current_defenses: string | null;
+  description: string | null;
+  possible_consequences: string | null;
+  consequence_to_evaluate: string | null;
+  root_cause_analysis: string | null;
+  information_source_id: number | null;
+  registered_by: string;
+  updated_by: string | null;
+  information_source?: InformationSourceResource;
+  analysis?: AnalysisResource;
+  mitigation_plan?: MitigationPlanResource;
+};
+
+/**
  * Department
  */
 export type Department = Array<string>;
@@ -343,6 +379,15 @@ export type FollowUpControl = Array<string>;
  * InformationSource
  */
 export type InformationSource = Array<string>;
+
+/**
+ * InformationSourceResource
+ */
+export type InformationSourceResource = {
+  id: number;
+  name: string;
+  type: string;
+};
 
 /**
  * JobTitle
@@ -427,6 +472,36 @@ export type MitigationMeasureRequest = {
 };
 
 /**
+ * MitigationMeasureResource
+ */
+export type MitigationMeasureResource = {
+  id: number;
+  description: string;
+  implementation_supervisor: string | null;
+  implementation_responsible: string;
+  estimated_date: string | null;
+  execution_date: string | null;
+  mitigation_plan_id: number;
+  registered_by: string;
+  updated_by: string | null;
+};
+
+/**
+ * MitigationPlanResource
+ */
+export type MitigationPlanResource = {
+  id: number;
+  description: string;
+  responsible: string | null;
+  start_date: string | null;
+  danger_identification_id: number;
+  registered_by: string;
+  updated_by: string | null;
+  analysis?: AnalysisResource;
+  measures?: Array<MitigationMeasureResource>;
+};
+
+/**
  * Module
  */
 export type Module = {
@@ -441,11 +516,6 @@ export type Module = {
  * NonRoutine
  */
 export type NonRoutine = Array<string>;
-
-/**
- * ObligatoryReport
- */
-export type ObligatoryReport = Array<string>;
 
 /**
  * ObligatoryReportRequest
@@ -471,6 +541,42 @@ export type ObligatoryReportRequest = {
   status: 'CERRADO' | 'ABIERTO' | 'PROCESO';
   incidents?: Array<string> | null;
   other_incidents?: string | null;
+};
+
+/**
+ * ObligatoryReportResource
+ */
+export type ObligatoryReportResource = {
+  id: number;
+  report_number: string;
+  incident_location: string;
+  description: string;
+  report_date: string | null;
+  incident_time: string | null;
+  incident_date: string | null;
+  flight_time: string | null;
+  aircraft_id: number | null;
+  flight_number: string | null;
+  flight_origin: string | null;
+  flight_destiny: string | null;
+  flight_alt_destiny: string | null;
+  incidents: string | null;
+  status: 'ABIERTO' | 'CERRADO';
+  danger_identification_id: number | null;
+  other_incidents: boolean | null;
+  identification_date: string | null;
+  information_resource_id: number | null;
+  pilot_id: number | null;
+  copilot_id: number | null;
+  image: string | null;
+  document: string | null;
+  registered_by: string;
+  updated_by: string | null;
+  close_date: string | null;
+  pilot?: PilotResource;
+  copilot?: PilotResource;
+  aircraft?: AircraftResource;
+  danger_identification?: DangerIdentificationResource;
 };
 
 /**
@@ -504,6 +610,18 @@ export type Permission = {
  * Pilot
  */
 export type Pilot = Array<string>;
+
+/**
+ * PilotResource
+ */
+export type PilotResource = {
+  id: number;
+  employee_dni: string;
+  license_number: string;
+  registered_by: string;
+  updated_by: string | null;
+  employee?: EmployeeResource;
+};
 
 /**
  * PlanificationEvent
@@ -1211,6 +1329,33 @@ export type VoluntaryReportRequest = {
   location_id: number;
   image?: Blob | File | null;
   document?: string | null;
+};
+
+/**
+ * VoluntaryReportResource
+ */
+export type VoluntaryReportResource = {
+  id: number;
+  report_number: string;
+  report_date: string;
+  identification_date: string | null;
+  danger_location: string | null;
+  airport_location: string | null;
+  danger_area: string | null;
+  description: string;
+  possible_consequences: string | null;
+  reporter_name: string | null;
+  reporter_last_name: string | null;
+  reporter_phone: string | null;
+  reporter_email: string | null;
+  status: string | null;
+  image: string | null;
+  document: string | null;
+  danger_identification_id: number | null;
+  close_date: string | null;
+  registered_by: string;
+  updated_by: string | null;
+  danger_identification?: DangerIdentificationResource;
 };
 
 /**
@@ -11381,7 +11526,12 @@ export type ObligatoryReportIndexErrors = {
 export type ObligatoryReportIndexError = ObligatoryReportIndexErrors[keyof ObligatoryReportIndexErrors];
 
 export type ObligatoryReportIndexResponses = {
-  200: Array<ObligatoryReport>;
+  /**
+   * Array of `ObligatoryReportResource`
+   */
+  200: {
+    data: Array<ObligatoryReportResource>;
+  };
 };
 
 export type ObligatoryReportIndexResponse = ObligatoryReportIndexResponses[keyof ObligatoryReportIndexResponses];
@@ -11491,15 +11641,12 @@ export type ObligatoryReportShowErrors = {
      */
     message: string;
   };
-  404: {
-    message: 'Reporte Obligatorio No Encontrado';
-  };
 };
 
 export type ObligatoryReportShowError = ObligatoryReportShowErrors[keyof ObligatoryReportShowErrors];
 
 export type ObligatoryReportShowResponses = {
-  200: string;
+  200: Array<unknown>;
 };
 
 export type ObligatoryReportShowResponse = ObligatoryReportShowResponses[keyof ObligatoryReportShowResponses];
@@ -15024,26 +15171,12 @@ export type SafetyBulletinShowErrors = {
      */
     message: string;
   };
-  /**
-   * Not found
-   */
-  404: {
-    /**
-     * Error overview.
-     */
-    message: string;
-  };
 };
 
 export type SafetyBulletinShowError = SafetyBulletinShowErrors[keyof SafetyBulletinShowErrors];
 
 export type SafetyBulletinShowResponses = {
-  /**
-   * `SafetyBulletinResource`
-   */
-  200: {
-    data: SafetyBulletinResource;
-  };
+  200: Array<unknown>;
 };
 
 export type SafetyBulletinShowResponse = SafetyBulletinShowResponses[keyof SafetyBulletinShowResponses];
@@ -15063,15 +15196,6 @@ export type SafetyBulletinDestroyErrors = {
    * Unauthenticated
    */
   401: {
-    /**
-     * Error overview.
-     */
-    message: string;
-  };
-  /**
-   * Not found
-   */
-  404: {
     /**
      * Error overview.
      */
@@ -15122,15 +15246,6 @@ export type SafetyBulletinUpdateErrors = {
     message: string;
   };
   /**
-   * Not found
-   */
-  404: {
-    /**
-     * Error overview.
-     */
-    message: string;
-  };
-  /**
    * Validation error
    */
   422: {
@@ -15173,15 +15288,6 @@ export type SafetyBulletinDeleteDocumentErrors = {
    * Unauthenticated
    */
   401: {
-    /**
-     * Error overview.
-     */
-    message: string;
-  };
-  /**
-   * Not found
-   */
-  404: {
     /**
      * Error overview.
      */
@@ -15303,12 +15409,7 @@ export type SurveyShowData = {
 };
 
 export type SurveyShowResponses = {
-  /**
-   * `SurveyResource`
-   */
-  200: {
-    data: SurveyResource;
-  };
+  200: Array<unknown>;
 };
 
 export type SurveyShowResponse = SurveyShowResponses[keyof SurveyShowResponses];
@@ -17305,7 +17406,12 @@ export type VoluntaryReportIndexErrors = {
 export type VoluntaryReportIndexError = VoluntaryReportIndexErrors[keyof VoluntaryReportIndexErrors];
 
 export type VoluntaryReportIndexResponses = {
-  200: Array<VoluntaryReport>;
+  /**
+   * Array of `VoluntaryReportResource`
+   */
+  200: {
+    data: Array<VoluntaryReportResource>;
+  };
 };
 
 export type VoluntaryReportIndexResponse = VoluntaryReportIndexResponses[keyof VoluntaryReportIndexResponses];
@@ -17360,6 +17466,39 @@ export type VoluntaryReportStoreResponses = {
 };
 
 export type VoluntaryReportStoreResponse = VoluntaryReportStoreResponses[keyof VoluntaryReportStoreResponses];
+
+export type VoluntaryReportGetNextReportNumberData = {
+  body?: never;
+  path: {
+    company: string;
+  };
+  query?: never;
+  url: '/{company}/sms/voluntary-reports/next-number';
+};
+
+export type VoluntaryReportGetNextReportNumberErrors = {
+  /**
+   * Unauthenticated
+   */
+  401: {
+    /**
+     * Error overview.
+     */
+    message: string;
+  };
+};
+
+export type VoluntaryReportGetNextReportNumberError =
+  VoluntaryReportGetNextReportNumberErrors[keyof VoluntaryReportGetNextReportNumberErrors];
+
+export type VoluntaryReportGetNextReportNumberResponses = {
+  200: {
+    next_number: string;
+  };
+};
+
+export type VoluntaryReportGetNextReportNumberResponse =
+  VoluntaryReportGetNextReportNumberResponses[keyof VoluntaryReportGetNextReportNumberResponses];
 
 export type VoluntaryReportDestroyData = {
   body?: never;
@@ -17419,15 +17558,21 @@ export type VoluntaryReportShowErrors = {
      */
     message: string;
   };
+  /**
+   * Not found
+   */
   404: {
-    message: 'Reporte voluntario no encontrado';
+    /**
+     * Error overview.
+     */
+    message: string;
   };
 };
 
 export type VoluntaryReportShowError = VoluntaryReportShowErrors[keyof VoluntaryReportShowErrors];
 
 export type VoluntaryReportShowResponses = {
-  200: string;
+  200: Array<unknown>;
 };
 
 export type VoluntaryReportShowResponse = VoluntaryReportShowResponses[keyof VoluntaryReportShowResponses];

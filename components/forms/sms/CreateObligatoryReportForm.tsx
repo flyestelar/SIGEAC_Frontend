@@ -35,7 +35,7 @@ import { useGetAircraftAcronyms } from "@/hooks/aerolinea/aeronaves/useGetAircra
 import { useGetPilots } from "@/hooks/sms/useGetPilots";
 import { cn } from "@/lib/utils";
 import { useCompanyStore } from "@/stores/CompanyStore";
-import { ObligatoryReport } from "@/types";
+import { ObligatoryReportResource } from "@/.gen/api/types.gen";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { CalendarIcon, Check, ChevronsUpDown, Loader2 } from "lucide-react";
@@ -58,7 +58,7 @@ import {
 } from "@/components/ui/select";
 interface FormProps {
   isEditing?: boolean;
-  initialData?: ObligatoryReport;
+  initialData?: ObligatoryReportResource;
   onClose: () => void;
 }
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -890,13 +890,13 @@ export function CreateObligatoryReportForm({
                 <FormLabel>Imagen General</FormLabel>
                 <div className="flex flex-col gap-4">
                   {/* Vista previa de imagen — solo si hay una fuente válida */}
-                  {(field.value instanceof File || initialData?.imageUrl) && (
+                  {(field.value instanceof File || initialData?.image) && (
                     <div className="relative w-24 h-24 border rounded-md overflow-hidden">
                       <Image
                         src={
                           field.value instanceof File
                             ? URL.createObjectURL(field.value)
-                            : initialData?.imageUrl || ""
+                            : `${process.env.NEXT_PUBLIC_STORAGE_BASE_URL}${initialData?.image}` || ""
                         }
                         alt="Preview"
                         fill

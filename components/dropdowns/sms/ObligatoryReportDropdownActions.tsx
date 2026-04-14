@@ -6,7 +6,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useGetDangerIdentificationWithAllById } from "@/hooks/sms/useGetDangerIdentificationWithAllById";
-import { ObligatoryReport } from "@/types";
+import { ObligatoryReportResource } from "@/.gen/api/types.gen";
 import { PDFDownloadLink, PDFViewer } from "@react-pdf/renderer";
 import { format } from "date-fns";
 import {
@@ -40,7 +40,7 @@ import { AcceptObligatoryReport } from "@/components/forms/sms/AcceptObligatoryF
 const ObligatoryReportDropdownActions = ({
   obligatoryReport,
 }: {
-  obligatoryReport: ObligatoryReport;
+  obligatoryReport: ObligatoryReportResource;
 }) => {
   const { selectedCompany } = useCompanyStore();
   const [openDelete, setOpenDelete] = useState<boolean>(false);
@@ -57,7 +57,7 @@ const ObligatoryReportDropdownActions = ({
 
   const { data: dangerIdentification } = useGetDangerIdentificationWithAllById({
     company: selectedCompany?.slug,
-    id: obligatoryReport?.danger_identification?.id.toString(),
+    id: obligatoryReport?.danger_identification?.id?.toString() ?? "",
   });
 
   const handleDelete = async (id: number | string) => {
@@ -92,15 +92,14 @@ const ObligatoryReportDropdownActions = ({
               </DropdownMenuItem>
             )}
 
-            {obligatoryReport.status === "PROCESO" && (
+            {obligatoryReport.status === "ABIERTO" && (
               <DropdownMenuItem onClick={() => setOpenAccept(true)}>
                 <CheckCheck className="size-5 text-green-400" />
                 <p className="pl-2 "> Aceptar </p>
               </DropdownMenuItem>
             )}
 
-            {(obligatoryReport.status === "ABIERTO" ||
-              obligatoryReport.status === "PROCESO") && (
+            {(obligatoryReport.status === "ABIERTO") && (
               <DialogTrigger asChild>
                 <DropdownMenuItem onClick={() => setOpenDelete(true)}>
                   <Trash2 className="size-5 text-red-500" />

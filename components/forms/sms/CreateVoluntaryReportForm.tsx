@@ -37,7 +37,7 @@ import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
-import { VoluntaryReport } from "@/types";
+import { VoluntaryReportResource } from "@/.gen/api/types.gen";
 import { addDays, format } from "date-fns";
 import { es } from "date-fns/locale";
 import { CalendarIcon, Loader2, Plus, X } from "lucide-react";
@@ -49,7 +49,7 @@ import { useCompanyStore } from "@/stores/CompanyStore";
 
 interface FormProps {
   onClose: () => void;
-  initialData?: VoluntaryReport;
+  initialData?: VoluntaryReportResource;
   isEditing?: boolean;
 }
 
@@ -275,7 +275,7 @@ export function CreateVoluntaryReportForm({
         id: initialData.id.toString(),
         data: {
           ...data,
-          status: initialData.status,
+          status: initialData.status ?? "",
           danger_identification_id: initialData?.danger_identification_id,
         },
       };
@@ -492,19 +492,97 @@ export function CreateVoluntaryReportForm({
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="OPERACIONES">OPERACIONES</SelectItem>
-                      <SelectItem value="MANTENIMIENTO">
+                      <SelectItem value="ANONIMO">ANONIMO</SelectItem>
+                      <SelectItem value="APTO">
+                        APTO
+                      </SelectItem>
+                      <SelectItem value="DISPATCH">
+                        DISPATCH
+                      </SelectItem>
+                      <SelectItem value="GSE">
+                        GSE
+                      </SelectItem>
+                      <SelectItem value="GTE. EST.">
+                        GTE. EST.
+                      </SelectItem>
+                      <SelectItem value="SUMINISTRO">
+                        SUMINISTRO
+                      </SelectItem>
+                      <SelectItem value="INAC">
+                        INAC
+                      </SelectItem>
+                      <SelectItem value="MTTO">
                         MANTENIMIENTO
                       </SelectItem>
-                      <SelectItem value="ADMINISTRACION_RRHH">
-                        ADMINISTRACION Y RRHH
+                      <SelectItem value="ING">
+                        INGENIERIA
                       </SelectItem>
-                      <SelectItem value="CONTROL_CALIDAD">
-                        CONTROL DE CALIDAD
+                      <SelectItem value="INST. CAP">
+                        INST. CAP
                       </SelectItem>
-                      <SelectItem value="IT">
-                        TECNOLOGIA E INFORMACION
+                      <SelectItem value="N/A">
+                        NO APLICA
                       </SelectItem>
+                      <SelectItem value="OMA">
+                        OMA
+                      </SelectItem>
+                      <SelectItem value="OPS">
+                        OPS
+                      </SelectItem>
+                      <SelectItem value="QMS">
+                        QMS
+                      </SelectItem>
+                      <SelectItem value="RR.HH">
+                        RECURSOS HUMANOS
+                      </SelectItem>
+                      <SelectItem value="SGC">
+                        SGC
+                      </SelectItem>
+                      <SelectItem value="SMS">
+                        SMS
+                      </SelectItem>
+                      <SelectItem value="TDC">
+                        TDC
+                      </SelectItem>
+                      <SelectItem value="TDM">
+                        TDM
+                      </SelectItem>
+                      <SelectItem value="TFC">
+                        TFC
+                      </SelectItem>
+                      <SelectItem value="CARG">
+                        CARG
+                      </SelectItem>
+                      <SelectItem value="QMS_AVSEC">
+                        QMS AVSEC
+                      </SelectItem>
+                      <SelectItem value="GTE_EQUIPAJE">
+                        GTE EQUIPAJE
+                      </SelectItem>
+                      <SelectItem value="TALLER_SUPERVIVENCIA">
+                        TALLER DE SUPERVIVENCIA
+                      </SelectItem>
+                      <SelectItem value="NDT">
+                        NDT
+                      </SelectItem>
+                      <SelectItem value="AUDITORIA_INTERNA">
+                        AUDITORIA INTERNA
+                      </SelectItem>
+                      <SelectItem value="AEROPUERTO">
+                        AEROPUERTO
+                      </SelectItem>
+
+                      <SelectItem value="SSL">
+                        SSL
+                      </SelectItem>
+                      <SelectItem value="TECNOLOGIA">
+                        TECNOLOGIA
+                      </SelectItem>
+                      <SelectItem value="INFRAESTRUCTURA">
+                        INFRAESTRUCTURA
+                      </SelectItem>
+
+
                       <SelectItem value="AVSEC">AVSEC</SelectItem>
                     </SelectContent>
                   </Select>
@@ -530,17 +608,17 @@ export function CreateVoluntaryReportForm({
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value="CALLE_RODAJE">
-                      CALLE DE RODAJE
-                    </SelectItem>
-                    <SelectItem value="HANGAR13B">HANGAR13B</SelectItem>
-                    <SelectItem value="HANGAR17/18C">HANGAR17/18 C</SelectItem>
-                    <SelectItem value="AEROPUERTO_CANAIMA">
-                      AEROPUERTO CANAIMA
+                    <SelectItem value="HANGAR">
+                      HANGAR
                     </SelectItem>
                     <SelectItem value="PLATAFORMA">PLATAFORMA</SelectItem>
-                    <SelectItem value="PISTA_ATERRIZAJE">
-                      PISTA DE ATERRIZAJE
+                    <SelectItem value="AREA_ADMON">AREA ADMON</SelectItem>
+                    <SelectItem value="AERONAVE">
+                      AERONAVE
+                    </SelectItem>
+                    <SelectItem value="AEROPUERTO">AEROPUERTO</SelectItem>
+                    <SelectItem value="N/A">
+                     NO APLICA
                     </SelectItem>
                   </SelectContent>
                 </Select>
@@ -708,13 +786,13 @@ export function CreateVoluntaryReportForm({
                 <FormLabel>Imagen del Reporte</FormLabel>
                 <div className="flex flex-col gap-4">
                   {/* Vista previa de imagen — solo si hay una fuente válida */}
-                  {(field.value instanceof File || initialData?.imageUrl) && (
+                  {(field.value instanceof File || initialData?.image) && (
                     <div className="relative w-24 h-24 border rounded-md overflow-hidden">
                       <Image
                         src={
                           field.value instanceof File
                             ? URL.createObjectURL(field.value)
-                            : initialData?.imageUrl || ""
+                            : initialData?.image || ""
                         }
                         alt="Preview"
                         fill

@@ -452,6 +452,7 @@ import {
   voluntaryReportAcceptVoluntaryReport,
   voluntaryReportDestroy,
   voluntaryReportGeneratePdf,
+  voluntaryReportGetNextReportNumber,
   voluntaryReportGetObligatoryReportsAvegeByDateRange,
   voluntaryReportGetProcessedReports,
   voluntaryReportGetReportsCountedByArea,
@@ -1762,6 +1763,9 @@ import type {
   VoluntaryReportGeneratePdfData,
   VoluntaryReportGeneratePdfError,
   VoluntaryReportGeneratePdfResponse,
+  VoluntaryReportGetNextReportNumberData,
+  VoluntaryReportGetNextReportNumberError,
+  VoluntaryReportGetNextReportNumberResponse,
   VoluntaryReportGetObligatoryReportsAvegeByDateRangeData,
   VoluntaryReportGetObligatoryReportsAvegeByDateRangeError,
   VoluntaryReportGetObligatoryReportsAvegeByDateRangeResponse,
@@ -12741,9 +12745,6 @@ export const vendorUpdateMutation = (
 export const voluntaryReportIndexQueryKey = (options: Options<VoluntaryReportIndexData>) =>
   createQueryKey('voluntaryReportIndex', options);
 
-/**
- * Devuelve artículos filtrados por categoría
- */
 export const voluntaryReportIndexOptions = (options: Options<VoluntaryReportIndexData>) =>
   queryOptions<
     VoluntaryReportIndexResponse,
@@ -12789,6 +12790,28 @@ export const voluntaryReportStoreMutation = (
   };
   return mutationOptions;
 };
+
+export const voluntaryReportGetNextReportNumberQueryKey = (options: Options<VoluntaryReportGetNextReportNumberData>) =>
+  createQueryKey('voluntaryReportGetNextReportNumber', options);
+
+export const voluntaryReportGetNextReportNumberOptions = (options: Options<VoluntaryReportGetNextReportNumberData>) =>
+  queryOptions<
+    VoluntaryReportGetNextReportNumberResponse,
+    AxiosError<VoluntaryReportGetNextReportNumberError>,
+    VoluntaryReportGetNextReportNumberResponse,
+    ReturnType<typeof voluntaryReportGetNextReportNumberQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await voluntaryReportGetNextReportNumber({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: voluntaryReportGetNextReportNumberQueryKey(options),
+  });
 
 /**
  * Remove the specified resource from storage

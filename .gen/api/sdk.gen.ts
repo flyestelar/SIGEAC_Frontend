@@ -1336,6 +1336,9 @@ import type {
   VoluntaryReportGeneratePdfData,
   VoluntaryReportGeneratePdfErrors,
   VoluntaryReportGeneratePdfResponses,
+  VoluntaryReportGetNextReportNumberData,
+  VoluntaryReportGetNextReportNumberErrors,
+  VoluntaryReportGetNextReportNumberResponses,
   VoluntaryReportGetObligatoryReportsAvegeByDateRangeData,
   VoluntaryReportGetObligatoryReportsAvegeByDateRangeErrors,
   VoluntaryReportGetObligatoryReportsAvegeByDateRangeResponses,
@@ -7583,9 +7586,6 @@ export const vendorUpdate = <ThrowOnError extends boolean = false>(options: Opti
     ...options,
   });
 
-/**
- * Devuelve artículos filtrados por categoría
- */
 export const voluntaryReportIndex = <ThrowOnError extends boolean = false>(
   options: Options<VoluntaryReportIndexData, ThrowOnError>,
 ) =>
@@ -7612,6 +7612,20 @@ export const voluntaryReportStore = <ThrowOnError extends boolean = false>(
       'Content-Type': null,
       ...options.headers,
     },
+  });
+
+export const voluntaryReportGetNextReportNumber = <ThrowOnError extends boolean = false>(
+  options: Options<VoluntaryReportGetNextReportNumberData, ThrowOnError>,
+) =>
+  (options.client ?? client).get<
+    VoluntaryReportGetNextReportNumberResponses,
+    VoluntaryReportGetNextReportNumberErrors,
+    ThrowOnError
+  >({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/{company}/sms/voluntary-reports/next-number',
+    ...options,
   });
 
 /**

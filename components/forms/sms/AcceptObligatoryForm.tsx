@@ -17,13 +17,13 @@ import { z } from "zod";
 
 import { useAcceptObligatoryReport } from "@/actions/sms/reporte_obligatorio/actions";
 import { Separator } from "@/components/ui/separator";
-import { ObligatoryReport } from "@/types";
+import { ObligatoryReportResource } from "@/.gen/api/types.gen";
 import { Loader2 } from "lucide-react";
 import { useCompanyStore } from "@/stores/CompanyStore";
 
 interface FormProps {
   onClose: () => void;
-  initialData: ObligatoryReport;
+  initialData: ObligatoryReportResource;
 }
 // { onClose }: FormProps
 // lo de arriba va en prop
@@ -58,12 +58,12 @@ export function AcceptObligatoryReport({ onClose, initialData }: FormProps) {
           status: "ABIERTO",
           image: undefined,
           document: undefined,
-          danger_identification_id: initialData.danger_identification?.id,
+          danger_identification_id: initialData.danger_identification?.id ?? null,
           description: initialData.description,
           incident_location: initialData.incident_location,
-          aircraft_id: initialData.aircraft.id,
-          pilot_id: initialData.pilot.id,
-          copilot_id: initialData.copilot.id,
+          aircraft_id: initialData.aircraft?.id,
+          pilot_id: initialData.pilot?.id,
+          copilot_id: initialData.copilot?.id,
           flight_alt_destiny: initialData.flight_alt_destiny,
           flight_destiny: initialData.flight_destiny,
           flight_number: initialData.flight_number,
@@ -71,9 +71,9 @@ export function AcceptObligatoryReport({ onClose, initialData }: FormProps) {
           incidents: initialData.incidents
             ? JSON.parse(initialData.incidents)
             : [],
-          other_incidents: initialData.other_incidents ?? "",
-          report_date: new Date(initialData.report_date),
-          incident_date: new Date(initialData.incident_date),
+          other_incidents: initialData.other_incidents != null ? String(initialData.other_incidents) : "",
+          report_date: initialData.report_date ? new Date(initialData.report_date) : new Date(),
+          incident_date: initialData.incident_date ? new Date(initialData.incident_date) : new Date(),
           incident_time: initialData?.incident_time,
           flight_time: initialData?.flight_time,
         },

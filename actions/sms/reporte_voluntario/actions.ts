@@ -32,7 +32,7 @@ interface UpdateVoluntaryReportData {
     danger_area: string;
     description: string;
     possible_consequences: string;
-    danger_identification_id: number;
+    danger_identification_id: number | null;
     status: string;
     reporter_name?: string;
     reporter_last_name?: string;
@@ -187,7 +187,7 @@ export const useGetNextReportNumber = (company: string | null) => {
     queryKey: ["next-voluntary-report-number", company],
     queryFn: async () => {
       const { data } = await axiosInstance.get(
-        `/${company}/sms/next-voluntary-report-number`,
+        `/${company}/sms/voluntary-reports/next-number`,
       );
       return data;
     },
