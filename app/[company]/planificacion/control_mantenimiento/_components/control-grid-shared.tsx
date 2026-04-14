@@ -1,6 +1,7 @@
 'use client';
 
 import { Badge } from '@/components/ui/badge';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { AircraftAverageMetric, MaintenanceControlResource } from '@api/types';
 import { AlertTriangle, Calendar, Clock, RefreshCw, ShieldCheck, TriangleAlert, Wrench } from 'lucide-react';
 import { addDays } from 'date-fns';
@@ -104,8 +105,8 @@ export const LEVEL_CONFIG: Record<
 
 export const LEVEL_PRIORITY: Record<AlertLevel, number> = { OVERDUE: 0, WARNING: 1, OK: 2 };
 
-export function EnCursoBadge() {
-  return (
+export function EnCursoBadge({ workOrderLabel }: { workOrderLabel?: string }) {
+  const badge = (
     <Badge
       variant="outline"
       className="whitespace-nowrap h-5 border-sky-500/30 bg-sky-500/10 px-1.5 text-[10px] text-sky-600 dark:text-sky-400"
@@ -113,6 +114,19 @@ export function EnCursoBadge() {
       <Wrench className="mr-0.5 h-2.5 w-2.5" />
       En curso
     </Badge>
+  );
+
+  if (!workOrderLabel) {
+    return badge;
+  }
+
+  return (
+    <TooltipProvider>
+      <Tooltip delayDuration={80}>
+        <TooltipTrigger asChild>{badge}</TooltipTrigger>
+        <TooltipContent side="top">Orden de trabajo: {workOrderLabel}</TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
   );
 }
 

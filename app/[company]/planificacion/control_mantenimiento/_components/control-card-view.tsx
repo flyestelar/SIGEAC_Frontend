@@ -52,7 +52,9 @@ function ControlCard({
             </div>
           </div>
           <div className="flex shrink-0 items-center gap-1.5">
-            {control.in_progress && <EnCursoBadge />}
+            {control.in_progress && (
+              <EnCursoBadge workOrderLabel={control.last_execution?.work_order?.order_number} />
+            )}
             <AlertBadge status={status} size="medium" />
           </div>
         </div>

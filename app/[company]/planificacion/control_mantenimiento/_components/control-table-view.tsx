@@ -166,7 +166,9 @@ export function ControlTableView({ averages, controls, onSelectControl }: Contro
                       <div className="space-y-1 min-w-28">
                         <p className="text-sm font-semibold leading-none text-foreground">{control.title}</p>
                         <p className="font-mono text-xs text-muted-foreground">{control.manual_reference || '-'}</p>
-                        {control.in_progress && <EnCursoBadge />}
+                        {control.in_progress && (
+                          <EnCursoBadge workOrderLabel={control.last_execution?.work_order?.order_number} />
+                        )}
                       </div>
                     </TableCell>
                     <TableCell className="font-mono text-xs">{formatNumber(interval_fh, 1)}</TableCell>

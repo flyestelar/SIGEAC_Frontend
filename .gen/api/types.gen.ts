@@ -13339,8 +13339,8 @@ export type WarehouseWarehouseWithUserResponse =
 
 export type WorkOrderCloseData = {
   body?: {
-    entry_date?: string;
-    exit_date?: string;
+    entry_date?: string | null;
+    exit_date?: string | null;
   };
   path: {
     order_number: string;

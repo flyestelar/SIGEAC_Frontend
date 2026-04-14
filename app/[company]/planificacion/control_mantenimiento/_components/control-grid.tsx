@@ -56,7 +56,9 @@ function SelectedControlHeader({ computed, onBack }: { computed: ComputedControl
           </div>
 
           <div className="flex items-center gap-1.5">
-            {control.in_progress && <EnCursoBadge />}
+            {control.in_progress && (
+              <EnCursoBadge workOrderLabel={control.last_execution?.work_order?.order_number} />
+            )}
             <AlertBadge status={status} size="small" />
             <Button asChild variant="ghost" size="icon" className="h-6 w-6">
               <Link href={`/${selectedCompany?.slug}/planificacion/control_mantenimiento/${control.id}/editar`}>
