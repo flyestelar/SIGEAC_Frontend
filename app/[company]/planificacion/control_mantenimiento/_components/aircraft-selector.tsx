@@ -24,7 +24,8 @@ export function AircraftSelector({ aircraft, selectedAircraftId, onSelectAircraf
     const q = search.toLowerCase();
     return (
       ac.acronym?.toLowerCase().includes(q) ||
-      ac.serial?.toLowerCase().includes(q)
+      ac.serial?.toLowerCase().includes(q) ||
+      ac.aircraft_type?.full_name?.toLowerCase().includes(q)
     );
   });
 
