@@ -6,6 +6,7 @@ import type { Metadata } from 'next';
 import { Poppins } from 'next/font/google';
 import './globals.css';
 import { RedirectHandler } from '@/components/misc/RedirectHandler';
+import ErrorBoundary from '@/components/ErrorBoundary';
 
 const inter = Poppins({
   subsets: ['latin'],
@@ -33,7 +34,7 @@ export default function RootLayout({
           <RedirectHandler />
           <AuthProvider>
             <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
-              {children}
+              <ErrorBoundary>{children}</ErrorBoundary>
               <Toaster />
             </ThemeProvider>
           </AuthProvider>
