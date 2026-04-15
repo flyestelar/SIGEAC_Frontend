@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useGetDangerIdentificationWithAllById } from "@/hooks/sms/useGetDangerIdentificationWithAllById";
 import { useCompanyStore } from "@/stores/CompanyStore";
-import { VoluntaryReport } from "@/types";
+import { VoluntaryReportResource } from "@/.gen/api/types.gen";
 import { PDFDownloadLink, PDFViewer } from "@react-pdf/renderer";
 import { format } from "date-fns";
 import {
@@ -39,7 +39,7 @@ import {
 const VoluntaryReportDropdownActions = ({
   voluntaryReport,
 }: {
-  voluntaryReport: VoluntaryReport;
+  voluntaryReport: VoluntaryReportResource;
 }) => {
   const { selectedCompany } = useCompanyStore();
 
@@ -53,7 +53,7 @@ const VoluntaryReportDropdownActions = ({
 
   const { data: dangerIdentification } = useGetDangerIdentificationWithAllById({
     company: selectedCompany?.slug,
-    id: voluntaryReport?.danger_identification_id?.toString(),
+    id: voluntaryReport?.danger_identification_id?.toString() ?? "",
   });
 
   const handleDelete = async (id: number | string) => {

@@ -265,7 +265,23 @@ export type Credit = Array<string>;
 /**
  * DangerIdentification
  */
-export type DangerIdentification = Array<string>;
+export type DangerIdentification = {
+  id: number;
+  danger: string;
+  danger_area: string;
+  current_defenses: string;
+  risk_management_start_date: string;
+  description: string;
+  possible_consequences: string;
+  consequence_to_evaluate: string;
+  danger_type: string;
+  root_cause_analysis: string;
+  information_source_id: number | null;
+  registered_by: string;
+  updated_by: string | null;
+  voluntary_report_id: number | null;
+  obligatory_report_id: number | null;
+};
 
 /**
  * DangerIdentificationRequest
@@ -1296,7 +1312,37 @@ export type Vendor = Array<string>;
 /**
  * VoluntaryReport
  */
-export type VoluntaryReport = Array<string>;
+export type VoluntaryReport = {
+  id: number;
+  report_number: string | null;
+  report_date: string;
+  identification_date: string;
+  danger_location: string;
+  danger_area: string;
+  description: string;
+  airport_location: string;
+  possible_consequences: string;
+  reporter_name: string | null;
+  reporter_last_name: string | null;
+  reporter_phone: string | null;
+  reporter_email: string | null;
+  status: string | null;
+  location_id: number;
+  image: string | null;
+  document: string | null;
+  close_date: string | null;
+  is_anonymous: string;
+  reporter_position: string | null;
+  recommendations: string | null;
+  validation_status: string | null;
+  referred_to: string | null;
+  referred_to_other: string | null;
+  sms_coordinator_name: string | null;
+  sms_processed_date: string | null;
+  registered_by: string;
+  updated_by: string | null;
+  source_reference: string | null;
+};
 
 /**
  * VoluntaryReportRequest
@@ -1326,7 +1372,7 @@ export type VoluntaryReportRequest = {
   sms_coordinator_name?: string | null;
   sms_processed_date?: string | null;
   danger_identification_id?: number | null;
-  location_id: number;
+  location_id?: number | null;
   image?: Blob | File | null;
   document?: string | null;
 };
@@ -1355,6 +1401,17 @@ export type VoluntaryReportResource = {
   close_date: string | null;
   registered_by: string;
   updated_by: string | null;
+  is_anonymous: boolean;
+  location_id: number;
+  source_reference: string | null;
+  recommendations: string | null;
+  reporter_area: string | null;
+  reporter_position: string | null;
+  validation_status: boolean | null;
+  referred_to: string | null;
+  referred_to_other: string | null;
+  sms_coordinator_name: string | null;
+  sms_processed_date: string | null;
   danger_identification?: DangerIdentificationResource;
 };
 
@@ -7173,7 +7230,7 @@ export type DangerIdentificationIndexErrors = {
 export type DangerIdentificationIndexError = DangerIdentificationIndexErrors[keyof DangerIdentificationIndexErrors];
 
 export type DangerIdentificationIndexResponses = {
-  200: Array<DangerIdentification>;
+  200: Array<unknown>;
 };
 
 export type DangerIdentificationIndexResponse =
@@ -9935,7 +9992,7 @@ export type LocationIndexErrors = {
 export type LocationIndexError = LocationIndexErrors[keyof LocationIndexErrors];
 
 export type LocationIndexResponses = {
-  200: Array<Location>;
+  200: Array<unknown>;
 };
 
 export type LocationIndexResponse = LocationIndexResponses[keyof LocationIndexResponses];
@@ -10076,7 +10133,7 @@ export type GeneralLocationIndex0Errors = {
 export type GeneralLocationIndex0Error = GeneralLocationIndex0Errors[keyof GeneralLocationIndex0Errors];
 
 export type GeneralLocationIndex0Responses = {
-  200: Array<Location>;
+  200: Array<unknown>;
 };
 
 export type GeneralLocationIndex0Response = GeneralLocationIndex0Responses[keyof GeneralLocationIndex0Responses];
@@ -17427,15 +17484,6 @@ export type VoluntaryReportStoreData = {
 
 export type VoluntaryReportStoreErrors = {
   /**
-   * Authorization error
-   */
-  403: {
-    /**
-     * Error overview.
-     */
-    message: string;
-  };
-  /**
    * Validation error
    */
   422: {
@@ -17462,7 +17510,11 @@ export type VoluntaryReportStoreErrors = {
 export type VoluntaryReportStoreError = VoluntaryReportStoreErrors[keyof VoluntaryReportStoreErrors];
 
 export type VoluntaryReportStoreResponses = {
-  200: string;
+  200: {
+    voluntary_report_id: string;
+    message: 'Se creó el registro';
+    status: 200;
+  };
 };
 
 export type VoluntaryReportStoreResponse = VoluntaryReportStoreResponses[keyof VoluntaryReportStoreResponses];

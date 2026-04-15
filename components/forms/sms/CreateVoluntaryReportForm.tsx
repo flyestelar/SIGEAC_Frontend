@@ -46,6 +46,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Label } from "@/components/ui/label";
 import { useCompanyStore } from "@/stores/CompanyStore";
+import { useGetLocationsByCompany } from "@/hooks/sistema/useGetLocationsByCompany";
 
 interface FormProps {
   onClose: () => void;
@@ -78,6 +79,8 @@ export function CreateVoluntaryReportForm({
 
   const { data: nextNumberData, isPending: isLoadingNextNumber } =
     useGetNextReportNumber(selectedCompany?.slug || null);
+
+  const { data: locations, isLoading: isLoadingLocations } = useGetLocationsByCompany();
 
   const FormSchema = z.object({
     identification_date: z
@@ -166,7 +169,8 @@ export function CreateVoluntaryReportForm({
         "Solo se permiten archivos PDF",
       )
       .optional(),
-    // Otros campos del esquema@/components.
+    is_anonymous: z.boolean(),
+    location_id: z.number({ required_error: "La localización es requerida." }),
   });
 
   type FormSchemaType = z.infer<typeof FormSchema>;
@@ -180,7 +184,8 @@ export function CreateVoluntaryReportForm({
       description: initialData?.description || "",
       possible_consequences: initialData?.possible_consequences || "",
       airport_location: initialData?.airport_location || "",
-
+      is_anonymous: initialData ? !initialData.is_anonymous : false,
+      location_id: initialData?.location_id ?? undefined,
       identification_date: initialData?.identification_date
         ? addDays(new Date(initialData.identification_date), 1)
         : new Date(),
@@ -285,7 +290,10 @@ export function CreateVoluntaryReportForm({
         company: selectedCompany!.slug,
         reportData: {
           ...data,
-          status: shouldEnableField ? "ABIERTO" : "PROCESO",
+          report_date: data.report_date.toISOString(),
+          identification_date: data.identification_date.toISOString(),
+          status: (shouldEnableField ? "ABIERTO" : "PROCESO") as "ABIERTO" | "PROCESO" | "CERRADO",
+          is_anonymous: (data.is_anonymous ? 1 : 0) as 0 | 1,
         },
       };
       try {
@@ -455,6 +463,34 @@ export function CreateVoluntaryReportForm({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <FormField
               control={form.control}
+              name="location_id"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Localización</FormLabel>
+                  <Select
+                    onValueChange={(val) => field.onChange(Number(val))}
+                    defaultValue={field.value?.toString()}
+                    disabled={isLoadingLocations}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder={isLoadingLocations ? "Cargando..." : "Seleccionar localización"} />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {locations?.map((location) => (
+                        <SelectItem key={location.id} value={location.id.toString()}>
+                          {location.address}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
               name="danger_location"
               render={({ field }) => (
                 <FormItem>
@@ -470,6 +506,26 @@ export function CreateVoluntaryReportForm({
                     </FormControl>
                     <SelectContent>
                       <SelectItem value="PZO">Puerto Ordaz</SelectItem>
+                      <SelectItem value="MIQ">MIQ</SelectItem>
+                      <SelectItem value="PMV">PMV</SelectItem>
+                      <SelectItem value="MAR">MAR</SelectItem>
+                      <SelectItem value="VIG">VIG</SelectItem>
+                      <SelectItem value="BNS">BNS</SelectItem>
+                      <SelectItem value="STD">STD</SelectItem>
+                      <SelectItem value="STB">STB</SelectItem>
+                      <SelectItem value="MUN">MUN</SelectItem>
+                      <SelectItem value="SVSA">SVSA</SelectItem>
+                      <SelectItem value="MADRID">MADRID</SelectItem>
+                      <SelectItem value="CHILE">CHILE</SelectItem>
+                      <SelectItem value="HAVANA">HAVANA</SelectItem>
+                      <SelectItem value="SVZ">SVZ</SelectItem>
+                      <SelectItem value="CANAIMA">CANAIMA</SelectItem>
+                      <SelectItem value="MDPC">MDPC</SelectItem>
+                      <SelectItem value="LIMA">LIMA</SelectItem>
+                      <SelectItem value="PTY">PTY</SelectItem>
+                      <SelectItem value="SKBO">SKBO</SelectItem>
+                      <SelectItem value="N/A">NO APLICA</SelectItem>
+                      
                     </SelectContent>
                   </Select>
                   <FormMessage />
@@ -703,6 +759,7 @@ export function CreateVoluntaryReportForm({
           <div className="flex items-center space-x-2">
             <Checkbox
               id="anonymous-report"
+              name="is_anonymous"
               checked={isAnonymous}
               onCheckedChange={(checked) => {
                 if (typeof checked === "boolean") {

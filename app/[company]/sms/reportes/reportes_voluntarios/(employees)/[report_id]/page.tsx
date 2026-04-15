@@ -35,7 +35,6 @@ import {
   CalendarCheck,
 } from "lucide-react";
 import Image from "next/image";
-import ImageZoom from "@/components/ui/ImageZoom";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 
@@ -356,7 +355,7 @@ const ShowVoluntaryReport = () => {
 
   const renderAttachments = () => (
     <div className="space-y-4">
-      {voluntaryReport?.imageUrl &&(
+      {voluntaryReport?.image && (
         <Card>
           <CardHeader className="pb-3 flex flex-row items-center justify-between">
             <h3 className="text-lg font-semibold">Imagen Adjunta</h3>
@@ -364,9 +363,9 @@ const ShowVoluntaryReport = () => {
               variant="outline"
               size="sm"
               onClick={() => {
-                if (!voluntaryReport?.imageUrl) return;
+                if (!voluntaryReport?.image) return;
                 handleDownloadImage(
-                  voluntaryReport.imageUrl,
+                  `${process.env.NEXT_PUBLIC_STORAGE_BASE_URL}${voluntaryReport.image}`,
                   `Imagen-RVP-${voluntaryReport.report_number || "adjunta"}.jpg`,
                 );
               }}
@@ -380,10 +379,9 @@ const ShowVoluntaryReport = () => {
               <DialogTrigger asChild>
                 <div className="relative group w-full max-w-sm h-64 mx-auto cursor-pointer">
                   <Image
-                    src={voluntaryReport.imageUrl}
+                    src={`${process.env.NEXT_PUBLIC_STORAGE_BASE_URL}${voluntaryReport.image}`}
                     alt="Imagen del reporte"
                     fill
-                    crossOrigin="use-credentials"
                     className="w-full h-full object-contain rounded-md border group-hover:border-gray-400 transition-all"
                     onError={(e) => {
                       console.error("Error cargando imagen:", e);
@@ -401,18 +399,12 @@ const ShowVoluntaryReport = () => {
                 <DialogHeader>
                   <DialogTitle>Imagen del Reporte</DialogTitle>
                 </DialogHeader>
-                <div
-                  className="relative h-[60vh] flex justify-center"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <ImageZoom
-                    src={voluntaryReport.imageUrl}
+                <div className="relative h-[60vh] flex justify-center">
+                  <Image
+                    src={`${process.env.NEXT_PUBLIC_STORAGE_BASE_URL}${voluntaryReport.image}`}
                     alt="Imagen completa del reporte"
-                    width="auto"
-                    height="100%"
-                    initialZoom={2}
-                    maxZoom={3}
-                    className="max-w-full max-h-full"
+                    fill
+                    className="object-contain"
                   />
                 </div>
               </DialogContent>
@@ -421,11 +413,11 @@ const ShowVoluntaryReport = () => {
         </Card>
       )}
 
-      {voluntaryReport?.documentUrl && (
+      {voluntaryReport?.document && (
         <div className="border border-gray-300 dark:border-gray-600 p-6 rounded-lg text-center">
           <h3 className="text-xl font-semibold mb-4">Documento Adjunto</h3>
           <a
-            href={`${voluntaryReport.documentUrl}`}
+            href={`${process.env.NEXT_PUBLIC_STORAGE_BASE_URL}${voluntaryReport.document}`}
             download={`RVP-${voluntaryReport.report_number}.pdf`}
             className="inline-flex items-center px-5 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700"
           >

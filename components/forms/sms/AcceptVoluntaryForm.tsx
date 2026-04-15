@@ -18,12 +18,12 @@ import { z } from "zod";
 import { useAcceptVoluntaryReport } from "@/actions/sms/reporte_voluntario/actions";
 import { Separator } from "@/components/ui/separator";
 import { useCompanyStore } from "@/stores/CompanyStore";
-import { VoluntaryReport } from "@/types";
+import { VoluntaryReportResource } from "@/.gen/api/types.gen";
 import { Loader2 } from "lucide-react";
 
 interface FormProps {
   onClose: () => void;
-  initialData: VoluntaryReport;
+  initialData: VoluntaryReportResource;
 }
 
 export function AcceptVoluntaryReport({ onClose, initialData }: FormProps) {
