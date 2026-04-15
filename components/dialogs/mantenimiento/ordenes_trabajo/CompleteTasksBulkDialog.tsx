@@ -385,8 +385,8 @@ function BulkControlAccordionItem({
                 <p className="truncate text-[13px]">{task.task?.description ?? `Task #${task.task_id}`}</p>
                 {(task.task?.old_task || task.task?.new_task) && (
                   <div className="mt-0.5 flex flex-wrap items-center gap-2 text-[11px] text-muted-foreground">
-                    {task.task?.old_task && <span>Old Task: {task.task.old_task}</span>}
-                    {task.task?.new_task && <span>New Task: {task.task.new_task}</span>}
+                    {task.task?.old_task && <span>Old Task Card: {task.task.old_task}</span>}
+                    {task.task?.new_task && <span>New Task Card: {task.task.new_task}</span>}
                   </div>
                 )}
                 <div className="flex flex-wrap items-center gap-2 text-[11px] text-muted-foreground">

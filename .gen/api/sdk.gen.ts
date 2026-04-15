@@ -756,6 +756,18 @@ import type {
   PlanificationReportWorkOrderPreInspectionData,
   PlanificationReportWorkOrderPreInspectionErrors,
   PlanificationReportWorkOrderPreInspectionResponses,
+  PlanificationWorkOrderDocumentDownloadData,
+  PlanificationWorkOrderDocumentDownloadErrors,
+  PlanificationWorkOrderDocumentDownloadResponses,
+  PlanificationWorkOrderDocumentQueueDocxData,
+  PlanificationWorkOrderDocumentQueueDocxErrors,
+  PlanificationWorkOrderDocumentQueueDocxResponses,
+  PlanificationWorkOrderDocumentQueuePdfData,
+  PlanificationWorkOrderDocumentQueuePdfErrors,
+  PlanificationWorkOrderDocumentQueuePdfResponses,
+  PlanificationWorkOrderDocumentStatusData,
+  PlanificationWorkOrderDocumentStatusErrors,
+  PlanificationWorkOrderDocumentStatusResponses,
   PostByCompanyBatchesData,
   PostByCompanyBatchesErrors,
   PostByCompanyBatchesResponses,
@@ -1089,9 +1101,6 @@ import type {
   WorkOrderTaskEventStoreData,
   WorkOrderTaskEventStoreErrors,
   WorkOrderTaskEventStoreResponses,
-  WorkOrderTestDocumentData,
-  WorkOrderTestDocumentErrors,
-  WorkOrderTestDocumentResponses,
   WorkshopsDestroyData,
   WorkshopsDestroyErrors,
   WorkshopsDestroyResponses,
@@ -6100,13 +6109,59 @@ export const workOrderBulkCompleteItemTasks = <ThrowOnError extends boolean = fa
     },
   });
 
-export const workOrderTestDocument = <ThrowOnError extends boolean = false>(
-  options: Options<WorkOrderTestDocumentData, ThrowOnError>,
+export const planificationWorkOrderDocumentQueueDocx = <ThrowOnError extends boolean = false>(
+  options: Options<PlanificationWorkOrderDocumentQueueDocxData, ThrowOnError>,
 ) =>
-  (options.client ?? client).get<WorkOrderTestDocumentResponses, WorkOrderTestDocumentErrors, ThrowOnError>({
+  (options.client ?? client).post<
+    PlanificationWorkOrderDocumentQueueDocxResponses,
+    PlanificationWorkOrderDocumentQueueDocxErrors,
+    ThrowOnError
+  >({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/work-orders/{order_number}/docx/queue',
+    ...options,
+  });
+
+export const planificationWorkOrderDocumentQueuePdf = <ThrowOnError extends boolean = false>(
+  options: Options<PlanificationWorkOrderDocumentQueuePdfData, ThrowOnError>,
+) =>
+  (options.client ?? client).post<
+    PlanificationWorkOrderDocumentQueuePdfResponses,
+    PlanificationWorkOrderDocumentQueuePdfErrors,
+    ThrowOnError
+  >({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/work-orders/{order_number}/pdf/queue',
+    ...options,
+  });
+
+export const planificationWorkOrderDocumentDownload = <ThrowOnError extends boolean = false>(
+  options: Options<PlanificationWorkOrderDocumentDownloadData, ThrowOnError>,
+) =>
+  (options.client ?? client).get<
+    PlanificationWorkOrderDocumentDownloadResponses,
+    PlanificationWorkOrderDocumentDownloadErrors,
+    ThrowOnError
+  >({
     responseType: 'blob',
     security: [{ scheme: 'bearer', type: 'http' }],
-    url: '/work-orders/{order_number}/test-document',
+    url: '/work-orders/documents/{generation_id}',
+    ...options,
+  });
+
+export const planificationWorkOrderDocumentStatus = <ThrowOnError extends boolean = false>(
+  options: Options<PlanificationWorkOrderDocumentStatusData, ThrowOnError>,
+) =>
+  (options.client ?? client).get<
+    PlanificationWorkOrderDocumentStatusResponses,
+    PlanificationWorkOrderDocumentStatusErrors,
+    ThrowOnError
+  >({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/work-orders/documents/{generation_id}/status',
     ...options,
   });
 

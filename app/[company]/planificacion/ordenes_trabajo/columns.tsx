@@ -95,7 +95,7 @@ export const columns: ColumnDef<WorkOrderResource>[] = [
           <div className="min-w-0">
             <Link
               href={`/estelar/planificacion/ordenes_trabajo/${wo.order_number}`}
-              className="font-mono text-sm font-semibold tracking-wide text-foreground hover:text-sky-600 transition-colors"
+              className="whitespace-nowrap font-mono text-sm font-semibold tracking-wide text-foreground hover:text-sky-600 transition-colors"
             >
               {wo.order_number}
             </Link>

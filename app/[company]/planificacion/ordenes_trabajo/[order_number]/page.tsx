@@ -12,12 +12,18 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { workOrderTestDocument } from '@api/index';
+import { planificationWorkOrderDocumentDownload } from '@api/index';
 import { cn } from '@/lib/utils';
 import { useCompanyStore } from '@/stores/CompanyStore';
-import { workOrdersShowOptions } from '@api/queries';
+import {
+  planificationWorkOrderDocumentQueuePdfMutation,
+  planificationWorkOrderDocumentStatusOptions,
+  workOrdersShowOptions,
+} from '@api/queries';
 import { WorkOrderItemResource, WorkOrderItemTaskResource, WorkOrderResource } from '@api/types';
-import { useQuery } from '@tanstack/react-query';
+import { useState } from 'react';
+import { useMutation, useQuery } from '@tanstack/react-query';
+import { useEffect, useCallback } from 'react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import {
@@ -39,7 +45,6 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { useState } from 'react';
 import { toast } from 'sonner';
 
 /* ─── Constants ─── */
@@ -111,6 +116,35 @@ const WorkOrderPage = () => {
   const { selectedCompany } = useCompanyStore();
   const [completeOrderOpen, setCompleteOrderOpen] = useState(false);
   const [bulkCompleteOpen, setBulkCompleteOpen] = useState(false);
+  const [generationId, setGenerationId] = useState<string | null>(null);
+
+  const queuePdfMutation = useMutation({
+    ...planificationWorkOrderDocumentQueuePdfMutation(),
+    onSuccess: (data) => {
+      setGenerationId(data.generation_id);
+      toast.success('PDF en cola para generación.');
+    },
+    onError: () => {
+      toast.error('No se pudo iniciar la generación del PDF.');
+    },
+  });
+
+  const statusQuery = useQuery({
+    ...planificationWorkOrderDocumentStatusOptions({
+      path: { generation_id: generationId ?? '' },
+    }),
+    enabled: Boolean(generationId),
+    refetchInterval: (query) => {
+      const data = query.state.data?.data;
+      if (data?.status === 'completed' || data?.status === 'failed') return false;
+      return 2000;
+    },
+  });
+
+  const statusData = statusQuery.data?.data;
+  const isGenerating = statusData?.status === 'queued' || statusData?.status === 'in_progress';
+  const isCompleted = statusData?.status === 'completed';
+  const isFailed = statusData?.status === 'failed';
 
   const {
     data: response,
@@ -131,23 +165,40 @@ const WorkOrderPage = () => {
     0,
   );
 
-  const handleDownloadPdf = async () => {
+  const handleQueuePdf = () => {
+    if (queuePdfMutation.status === 'pending') return;
+    queuePdfMutation.mutate({ path: { order_number } });
+  };
+
+  const handleDownloadPdf = useCallback(async () => {
+    if (!generationId) return;
     try {
-      const res = await workOrderTestDocument({
-        path: { order_number: order_number },
+      const response = await planificationWorkOrderDocumentDownload({
+        path: { generation_id: generationId },
+        throwOnError: true,
       });
-      const url = window.URL.createObjectURL(res.data);
+      // Assuming the response is a blob or has download URL
+      // For now, trigger download
+      const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement('a');
       link.href = url;
-      link.setAttribute('download', `WO-${order_number}.docx`);
+      link.setAttribute('download', `orden-trabajo-${order_number}.pdf`);
       document.body.appendChild(link);
       link.click();
-      link.parentNode?.removeChild(link);
+      link.remove();
       window.URL.revokeObjectURL(url);
-    } catch {
-      toast.error('No se pudo descargar el PDF.');
+      toast.success('PDF descargado exitosamente.');
+    } catch (error) {
+      toast.error('Error al descargar el PDF.');
     }
-  };
+  }, [generationId, order_number]);
+
+  // Auto-download when completed
+  useEffect(() => {
+    if (isCompleted) {
+      handleDownloadPdf();
+    }
+  }, [isCompleted, handleDownloadPdf]);
 
   if (isLoading) return <LoadingPage />;
 
@@ -201,12 +252,63 @@ const WorkOrderPage = () => {
               <CheckCircle2 className="size-3.5" />
               {statusRaw === 'CERRADO' ? 'Orden completada' : 'Completar orden'}
             </Button>
-            <Button variant="outline" size="sm" className="h-8 gap-1.5 text-xs" onClick={handleDownloadPdf}>
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-8 gap-1.5 text-xs"
+              onClick={isCompleted ? handleDownloadPdf : handleQueuePdf}
+              disabled={queuePdfMutation.status === 'pending'}
+            >
               <Download className="size-3.5" />
-              PDF
+              {isCompleted ? 'Descargar PDF' : 'Generar PDF'}
             </Button>
           </div>
         </div>
+
+        {generationId && (
+          <div
+            className={cn(
+              'flex items-center gap-3 rounded-lg border px-4 py-3 text-sm transition-colors',
+              isGenerating && 'border-sky-500/30 bg-sky-500/5 text-sky-600 dark:text-sky-400',
+              isCompleted && 'border-emerald-500/30 bg-emerald-500/5 text-emerald-600 dark:text-emerald-400',
+              isFailed && 'border-red-500/30 bg-red-500/5 text-red-600 dark:text-red-400',
+            )}
+          >
+            {isGenerating && <RotateCcw className="size-4 animate-spin" />}
+            {isCompleted && <CheckCircle2 className="size-4" />}
+            {isFailed && <AlertCircle className="size-4" />}
+            <div className="flex flex-1 flex-col gap-0.5">
+              <span className="font-medium">
+                {isGenerating
+                  ? 'Generando documento PDF...'
+                  : isCompleted
+                    ? 'Documento PDF listo para descargar'
+                    : isFailed
+                      ? 'Error al generar el documento PDF'
+                      : 'Preparando generación...'}
+              </span>
+              {(statusQuery.data as any)?.progress !== undefined && isGenerating && (
+                <div className="mt-1 h-1.5 w-full max-w-xs overflow-hidden rounded-full bg-muted">
+                  <div
+                    className="h-full bg-sky-500 transition-all duration-500"
+                    style={{ width: `${(statusQuery.data as any).progress}%` }}
+                  />
+                </div>
+              )}
+            </div>
+            {isCompleted && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-7 gap-1.5 border-emerald-500/50 bg-background text-[11px] font-semibold uppercase tracking-wider text-emerald-600 hover:bg-emerald-500/10 dark:text-emerald-400"
+                onClick={handleDownloadPdf}
+              >
+                <Download className="size-3" />
+                Descargar ahora
+              </Button>
+            )}
+          </div>
+        )}
 
         {/* Two-column layout */}
         <div className="grid gap-6 lg:grid-cols-12">
@@ -448,10 +550,6 @@ const WorkOrderPage = () => {
                     <CheckCircle2 className="size-3.5" />
                     {statusRaw === 'CERRADO' ? 'Orden completada' : 'Completar orden'}
                   </Button>
-                  <Button variant="outline" className="w-full gap-2" onClick={handleDownloadPdf}>
-                    <Printer className="size-3.5" />
-                    Descargar PDF
-                  </Button>
                 </div>
               </div>
             </div>
@@ -540,8 +638,8 @@ function ControlAccordionItem({ item, orderNumber }: { item: WorkOrderItemResour
                     <p className="truncate text-[13px]">{task.task?.description ?? `Task #${task.task_id}`}</p>
                     {(task.task?.old_task || task.task?.new_task) && (
                       <div className="mt-0.5 flex flex-wrap items-center gap-2 text-[11px] text-muted-foreground">
-                        {task.task?.old_task && <span>Old Task: {task.task.old_task}</span>}
-                        {task.task?.new_task && <span>New Task: {task.task.new_task}</span>}
+                        {task.task?.old_task && <span>Old Task Card: {task.task.old_task}</span>}
+                        {task.task?.new_task && <span>New Task Card: {task.task.new_task}</span>}
                       </div>
                     )}
                     <div className="flex flex-wrap items-center gap-2 text-[11px] text-muted-foreground">

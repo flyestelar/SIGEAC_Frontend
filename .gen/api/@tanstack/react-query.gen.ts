@@ -257,6 +257,10 @@ import {
   planificationReportPdfWorkOrder,
   planificationReportPdfWorkOrderReport,
   planificationReportWorkOrderPreInspection,
+  planificationWorkOrderDocumentDownload,
+  planificationWorkOrderDocumentQueueDocx,
+  planificationWorkOrderDocumentQueuePdf,
+  planificationWorkOrderDocumentStatus,
   postByCompanyBatches,
   preliminaryInspectionDestroy,
   preliminaryInspectionIndex,
@@ -368,7 +372,6 @@ import {
   workOrdersStore,
   workOrderTaskEventShowEventsByWorkOrderTask,
   workOrderTaskEventStore,
-  workOrderTestDocument,
   workshopsDestroy,
   workshopsIndex,
   workshopsShow,
@@ -1093,6 +1096,18 @@ import type {
   PlanificationReportWorkOrderPreInspectionData,
   PlanificationReportWorkOrderPreInspectionError,
   PlanificationReportWorkOrderPreInspectionResponse,
+  PlanificationWorkOrderDocumentDownloadData,
+  PlanificationWorkOrderDocumentDownloadError,
+  PlanificationWorkOrderDocumentDownloadResponse,
+  PlanificationWorkOrderDocumentQueueDocxData,
+  PlanificationWorkOrderDocumentQueueDocxError,
+  PlanificationWorkOrderDocumentQueueDocxResponse,
+  PlanificationWorkOrderDocumentQueuePdfData,
+  PlanificationWorkOrderDocumentQueuePdfError,
+  PlanificationWorkOrderDocumentQueuePdfResponse,
+  PlanificationWorkOrderDocumentStatusData,
+  PlanificationWorkOrderDocumentStatusError,
+  PlanificationWorkOrderDocumentStatusResponse,
   PostByCompanyBatchesData,
   PostByCompanyBatchesError,
   PostByCompanyBatchesResponse,
@@ -1419,9 +1434,6 @@ import type {
   WorkOrderTaskEventStoreData,
   WorkOrderTaskEventStoreError,
   WorkOrderTaskEventStoreResponse,
-  WorkOrderTestDocumentData,
-  WorkOrderTestDocumentError,
-  WorkOrderTestDocumentResponse,
   WorkshopsDestroyData,
   WorkshopsDestroyError,
   WorkshopsDestroyResponse,
@@ -10324,18 +10336,69 @@ export const workOrderBulkCompleteItemTasksMutation = (
   return mutationOptions;
 };
 
-export const workOrderTestDocumentQueryKey = (options: Options<WorkOrderTestDocumentData>) =>
-  createQueryKey('workOrderTestDocument', options);
+export const planificationWorkOrderDocumentQueueDocxMutation = (
+  options?: Partial<Options<PlanificationWorkOrderDocumentQueueDocxData>>,
+): UseMutationOptions<
+  PlanificationWorkOrderDocumentQueueDocxResponse,
+  AxiosError<PlanificationWorkOrderDocumentQueueDocxError>,
+  Options<PlanificationWorkOrderDocumentQueueDocxData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    PlanificationWorkOrderDocumentQueueDocxResponse,
+    AxiosError<PlanificationWorkOrderDocumentQueueDocxError>,
+    Options<PlanificationWorkOrderDocumentQueueDocxData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await planificationWorkOrderDocumentQueueDocx({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
 
-export const workOrderTestDocumentOptions = (options: Options<WorkOrderTestDocumentData>) =>
+export const planificationWorkOrderDocumentQueuePdfMutation = (
+  options?: Partial<Options<PlanificationWorkOrderDocumentQueuePdfData>>,
+): UseMutationOptions<
+  PlanificationWorkOrderDocumentQueuePdfResponse,
+  AxiosError<PlanificationWorkOrderDocumentQueuePdfError>,
+  Options<PlanificationWorkOrderDocumentQueuePdfData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    PlanificationWorkOrderDocumentQueuePdfResponse,
+    AxiosError<PlanificationWorkOrderDocumentQueuePdfError>,
+    Options<PlanificationWorkOrderDocumentQueuePdfData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await planificationWorkOrderDocumentQueuePdf({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+export const planificationWorkOrderDocumentDownloadQueryKey = (
+  options: Options<PlanificationWorkOrderDocumentDownloadData>,
+) => createQueryKey('planificationWorkOrderDocumentDownload', options);
+
+export const planificationWorkOrderDocumentDownloadOptions = (
+  options: Options<PlanificationWorkOrderDocumentDownloadData>,
+) =>
   queryOptions<
-    WorkOrderTestDocumentResponse,
-    AxiosError<WorkOrderTestDocumentError>,
-    WorkOrderTestDocumentResponse,
-    ReturnType<typeof workOrderTestDocumentQueryKey>
+    PlanificationWorkOrderDocumentDownloadResponse,
+    AxiosError<PlanificationWorkOrderDocumentDownloadError>,
+    PlanificationWorkOrderDocumentDownloadResponse,
+    ReturnType<typeof planificationWorkOrderDocumentDownloadQueryKey>
   >({
     queryFn: async ({ queryKey, signal }) => {
-      const { data } = await workOrderTestDocument({
+      const { data } = await planificationWorkOrderDocumentDownload({
         ...options,
         ...queryKey[0],
         signal,
@@ -10343,7 +10406,32 @@ export const workOrderTestDocumentOptions = (options: Options<WorkOrderTestDocum
       });
       return data;
     },
-    queryKey: workOrderTestDocumentQueryKey(options),
+    queryKey: planificationWorkOrderDocumentDownloadQueryKey(options),
+  });
+
+export const planificationWorkOrderDocumentStatusQueryKey = (
+  options: Options<PlanificationWorkOrderDocumentStatusData>,
+) => createQueryKey('planificationWorkOrderDocumentStatus', options);
+
+export const planificationWorkOrderDocumentStatusOptions = (
+  options: Options<PlanificationWorkOrderDocumentStatusData>,
+) =>
+  queryOptions<
+    PlanificationWorkOrderDocumentStatusResponse,
+    AxiosError<PlanificationWorkOrderDocumentStatusError>,
+    PlanificationWorkOrderDocumentStatusResponse,
+    ReturnType<typeof planificationWorkOrderDocumentStatusQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await planificationWorkOrderDocumentStatus({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: planificationWorkOrderDocumentStatusQueryKey(options),
   });
 
 export const workOrdersIndexQueryKey = (options?: Options<WorkOrdersIndexData>) =>
