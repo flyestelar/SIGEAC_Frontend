@@ -78,7 +78,7 @@ export function EditPurchaseOrderForm({ po, onSuccess }: EditPurchaseOrderFormPr
       articles: po.article_purchase_order.map((a) => ({
         id: a.id,
         article_part_number: a.article_part_number,
-        quantity: a.quantity,
+        quantity: Number(a.quantity),
         unit_price: String(a.unit_price),
       })),
     },
