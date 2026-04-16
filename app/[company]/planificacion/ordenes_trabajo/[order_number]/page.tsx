@@ -4,6 +4,7 @@ import { CompleteTaskDialog } from '@/components/dialogs/mantenimiento/ordenes_t
 import { CompleteTasksBulkDialog } from '@/components/dialogs/mantenimiento/ordenes_trabajo/CompleteTasksBulkDialog';
 import { CompleteWorkOrderDialog } from '@/components/dialogs/mantenimiento/ordenes_trabajo/CompleteWorkOrderDialog';
 import { ContentLayout } from '@/components/layout/ContentLayout';
+import { DocumentDownloadButton, type DocumentType } from '@/components/misc/DocumentDownloadButton';
 import LoadingPage from '@/components/misc/LoadingPage';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -13,7 +14,6 @@ import { Separator } from '@/components/ui/separator';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 import { useCompanyStore } from '@/stores/CompanyStore';
-import { DocumentDownloadButton, type DocumentType } from '@/components/misc/DocumentDownloadButton';
 import {
   planificationWorkOrderDocumentQueuePdfMutation,
   planificationWorkOrderDocumentStatusOptions,
@@ -31,7 +31,6 @@ import {
   Check,
   CheckCircle2,
   ClipboardList,
-  Download,
   Layers,
   MessageSquareText,
   Plane,
@@ -42,7 +41,7 @@ import {
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import type { ReactNode } from 'react';
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { AircraftSection } from './_components/AircraftSection';
 
@@ -108,6 +107,12 @@ function formatDate(dateStr: string | null | undefined) {
   }
 }
 
+function getHttpStatus(error: unknown): number | undefined {
+  return typeof error === 'object' && error !== null && 'response' in error
+    ? (error as any).response?.status
+    : undefined;
+}
+
 function SummaryField({ label, value, mono = false }: { label: string; value: ReactNode; mono?: boolean }) {
   return (
     <div className="min-h-14 bg-background px-3 py-2.5">
@@ -128,6 +133,8 @@ const WorkOrderPage = () => {
   const [bulkCompleteOpen, setBulkCompleteOpen] = useState(false);
   const [workOrderGenerationId, setWorkOrderGenerationId] = useState<string | null>(null);
   const [tallySheetGenerationId, setTallySheetGenerationId] = useState<string | null>(null);
+  const [workOrderStatusError, setWorkOrderStatusError] = useState<string | null>(null);
+  const [tallySheetStatusError, setTallySheetStatusError] = useState<string | null>(null);
 
   const workOrderQueuePdfMutation = useMutation({
     ...planificationWorkOrderDocumentQueuePdfMutation(),
@@ -151,11 +158,14 @@ const WorkOrderPage = () => {
     },
   });
 
+  const workOrderStatusOptions = planificationWorkOrderDocumentStatusOptions({
+    path: { generation_id: workOrderGenerationId ?? '' },
+  });
+
   const workOrderStatusQuery = useQuery({
-    ...planificationWorkOrderDocumentStatusOptions({
-      path: { generation_id: workOrderGenerationId ?? '' },
-    }),
+    ...workOrderStatusOptions,
     enabled: Boolean(workOrderGenerationId),
+    retry: false,
     refetchInterval: (query) => {
       const data = query.state.data?.data;
       if (data?.status === 'completed' || data?.status === 'failed') return false;
@@ -163,27 +173,70 @@ const WorkOrderPage = () => {
     },
   });
 
+  const tallySheetStatusOptions = planificationWorkOrderDocumentStatusOptions({
+    path: { generation_id: tallySheetGenerationId ?? '' },
+  });
+
   const tallySheetStatusQuery = useQuery({
-    ...planificationWorkOrderDocumentStatusOptions({
-      path: { generation_id: tallySheetGenerationId ?? '' },
-    }),
+    ...tallySheetStatusOptions,
     enabled: Boolean(tallySheetGenerationId),
+    retry: false,
     refetchInterval: (query) => {
       const data = query.state.data?.data;
       if (data?.status === 'completed' || data?.status === 'failed') return false;
       return 2000;
     },
   });
+
+  useEffect(() => {
+    const error = workOrderStatusQuery.error;
+    if (!error) {
+      setWorkOrderStatusError(null);
+      return;
+    }
+
+    const status = getHttpStatus(error);
+    setWorkOrderStatusError(
+      status === 404
+        ? 'No se encontró el estado de la generación. Verifique la existencia del documento.'
+        : 'No se pudo consultar el estado de la generación.',
+    );
+    toast.error(
+      status === 404
+        ? 'Estado de orden no encontrado (404).'
+        : 'Error al consultar el estado de la orden.',
+    );
+  }, [workOrderStatusQuery.error]);
+
+  useEffect(() => {
+    const error = tallySheetStatusQuery.error;
+    if (!error) {
+      setTallySheetStatusError(null);
+      return;
+    }
+
+    const status = getHttpStatus(error);
+    setTallySheetStatusError(
+      status === 404
+        ? 'No se encontró el estado del Tally Sheet. Verifique la existencia del documento.'
+        : 'No se pudo consultar el estado del Tally Sheet.',
+    );
+    toast.error(
+      status === 404
+        ? 'Estado de Tally Sheet no encontrado (404).'
+        : 'Error al consultar el estado del Tally Sheet.',
+    );
+  }, [tallySheetStatusQuery.error]);
 
   const workOrderStatusData = workOrderStatusQuery.data?.data;
   const workOrderIsGenerating = workOrderStatusData?.status === 'queued' || workOrderStatusData?.status === 'in_progress';
   const workOrderIsCompleted = workOrderStatusData?.status === 'completed';
-  const workOrderIsFailed = workOrderStatusData?.status === 'failed';
+  const workOrderIsFailed = workOrderStatusData?.status === 'failed' || Boolean(workOrderStatusError);
 
   const tallySheetStatusData = tallySheetStatusQuery.data?.data;
   const tallySheetIsGenerating = tallySheetStatusData?.status === 'queued' || tallySheetStatusData?.status === 'in_progress';
   const tallySheetIsCompleted = tallySheetStatusData?.status === 'completed';
-  const tallySheetIsFailed = tallySheetStatusData?.status === 'failed';
+  const tallySheetIsFailed = tallySheetStatusData?.status === 'failed' || Boolean(tallySheetStatusError);
 
   const {
     data: response,
@@ -233,7 +286,7 @@ const WorkOrderPage = () => {
     <ContentLayout title="Orden de Trabajo">
       <div className="max-w-7xl space-y-6">
         {/* Header */}
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between gap-4 flex-wrap">
           <div className="flex items-center gap-4">
             <Link href={`/${selectedCompany?.slug}/planificacion/ordenes_trabajo`}>
               <Button variant="ghost" size="icon" className="h-8 w-8">
@@ -261,7 +314,7 @@ const WorkOrderPage = () => {
             <Button
               variant="default"
               size="sm"
-              className="h-8 gap-1.5 text-xs"
+              className="flex-1 h-8 gap-1.5 text-xs"
               onClick={() => setCompleteOrderOpen(true)}
               disabled={statusRaw === 'CERRADO'}
             >
@@ -273,6 +326,7 @@ const WorkOrderPage = () => {
               orderNumber={order_number}
               generationId={workOrderGenerationId}
               isCompleted={workOrderIsCompleted}
+              isFailed={workOrderIsFailed}
               isPending={workOrderQueuePdfMutation.status === 'pending'}
               onQueue={() => handleQueuePdf('work_order')}
               autoDownload
@@ -283,6 +337,7 @@ const WorkOrderPage = () => {
               orderNumber={order_number}
               generationId={tallySheetGenerationId}
               isCompleted={tallySheetIsCompleted}
+              isFailed={tallySheetIsFailed}
               isPending={tallySheetQueuePdfMutation.status === 'pending'}
               onQueue={() => handleQueuePdf('tally_sheet')}
               autoDownload
@@ -302,6 +357,7 @@ const WorkOrderPage = () => {
                 isGenerating: workOrderIsGenerating,
                 isCompleted: workOrderIsCompleted,
                 isFailed: workOrderIsFailed,
+                statusError: workOrderStatusError,
               },
               {
                 label: 'Tally Sheet',
@@ -311,6 +367,7 @@ const WorkOrderPage = () => {
                 isGenerating: tallySheetIsGenerating,
                 isCompleted: tallySheetIsCompleted,
                 isFailed: tallySheetIsFailed,
+                statusError: tallySheetStatusError,
               },
             ].map((doc) =>
               doc.generationId ? (
@@ -337,6 +394,11 @@ const WorkOrderPage = () => {
                             ? 'Error al generar el documento PDF'
                             : 'Preparando generación...'}
                     </span>
+                    {doc.statusError ? (
+                      <span className="text-xs font-medium text-red-600 dark:text-red-400">
+                        {doc.statusError}
+                      </span>
+                    ) : null}
                     {(doc.status as any)?.progress !== undefined && doc.isGenerating && (
                       <div className="mt-1 h-1.5 w-full max-w-xs overflow-hidden rounded-full bg-muted">
                         <div
@@ -346,14 +408,15 @@ const WorkOrderPage = () => {
                       </div>
                     )}
                   </div>
-                  {doc.isCompleted && (
+                  {(doc.isCompleted || doc.isFailed) && (
                     <DocumentDownloadButton
                       type={doc.type}
                       orderNumber={order_number}
                       generationId={doc.generationId}
                       isCompleted={doc.isCompleted}
+                      isFailed={doc.isFailed}
                       isPending={false}
-                      onQueue={() => {}}
+                      onQueue={() => handleQueuePdf(doc.type)}
                       disabled={false}
                     />
                   )}

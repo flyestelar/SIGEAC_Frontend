@@ -6,17 +6,23 @@ import { Download } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
+function isAxiosError(error: unknown): error is { response?: { status?: number } } {
+  return typeof error === 'object' && error !== null && 'response' in error && typeof (error as any).response === 'object';
+}
+
 export type DocumentType = 'work_order' | 'tally_sheet';
 
-const DOCUMENT_LABELS: Record<DocumentType, { queue: string; download: string; fileName: string }> = {
+const DOCUMENT_LABELS: Record<DocumentType, { queue: string; retry: string; download: string; fileName: string }> = {
   work_order: {
-    queue: 'Generar orden',
-    download: 'Descargar orden',
+    queue: 'Generar Documento',
+    retry: 'Reintentar Documento',
+    download: 'Descargar Documento',
     fileName: 'orden-trabajo',
   },
   tally_sheet: {
-    queue: 'Generar tally',
-    download: 'Descargar tally',
+    queue: 'Generar Tally',
+    retry: 'Reintentar Tally',
+    download: 'Descargar Tally',
     fileName: 'tally-sheet',
   },
 };
@@ -26,6 +32,7 @@ type DocumentDownloadButtonProps = {
   orderNumber: string;
   generationId: string | null;
   isCompleted: boolean;
+  isFailed: boolean;
   isPending: boolean;
   onQueue: () => void;
   disabled?: boolean;
@@ -37,6 +44,7 @@ export function DocumentDownloadButton({
   orderNumber,
   generationId,
   isCompleted,
+  isFailed,
   isPending,
   onQueue,
   disabled = false,
@@ -44,7 +52,11 @@ export function DocumentDownloadButton({
 }: DocumentDownloadButtonProps) {
   const [isDownloading, setIsDownloading] = useState(false);
 
-  const buttonLabel = isCompleted ? DOCUMENT_LABELS[type].download : DOCUMENT_LABELS[type].queue;
+  const buttonLabel = isCompleted
+    ? DOCUMENT_LABELS[type].download
+    : isFailed
+      ? DOCUMENT_LABELS[type].retry
+      : DOCUMENT_LABELS[type].queue;
   const fileName = useMemo(
     () => `${DOCUMENT_LABELS[type].fileName}-${orderNumber}.pdf`,
     [orderNumber, type],
@@ -70,7 +82,11 @@ export function DocumentDownloadButton({
       window.URL.revokeObjectURL(url);
       toast.success('PDF descargado exitosamente.');
     } catch (error) {
-      toast.error('Error al descargar el PDF.');
+      if (isAxiosError(error) && error.response?.status === 404) {
+        toast.error('Documento no encontrado (404). Verifique si la generación fue exitosa.');
+      } else {
+        toast.error('Error al descargar el PDF.');
+      }
     } finally {
       setIsDownloading(false);
     }
@@ -94,7 +110,7 @@ export function DocumentDownloadButton({
     <Button
       variant="outline"
       size="sm"
-      className="h-8 gap-1.5 text-xs"
+      className="flex-1 h-8 gap-1.5 text-xs"
       onClick={handleClick}
       disabled={disabled || isPending || isDownloading}
     >

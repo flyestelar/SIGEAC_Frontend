@@ -43,7 +43,7 @@ export function AircraftSection({ aircraft }: { aircraft: AircraftResource }) {
           </div>
         </div>
         <div className="flex flex-1 flex-col justify-between gap-y-3 pt-2.5">
-          <div className="flex gap-y-3 gap-x-5 px-4 *:flex-1 *:basis-1/4 flex-wrap whitespace-nowrap flex-col sm:flex-row ">
+          <div className="flex gap-y-3 gap-x-5 px-4 *:flex-1 *:basis-1/4 sm:flex-wrap whitespace-nowrap flex-col sm:flex-row ">
             <div className="space-y-0.5">
               <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Tipo</p>
               <p className="text-sm font-medium line-clamp-1">{aircraftTypeLabel}</p>
