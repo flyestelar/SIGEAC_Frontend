@@ -14,13 +14,13 @@ import { Separator } from '@/components/ui/separator';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { planificationWorkOrderDocumentDownload } from '@api/index';
 import { cn } from '@/lib/utils';
-import { useCompanyStore } from '@/stores/CompanyStore';
+import { useCompanySlug, useCompanyStore } from '@/stores/CompanyStore';
 import {
   planificationWorkOrderDocumentQueuePdfMutation,
   planificationWorkOrderDocumentStatusOptions,
   workOrdersShowOptions,
 } from '@api/queries';
-import { WorkOrderItemResource, WorkOrderItemTaskResource, WorkOrderResource } from '@api/types';
+import { AircraftResource, WorkOrderItemResource, WorkOrderItemTaskResource, WorkOrderResource } from '@api/types';
 import { useState } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useEffect, useCallback } from 'react';
@@ -37,7 +37,6 @@ import {
   Layers,
   MessageSquareText,
   Plane,
-  Printer,
   RotateCcw,
   Settings2,
   ShieldCheck,
@@ -46,6 +45,7 @@ import {
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { toast } from 'sonner';
+import type { ReactNode } from 'react';
 
 /* ─── Constants ─── */
 
@@ -109,6 +109,17 @@ function formatDate(dateStr: string | null | undefined) {
   }
 }
 
+function SummaryField({ label, value, mono = false }: { label: string; value: ReactNode; mono?: boolean }) {
+  return (
+    <div className="min-h-14 bg-background px-3 py-2.5">
+      <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">{label}</p>
+      <div className={cn('mt-1 text-[13px] font-medium leading-tight text-foreground/90', mono && 'font-mono')}>
+        {value}
+      </div>
+    </div>
+  );
+}
+
 /* ─── Page ─── */
 
 const WorkOrderPage = () => {
@@ -159,6 +170,7 @@ const WorkOrderPage = () => {
   const statusCfg = STATUS_CONFIG[statusRaw] ?? fallbackStatus;
   const aircraft = wo?.aircraft;
   const items = wo?.items ?? [];
+  const aircraftLocationLabel = aircraft?.location?.address ?? aircraft?.location?.cod_iata ?? '—';
   const totalTasks = items.reduce((sum, item) => sum + (item.tasks?.length ?? 0), 0);
   const pendingTasksCount = items.reduce(
     (sum, item) => sum + (item.tasks ?? []).filter((task) => !task.review_by).length,
@@ -315,117 +327,23 @@ const WorkOrderPage = () => {
           {/* Main column */}
           <div className="space-y-6 lg:col-span-8 min-w-0">
             {/* Aircraft card */}
-            {aircraft && (
-              <section className="overflow-hidden rounded-lg border bg-background">
-                <div className="flex items-stretch">
-                  <div className="relative w-56 shrink-0">
-                    <img
-                      src={aircraft.aircraft_type?.image || 'https://cdn.zbordirect.com/images/airlines/ES.webp'}
-                      alt={aircraft.acronym}
-                      className="h-full w-full object-cover brightness-[0.55] dark:brightness-[0.35]"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-r from-transparent to-black/20" />
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="text-center">
-                        <span className="font-mono text-lg font-bold tracking-widest text-white drop-shadow-sm">
-                          {aircraft.acronym}
-                        </span>
-                        {aircraft.aircraft_type?.full_name && (
-                          <p className="text-[11px] text-white/70">{aircraft.aircraft_type.full_name}</p>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex flex-1 flex-col justify-between">
-                    <div className="grid grid-cols-4 gap-x-4 px-4 py-2.5">
-                      <div className="space-y-1">
-                        <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
-                          Tipo
-                        </p>
-                        <p className="text-sm font-medium line-clamp-1">{aircraft.aircraft_type?.full_name ?? '—'}</p>
-                      </div>
-                      <div className="space-y-1">
-                        <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
-                          Fabricante
-                        </p>
-                        <p className="text-sm font-medium line-clamp-1">
-                          {aircraft.aircraft_type?.manufacturer?.name ?? '—'}
-                        </p>
-                      </div>
-                      <div className="space-y-1">
-                        <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
-                          Serial
-                        </p>
-                        <p className="font-mono text-sm font-medium">{aircraft.serial || '—'}</p>
-                      </div>
-                      <div className="space-y-1">
-                        <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
-                          Modelo
-                        </p>
-                        <p className="text-sm font-medium">{aircraft.model || '—'}</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-4 border-t bg-muted/20 px-4 py-1.5">
-                      <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                        <Clock3 className="size-3 shrink-0" />
-                        <span className="font-mono font-medium tabular-nums text-foreground">
-                          {aircraft.flight_hours?.toLocaleString?.() ?? '—'}
-                        </span>
-                        <span>h</span>
-                      </div>
-                      <div className="h-3 w-px bg-border" />
-                      <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                        <RotateCcw className="size-3 shrink-0" />
-                        <span className="font-mono font-medium tabular-nums text-foreground">
-                          {aircraft.flight_cycles?.toLocaleString?.() ?? '—'}
-                        </span>
-                        <span>ciclos</span>
-                      </div>
-                      <div className="ml-auto">
-                        <Link href={`/${selectedCompany?.slug}/planificacion/aeronaves/${aircraft.acronym}`}>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-6 gap-1.5 text-[11px] text-muted-foreground hover:text-foreground"
-                          >
-                            <Plane className="size-3" />
-                            Ver aeronave
-                          </Button>
-                        </Link>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </section>
-            )}
+            {aircraft && <AircraftSection aircraft={aircraft} />}
 
-            {/* Order info — compact grid, no header bar */}
+            {/* Order info */}
             <section className="overflow-hidden rounded-lg border bg-background">
-              <div className="grid grid-cols-4 gap-x-4 px-5 py-3">
-                <div className="flex items-center gap-2">
-                  <CalendarDays className="size-3.5 shrink-0 text-muted-foreground" />
-                  <div className="min-w-0">
-                    <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">Entrada</p>
-                    <p className="text-sm font-medium">{formatDate(wo.entry_date)}</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <CalendarDays className="size-3.5 shrink-0 text-muted-foreground" />
-                  <div className="min-w-0">
-                    <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">Salida</p>
-                    <p className="text-sm font-medium">{formatDate(wo.exit_date)}</p>
-                  </div>
-                </div>
-                <div className="space-y-1">
-                  <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">Tally</p>
-                  <p className="font-mono text-sm font-medium">{wo.tally_number || '—'}</p>
-                </div>
-                <div className="space-y-1">
-                  <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">Estado</p>
-                  <Badge variant="outline" className={cn('text-[11px]', statusCfg.className)}>
-                    {statusCfg.label}
-                  </Badge>
-                </div>
+              <div className="grid grid-cols-1 gap-px bg-border sm:grid-cols-5">
+                <SummaryField label="Tally" value={wo.tally_number || '—'} mono />
+                <SummaryField
+                  label="Estado"
+                  value={
+                    <Badge variant="outline" className={cn('text-[11px]', statusCfg.className)}>
+                      {statusCfg.label}
+                    </Badge>
+                  }
+                />
+                <SummaryField label="Entrada" value={formatDate(wo.entry_date)} />
+                <SummaryField label="Salida" value={formatDate(wo.exit_date)} />
+                <SummaryField label="Realizado en" value={aircraftLocationLabel} />
               </div>
               {wo.remarks && (
                 <>
@@ -704,3 +622,100 @@ function ControlAccordionItem({ item, orderNumber }: { item: WorkOrderItemResour
 }
 
 export default WorkOrderPage;
+
+function AircraftSection({ aircraft }: { aircraft: AircraftResource }) {
+  const companySlug = useCompanySlug();
+
+  const aircraftTypeLabel = aircraft?.aircraft_type?.full_name ?? '—';
+  const aircraftRegistrationLabel = aircraft?.acronym ?? '—';
+  const aircraftModelLabel = aircraft?.model ?? '—';
+  const aircraftSerialLabel = aircraft?.serial ?? '—';
+  const aircraftManufacturerLabel = aircraft?.aircraft_type?.manufacturer?.name ?? '—';
+  const engineTypeLabel = '—';
+  const engineSerial1Label = '—';
+  const engineSerial2Label = '—';
+
+  return (
+    <section className="overflow-hidden rounded-lg border bg-background">
+      <div className="flex items-stretch">
+        <div className="relative w-56 shrink-0">
+          <img
+            src={aircraft.aircraft_type?.image || 'https://cdn.zbordirect.com/images/airlines/ES.webp'}
+            alt={aircraftRegistrationLabel}
+            className="h-full w-full object-cover brightness-[0.55] dark:brightness-[0.35]"
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent to-black/20" />
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="text-center">
+              <span className="font-mono text-lg font-bold tracking-widest text-white drop-shadow-sm">
+                {aircraftRegistrationLabel}
+              </span>
+              {aircraftTypeLabel && <p className="text-[11px] text-white/70">{aircraftTypeLabel}</p>}
+            </div>
+          </div>
+        </div>
+        <div className="flex flex-1 flex-col justify-between gap-y-3 pt-2.5">
+          <div className="flex gap-y-3 gap-x-5 px-4 *:flex-1 *:basis-1/4 flex-wrap whitespace-nowrap flex-col sm:flex-row ">
+            <div className="space-y-0.5">
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Tipo</p>
+              <p className="text-sm font-medium line-clamp-1">{aircraftTypeLabel}</p>
+            </div>
+            <div className="space-y-0.5">
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Fabricante</p>
+              <p className="text-sm font-medium line-clamp-1">{aircraftManufacturerLabel}</p>
+            </div>
+            <div className="space-y-0.5">
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Serial</p>
+              <p className="font-mono text-sm font-medium">{aircraftSerialLabel}</p>
+            </div>
+            <div className="space-y-0.5">
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Modelo</p>
+              <p className="text-sm font-medium">{aircraftModelLabel}</p>
+            </div>
+            <div className="space-y-0.5">
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Tipo de motor</p>
+              <p className="text-sm font-medium line-clamp-1">{engineTypeLabel}</p>
+            </div>
+            <div className="space-y-0.5">
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">S/N motor 1</p>
+              <p className="font-mono text-sm font-medium">{engineSerial1Label}</p>
+            </div>
+            <div className="space-y-0.5">
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">S/N motor 2</p>
+              <p className="font-mono text-sm font-medium">{engineSerial2Label}</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-4 border-t bg-muted/20 px-4 py-1.5">
+            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+              <Clock3 className="size-3 shrink-0" />
+              <span className="font-mono font-medium tabular-nums text-foreground">
+                {aircraft.flight_hours?.toLocaleString?.() ?? '—'}
+              </span>
+              <span>h</span>
+            </div>
+            <div className="h-3 w-px bg-border" />
+            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+              <RotateCcw className="size-3 shrink-0" />
+              <span className="font-mono font-medium tabular-nums text-foreground">
+                {aircraft.flight_cycles?.toLocaleString?.() ?? '—'}
+              </span>
+              <span>ciclos</span>
+            </div>
+            <div className="ml-auto">
+              <Link href={`/${companySlug}/planificacion/aeronaves/${aircraft.acronym}`}>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-6 gap-1.5 text-[11px] text-muted-foreground hover:text-foreground"
+                >
+                  <Plane className="size-3" />
+                  Ver aeronave
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}

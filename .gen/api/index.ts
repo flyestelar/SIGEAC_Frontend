@@ -1421,6 +1421,7 @@ export type {
   LocationIndexErrors,
   LocationIndexResponse,
   LocationIndexResponses,
+  LocationResource,
   LocationShowByAllLocationData,
   LocationShowByAllLocationError,
   LocationShowByAllLocationErrors,

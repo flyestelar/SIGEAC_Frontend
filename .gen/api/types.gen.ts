@@ -380,6 +380,16 @@ export type Location = {
 };
 
 /**
+ * LocationResource
+ */
+export type LocationResource = {
+  id: number;
+  address: string;
+  type: string;
+  cod_iata: string | null;
+};
+
+/**
  * MaintenanceAlertStatus
  */
 export type MaintenanceAlertStatus = 'OVERDUE' | 'WARNING' | 'OK';
@@ -912,6 +922,7 @@ export type WorkOrderResource = {
   items?: Array<WorkOrderItemResource>;
   created_at: string | null;
   updated_at: string | null;
+  location?: LocationResource;
 };
 
 /**

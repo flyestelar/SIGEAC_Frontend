@@ -50,3 +50,7 @@ export const useCompanyStore = create<CompanyState & CompanyActions>()(
     },
   ),
 );
+
+export function useCompanySlug() {
+  return useCompanyStore((state) => state.selectedCompany?.slug);
+}
