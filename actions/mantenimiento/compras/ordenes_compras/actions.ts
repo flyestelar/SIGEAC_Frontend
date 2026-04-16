@@ -115,6 +115,46 @@ export const useCompletePurchase = () => {
   }
 }
 
+interface UpdatePurchaseOrderData {
+  order_number: string;
+  justification: string;
+  purchase_date: Date;
+  vendor_id: number;
+  sub_total: number;
+  total: number;
+  updated_by: string;
+  articles_purchase_orders: {
+    id?: number;
+    article_part_number: string;
+    quantity: number;
+    unit_price: string;
+  }[];
+}
+
+export const useUpdatePurchaseOrder = () => {
+  const queryClient = useQueryClient()
+
+  const updateMutation = useMutation({
+    mutationFn: async ({ id, data, company }: { id: number; data: UpdatePurchaseOrderData; company: string }) => {
+      await axiosInstance.put(`/${company}/purchase-order/${id}`, data)
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['purchase-orders'] })
+      queryClient.invalidateQueries({ queryKey: ['purchase-order'], exact: false })
+      toast.success('¡Actualizado!', {
+        description: 'La orden de compra ha sido actualizada correctamente.',
+      })
+    },
+    onError: () => {
+      toast.error('Oops!', {
+        description: 'No se pudo actualizar la orden de compra.',
+      })
+    },
+  })
+
+  return { updatePurchaseOrder: updateMutation }
+}
+
 export const useDeletePurchaseOrder = () => {
   const queryClient = useQueryClient()
 

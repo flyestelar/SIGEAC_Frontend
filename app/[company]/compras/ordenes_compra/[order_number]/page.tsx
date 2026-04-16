@@ -11,7 +11,7 @@ import { Separator } from '@/components/ui/separator';
 import { useGetPurchaseOrder } from '@/hooks/mantenimiento/compras/useGetPurchaseOrder';
 import { cn } from '@/lib/utils';
 import { useCompanyStore } from '@/stores/CompanyStore';
-import { ArrowLeft, ExternalLink, Loader2, Package2, Trash2 } from 'lucide-react';
+import { ArrowLeft, ExternalLink, Loader2, Package2, Pencil, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { useState } from 'react';
@@ -176,6 +176,12 @@ const PurchaseOrderDetailPage = () => {
                 <p className={fieldLabelClass}>Acciones</p>
               </div>
               <div className="flex flex-col gap-2 p-4">
+                <Button className="w-full" size="sm" asChild>
+                  <Link href={`/${company}/compras/ordenes_compra/${order_number}/editar`}>
+                    <Pencil className="mr-2 h-3.5 w-3.5" />
+                    Editar
+                  </Link>
+                </Button>
                 <Button className="w-full" size="sm" onClick={() => setOpenComplete(true)}>
                   <Package2 className="mr-2 h-3.5 w-3.5" />
                   Completar PO
