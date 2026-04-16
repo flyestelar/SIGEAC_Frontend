@@ -261,6 +261,8 @@ import {
   planificationWorkOrderDocumentQueueDocx,
   planificationWorkOrderDocumentQueuePdf,
   planificationWorkOrderDocumentStatus,
+  planificationWorkOrderTallySheetQueueDocx,
+  planificationWorkOrderTallySheetQueuePdf,
   postByCompanyBatches,
   preliminaryInspectionDestroy,
   preliminaryInspectionIndex,
@@ -1108,6 +1110,12 @@ import type {
   PlanificationWorkOrderDocumentStatusData,
   PlanificationWorkOrderDocumentStatusError,
   PlanificationWorkOrderDocumentStatusResponse,
+  PlanificationWorkOrderTallySheetQueueDocxData,
+  PlanificationWorkOrderTallySheetQueueDocxError,
+  PlanificationWorkOrderTallySheetQueueDocxResponse,
+  PlanificationWorkOrderTallySheetQueuePdfData,
+  PlanificationWorkOrderTallySheetQueuePdfError,
+  PlanificationWorkOrderTallySheetQueuePdfResponse,
   PostByCompanyBatchesData,
   PostByCompanyBatchesError,
   PostByCompanyBatchesResponse,
@@ -10374,6 +10382,54 @@ export const planificationWorkOrderDocumentQueuePdfMutation = (
   > = {
     mutationFn: async (fnOptions) => {
       const { data } = await planificationWorkOrderDocumentQueuePdf({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+export const planificationWorkOrderTallySheetQueueDocxMutation = (
+  options?: Partial<Options<PlanificationWorkOrderTallySheetQueueDocxData>>,
+): UseMutationOptions<
+  PlanificationWorkOrderTallySheetQueueDocxResponse,
+  AxiosError<PlanificationWorkOrderTallySheetQueueDocxError>,
+  Options<PlanificationWorkOrderTallySheetQueueDocxData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    PlanificationWorkOrderTallySheetQueueDocxResponse,
+    AxiosError<PlanificationWorkOrderTallySheetQueueDocxError>,
+    Options<PlanificationWorkOrderTallySheetQueueDocxData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await planificationWorkOrderTallySheetQueueDocx({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+export const planificationWorkOrderTallySheetQueuePdfMutation = (
+  options?: Partial<Options<PlanificationWorkOrderTallySheetQueuePdfData>>,
+): UseMutationOptions<
+  PlanificationWorkOrderTallySheetQueuePdfResponse,
+  AxiosError<PlanificationWorkOrderTallySheetQueuePdfError>,
+  Options<PlanificationWorkOrderTallySheetQueuePdfData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    PlanificationWorkOrderTallySheetQueuePdfResponse,
+    AxiosError<PlanificationWorkOrderTallySheetQueuePdfError>,
+    Options<PlanificationWorkOrderTallySheetQueuePdfData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await planificationWorkOrderTallySheetQueuePdf({
         ...options,
         ...fnOptions,
         throwOnError: true,

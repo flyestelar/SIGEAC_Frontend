@@ -92,11 +92,8 @@ export type AircraftResource = {
   flight_cycles: number;
   fabricant_date: string;
   comments: string | null;
-  location?: {
-    id: number;
-    address: string;
-    cod_iata: string | null;
-  };
+  location_id: number | null;
+  location?: LocationResource;
   registered_by: string;
   updated_by: string | null;
   created_at: string;
@@ -295,6 +292,7 @@ export type DocumentGenerationMetadataResource = {
   work_order_id: number;
   order_number: string | null;
   format: string;
+  document_type: string | null;
   status: string;
   created_at: string | null;
   completed_at: string | null;
@@ -922,7 +920,6 @@ export type WorkOrderResource = {
   items?: Array<WorkOrderItemResource>;
   created_at: string | null;
   updated_at: string | null;
-  location?: LocationResource;
 };
 
 /**
@@ -13439,6 +13436,11 @@ export type WorkOrderCloseError = WorkOrderCloseErrors[keyof WorkOrderCloseError
 export type WorkOrderCloseResponses = {
   200: {
     message: 'Orden de trabajo completada exitosamente.';
+    document_generation_id: string;
+    status_url: string;
+    tally_sheet_generation_id: string;
+    tally_sheet_status_url: string;
+    tally_sheet_download_url: string;
   };
 };
 
@@ -13620,6 +13622,78 @@ export type PlanificationWorkOrderDocumentQueuePdfResponses = {
 
 export type PlanificationWorkOrderDocumentQueuePdfResponse =
   PlanificationWorkOrderDocumentQueuePdfResponses[keyof PlanificationWorkOrderDocumentQueuePdfResponses];
+
+export type PlanificationWorkOrderTallySheetQueueDocxData = {
+  body?: never;
+  path: {
+    order_number: string;
+  };
+  query?: never;
+  url: '/work-orders/{order_number}/tally-sheet/docx/queue';
+};
+
+export type PlanificationWorkOrderTallySheetQueueDocxErrors = {
+  /**
+   * Unauthenticated
+   */
+  401: {
+    /**
+     * Error overview.
+     */
+    message: string;
+  };
+};
+
+export type PlanificationWorkOrderTallySheetQueueDocxError =
+  PlanificationWorkOrderTallySheetQueueDocxErrors[keyof PlanificationWorkOrderTallySheetQueueDocxErrors];
+
+export type PlanificationWorkOrderTallySheetQueueDocxResponses = {
+  202: {
+    message: 'Tally sheet generation queued.';
+    generation_id: string;
+    download_url: string;
+    status_url: string;
+  };
+};
+
+export type PlanificationWorkOrderTallySheetQueueDocxResponse =
+  PlanificationWorkOrderTallySheetQueueDocxResponses[keyof PlanificationWorkOrderTallySheetQueueDocxResponses];
+
+export type PlanificationWorkOrderTallySheetQueuePdfData = {
+  body?: never;
+  path: {
+    order_number: string;
+  };
+  query?: never;
+  url: '/work-orders/{order_number}/tally-sheet/pdf/queue';
+};
+
+export type PlanificationWorkOrderTallySheetQueuePdfErrors = {
+  /**
+   * Unauthenticated
+   */
+  401: {
+    /**
+     * Error overview.
+     */
+    message: string;
+  };
+};
+
+export type PlanificationWorkOrderTallySheetQueuePdfError =
+  PlanificationWorkOrderTallySheetQueuePdfErrors[keyof PlanificationWorkOrderTallySheetQueuePdfErrors];
+
+export type PlanificationWorkOrderTallySheetQueuePdfResponses = {
+  202: {
+    message: 'Tally sheet PDF generation queued.';
+    generation_id: string;
+    download_url: string;
+    status_url: string;
+  };
+};
+
+export type PlanificationWorkOrderTallySheetQueuePdfResponse =
+  PlanificationWorkOrderTallySheetQueuePdfResponses[keyof PlanificationWorkOrderTallySheetQueuePdfResponses];
 
 export type PlanificationWorkOrderDocumentDownloadData = {
   body?: never;

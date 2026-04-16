@@ -1,4 +1,3 @@
-/* eslint-disable @next/next/no-img-element */
 'use client';
 
 import { CompleteTaskDialog } from '@/components/dialogs/mantenimiento/ordenes_trabajo/CompleteTaskDialog';
@@ -12,18 +11,17 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { planificationWorkOrderDocumentDownload } from '@api/index';
 import { cn } from '@/lib/utils';
-import { useCompanySlug, useCompanyStore } from '@/stores/CompanyStore';
+import { useCompanyStore } from '@/stores/CompanyStore';
+import { DocumentDownloadButton, type DocumentType } from '@/components/misc/DocumentDownloadButton';
 import {
   planificationWorkOrderDocumentQueuePdfMutation,
   planificationWorkOrderDocumentStatusOptions,
+  planificationWorkOrderTallySheetQueuePdfMutation,
   workOrdersShowOptions,
 } from '@api/queries';
-import { AircraftResource, WorkOrderItemResource, WorkOrderItemTaskResource, WorkOrderResource } from '@api/types';
-import { useState } from 'react';
+import { WorkOrderItemResource, WorkOrderItemTaskResource, WorkOrderResource } from '@api/types';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { useEffect, useCallback } from 'react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import {
@@ -31,21 +29,22 @@ import {
   ArrowLeft,
   CalendarDays,
   Check,
+  CheckCircle2,
   ClipboardList,
-  Clock3,
   Download,
   Layers,
   MessageSquareText,
   Plane,
   RotateCcw,
   Settings2,
-  ShieldCheck,
-  CheckCircle2,
+  ShieldCheck
 } from 'lucide-react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { toast } from 'sonner';
 import type { ReactNode } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import { toast } from 'sonner';
+import { AircraftSection } from './_components/AircraftSection';
 
 /* ─── Constants ─── */
 
@@ -127,24 +126,36 @@ const WorkOrderPage = () => {
   const { selectedCompany } = useCompanyStore();
   const [completeOrderOpen, setCompleteOrderOpen] = useState(false);
   const [bulkCompleteOpen, setBulkCompleteOpen] = useState(false);
-  const [generationId, setGenerationId] = useState<string | null>(null);
+  const [workOrderGenerationId, setWorkOrderGenerationId] = useState<string | null>(null);
+  const [tallySheetGenerationId, setTallySheetGenerationId] = useState<string | null>(null);
 
-  const queuePdfMutation = useMutation({
+  const workOrderQueuePdfMutation = useMutation({
     ...planificationWorkOrderDocumentQueuePdfMutation(),
     onSuccess: (data) => {
-      setGenerationId(data.generation_id);
-      toast.success('PDF en cola para generación.');
+      setWorkOrderGenerationId(data.generation_id);
+      toast.success('Orden de trabajo en cola para generación.');
     },
     onError: () => {
-      toast.error('No se pudo iniciar la generación del PDF.');
+      toast.error('No se pudo iniciar la generación de la orden de trabajo.');
     },
   });
 
-  const statusQuery = useQuery({
+  const tallySheetQueuePdfMutation = useMutation({
+    ...planificationWorkOrderTallySheetQueuePdfMutation(),
+    onSuccess: (data) => {
+      setTallySheetGenerationId(data.generation_id);
+      toast.success('Tally Sheet en cola para generación.');
+    },
+    onError: () => {
+      toast.error('No se pudo iniciar la generación del Tally Sheet.');
+    },
+  });
+
+  const workOrderStatusQuery = useQuery({
     ...planificationWorkOrderDocumentStatusOptions({
-      path: { generation_id: generationId ?? '' },
+      path: { generation_id: workOrderGenerationId ?? '' },
     }),
-    enabled: Boolean(generationId),
+    enabled: Boolean(workOrderGenerationId),
     refetchInterval: (query) => {
       const data = query.state.data?.data;
       if (data?.status === 'completed' || data?.status === 'failed') return false;
@@ -152,10 +163,27 @@ const WorkOrderPage = () => {
     },
   });
 
-  const statusData = statusQuery.data?.data;
-  const isGenerating = statusData?.status === 'queued' || statusData?.status === 'in_progress';
-  const isCompleted = statusData?.status === 'completed';
-  const isFailed = statusData?.status === 'failed';
+  const tallySheetStatusQuery = useQuery({
+    ...planificationWorkOrderDocumentStatusOptions({
+      path: { generation_id: tallySheetGenerationId ?? '' },
+    }),
+    enabled: Boolean(tallySheetGenerationId),
+    refetchInterval: (query) => {
+      const data = query.state.data?.data;
+      if (data?.status === 'completed' || data?.status === 'failed') return false;
+      return 2000;
+    },
+  });
+
+  const workOrderStatusData = workOrderStatusQuery.data?.data;
+  const workOrderIsGenerating = workOrderStatusData?.status === 'queued' || workOrderStatusData?.status === 'in_progress';
+  const workOrderIsCompleted = workOrderStatusData?.status === 'completed';
+  const workOrderIsFailed = workOrderStatusData?.status === 'failed';
+
+  const tallySheetStatusData = tallySheetStatusQuery.data?.data;
+  const tallySheetIsGenerating = tallySheetStatusData?.status === 'queued' || tallySheetStatusData?.status === 'in_progress';
+  const tallySheetIsCompleted = tallySheetStatusData?.status === 'completed';
+  const tallySheetIsFailed = tallySheetStatusData?.status === 'failed';
 
   const {
     data: response,
@@ -177,40 +205,16 @@ const WorkOrderPage = () => {
     0,
   );
 
-  const handleQueuePdf = () => {
-    if (queuePdfMutation.status === 'pending') return;
-    queuePdfMutation.mutate({ path: { order_number } });
+  const handleQueuePdf = (type: DocumentType) => {
+    if (type === 'work_order') {
+      if (workOrderQueuePdfMutation.status === 'pending') return;
+      workOrderQueuePdfMutation.mutate({ path: { order_number } });
+      return;
+    }
+
+    if (tallySheetQueuePdfMutation.status === 'pending') return;
+    tallySheetQueuePdfMutation.mutate({ path: { order_number } });
   };
-
-  const handleDownloadPdf = useCallback(async () => {
-    if (!generationId) return;
-    try {
-      const response = await planificationWorkOrderDocumentDownload({
-        path: { generation_id: generationId },
-        throwOnError: true,
-      });
-      // Assuming the response is a blob or has download URL
-      // For now, trigger download
-      const url = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', `orden-trabajo-${order_number}.pdf`);
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      window.URL.revokeObjectURL(url);
-      toast.success('PDF descargado exitosamente.');
-    } catch (error) {
-      toast.error('Error al descargar el PDF.');
-    }
-  }, [generationId, order_number]);
-
-  // Auto-download when completed
-  useEffect(() => {
-    if (isCompleted) {
-      handleDownloadPdf();
-    }
-  }, [isCompleted, handleDownloadPdf]);
 
   if (isLoading) return <LoadingPage />;
 
@@ -253,7 +257,7 @@ const WorkOrderPage = () => {
               </div>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <Button
               variant="default"
               size="sm"
@@ -264,60 +268,97 @@ const WorkOrderPage = () => {
               <CheckCircle2 className="size-3.5" />
               {statusRaw === 'CERRADO' ? 'Orden completada' : 'Completar orden'}
             </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-8 gap-1.5 text-xs"
-              onClick={isCompleted ? handleDownloadPdf : handleQueuePdf}
-              disabled={queuePdfMutation.status === 'pending'}
-            >
-              <Download className="size-3.5" />
-              {isCompleted ? 'Descargar PDF' : 'Generar PDF'}
-            </Button>
+            <DocumentDownloadButton
+              type="work_order"
+              orderNumber={order_number}
+              generationId={workOrderGenerationId}
+              isCompleted={workOrderIsCompleted}
+              isPending={workOrderQueuePdfMutation.status === 'pending'}
+              onQueue={() => handleQueuePdf('work_order')}
+              autoDownload
+              disabled={workOrderQueuePdfMutation.status === 'pending'}
+            />
+            <DocumentDownloadButton
+              type="tally_sheet"
+              orderNumber={order_number}
+              generationId={tallySheetGenerationId}
+              isCompleted={tallySheetIsCompleted}
+              isPending={tallySheetQueuePdfMutation.status === 'pending'}
+              onQueue={() => handleQueuePdf('tally_sheet')}
+              autoDownload
+              disabled={tallySheetQueuePdfMutation.status === 'pending'}
+            />
           </div>
         </div>
 
-        {generationId && (
-          <div
-            className={cn(
-              'flex items-center gap-3 rounded-lg border px-4 py-3 text-sm transition-colors',
-              isGenerating && 'border-sky-500/30 bg-sky-500/5 text-sky-600 dark:text-sky-400',
-              isCompleted && 'border-emerald-500/30 bg-emerald-500/5 text-emerald-600 dark:text-emerald-400',
-              isFailed && 'border-red-500/30 bg-red-500/5 text-red-600 dark:text-red-400',
-            )}
-          >
-            {isGenerating && <RotateCcw className="size-4 animate-spin" />}
-            {isCompleted && <CheckCircle2 className="size-4" />}
-            {isFailed && <AlertCircle className="size-4" />}
-            <div className="flex flex-1 flex-col gap-0.5">
-              <span className="font-medium">
-                {isGenerating
-                  ? 'Generando documento PDF...'
-                  : isCompleted
-                    ? 'Documento PDF listo para descargar'
-                    : isFailed
-                      ? 'Error al generar el documento PDF'
-                      : 'Preparando generación...'}
-              </span>
-              {(statusQuery.data as any)?.progress !== undefined && isGenerating && (
-                <div className="mt-1 h-1.5 w-full max-w-xs overflow-hidden rounded-full bg-muted">
-                  <div
-                    className="h-full bg-sky-500 transition-all duration-500"
-                    style={{ width: `${(statusQuery.data as any).progress}%` }}
-                  />
+        {(workOrderGenerationId || tallySheetGenerationId) && (
+          <div className="space-y-3">
+            {[
+              {
+                label: 'Orden de Trabajo',
+                type: 'work_order' as const,
+                generationId: workOrderGenerationId,
+                status: workOrderStatusData,
+                isGenerating: workOrderIsGenerating,
+                isCompleted: workOrderIsCompleted,
+                isFailed: workOrderIsFailed,
+              },
+              {
+                label: 'Tally Sheet',
+                type: 'tally_sheet' as const,
+                generationId: tallySheetGenerationId,
+                status: tallySheetStatusData,
+                isGenerating: tallySheetIsGenerating,
+                isCompleted: tallySheetIsCompleted,
+                isFailed: tallySheetIsFailed,
+              },
+            ].map((doc) =>
+              doc.generationId ? (
+                <div
+                  key={doc.label}
+                  className={cn(
+                    'flex items-center gap-3 rounded-lg border px-4 py-3 text-sm transition-colors',
+                    doc.isGenerating && 'border-sky-500/30 bg-sky-500/5 text-sky-600 dark:text-sky-400',
+                    doc.isCompleted && 'border-emerald-500/30 bg-emerald-500/5 text-emerald-600 dark:text-emerald-400',
+                    doc.isFailed && 'border-red-500/30 bg-red-500/5 text-red-600 dark:text-red-400',
+                  )}
+                >
+                  {doc.isGenerating && <RotateCcw className="size-4 animate-spin" />}
+                  {doc.isCompleted && <CheckCircle2 className="size-4" />}
+                  {doc.isFailed && <AlertCircle className="size-4" />}
+                  <div className="flex flex-1 flex-col gap-0.5">
+                    <span className="font-medium">{doc.label}</span>
+                    <span>
+                      {doc.isGenerating
+                        ? 'Generando documento PDF...'
+                        : doc.isCompleted
+                          ? 'Documento PDF listo para descargar'
+                          : doc.isFailed
+                            ? 'Error al generar el documento PDF'
+                            : 'Preparando generación...'}
+                    </span>
+                    {(doc.status as any)?.progress !== undefined && doc.isGenerating && (
+                      <div className="mt-1 h-1.5 w-full max-w-xs overflow-hidden rounded-full bg-muted">
+                        <div
+                          className="h-full bg-sky-500 transition-all duration-500"
+                          style={{ width: `${(doc.status as any).progress}%` }}
+                        />
+                      </div>
+                    )}
+                  </div>
+                  {doc.isCompleted && (
+                    <DocumentDownloadButton
+                      type={doc.type}
+                      orderNumber={order_number}
+                      generationId={doc.generationId}
+                      isCompleted={doc.isCompleted}
+                      isPending={false}
+                      onQueue={() => {}}
+                      disabled={false}
+                    />
+                  )}
                 </div>
-              )}
-            </div>
-            {isCompleted && (
-              <Button
-                variant="outline"
-                size="sm"
-                className="h-7 gap-1.5 border-emerald-500/50 bg-background text-[11px] font-semibold uppercase tracking-wider text-emerald-600 hover:bg-emerald-500/10 dark:text-emerald-400"
-                onClick={handleDownloadPdf}
-              >
-                <Download className="size-3" />
-                Descargar ahora
-              </Button>
+              ) : null,
             )}
           </div>
         )}
@@ -622,100 +663,3 @@ function ControlAccordionItem({ item, orderNumber }: { item: WorkOrderItemResour
 }
 
 export default WorkOrderPage;
-
-function AircraftSection({ aircraft }: { aircraft: AircraftResource }) {
-  const companySlug = useCompanySlug();
-
-  const aircraftTypeLabel = aircraft?.aircraft_type?.full_name ?? '—';
-  const aircraftRegistrationLabel = aircraft?.acronym ?? '—';
-  const aircraftModelLabel = aircraft?.model ?? '—';
-  const aircraftSerialLabel = aircraft?.serial ?? '—';
-  const aircraftManufacturerLabel = aircraft?.aircraft_type?.manufacturer?.name ?? '—';
-  const engineTypeLabel = '—';
-  const engineSerial1Label = '—';
-  const engineSerial2Label = '—';
-
-  return (
-    <section className="overflow-hidden rounded-lg border bg-background">
-      <div className="flex items-stretch">
-        <div className="relative w-56 shrink-0">
-          <img
-            src={aircraft.aircraft_type?.image || 'https://cdn.zbordirect.com/images/airlines/ES.webp'}
-            alt={aircraftRegistrationLabel}
-            className="h-full w-full object-cover brightness-[0.55] dark:brightness-[0.35]"
-          />
-          <div className="absolute inset-0 bg-gradient-to-r from-transparent to-black/20" />
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="text-center">
-              <span className="font-mono text-lg font-bold tracking-widest text-white drop-shadow-sm">
-                {aircraftRegistrationLabel}
-              </span>
-              {aircraftTypeLabel && <p className="text-[11px] text-white/70">{aircraftTypeLabel}</p>}
-            </div>
-          </div>
-        </div>
-        <div className="flex flex-1 flex-col justify-between gap-y-3 pt-2.5">
-          <div className="flex gap-y-3 gap-x-5 px-4 *:flex-1 *:basis-1/4 flex-wrap whitespace-nowrap flex-col sm:flex-row ">
-            <div className="space-y-0.5">
-              <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Tipo</p>
-              <p className="text-sm font-medium line-clamp-1">{aircraftTypeLabel}</p>
-            </div>
-            <div className="space-y-0.5">
-              <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Fabricante</p>
-              <p className="text-sm font-medium line-clamp-1">{aircraftManufacturerLabel}</p>
-            </div>
-            <div className="space-y-0.5">
-              <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Serial</p>
-              <p className="font-mono text-sm font-medium">{aircraftSerialLabel}</p>
-            </div>
-            <div className="space-y-0.5">
-              <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Modelo</p>
-              <p className="text-sm font-medium">{aircraftModelLabel}</p>
-            </div>
-            <div className="space-y-0.5">
-              <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Tipo de motor</p>
-              <p className="text-sm font-medium line-clamp-1">{engineTypeLabel}</p>
-            </div>
-            <div className="space-y-0.5">
-              <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">S/N motor 1</p>
-              <p className="font-mono text-sm font-medium">{engineSerial1Label}</p>
-            </div>
-            <div className="space-y-0.5">
-              <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">S/N motor 2</p>
-              <p className="font-mono text-sm font-medium">{engineSerial2Label}</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-4 border-t bg-muted/20 px-4 py-1.5">
-            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-              <Clock3 className="size-3 shrink-0" />
-              <span className="font-mono font-medium tabular-nums text-foreground">
-                {aircraft.flight_hours?.toLocaleString?.() ?? '—'}
-              </span>
-              <span>h</span>
-            </div>
-            <div className="h-3 w-px bg-border" />
-            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-              <RotateCcw className="size-3 shrink-0" />
-              <span className="font-mono font-medium tabular-nums text-foreground">
-                {aircraft.flight_cycles?.toLocaleString?.() ?? '—'}
-              </span>
-              <span>ciclos</span>
-            </div>
-            <div className="ml-auto">
-              <Link href={`/${companySlug}/planificacion/aeronaves/${aircraft.acronym}`}>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-6 gap-1.5 text-[11px] text-muted-foreground hover:text-foreground"
-                >
-                  <Plane className="size-3" />
-                  Ver aeronave
-                </Button>
-              </Link>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}

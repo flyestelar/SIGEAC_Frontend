@@ -768,6 +768,12 @@ import type {
   PlanificationWorkOrderDocumentStatusData,
   PlanificationWorkOrderDocumentStatusErrors,
   PlanificationWorkOrderDocumentStatusResponses,
+  PlanificationWorkOrderTallySheetQueueDocxData,
+  PlanificationWorkOrderTallySheetQueueDocxErrors,
+  PlanificationWorkOrderTallySheetQueueDocxResponses,
+  PlanificationWorkOrderTallySheetQueuePdfData,
+  PlanificationWorkOrderTallySheetQueuePdfErrors,
+  PlanificationWorkOrderTallySheetQueuePdfResponses,
   PostByCompanyBatchesData,
   PostByCompanyBatchesErrors,
   PostByCompanyBatchesResponses,
@@ -6134,6 +6140,34 @@ export const planificationWorkOrderDocumentQueuePdf = <ThrowOnError extends bool
     responseType: 'json',
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/work-orders/{order_number}/pdf/queue',
+    ...options,
+  });
+
+export const planificationWorkOrderTallySheetQueueDocx = <ThrowOnError extends boolean = false>(
+  options: Options<PlanificationWorkOrderTallySheetQueueDocxData, ThrowOnError>,
+) =>
+  (options.client ?? client).post<
+    PlanificationWorkOrderTallySheetQueueDocxResponses,
+    PlanificationWorkOrderTallySheetQueueDocxErrors,
+    ThrowOnError
+  >({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/work-orders/{order_number}/tally-sheet/docx/queue',
+    ...options,
+  });
+
+export const planificationWorkOrderTallySheetQueuePdf = <ThrowOnError extends boolean = false>(
+  options: Options<PlanificationWorkOrderTallySheetQueuePdfData, ThrowOnError>,
+) =>
+  (options.client ?? client).post<
+    PlanificationWorkOrderTallySheetQueuePdfResponses,
+    PlanificationWorkOrderTallySheetQueuePdfErrors,
+    ThrowOnError
+  >({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/work-orders/{order_number}/tally-sheet/pdf/queue',
     ...options,
   });
 
