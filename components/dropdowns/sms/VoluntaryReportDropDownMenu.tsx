@@ -6,15 +6,14 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useGetDangerIdentificationWithAllById } from "@/hooks/sms/useGetDangerIdentificationWithAllById";
 import { useCompanyStore } from "@/stores/CompanyStore";
 import { VoluntaryReportResource } from "@/.gen/api/types.gen";
-import { PDFDownloadLink, PDFViewer } from "@react-pdf/renderer";
-import { format } from "date-fns";
+import axiosInstance from "@/lib/axios";
 import {
   CheckCheck,
   ClipboardPen,
   ClipboardPenLine,
+  Download,
   EyeIcon,
   Loader2,
   MoreHorizontal,
@@ -22,9 +21,8 @@ import {
   Trash2,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { CreateVoluntaryReportForm } from "@/components/forms/sms/CreateVoluntaryReportForm";
-import VoluntaryReportPdf from "@/components/pdf/sms/VoluntaryReportPdf";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -48,13 +46,34 @@ const VoluntaryReportDropdownActions = ({
   const [openEdit, setOpenEdit] = useState<boolean>(false);
   const [openAccept, setOpenAccept] = useState<boolean>(false);
   const [openDelete, setOpenDelete] = useState<boolean>(false);
+  const [pdfUrl, setPdfUrl] = useState<string | null>(null);
+  const [isLoadingPdf, setIsLoadingPdf] = useState<boolean>(false);
+  const pdfUrlRef = useRef<string | null>(null);
   const { deleteVoluntaryReport } = useDeleteVoluntaryReport();
   const router = useRouter();
 
-  const { data: dangerIdentification } = useGetDangerIdentificationWithAllById({
-    company: selectedCompany?.slug,
-    id: voluntaryReport?.danger_identification_id?.toString() ?? "",
-  });
+  useEffect(() => {
+    if (!openPDF) return;
+    setIsLoadingPdf(true);
+    axiosInstance
+      .get(`/${selectedCompany?.slug}/sms/voluntary-reports/${voluntaryReport.id}/pdf`, {
+        responseType: "blob",
+      })
+      .then((response) => {
+        const url = URL.createObjectURL(new Blob([response.data], { type: "application/pdf" }));
+        pdfUrlRef.current = url;
+        setPdfUrl(url);
+      })
+      .catch((error) => console.error("Error al cargar el PDF:", error))
+      .finally(() => setIsLoadingPdf(false));
+
+    return () => {
+      if (pdfUrlRef.current) {
+        URL.revokeObjectURL(pdfUrlRef.current);
+        pdfUrlRef.current = null;
+      }
+    };
+  }, [openPDF]);
 
   const handleDelete = async (id: number | string) => {
     const value = {
@@ -142,7 +161,7 @@ const VoluntaryReportDropdownActions = ({
         </DropdownMenu>
 
         {/* PDF Viewer */}
-        <Dialog open={openPDF} onOpenChange={setOpenPDF}>
+        <Dialog open={openPDF} onOpenChange={(val) => { setOpenPDF(val); if (!val) setPdfUrl(null); }}>
           <DialogContent className="sm:max-w-[65%] max-h-[80vh]">
             <DialogHeader>
               <DialogTitle>Vista Previa del Reporte</DialogTitle>
@@ -150,30 +169,31 @@ const VoluntaryReportDropdownActions = ({
                 Revisa el reporte antes de descargarlo.
               </DialogDescription>
             </DialogHeader>
-            <div className="w-full h-screen">
-              {voluntaryReport &&
-              voluntaryReport.status === "CERRADO" &&
-              dangerIdentification ? (
-                <PDFViewer style={{ width: "100%", height: "60%" }}>
-                  <VoluntaryReportPdf
-                    report={voluntaryReport}
-                    identification={dangerIdentification}
-                  />
-                </PDFViewer>
+            <div className="w-full h-[60vh] flex items-center justify-center">
+              {isLoadingPdf ? (
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+              ) : pdfUrl ? (
+                <iframe
+                  src={pdfUrl}
+                  className="w-full h-full rounded border"
+                  title="Vista previa del reporte voluntario"
+                />
               ) : (
-                <PDFViewer style={{ width: "100%", height: "60%" }}>
-                  <VoluntaryReportPdf report={voluntaryReport} />
-                </PDFViewer>
+                <p className="text-sm text-muted-foreground">No se pudo cargar el PDF.</p>
               )}
             </div>
-
             <div className="flex justify-end mt-4">
-              <PDFDownloadLink
-                fileName={`reporte_sms_${format(new Date(), "dd-MM-yyyy")}.pdf`}
-                document={<VoluntaryReportPdf report={voluntaryReport} />}
-              >
-                <Button>Descargar Reporte</Button>
-              </PDFDownloadLink>
+              {pdfUrl && (
+                <a
+                  href={pdfUrl}
+                  download={`RVP-${voluntaryReport.report_number || voluntaryReport.id}.pdf`}
+                >
+                  <Button>
+                    <Download className="h-4 w-4 mr-2" />
+                    Descargar Reporte
+                  </Button>
+                </a>
+              )}
             </div>
           </DialogContent>
         </Dialog>
