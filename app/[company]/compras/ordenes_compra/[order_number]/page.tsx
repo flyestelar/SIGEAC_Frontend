@@ -170,34 +170,33 @@ const PurchaseOrderDetailPage = () => {
         <div className="space-y-4 lg:col-span-4 lg:sticky lg:top-4 lg:self-start">
 
           {/* Acciones — solo en PROCESO */}
-          {isProceso && (
-            <section className="overflow-hidden rounded-lg border bg-background">
-              <div className="border-b px-5 py-3">
-                <p className={fieldLabelClass}>Acciones</p>
-              </div>
-              <div className="flex flex-col gap-2 p-4">
-                <Button className="w-full" size="sm" asChild>
-                  <Link href={`/${company}/compras/ordenes_compra/${order_number}/editar`}>
-                    <Pencil className="mr-2 h-3.5 w-3.5" />
-                    Editar
-                  </Link>
-                </Button>
-                <Button className="w-full" size="sm" onClick={() => setOpenComplete(true)}>
-                  <Package2 className="mr-2 h-3.5 w-3.5" />
-                  Completar PO
-                </Button>
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  className="w-full"
-                  onClick={() => setOpenDelete(true)}
-                >
-                  <Trash2 className="mr-2 h-3.5 w-3.5" />
-                  Eliminar
-                </Button>
-              </div>
-            </section>
-          )}
+          <section className="overflow-hidden rounded-lg border bg-background">
+            <div className="border-b px-5 py-3">
+              <p className={fieldLabelClass}>Acciones</p>
+            </div>
+            <div className="flex flex-col gap-2 p-4">
+              <Button className="w-full" size="sm" asChild>
+                <Link href={`/${company}/compras/ordenes_compra/${order_number}/editar`}>
+                  <Pencil className="mr-2 h-3.5 w-3.5" />
+                  Editar
+                </Link>
+              </Button>
+              <Button disabled={data.status !== 'PROCESO'} className="w-full" size="sm" onClick={() => setOpenComplete(true)}>
+                <Package2 className="mr-2 h-3.5 w-3.5" />
+                Completar PO
+              </Button>
+              <Button
+                disabled={data.status !== 'PROCESO'}
+                variant="destructive"
+                size="sm"
+                className="w-full"
+                onClick={() => setOpenDelete(true)}
+              >
+                <Trash2 className="mr-2 h-3.5 w-3.5" />
+                Eliminar
+              </Button>
+            </div>
+          </section>
 
           {/* Costos */}
           <section className="overflow-hidden rounded-lg border bg-background">
