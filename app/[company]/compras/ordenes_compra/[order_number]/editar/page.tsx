@@ -23,7 +23,7 @@ const EditPurchaseOrderPage = () => {
     return (
       <ContentLayout title="Editar Orden de Compra">
         <div className="flex flex-col items-center justify-center gap-4 py-16">
-          <p className="text-sm text-muted-foreground">No se encontró la orden de compra.</p>
+          <p className="text-sm text-muted-foreground">No se encontró la orden de compra...</p>
           <Button variant="outline" size="sm" onClick={() => router.back()}>
             <ArrowLeft className="mr-2 h-3.5 w-3.5" />
             Volver
