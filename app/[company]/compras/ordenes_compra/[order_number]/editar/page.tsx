@@ -48,7 +48,7 @@ const EditPurchaseOrderPage = () => {
       <div className="mx-auto max-w-4xl">
         <EditPurchaseOrderForm
           po={data}
-          onSuccess={() => router.push(`/${company}/compras/ordenes_compra/${order_number}`)}
+          onSuccess={(newOrderNumber) => router.push(`/${company}/compras/ordenes_compra/${newOrderNumber}`)}
         />
       </div>
     </ContentLayout>

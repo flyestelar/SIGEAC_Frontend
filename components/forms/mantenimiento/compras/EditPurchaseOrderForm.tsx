@@ -57,7 +57,7 @@ type FormSchemaType = z.infer<typeof FormSchema>;
 
 interface EditPurchaseOrderFormProps {
   po: PurchaseOrder;
-  onSuccess?: () => void;
+  onSuccess?: (newOrderNumber: string) => void;
 }
 
 export function EditPurchaseOrderForm({ po, onSuccess }: EditPurchaseOrderFormProps) {
@@ -113,7 +113,7 @@ export function EditPurchaseOrderForm({ po, onSuccess }: EditPurchaseOrderFormPr
         })),
       },
     });
-    onSuccess?.();
+    onSuccess?.(data.order_number);
   };
 
   return (
