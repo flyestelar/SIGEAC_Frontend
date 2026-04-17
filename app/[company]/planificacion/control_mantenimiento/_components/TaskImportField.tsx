@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { processExcelFile, TaskCardData } from '@/lib/excelProcessor';
+import { processExcelFile, TaskCardData } from gi'@/lib/excelProcessor';
 import { CircleHelpIcon } from 'lucide-react';
 import { useDropzone } from 'react-dropzone';
 

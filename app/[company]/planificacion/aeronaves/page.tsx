@@ -23,8 +23,8 @@ const AircraftsPage = () => {
     if (!aircrafts) return [];
 
     let filtered = aircrafts;
-
-    const q = normalize(query);
+    const q
+      = normalize(query);
     if (q) {
       filtered = filtered.filter(
         (a) =>
@@ -157,19 +157,6 @@ const AircraftsPage = () => {
                         </span>
                         <p className="font-mono text-sm font-medium">{a.serial || '—'}</p>
                       </div>
-                      {(a.location?.name || a.location?.address) && (
-                        <div className="space-y-0.5">
-                          <span className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
-                            Ubicación
-                          </span>
-                          <div className="flex items-center gap-1 text-sm">
-                            <MapPin className="size-3 shrink-0 text-muted-foreground" />
-                            <span className="font-medium truncate leading-tight">
-                              {a.location?.name ?? a.location?.address}
-                            </span>
-                          </div>
-                        </div>
-                      )}
                     </div>
                   </div>
 
