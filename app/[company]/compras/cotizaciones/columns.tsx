@@ -11,7 +11,42 @@ import { Quote } from "@/types"
 import { format } from "date-fns"
 import { es } from "date-fns/locale"
 import { Badge } from "@/components/ui/badge"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import Link from "next/link"
+
+/**
+ * Given a quote's article list, compute the most frequent vendor name
+ * and the full list of unique vendor names.
+ */
+function getVendorSummary(quote: Quote) {
+  const articles = quote.article_quote_order ?? []
+
+  // Collect vendor names from article-level vendors
+  const vendorNames: string[] = []
+  const vendorFreq: Record<string, number> = {}
+
+  for (const article of articles) {
+    const name = article.vendor?.name
+    if (name) {
+      vendorNames.push(name)
+      vendorFreq[name] = (vendorFreq[name] || 0) + 1
+    }
+  }
+
+  // If no article-level vendors, fall back to header vendor
+  if (vendorNames.length === 0) {
+    const headerName = quote.vendor?.name
+    return { primaryVendor: headerName ?? 'N/A', uniqueVendors: headerName ? [headerName] : [], extraCount: 0 }
+  }
+
+  // Find the most frequent vendor
+  const sortedVendors = Object.entries(vendorFreq).sort((a, b) => b[1] - a[1])
+  const primaryVendor = sortedVendors[0][0]
+  const uniqueVendors = Array.from(new Set(vendorNames))
+  const extraCount = uniqueVendors.length - 1
+
+  return { primaryVendor, uniqueVendors, extraCount }
+}
 
 export const columns: ColumnDef<Quote>[] = [
   {
@@ -77,8 +112,36 @@ export const columns: ColumnDef<Quote>[] = [
       <DataTableColumnHeader column={column} title="Proveedor" />
     ),
     cell: ({ row }) => {
+      const { primaryVendor, uniqueVendors, extraCount } = getVendorSummary(row.original)
+
+      if (extraCount <= 0) {
+        return <p className="font-medium text-center">{primaryVendor}</p>
+      }
+
       return (
-        <p className="font-medium text-center">{row.original.vendor.name}</p>
+        <div className="flex items-center justify-center gap-1.5">
+          <p className="font-medium text-sm">{primaryVendor}</p>
+          <Popover>
+            <PopoverTrigger asChild>
+              <button
+                type="button"
+                className="inline-flex items-center rounded-full border border-muted-foreground/30 bg-muted/50 px-1.5 py-0.5 text-[10px] font-semibold text-muted-foreground hover:bg-muted transition-colors cursor-pointer"
+              >
+                +{extraCount} mas
+              </button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto max-w-[240px] p-3" align="center" side="bottom">
+              <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground mb-2">
+                Proveedores
+              </p>
+              <ul className="space-y-1">
+                {uniqueVendors.map((name) => (
+                  <li key={name} className="text-sm font-medium">{name}</li>
+                ))}
+              </ul>
+            </PopoverContent>
+          </Popover>
+        </div>
       )
     }
   },

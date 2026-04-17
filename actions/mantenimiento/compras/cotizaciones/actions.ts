@@ -11,10 +11,11 @@ interface CreateQuoteData {
     condition?: string;
     unit?: string;
     unit_price: string;
+    vendor_id: number;
   }[];
   sub_total: number;
   total: number;
-  vendor_id: number;
+  vendor_id?: number;
   requisition_order_id: number;
   quote_date: Date;
   created_by: string;
