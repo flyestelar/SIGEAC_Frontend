@@ -6181,7 +6181,7 @@ export const planificationWorkOrderDocumentDownload = <ThrowOnError extends bool
   >({
     responseType: 'blob',
     security: [{ scheme: 'bearer', type: 'http' }],
-    url: '/work-orders/documents/{generation_id}',
+    url: '/work-orders/{order_number}/documents/{document_type}',
     ...options,
   });
 
@@ -6195,7 +6195,7 @@ export const planificationWorkOrderDocumentStatus = <ThrowOnError extends boolea
   >({
     responseType: 'json',
     security: [{ scheme: 'bearer', type: 'http' }],
-    url: '/work-orders/documents/{generation_id}/status',
+    url: '/work-orders/{order_number}/documents/{document_type}/status',
     ...options,
   });
 

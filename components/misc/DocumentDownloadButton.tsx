@@ -3,72 +3,76 @@
 import { Button } from '@/components/ui/button';
 import { planificationWorkOrderDocumentDownload } from '@api/index';
 import { Download } from 'lucide-react';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
 function isAxiosError(error: unknown): error is { response?: { status?: number } } {
-  return typeof error === 'object' && error !== null && 'response' in error && typeof (error as any).response === 'object';
+  return (
+    typeof error === 'object' && error !== null && 'response' in error && typeof (error as any).response === 'object'
+  );
 }
 
 export type DocumentType = 'work_order' | 'tally_sheet';
 
-const DOCUMENT_LABELS: Record<DocumentType, { queue: string; retry: string; download: string; fileName: string }> = {
+const DOCUMENT_LABELS: Record<
+  DocumentType,
+  { queue: string; retry: string; download: string; fileName: string; regenerate: string }
+> = {
   work_order: {
     queue: 'Generar Documento',
     retry: 'Reintentar Documento',
     download: 'Descargar Documento',
     fileName: 'orden-trabajo',
+    regenerate: 'Regenerar Documento',
   },
   tally_sheet: {
     queue: 'Generar Tally',
     retry: 'Reintentar Tally',
     download: 'Descargar Tally',
     fileName: 'tally-sheet',
+    regenerate: 'Regenerar Tally',
   },
 };
 
 type DocumentDownloadButtonProps = {
   type: DocumentType;
   orderNumber: string;
-  generationId: string | null;
   isCompleted: boolean;
   isFailed: boolean;
   isPending: boolean;
   onQueue: () => void;
   disabled?: boolean;
-  autoDownload?: boolean;
+  stale?: boolean;
 };
 
 export function DocumentDownloadButton({
   type,
   orderNumber,
-  generationId,
   isCompleted,
   isFailed,
   isPending,
   onQueue,
   disabled = false,
-  autoDownload = false,
+  stale,
 }: DocumentDownloadButtonProps) {
   const [isDownloading, setIsDownloading] = useState(false);
 
-  const buttonLabel = isCompleted
-    ? DOCUMENT_LABELS[type].download
-    : isFailed
-      ? DOCUMENT_LABELS[type].retry
-      : DOCUMENT_LABELS[type].queue;
-  const fileName = useMemo(
-    () => `${DOCUMENT_LABELS[type].fileName}-${orderNumber}.pdf`,
-    [orderNumber, type],
-  );
+  const labels = DOCUMENT_LABELS[type];
+  const buttonLabel = stale
+    ? labels.regenerate
+    : isCompleted
+      ? labels.download
+      : isFailed
+        ? labels.retry
+        : labels.queue;
+  const fileName = `${labels.fileName}-${orderNumber}.pdf`;
 
   const downloadPdf = useCallback(async () => {
-    if (!generationId) return;
     setIsDownloading(true);
 
     try {
       const response = await planificationWorkOrderDocumentDownload({
-        path: { generation_id: generationId },
+        path: { order_number: orderNumber, document_type: type },
         throwOnError: true,
       });
 
@@ -90,19 +94,21 @@ export function DocumentDownloadButton({
     } finally {
       setIsDownloading(false);
     }
-  }, [fileName, generationId]);
+  }, [fileName, orderNumber, type]);
 
-  useEffect(() => {
-    if (autoDownload && isCompleted && generationId) {
-      downloadPdf();
-    }
-  }, [autoDownload, downloadPdf, generationId, isCompleted]);
+  // Downloads are initiated only on explicit user click (see handleClick)
 
   const handleClick = () => {
+    if (stale) {
+      onQueue();
+      return;
+    }
+
     if (isCompleted) {
       downloadPdf();
       return;
     }
+
     onQueue();
   };
 
