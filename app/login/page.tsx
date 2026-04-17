@@ -1,8 +1,11 @@
 import { LoginForm } from '@/components/forms/ajustes/LoginForm'
 import { ThemeToggler } from '@/components/layout/ThemeToggler'
+import { LoginRedirect } from '@/components/misc/LoginRedirect'
 import Logo from '@/components/misc/Logo'
 
-const Login = () => {
+const Login = ({ searchParams }: { searchParams: { from?: string } }) => {
+  const redirectTo = searchParams.from;
+
   return (
     <div className="h-dvh w-dvw">
       <div className="flex flex-col lg:flex-row mx-auto h-full items-center justify-between">
@@ -19,6 +22,7 @@ const Login = () => {
             </div>
             <h1 className="text-center text-3xl font-bold">Ingrese al Sistema</h1>
             <p className="text-center font-light text-sm text-muted-foreground">Por favor, inicie sesión con sus credenciales para ingresar.</p>
+            <LoginRedirect redirectTo={redirectTo} />
             <LoginForm />
           </div>
         </div>

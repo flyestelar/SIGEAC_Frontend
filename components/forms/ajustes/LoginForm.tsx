@@ -22,7 +22,6 @@ const FormSchema = z.object({
 type FormSchemaType = z.infer<typeof FormSchema>
 
 export function LoginForm() {
-
   const { loginMutation } = useAuth();
 
   const form = useForm<FormSchemaType>({

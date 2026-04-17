@@ -32,7 +32,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [error, setError] = useState<string | null>(null);
   const reset = useCompanyStore((state) => state.reset);
 
-  const isAuthenticated = useMemo(() => !!user, [user]);
+  const isAuthenticated = !!user;
 
   const fetchUser = async (): Promise<User | null> => {
     try {
@@ -91,7 +91,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       // Después de login exitoso, hacemos fetch del usuario
       await fetchUser();
       queryClient.invalidateQueries({ queryKey: ['user'] });
-      router.push('/inicio');
       toast.success('¡Inicio correcto!', {
         description: 'Redirigiendo...',
         position: 'bottom-center',
@@ -116,7 +115,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setUser(null);
       setError(null);
       await deleteSession();
-      await reset();
+      reset();
       queryClient.clear();
       router.push('/login');
       router.refresh();
