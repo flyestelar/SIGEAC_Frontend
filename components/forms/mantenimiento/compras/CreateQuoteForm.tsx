@@ -341,135 +341,40 @@ export function CreateQuoteForm({
             </span>
           </div>
 
-          <div className="hidden border-b bg-muted/10 px-5 py-2.5 lg:block">
-            <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)_72px_120px_148px_minmax(0,1.2fr)_108px] items-center gap-3">
-              {(['Nro. Parte', 'Nro. Parte Alterno', 'Cant.', 'Condicion', 'Precio Unit.', 'Proveedor', 'Total'] as const).map(
-                (col, i) => (
-                  <span key={col} className={cn(fieldLabel, i === 6 && 'text-right')}>
-                    {col}
-                  </span>
-                ),
-              )}
-            </div>
-          </div>
-
           {/* Filas */}
             <div className="divide-y">
               {fields.map((field, index) => (
-                <div key={field.id} className="px-5 py-4">
-                  <div className="mb-3 flex items-center justify-between lg:hidden">
-                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
-                      Articulo {index + 1}
-                    </p>
-                    <p className="text-sm font-semibold tabular-nums text-foreground">
-                      {new Intl.NumberFormat('es-AR', {
-                        style: 'currency',
-                        currency: 'ARS',
-                      }).format((articles[index]?.quantity || 0) * (Number(articles[index]?.unit_price) || 0))}
-                    </p>
-                  </div>
+                <div key={field.id} className="space-y-3 px-5 py-4">
+                  {/* Row 1: P/N + Vendor — full width, prominent */}
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
+                    {/* P/N display */}
+                    <div className="flex min-w-0 flex-1 items-center gap-3">
+                      <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded border bg-muted/30 text-[10px] font-bold tabular-nums text-muted-foreground">
+                        {index + 1}
+                      </span>
+                      <FormField
+                        control={control}
+                        name={`articles.${index}.part_number`}
+                        render={({ field }) => (
+                          <FormItem className="min-w-0 flex-1 space-y-0">
+                            <p className={cn(fieldLabel, 'mb-1')}>P/N</p>
+                            <FormControl>
+                              <div className="flex min-h-9 items-center rounded-md border border-border/70 bg-muted/20 px-3 py-1.5">
+                                <span className="break-all font-mono text-sm font-semibold tracking-wide">{field.value}</span>
+                              </div>
+                            </FormControl>
+                          </FormItem>
+                        )}
+                      />
+                    </div>
 
-                  <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_72px_120px_148px_minmax(0,1.2fr)_108px] lg:items-start">
-                    <FormField
-                      control={control}
-                      name={`articles.${index}.part_number`}
-                      render={({ field }) => (
-                        <FormItem className="space-y-1.5">
-                          <p className={cn(fieldLabel, 'lg:hidden')}>Nro. Parte</p>
-                          <FormControl>
-                            <div className="flex min-h-10 items-center rounded-md border border-border/70 bg-muted/30 px-3 py-2">
-                              <span className="break-all font-mono text-xs font-medium">{field.value}</span>
-                            </div>
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={control}
-                      name={`articles.${index}.alt_part_number`}
-                      render={({ field }) => (
-                        <FormItem className="space-y-1.5">
-                          <p className={cn(fieldLabel, 'lg:hidden')}>Nro. Parte Alterno</p>
-                          <FormControl>
-                            <Input
-                              placeholder="Ingrese un numero alterno"
-                              className="h-10 border-border/70 bg-background font-mono text-xs"
-                              {...field}
-                              value={field.value || ''}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={control}
-                      name={`articles.${index}.quantity`}
-                      render={({ field }) => (
-                        <FormItem className="space-y-1.5">
-                          <p className={cn(fieldLabel, 'lg:hidden')}>Cantidad</p>
-                          <FormControl>
-                            <Input
-                              disabled
-                              className="h-10 border-border/70 bg-muted/30 text-center text-sm font-semibold disabled:cursor-default disabled:opacity-100"
-                              type="number"
-                              {...field}
-                            />
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={control}
-                      name={`articles.${index}.condition`}
-                      render={({ field, fieldState }) => (
-                        <FormItem className="space-y-1.5">
-                          <p className={cn(fieldLabel, 'lg:hidden')}>Condicion</p>
-                          <FormControl>
-                            <Select value={field.value} onValueChange={field.onChange}>
-                              <SelectTrigger
-                                aria-invalid={fieldState.invalid}
-                                className="h-10 min-w-[120px] border-border/70"
-                              >
-                                <SelectValue placeholder="Selec..." />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="OH">OH</SelectItem>
-                                <SelectItem value="SV">SV</SelectItem>
-                                <SelectItem value="NE">NE</SelectItem>
-                                <SelectItem value="NS">NS</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={control}
-                      name={`articles.${index}.unit_price`}
-                      render={({ field }) => (
-                        <FormItem className="space-y-1.5">
-                          <p className={cn(fieldLabel, 'lg:hidden')}>Precio Unitario</p>
-                          <FormControl>
-                            <AmountInput {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    {/* Proveedor per article */}
+                    {/* Vendor selector — generous width */}
                     <FormField
                       control={control}
                       name={`articles.${index}.vendor_id`}
                       render={({ field }) => (
-                        <FormItem className="space-y-1.5">
-                          <p className={cn(fieldLabel, 'lg:hidden')}>Proveedor</p>
+                        <FormItem className="w-full space-y-0 sm:w-[280px]">
+                          <p className={cn(fieldLabel, 'mb-1')}>Proveedor</p>
                           <Popover
                             open={openArticleVendor[index] ?? false}
                             onOpenChange={(open) =>
@@ -483,7 +388,7 @@ export function CreateQuoteForm({
                                   variant="outline"
                                   role="combobox"
                                   className={cn(
-                                    'h-10 w-full justify-between text-xs',
+                                    'h-9 w-full justify-between text-sm font-medium',
                                     !field.value && 'text-muted-foreground',
                                   )}
                                 >
@@ -494,15 +399,15 @@ export function CreateQuoteForm({
                                       {vendors?.find((v) => v.id.toString() === field.value)?.name}
                                     </span>
                                   ) : (
-                                    'Proveedor...'
+                                    'Seleccionar proveedor...'
                                   )}
-                                  <ChevronsUpDown className="ml-1 h-3 w-3 shrink-0 opacity-50" />
+                                  <ChevronsUpDown className="ml-2 h-3.5 w-3.5 shrink-0 opacity-50" />
                                 </Button>
                               </FormControl>
                             </PopoverTrigger>
-                            <PopoverContent className="w-[220px] p-0">
+                            <PopoverContent className="w-[280px] p-0">
                               <Command>
-                                <CommandInput placeholder="Buscar..." />
+                                <CommandInput placeholder="Buscar proveedor..." />
                                 <CommandList>
                                   <CommandEmpty>No encontrado.</CommandEmpty>
                                   <CommandGroup>
@@ -539,14 +444,98 @@ export function CreateQuoteForm({
                         </FormItem>
                       )}
                     />
+                  </div>
 
-                    <div className="hidden h-10 items-center justify-end rounded-md bg-muted/30 px-3 lg:flex">
-                      <p className="text-right text-sm font-semibold tabular-nums">
-                        {new Intl.NumberFormat('es-AR', {
-                          style: 'currency',
-                          currency: 'ARS',
-                        }).format((articles[index]?.quantity || 0) * (Number(articles[index]?.unit_price) || 0))}
-                      </p>
+                  {/* Row 2: Alt P/N + Qty + Condition + Price + Total */}
+                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-[minmax(0,1.5fr)_64px_100px_140px_100px] sm:items-end sm:pl-9">
+                    <FormField
+                      control={control}
+                      name={`articles.${index}.alt_part_number`}
+                      render={({ field }) => (
+                        <FormItem className="space-y-1">
+                          <p className={fieldLabel}>P/N Alterno</p>
+                          <FormControl>
+                            <Input
+                              placeholder="P/N alterno"
+                              className="h-9 border-border/70 bg-background font-mono text-xs"
+                              {...field}
+                              value={field.value || ''}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={control}
+                      name={`articles.${index}.quantity`}
+                      render={({ field }) => (
+                        <FormItem className="space-y-1">
+                          <p className={fieldLabel}>Cant.</p>
+                          <FormControl>
+                            <Input
+                              disabled
+                              className="h-9 border-border/70 bg-muted/30 text-center text-sm font-semibold tabular-nums disabled:cursor-default disabled:opacity-100"
+                              type="number"
+                              {...field}
+                            />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={control}
+                      name={`articles.${index}.condition`}
+                      render={({ field, fieldState }) => (
+                        <FormItem className="space-y-1">
+                          <p className={fieldLabel}>Condicion</p>
+                          <FormControl>
+                            <Select value={field.value} onValueChange={field.onChange}>
+                              <SelectTrigger
+                                aria-invalid={fieldState.invalid}
+                                className="h-9 border-border/70"
+                              >
+                                <SelectValue placeholder="Selec..." />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="OH">OH</SelectItem>
+                                <SelectItem value="SV">SV</SelectItem>
+                                <SelectItem value="NE">NE</SelectItem>
+                                <SelectItem value="NS">NS</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={control}
+                      name={`articles.${index}.unit_price`}
+                      render={({ field }) => (
+                        <FormItem className="space-y-1">
+                          <p className={fieldLabel}>Precio Unit.</p>
+                          <FormControl>
+                            <AmountInput {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <div className="space-y-1">
+                      <p className={fieldLabel}>Total</p>
+                      <div className="flex h-9 items-center justify-end rounded-md bg-muted/20 px-3">
+                        <p className="text-sm font-semibold tabular-nums">
+                          {new Intl.NumberFormat('es-AR', {
+                            style: 'currency',
+                            currency: 'ARS',
+                          }).format((articles[index]?.quantity || 0) * (Number(articles[index]?.unit_price) || 0))}
+                        </p>
+                      </div>
                     </div>
                   </div>
                 </div>
