@@ -1,4 +1,3 @@
-import { ServiceFormValues } from '@/app/[company]/planificacion/servicios/crear/page';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -14,6 +13,7 @@ import type { AircraftType } from '@/types';
 import { Check, Loader2, PackageOpen, Plane, X } from 'lucide-react';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useFormContext, useWatch } from 'react-hook-form';
+import type { ServiceFormValues } from './types';
 
 type CoverageTab = 'aircraft' | 'parts';
 
@@ -34,8 +34,6 @@ const MaintenanceServiceApplicabilityFormSection: React.FC<Props> = () => {
   const { control, setValue } = useFormContext<ServiceFormValues>();
 
   const selectedAircraftIds = useWatch({ name: 'aircraftTypeIds', control });
-  const selectedPartNumbers = useWatch({ name: 'partNumbers', control });
-
   const selectedAircraftList = useMemo(() => {
     return (
       selectedAircraftIds
@@ -63,13 +61,13 @@ const MaintenanceServiceApplicabilityFormSection: React.FC<Props> = () => {
         setAircraftSearch('');
       }
     }, [isAircraftPopoverOpen, setAircraftCommandInput, setAircraftSearch]);
-  
+
     useEffect(() => {
       if (coverageTab === 'aircraft') {
         clearPartSelection();
         return;
       }
-  
+
       clearAircraftSelection();
     }, [coverageTab, clearAircraftSelection, clearPartSelection]);
 

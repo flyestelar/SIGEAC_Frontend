@@ -75,18 +75,17 @@ export const BulkAircraftSelectDialog = ({
                   >
                     <div className="flex items-center gap-2">
                       <div
-                        className={`w-4 h-4 rounded border-2 ${
-                          selectedAircraftTypeId === aircraftType.id
-                            ? 'bg-primary border-primary'
-                            : 'border-muted-foreground'
-                        }`}
+                        className={`w-4 h-4 rounded border-2 ${selectedAircraftTypeId === aircraftType.id
+                          ? 'bg-primary border-primary'
+                          : 'border-muted-foreground'
+                          }`}
                       >
                         {selectedAircraftTypeId === aircraftType.id && <Check className="h-3 w-3 text-white" />}
                       </div>
                       <div>
                         <p className="text-sm font-semibold text-foreground">{aircraftType.full_name}</p>
                         <p className="text-xs text-muted-foreground">
-                          {aircraftType.manufacturer.name} • {aircraftType.family}
+                          {aircraftType.manufacturer?.name ?? "-"} • {aircraftType.family}
                         </p>
                       </div>
                     </div>

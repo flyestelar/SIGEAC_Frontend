@@ -1,6 +1,5 @@
 'use client';
 
-import { ServiceFormValues } from '@/app/[company]/planificacion/servicios/crear/page';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -16,6 +15,7 @@ import { ListChecks } from 'lucide-react';
 import { useState } from 'react';
 import { useFormContext } from 'react-hook-form';
 import MaintenanceServiceTasksSelectDialogContent from './MaintenanceServiceTasksSelectDialogContent';
+import type { ServiceFormValues } from './types';
 
 const MaintenanceServiceTasksSection = () => {
   const form = useFormContext<ServiceFormValues>();

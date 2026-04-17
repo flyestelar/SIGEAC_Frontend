@@ -1,6 +1,6 @@
+import { processExcelFile, TaskCardData } from '@/actions/planificacion/control_mantenimiento/excelProcessor';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { processExcelFile, TaskCardData } from gi'@/lib/excelProcessor';
 import { CircleHelpIcon } from 'lucide-react';
 import { useDropzone } from 'react-dropzone';
 
@@ -40,9 +40,8 @@ function TaskImportField(props: TaskImportFieldProps) {
   return (
     <div
       {...getRootProps()}
-      className={`cursor-pointer rounded-md border border-dashed p-4 transition-colors ${
-        isDragActive ? 'border-primary bg-primary/5' : 'border-border bg-muted/20 hover:bg-muted/30'
-      }`}
+      className={`cursor-pointer rounded-md border border-dashed p-4 transition-colors ${isDragActive ? 'border-primary bg-primary/5' : 'border-border bg-muted/20 hover:bg-muted/30'
+        }`}
     >
       <input {...getInputProps()} />
       <p className="text-sm font-medium">Importar tareas desde archivo</p>

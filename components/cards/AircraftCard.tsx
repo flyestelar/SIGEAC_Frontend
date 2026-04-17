@@ -40,9 +40,9 @@ const AircraftCard = ({ aircraft, onSelect, className }: AircraftCardProps) => {
       <div className="px-3 py-2 space-y-1">
         <div className="flex items-center gap-2">
           <p className="text-xs font-medium truncate">{aircraft.aircraft_type?.full_name ?? 'Sin tipo'}</p>
-          {aircraft.manufacturer?.name && (
+          {aircraft.aircraft_type?.manufacturer?.name && (
             <Badge variant="outline" className="text-[10px] shrink-0">
-              {aircraft.manufacturer.name}
+              {aircraft.aircraft_type.manufacturer.name}
             </Badge>
           )}
         </div>

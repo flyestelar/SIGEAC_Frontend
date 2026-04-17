@@ -1,6 +1,5 @@
 'use client';
 
-import { ServiceFormValues } from '@/app/[company]/planificacion/servicios/crear/page';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -9,10 +8,11 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { useGetTaskCards } from '@/hooks/planificacion/tareas/useGetTaskCards';
 import { useDebouncedInput } from '@/lib/useDebounce';
 import { cn } from '@/lib/utils';
-import { TaskCard } from '@/types/planification';
+import type { TaskCard } from '@/types';
 import { ChevronDown, ChevronLeft, ChevronRight, ChevronUp, Search, X } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { useFieldArray, useFormContext } from 'react-hook-form';
+import type { ServiceFormValues } from './types';
 
 interface MaintenanceServiceTasksSelectDialogContentProps {}
 
@@ -130,9 +130,9 @@ const MaintenanceServiceTasksSelectDialogContent: React.FC<MaintenanceServiceTas
                   >
                     <Checkbox checked={checked} onCheckedChange={() => toggleTask(t)} />
                     <div className="flex flex-col flex-1 pl-1">
-                      <span className="text-sm font-medium leading-none">{t.title}</span>
+                      <span className="text-sm font-medium leading-none">{t.description}</span>
                       <span className="text-xs text-muted-foreground mt-1">
-                        {t.code ? `Código: ${t.code}` : 'Código: --'}
+                        {t.manual_reference ? `Manual: ${t.manual_reference}` : 'Manual: --'}
                       </span>
                     </div>
                   </div>
@@ -180,10 +180,10 @@ const MaintenanceServiceTasksSelectDialogContent: React.FC<MaintenanceServiceTas
                       </div>
                     <div className="flex-1">
                       <div className="text-sm font-medium line-clamp-2">
-                        {sel?.title || sel?.description || `Tarea ID: ${sel.id}`}
+                        {sel.description || `Tarea ID: ${sel.id}`}
                       </div>
                       <div className="text-xs text-muted-foreground flex gap-2 mt-1">
-                        {sel?.code && <span>Código: {sel.code}</span>}
+                        {sel.manual_reference && <span>Manual: {sel.manual_reference}</span>}
                       </div>
                     </div>
                     <div className="flex justify-end">

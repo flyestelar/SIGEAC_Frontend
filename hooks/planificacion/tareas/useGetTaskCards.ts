@@ -1,7 +1,6 @@
 import axios from '@/lib/axios';
 import { useCompanyStore } from '@/stores/CompanyStore';
-import { PaginatedResponse } from '@/types';
-import { TaskCard } from '@/types/planification';
+import type { PaginatedResponse, TaskCard } from '@/types';
 import { useQuery } from '@tanstack/react-query';
 
 const fetchTaskCards = async (

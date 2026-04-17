@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { AircraftResource } from '@api/types';
 import { Clock3, Plane, RotateCcw, Search, X } from 'lucide-react';
+import Image from 'next/image';
 import { useMemo, useState } from 'react';
 
 interface AircraftHeaderProps {
@@ -26,7 +27,6 @@ const AircraftHeader = ({ aircrafts, selectedAircraft, onSelect, onClear }: Airc
       (a) =>
         normalize(a.acronym).includes(q) ||
         normalize(a.serial).includes(q) ||
-        normalize(a.manufacturer?.name).includes(q) ||
         normalize(a.aircraft_type?.full_name).includes(q),
     );
   }, [aircrafts, query]);
@@ -37,10 +37,12 @@ const AircraftHeader = ({ aircrafts, selectedAircraft, onSelect, onClear }: Airc
         <div className="flex items-stretch">
           {/* Compact image */}
           <div className="relative w-56 shrink-0">
-            <img
+            <Image
               src="https://cdn.zbordirect.com/images/airlines/ES.webp"
               alt={selectedAircraft.acronym}
-              className="h-full w-full object-cover brightness-[0.55] dark:brightness-[0.35]"
+              fill
+              sizes="224px"
+              className="object-cover brightness-[0.55] dark:brightness-[0.35]"
             />
             <div className="absolute inset-0 bg-gradient-to-r from-transparent to-black/20" />
             <div className="absolute inset-0 flex items-center justify-center">
@@ -64,7 +66,7 @@ const AircraftHeader = ({ aircrafts, selectedAircraft, onSelect, onClear }: Airc
               </div>
               <div className="space-y-0.5">
                 <span className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">Fabricante</span>
-                <p className="text-sm font-medium line-clamp-1">{selectedAircraft.manufacturer?.name ?? '—'}</p>
+                <p className="text-sm font-medium line-clamp-1">{selectedAircraft.aircraft_type?.manufacturer?.name ?? '—'}</p>
               </div>
               <div className="space-y-0.5">
                 <span className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">Serial</span>
