@@ -5,7 +5,7 @@ import React from 'react'
 const AdminPage = () => {
   return (
     <ProtectedRoute roles={['admin']}>
-      <ContentLayout title='Permisos'>PermisosPage</ContentLayout>
+      <ContentLayout title='Permisos'>PermisosPag</ContentLayout>
     </ProtectedRoute>
   )
 }
