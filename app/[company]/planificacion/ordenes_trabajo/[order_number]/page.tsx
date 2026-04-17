@@ -245,8 +245,11 @@ const WorkOrderPage = () => {
             ].map((doc) => {
               if (doc.isNotGenerated) return null;
 
+              const { statusData } = doc;
               const isStale = Boolean(
-                doc.statusData?.work_order_updated_at && doc.statusData.work_order_updated_at !== wo?.updated_at,
+                statusData?.work_order_updated_at &&
+                  wo.updated_at &&
+                  !timestampEqualSecondsPrecision(statusData.work_order_updated_at, wo.updated_at),
               );
               return (
                 <div
@@ -599,3 +602,9 @@ function ControlAccordionItem({ item, orderNumber }: { item: WorkOrderItemResour
 }
 
 export default WorkOrderPage;
+
+function timestampEqualSecondsPrecision(ts1: string, ts2: string) {
+  const date1 = new Date(ts1);
+  const date2 = new Date(ts2);
+  return Math.floor(date1.getTime() / 1000) === Math.floor(date2.getTime() / 1000);
+}
