@@ -110,7 +110,7 @@ export function DocumentDownloadButton({
     <Button
       variant="outline"
       size="sm"
-      className="flex-1 h-8 gap-1.5 text-xs"
+      className="min-w-52 h-8 gap-1.5 text-xs"
       onClick={handleClick}
       disabled={disabled || isPending || isDownloading}
     >
