@@ -1,11 +1,17 @@
 'use client';
 
 import CompanySelect from '@/components/selects/CompanySelect';
-import { useCompanyStore } from '@/stores/CompanyStore';
+import { useCompanyIsHydrated, useCompanyStore } from '@/stores/CompanyStore';
 import { PlaneTakeoff } from 'lucide-react';
+import LoadingPage from './LoadingPage';
 
 export default function RequireCompany({ children }: { children: React.ReactNode }) {
   const { selectedCompany, selectedStation } = useCompanyStore();
+  const ishydrated = useCompanyIsHydrated();
+
+  if (!ishydrated) {
+    return <LoadingPage />;
+  }
 
   // If company and station are selected, render children (mount children)
   if (selectedCompany && selectedStation) return children;

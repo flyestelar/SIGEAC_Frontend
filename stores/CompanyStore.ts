@@ -1,15 +1,9 @@
 'use client';
 
 import { Company } from '@/types';
+import { useSyncExternalStore } from 'react';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-
-// Definimos la interfaz para los módulos
-interface Module {
-  id: number;
-  label: string;
-  value: string;
-}
 
 // Actualizamos el estado para usar el objeto Company
 interface CompanyState {
@@ -53,4 +47,12 @@ export const useCompanyStore = create<CompanyState & CompanyActions>()(
 
 export function useCompanySlug() {
   return useCompanyStore((state) => state.selectedCompany?.slug);
+}
+
+export function useCompanyIsHydrated() {
+  return useSyncExternalStore(
+    useCompanyStore.persist.onFinishHydration,
+    useCompanyStore.persist.hasHydrated,
+    () => false,
+  );
 }
