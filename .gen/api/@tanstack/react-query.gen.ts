@@ -48,6 +48,15 @@ import {
   aircraftTypesStore,
   aircraftTypesUpdate,
   aircraftUpdate,
+  analysisCloseReport,
+  analysisGetPostRiskCountByDateRange,
+  analysisGetRiskCountByDateRange,
+  analysisGetTotalPostRiskCountByDateRange,
+  analysisGetTotalRiskCountByDateRange,
+  analysisIndex,
+  analysisShowAnalysisWithPlan,
+  analysisStore,
+  analysisUpdate,
   articleArticleByPartNumber,
   articleArticlesInReception,
   articleArticlesInTransit,
@@ -63,6 +72,7 @@ import {
   articleUpdateArticleCost,
   articleUpdateArticleQuantitiesAndZones,
   articleUpdateArticleStatus,
+  articleUpdateConsumableArticleQuantitiesAndZones,
   authStoreLocationUser,
   bankAccountAccountByBank,
   bankAccountsDestroy,
@@ -155,6 +165,19 @@ import {
   creditsShow,
   creditsStore,
   creditsUpdate,
+  dangerIdentificationDestroy,
+  dangerIdentificationGetDangerIdentificationsCountedByInformationSourceName,
+  dangerIdentificationGetDangerIdentificationsCountedByInformationSourceType,
+  dangerIdentificationGetDangerIdentificationsCountedByType,
+  dangerIdentificationGetIdentificationWithAllById,
+  dangerIdentificationGetReportsByDateRange,
+  dangerIdentificationGetTotalDangerIdentificationsCountedByInformationSourceName,
+  dangerIdentificationGetTotalDangerIdentificationsCountedByInformationSourceType,
+  dangerIdentificationGetTotalDangerIdentificationsCountedByType,
+  dangerIdentificationIndex,
+  dangerIdentificationShow,
+  dangerIdentificationStore,
+  dangerIdentificationUpdate,
   dashboardIndex,
   dashboardVerifyCompanyLocations,
   departmentDestroy,
@@ -202,8 +225,36 @@ import {
   flightsShow,
   flightsStore,
   flightsUpdate,
+  followUpControllDestroy,
+  followUpControllGetFollowUpControlByMeasureId,
+  followUpControllIndex,
+  followUpControllStore,
+  followUpControllUpdate,
   generalLocationIndex0,
   getMailable,
+  hardTimeCategoryDestroy,
+  hardTimeCategoryIndex,
+  hardTimeCategoryStore,
+  hardTimeCategoryUpdate,
+  hardTimeComplianceIndex,
+  hardTimeComplianceStore,
+  hardTimeComponentDestroy,
+  hardTimeComponentIndex,
+  hardTimeComponentInstallations,
+  hardTimeComponentShow,
+  hardTimeComponentStore,
+  hardTimeComponentUpdate,
+  hardTimeInstallationInstall,
+  hardTimeInstallationUninstall,
+  hardTimeIntervalIndex,
+  hardTimeIntervalStore,
+  hardTimeIntervalToggle,
+  hardTimeIntervalUpdate,
+  hardTimeTraceabilityIndex,
+  informationSourcesDestroy,
+  informationSourcesIndex,
+  informationSourcesStore,
+  informationSourcesUpdate,
   ingestDocumentStore,
   invoiceManagementInvoiceStatistics,
   jobTitleDestroy,
@@ -232,11 +283,26 @@ import {
   manufacturerShow,
   manufacturerStore,
   manufacturerUpdate,
+  mitigationMeasureDestroy,
+  mitigationMeasureGetMitigationMeasureByPlanId,
+  mitigationMeasureIndex,
+  mitigationMeasureStore,
+  mitigationMeasureUpdate,
+  mitigationPlansDestroy,
+  mitigationPlansIndex,
+  mitigationPlansStore,
+  mitigationPlansUpdate,
   modulesCompanyModule,
   modulesDestroy,
   modulesIndex,
   modulesStore,
   modulesUpdate,
+  obligatoryReportAcceptObligatoryReport,
+  obligatoryReportDestroy,
+  obligatoryReportIndex,
+  obligatoryReportShow,
+  obligatoryReportStore,
+  obligatoryReportUpdate,
   type Options,
   permissionDestroy,
   permissionIndex,
@@ -323,6 +389,17 @@ import {
   sMsActivityAttendanceGetEnrolledEmployeesByActivity,
   sMsActivityAttendanceGetEnrollementStatus,
   sMsActivityAttendanceStoreSmsActivityAttendance,
+  sMsActivityDestroy,
+  sMsActivityIndex,
+  sMsActivityShow,
+  sMsActivityStore,
+  sMsActivityUpdate,
+  smsAnalysisIndex0,
+  smsAnalysisStore1,
+  smsAnalysisUpdate0,
+  smsMitigationPlanDestroy1,
+  smsMitigationPlanStore0,
+  smsMitigationPlanUpdate0,
   tasksDestroy,
   tasksIndex,
   tasksShow,
@@ -358,6 +435,23 @@ import {
   vendorShow,
   vendorStore,
   vendorUpdate,
+  voluntaryReportAcceptVoluntaryReport,
+  voluntaryReportDestroy,
+  voluntaryReportGetObligatoryReportsAvegeByDateRange,
+  voluntaryReportGetProcessedReports,
+  voluntaryReportGetReportsCountedByArea,
+  voluntaryReportGetReportStatsByMonths,
+  voluntaryReportGetReportStatsByYear,
+  voluntaryReportGetTotalReportsCountedByArea,
+  voluntaryReportGetTotalReportStatsByYear,
+  voluntaryReportGetVoluntaryReportByYear,
+  voluntaryReportGetVoluntaryReportsByDateRange,
+  voluntaryReportGetVoluntaryReportsCountedByAirportLocation,
+  voluntaryReportGetVoluntaryReportWithManagement,
+  voluntaryReportIndex,
+  voluntaryReportShow,
+  voluntaryReportStore,
+  voluntaryReportUpdate,
   warehouseAeronauticalArticleIndex0,
   warehouseAeronauticalArticleIndex02,
   warehouseCompanyWithWarehouse,
@@ -503,6 +597,31 @@ import type {
   AircraftUpdateData,
   AircraftUpdateError,
   AircraftUpdateResponse,
+  AnalysisCloseReportData,
+  AnalysisCloseReportError,
+  AnalysisGetPostRiskCountByDateRangeData,
+  AnalysisGetPostRiskCountByDateRangeError,
+  AnalysisGetPostRiskCountByDateRangeResponse,
+  AnalysisGetRiskCountByDateRangeData,
+  AnalysisGetRiskCountByDateRangeError,
+  AnalysisGetRiskCountByDateRangeResponse,
+  AnalysisGetTotalPostRiskCountByDateRangeData,
+  AnalysisGetTotalPostRiskCountByDateRangeError,
+  AnalysisGetTotalPostRiskCountByDateRangeResponse,
+  AnalysisGetTotalRiskCountByDateRangeData,
+  AnalysisGetTotalRiskCountByDateRangeError,
+  AnalysisGetTotalRiskCountByDateRangeResponse,
+  AnalysisIndexData,
+  AnalysisIndexError,
+  AnalysisIndexResponse,
+  AnalysisShowAnalysisWithPlanData,
+  AnalysisShowAnalysisWithPlanError,
+  AnalysisShowAnalysisWithPlanResponse,
+  AnalysisStoreData,
+  AnalysisStoreError,
+  AnalysisStoreResponse,
+  AnalysisUpdateData,
+  AnalysisUpdateError,
   ArticleArticleByPartNumberData,
   ArticleArticleByPartNumberError,
   ArticleArticleByPartNumberResponse,
@@ -543,6 +662,9 @@ import type {
   ArticleUpdateArticleStatusData,
   ArticleUpdateArticleStatusError,
   ArticleUpdateArticleStatusResponse,
+  ArticleUpdateConsumableArticleQuantitiesAndZonesData,
+  ArticleUpdateConsumableArticleQuantitiesAndZonesError,
+  ArticleUpdateConsumableArticleQuantitiesAndZonesResponse,
   ArticleUpdateData,
   ArticleUpdateError,
   ArticleUpdateResponse,
@@ -805,6 +927,45 @@ import type {
   CreditsUpdateData,
   CreditsUpdateError,
   CreditsUpdateResponse,
+  DangerIdentificationDestroyData,
+  DangerIdentificationDestroyError,
+  DangerIdentificationDestroyResponse,
+  DangerIdentificationGetDangerIdentificationsCountedByInformationSourceNameData,
+  DangerIdentificationGetDangerIdentificationsCountedByInformationSourceNameError,
+  DangerIdentificationGetDangerIdentificationsCountedByInformationSourceNameResponse,
+  DangerIdentificationGetDangerIdentificationsCountedByInformationSourceTypeData,
+  DangerIdentificationGetDangerIdentificationsCountedByInformationSourceTypeError,
+  DangerIdentificationGetDangerIdentificationsCountedByInformationSourceTypeResponse,
+  DangerIdentificationGetDangerIdentificationsCountedByTypeData,
+  DangerIdentificationGetDangerIdentificationsCountedByTypeError,
+  DangerIdentificationGetDangerIdentificationsCountedByTypeResponse,
+  DangerIdentificationGetIdentificationWithAllByIdData,
+  DangerIdentificationGetIdentificationWithAllByIdError,
+  DangerIdentificationGetIdentificationWithAllByIdResponse,
+  DangerIdentificationGetReportsByDateRangeData,
+  DangerIdentificationGetReportsByDateRangeError,
+  DangerIdentificationGetReportsByDateRangeResponse,
+  DangerIdentificationGetTotalDangerIdentificationsCountedByInformationSourceNameData,
+  DangerIdentificationGetTotalDangerIdentificationsCountedByInformationSourceNameError,
+  DangerIdentificationGetTotalDangerIdentificationsCountedByInformationSourceNameResponse,
+  DangerIdentificationGetTotalDangerIdentificationsCountedByInformationSourceTypeData,
+  DangerIdentificationGetTotalDangerIdentificationsCountedByInformationSourceTypeError,
+  DangerIdentificationGetTotalDangerIdentificationsCountedByInformationSourceTypeResponse,
+  DangerIdentificationGetTotalDangerIdentificationsCountedByTypeData,
+  DangerIdentificationGetTotalDangerIdentificationsCountedByTypeError,
+  DangerIdentificationGetTotalDangerIdentificationsCountedByTypeResponse,
+  DangerIdentificationIndexData,
+  DangerIdentificationIndexError,
+  DangerIdentificationIndexResponse,
+  DangerIdentificationShowData,
+  DangerIdentificationShowError,
+  DangerIdentificationShowResponse,
+  DangerIdentificationStoreData,
+  DangerIdentificationStoreError,
+  DangerIdentificationStoreResponse,
+  DangerIdentificationUpdateData,
+  DangerIdentificationUpdateError,
+  DangerIdentificationUpdateResponse,
   DashboardIndexData,
   DashboardIndexError,
   DashboardIndexResponse,
@@ -941,12 +1102,96 @@ import type {
   FlightsUpdateData,
   FlightsUpdateError,
   FlightsUpdateResponse,
+  FollowUpControllDestroyData,
+  FollowUpControllDestroyError,
+  FollowUpControllDestroyResponse,
+  FollowUpControllGetFollowUpControlByMeasureIdData,
+  FollowUpControllGetFollowUpControlByMeasureIdError,
+  FollowUpControllGetFollowUpControlByMeasureIdResponse,
+  FollowUpControllIndexData,
+  FollowUpControllIndexError,
+  FollowUpControllIndexResponse,
+  FollowUpControllStoreData,
+  FollowUpControllStoreError,
+  FollowUpControllStoreResponse,
+  FollowUpControllUpdateData,
+  FollowUpControllUpdateError,
+  FollowUpControllUpdateResponse,
   GeneralLocationIndex0Data,
   GeneralLocationIndex0Error,
   GeneralLocationIndex0Response,
   GetMailableData,
   GetMailableError,
   GetMailableResponse,
+  HardTimeCategoryDestroyData,
+  HardTimeCategoryDestroyError,
+  HardTimeCategoryDestroyResponse,
+  HardTimeCategoryIndexData,
+  HardTimeCategoryIndexError,
+  HardTimeCategoryIndexResponse,
+  HardTimeCategoryStoreData,
+  HardTimeCategoryStoreError,
+  HardTimeCategoryStoreResponse,
+  HardTimeCategoryUpdateData,
+  HardTimeCategoryUpdateError,
+  HardTimeCategoryUpdateResponse,
+  HardTimeComplianceIndexData,
+  HardTimeComplianceIndexError,
+  HardTimeComplianceIndexResponse,
+  HardTimeComplianceStoreData,
+  HardTimeComplianceStoreError,
+  HardTimeComplianceStoreResponse,
+  HardTimeComponentDestroyData,
+  HardTimeComponentDestroyError,
+  HardTimeComponentDestroyResponse,
+  HardTimeComponentIndexData,
+  HardTimeComponentIndexError,
+  HardTimeComponentIndexResponse,
+  HardTimeComponentInstallationsData,
+  HardTimeComponentInstallationsError,
+  HardTimeComponentInstallationsResponse,
+  HardTimeComponentShowData,
+  HardTimeComponentShowError,
+  HardTimeComponentShowResponse,
+  HardTimeComponentStoreData,
+  HardTimeComponentStoreError,
+  HardTimeComponentStoreResponse,
+  HardTimeComponentUpdateData,
+  HardTimeComponentUpdateError,
+  HardTimeComponentUpdateResponse,
+  HardTimeInstallationInstallData,
+  HardTimeInstallationInstallError,
+  HardTimeInstallationInstallResponse,
+  HardTimeInstallationUninstallData,
+  HardTimeInstallationUninstallError,
+  HardTimeInstallationUninstallResponse,
+  HardTimeIntervalIndexData,
+  HardTimeIntervalIndexError,
+  HardTimeIntervalIndexResponse,
+  HardTimeIntervalStoreData,
+  HardTimeIntervalStoreError,
+  HardTimeIntervalStoreResponse,
+  HardTimeIntervalToggleData,
+  HardTimeIntervalToggleError,
+  HardTimeIntervalToggleResponse,
+  HardTimeIntervalUpdateData,
+  HardTimeIntervalUpdateError,
+  HardTimeIntervalUpdateResponse,
+  HardTimeTraceabilityIndexData,
+  HardTimeTraceabilityIndexError,
+  HardTimeTraceabilityIndexResponse,
+  InformationSourcesDestroyData,
+  InformationSourcesDestroyError,
+  InformationSourcesDestroyResponse,
+  InformationSourcesIndexData,
+  InformationSourcesIndexError,
+  InformationSourcesIndexResponse,
+  InformationSourcesStoreData,
+  InformationSourcesStoreError,
+  InformationSourcesStoreResponse,
+  InformationSourcesUpdateData,
+  InformationSourcesUpdateError,
+  InformationSourcesUpdateResponse,
   IngestDocumentStoreData,
   IngestDocumentStoreError,
   IngestDocumentStoreResponse,
@@ -1029,6 +1274,33 @@ import type {
   ManufacturerUpdateData,
   ManufacturerUpdateError,
   ManufacturerUpdateResponse,
+  MitigationMeasureDestroyData,
+  MitigationMeasureDestroyError,
+  MitigationMeasureDestroyResponse,
+  MitigationMeasureGetMitigationMeasureByPlanIdData,
+  MitigationMeasureGetMitigationMeasureByPlanIdError,
+  MitigationMeasureGetMitigationMeasureByPlanIdResponse,
+  MitigationMeasureIndexData,
+  MitigationMeasureIndexError,
+  MitigationMeasureIndexResponse,
+  MitigationMeasureStoreData,
+  MitigationMeasureStoreError,
+  MitigationMeasureStoreResponse,
+  MitigationMeasureUpdateData,
+  MitigationMeasureUpdateError,
+  MitigationMeasureUpdateResponse,
+  MitigationPlansDestroyData,
+  MitigationPlansDestroyError,
+  MitigationPlansDestroyResponse,
+  MitigationPlansIndexData,
+  MitigationPlansIndexError,
+  MitigationPlansIndexResponse,
+  MitigationPlansStoreData,
+  MitigationPlansStoreError,
+  MitigationPlansStoreResponse,
+  MitigationPlansUpdateData,
+  MitigationPlansUpdateError,
+  MitigationPlansUpdateResponse,
   ModulesCompanyModuleData,
   ModulesCompanyModuleError,
   ModulesCompanyModuleResponse,
@@ -1044,6 +1316,24 @@ import type {
   ModulesUpdateData,
   ModulesUpdateError,
   ModulesUpdateResponse,
+  ObligatoryReportAcceptObligatoryReportData,
+  ObligatoryReportAcceptObligatoryReportError,
+  ObligatoryReportAcceptObligatoryReportResponse,
+  ObligatoryReportDestroyData,
+  ObligatoryReportDestroyError,
+  ObligatoryReportDestroyResponse,
+  ObligatoryReportIndexData,
+  ObligatoryReportIndexError,
+  ObligatoryReportIndexResponse,
+  ObligatoryReportShowData,
+  ObligatoryReportShowError,
+  ObligatoryReportShowResponse,
+  ObligatoryReportStoreData,
+  ObligatoryReportStoreError,
+  ObligatoryReportStoreResponse,
+  ObligatoryReportUpdateData,
+  ObligatoryReportUpdateError,
+  ObligatoryReportUpdateResponse,
   PermissionDestroyData,
   PermissionDestroyError,
   PermissionDestroyResponse,
@@ -1294,6 +1584,38 @@ import type {
   SMsActivityAttendanceStoreSmsActivityAttendanceData,
   SMsActivityAttendanceStoreSmsActivityAttendanceError,
   SMsActivityAttendanceStoreSmsActivityAttendanceResponse,
+  SMsActivityDestroyData,
+  SMsActivityDestroyError,
+  SMsActivityDestroyResponse,
+  SMsActivityIndexData,
+  SMsActivityIndexError,
+  SMsActivityIndexResponse,
+  SMsActivityShowData,
+  SMsActivityShowError,
+  SMsActivityShowResponse,
+  SMsActivityStoreData,
+  SMsActivityStoreError,
+  SMsActivityStoreResponse,
+  SMsActivityUpdateData,
+  SMsActivityUpdateError,
+  SMsActivityUpdateResponse,
+  SmsAnalysisIndex0Data,
+  SmsAnalysisIndex0Error,
+  SmsAnalysisIndex0Response,
+  SmsAnalysisStore1Data,
+  SmsAnalysisStore1Error,
+  SmsAnalysisStore1Response,
+  SmsAnalysisUpdate0Data,
+  SmsAnalysisUpdate0Error,
+  SmsMitigationPlanDestroy1Data,
+  SmsMitigationPlanDestroy1Error,
+  SmsMitigationPlanDestroy1Response,
+  SmsMitigationPlanStore0Data,
+  SmsMitigationPlanStore0Error,
+  SmsMitigationPlanStore0Response,
+  SmsMitigationPlanUpdate0Data,
+  SmsMitigationPlanUpdate0Error,
+  SmsMitigationPlanUpdate0Response,
   TasksDestroyData,
   TasksDestroyError,
   TasksIndexData,
@@ -1394,6 +1716,57 @@ import type {
   VendorUpdateData,
   VendorUpdateError,
   VendorUpdateResponse,
+  VoluntaryReportAcceptVoluntaryReportData,
+  VoluntaryReportAcceptVoluntaryReportError,
+  VoluntaryReportAcceptVoluntaryReportResponse,
+  VoluntaryReportDestroyData,
+  VoluntaryReportDestroyError,
+  VoluntaryReportDestroyResponse,
+  VoluntaryReportGetObligatoryReportsAvegeByDateRangeData,
+  VoluntaryReportGetObligatoryReportsAvegeByDateRangeError,
+  VoluntaryReportGetObligatoryReportsAvegeByDateRangeResponse,
+  VoluntaryReportGetProcessedReportsData,
+  VoluntaryReportGetProcessedReportsError,
+  VoluntaryReportGetProcessedReportsResponse,
+  VoluntaryReportGetReportsCountedByAreaData,
+  VoluntaryReportGetReportsCountedByAreaError,
+  VoluntaryReportGetReportsCountedByAreaResponse,
+  VoluntaryReportGetReportStatsByMonthsData,
+  VoluntaryReportGetReportStatsByMonthsError,
+  VoluntaryReportGetReportStatsByMonthsResponse,
+  VoluntaryReportGetReportStatsByYearData,
+  VoluntaryReportGetReportStatsByYearError,
+  VoluntaryReportGetReportStatsByYearResponse,
+  VoluntaryReportGetTotalReportsCountedByAreaData,
+  VoluntaryReportGetTotalReportsCountedByAreaError,
+  VoluntaryReportGetTotalReportsCountedByAreaResponse,
+  VoluntaryReportGetTotalReportStatsByYearData,
+  VoluntaryReportGetTotalReportStatsByYearError,
+  VoluntaryReportGetTotalReportStatsByYearResponse,
+  VoluntaryReportGetVoluntaryReportByYearData,
+  VoluntaryReportGetVoluntaryReportByYearError,
+  VoluntaryReportGetVoluntaryReportByYearResponse,
+  VoluntaryReportGetVoluntaryReportsByDateRangeData,
+  VoluntaryReportGetVoluntaryReportsByDateRangeError,
+  VoluntaryReportGetVoluntaryReportsByDateRangeResponse,
+  VoluntaryReportGetVoluntaryReportsCountedByAirportLocationData,
+  VoluntaryReportGetVoluntaryReportsCountedByAirportLocationError,
+  VoluntaryReportGetVoluntaryReportsCountedByAirportLocationResponse,
+  VoluntaryReportGetVoluntaryReportWithManagementData,
+  VoluntaryReportGetVoluntaryReportWithManagementError,
+  VoluntaryReportGetVoluntaryReportWithManagementResponse,
+  VoluntaryReportIndexData,
+  VoluntaryReportIndexError,
+  VoluntaryReportIndexResponse,
+  VoluntaryReportShowData,
+  VoluntaryReportShowError,
+  VoluntaryReportShowResponse,
+  VoluntaryReportStoreData,
+  VoluntaryReportStoreError,
+  VoluntaryReportStoreResponse,
+  VoluntaryReportUpdateData,
+  VoluntaryReportUpdateError,
+  VoluntaryReportUpdateResponse,
   WarehouseAeronauticalArticleIndex02Data,
   WarehouseAeronauticalArticleIndex02Error,
   WarehouseAeronauticalArticleIndex02Response,
@@ -2723,6 +3096,266 @@ export const aircraftTypesUpdateMutation = (
   return mutationOptions;
 };
 
+export const analysisGetTotalRiskCountByDateRangeQueryKey = (
+  options: Options<AnalysisGetTotalRiskCountByDateRangeData>,
+) => createQueryKey('analysisGetTotalRiskCountByDateRange', options);
+
+export const analysisGetTotalRiskCountByDateRangeOptions = (
+  options: Options<AnalysisGetTotalRiskCountByDateRangeData>,
+) =>
+  queryOptions<
+    AnalysisGetTotalRiskCountByDateRangeResponse,
+    AxiosError<AnalysisGetTotalRiskCountByDateRangeError>,
+    AnalysisGetTotalRiskCountByDateRangeResponse,
+    ReturnType<typeof analysisGetTotalRiskCountByDateRangeQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await analysisGetTotalRiskCountByDateRange({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: analysisGetTotalRiskCountByDateRangeQueryKey(options),
+  });
+
+export const analysisGetTotalPostRiskCountByDateRangeQueryKey = (
+  options: Options<AnalysisGetTotalPostRiskCountByDateRangeData>,
+) => createQueryKey('analysisGetTotalPostRiskCountByDateRange', options);
+
+export const analysisGetTotalPostRiskCountByDateRangeOptions = (
+  options: Options<AnalysisGetTotalPostRiskCountByDateRangeData>,
+) =>
+  queryOptions<
+    AnalysisGetTotalPostRiskCountByDateRangeResponse,
+    AxiosError<AnalysisGetTotalPostRiskCountByDateRangeError>,
+    AnalysisGetTotalPostRiskCountByDateRangeResponse,
+    ReturnType<typeof analysisGetTotalPostRiskCountByDateRangeQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await analysisGetTotalPostRiskCountByDateRange({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: analysisGetTotalPostRiskCountByDateRangeQueryKey(options),
+  });
+
+export const analysisShowAnalysisWithPlanQueryKey = (options: Options<AnalysisShowAnalysisWithPlanData>) =>
+  createQueryKey('analysisShowAnalysisWithPlan', options);
+
+export const analysisShowAnalysisWithPlanOptions = (options: Options<AnalysisShowAnalysisWithPlanData>) =>
+  queryOptions<
+    AnalysisShowAnalysisWithPlanResponse,
+    AxiosError<AnalysisShowAnalysisWithPlanError>,
+    AnalysisShowAnalysisWithPlanResponse,
+    ReturnType<typeof analysisShowAnalysisWithPlanQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await analysisShowAnalysisWithPlan({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: analysisShowAnalysisWithPlanQueryKey(options),
+  });
+
+export const analysisCloseReportMutation = (
+  options?: Partial<Options<AnalysisCloseReportData>>,
+): UseMutationOptions<unknown, AxiosError<AnalysisCloseReportError>, Options<AnalysisCloseReportData>> => {
+  const mutationOptions: UseMutationOptions<
+    unknown,
+    AxiosError<AnalysisCloseReportError>,
+    Options<AnalysisCloseReportData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await analysisCloseReport({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+export const analysisGetRiskCountByDateRangeQueryKey = (options: Options<AnalysisGetRiskCountByDateRangeData>) =>
+  createQueryKey('analysisGetRiskCountByDateRange', options);
+
+export const analysisGetRiskCountByDateRangeOptions = (options: Options<AnalysisGetRiskCountByDateRangeData>) =>
+  queryOptions<
+    AnalysisGetRiskCountByDateRangeResponse,
+    AxiosError<AnalysisGetRiskCountByDateRangeError>,
+    AnalysisGetRiskCountByDateRangeResponse,
+    ReturnType<typeof analysisGetRiskCountByDateRangeQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await analysisGetRiskCountByDateRange({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: analysisGetRiskCountByDateRangeQueryKey(options),
+  });
+
+export const analysisGetPostRiskCountByDateRangeQueryKey = (
+  options: Options<AnalysisGetPostRiskCountByDateRangeData>,
+) => createQueryKey('analysisGetPostRiskCountByDateRange', options);
+
+export const analysisGetPostRiskCountByDateRangeOptions = (options: Options<AnalysisGetPostRiskCountByDateRangeData>) =>
+  queryOptions<
+    AnalysisGetPostRiskCountByDateRangeResponse,
+    AxiosError<AnalysisGetPostRiskCountByDateRangeError>,
+    AnalysisGetPostRiskCountByDateRangeResponse,
+    ReturnType<typeof analysisGetPostRiskCountByDateRangeQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await analysisGetPostRiskCountByDateRange({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: analysisGetPostRiskCountByDateRangeQueryKey(options),
+  });
+
+export const analysisIndexQueryKey = (options?: Options<AnalysisIndexData>) => createQueryKey('analysisIndex', options);
+
+export const analysisIndexOptions = (options?: Options<AnalysisIndexData>) =>
+  queryOptions<
+    AnalysisIndexResponse,
+    AxiosError<AnalysisIndexError>,
+    AnalysisIndexResponse,
+    ReturnType<typeof analysisIndexQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await analysisIndex({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: analysisIndexQueryKey(options),
+  });
+
+export const analysisStoreMutation = (
+  options?: Partial<Options<AnalysisStoreData>>,
+): UseMutationOptions<AnalysisStoreResponse, AxiosError<AnalysisStoreError>, Options<AnalysisStoreData>> => {
+  const mutationOptions: UseMutationOptions<
+    AnalysisStoreResponse,
+    AxiosError<AnalysisStoreError>,
+    Options<AnalysisStoreData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await analysisStore({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+export const analysisUpdateMutation = (
+  options?: Partial<Options<AnalysisUpdateData>>,
+): UseMutationOptions<unknown, AxiosError<AnalysisUpdateError>, Options<AnalysisUpdateData>> => {
+  const mutationOptions: UseMutationOptions<unknown, AxiosError<AnalysisUpdateError>, Options<AnalysisUpdateData>> = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await analysisUpdate({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+export const smsAnalysisIndex0QueryKey = (options: Options<SmsAnalysisIndex0Data>) =>
+  createQueryKey('smsAnalysisIndex0', options);
+
+export const smsAnalysisIndex0Options = (options: Options<SmsAnalysisIndex0Data>) =>
+  queryOptions<
+    SmsAnalysisIndex0Response,
+    AxiosError<SmsAnalysisIndex0Error>,
+    SmsAnalysisIndex0Response,
+    ReturnType<typeof smsAnalysisIndex0QueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await smsAnalysisIndex0({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: smsAnalysisIndex0QueryKey(options),
+  });
+
+export const smsAnalysisStore1Mutation = (
+  options?: Partial<Options<SmsAnalysisStore1Data>>,
+): UseMutationOptions<
+  SmsAnalysisStore1Response,
+  AxiosError<SmsAnalysisStore1Error>,
+  Options<SmsAnalysisStore1Data>
+> => {
+  const mutationOptions: UseMutationOptions<
+    SmsAnalysisStore1Response,
+    AxiosError<SmsAnalysisStore1Error>,
+    Options<SmsAnalysisStore1Data>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await smsAnalysisStore1({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+export const smsAnalysisUpdate0Mutation = (
+  options?: Partial<Options<SmsAnalysisUpdate0Data>>,
+): UseMutationOptions<unknown, AxiosError<SmsAnalysisUpdate0Error>, Options<SmsAnalysisUpdate0Data>> => {
+  const mutationOptions: UseMutationOptions<
+    unknown,
+    AxiosError<SmsAnalysisUpdate0Error>,
+    Options<SmsAnalysisUpdate0Data>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await smsAnalysisUpdate0({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
 export const warehouseAeronauticalArticleIndex0QueryKey = (options: Options<WarehouseAeronauticalArticleIndex0Data>) =>
   createQueryKey('warehouseAeronauticalArticleIndex0', options);
 
@@ -2779,6 +3412,30 @@ export const warehouseAeronauticalArticleIndex02Options = (options: Options<Ware
     },
     queryKey: warehouseAeronauticalArticleIndex02QueryKey(options),
   });
+
+export const articleUpdateConsumableArticleQuantitiesAndZonesMutation = (
+  options?: Partial<Options<ArticleUpdateConsumableArticleQuantitiesAndZonesData>>,
+): UseMutationOptions<
+  ArticleUpdateConsumableArticleQuantitiesAndZonesResponse,
+  AxiosError<ArticleUpdateConsumableArticleQuantitiesAndZonesError>,
+  Options<ArticleUpdateConsumableArticleQuantitiesAndZonesData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    ArticleUpdateConsumableArticleQuantitiesAndZonesResponse,
+    AxiosError<ArticleUpdateConsumableArticleQuantitiesAndZonesError>,
+    Options<ArticleUpdateConsumableArticleQuantitiesAndZonesData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await articleUpdateConsumableArticleQuantitiesAndZones({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
 
 export const articleUpdateArticleQuantitiesAndZonesMutation = (
   options?: Partial<Options<ArticleUpdateArticleQuantitiesAndZonesData>>,
@@ -5365,6 +6022,322 @@ export const creditGetVendorsCreditsstatisticsOptions = (options: Options<Credit
     queryKey: creditGetVendorsCreditsstatisticsQueryKey(options),
   });
 
+export const dangerIdentificationGetTotalDangerIdentificationsCountedByInformationSourceNameQueryKey = (
+  options: Options<DangerIdentificationGetTotalDangerIdentificationsCountedByInformationSourceNameData>,
+) => createQueryKey('dangerIdentificationGetTotalDangerIdentificationsCountedByInformationSourceName', options);
+
+export const dangerIdentificationGetTotalDangerIdentificationsCountedByInformationSourceNameOptions = (
+  options: Options<DangerIdentificationGetTotalDangerIdentificationsCountedByInformationSourceNameData>,
+) =>
+  queryOptions<
+    DangerIdentificationGetTotalDangerIdentificationsCountedByInformationSourceNameResponse,
+    AxiosError<DangerIdentificationGetTotalDangerIdentificationsCountedByInformationSourceNameError>,
+    DangerIdentificationGetTotalDangerIdentificationsCountedByInformationSourceNameResponse,
+    ReturnType<typeof dangerIdentificationGetTotalDangerIdentificationsCountedByInformationSourceNameQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await dangerIdentificationGetTotalDangerIdentificationsCountedByInformationSourceName({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: dangerIdentificationGetTotalDangerIdentificationsCountedByInformationSourceNameQueryKey(options),
+  });
+
+export const dangerIdentificationGetTotalDangerIdentificationsCountedByInformationSourceTypeQueryKey = (
+  options: Options<DangerIdentificationGetTotalDangerIdentificationsCountedByInformationSourceTypeData>,
+) => createQueryKey('dangerIdentificationGetTotalDangerIdentificationsCountedByInformationSourceType', options);
+
+export const dangerIdentificationGetTotalDangerIdentificationsCountedByInformationSourceTypeOptions = (
+  options: Options<DangerIdentificationGetTotalDangerIdentificationsCountedByInformationSourceTypeData>,
+) =>
+  queryOptions<
+    DangerIdentificationGetTotalDangerIdentificationsCountedByInformationSourceTypeResponse,
+    AxiosError<DangerIdentificationGetTotalDangerIdentificationsCountedByInformationSourceTypeError>,
+    DangerIdentificationGetTotalDangerIdentificationsCountedByInformationSourceTypeResponse,
+    ReturnType<typeof dangerIdentificationGetTotalDangerIdentificationsCountedByInformationSourceTypeQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await dangerIdentificationGetTotalDangerIdentificationsCountedByInformationSourceType({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: dangerIdentificationGetTotalDangerIdentificationsCountedByInformationSourceTypeQueryKey(options),
+  });
+
+export const dangerIdentificationGetTotalDangerIdentificationsCountedByTypeQueryKey = (
+  options: Options<DangerIdentificationGetTotalDangerIdentificationsCountedByTypeData>,
+) => createQueryKey('dangerIdentificationGetTotalDangerIdentificationsCountedByType', options);
+
+export const dangerIdentificationGetTotalDangerIdentificationsCountedByTypeOptions = (
+  options: Options<DangerIdentificationGetTotalDangerIdentificationsCountedByTypeData>,
+) =>
+  queryOptions<
+    DangerIdentificationGetTotalDangerIdentificationsCountedByTypeResponse,
+    AxiosError<DangerIdentificationGetTotalDangerIdentificationsCountedByTypeError>,
+    DangerIdentificationGetTotalDangerIdentificationsCountedByTypeResponse,
+    ReturnType<typeof dangerIdentificationGetTotalDangerIdentificationsCountedByTypeQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await dangerIdentificationGetTotalDangerIdentificationsCountedByType({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: dangerIdentificationGetTotalDangerIdentificationsCountedByTypeQueryKey(options),
+  });
+
+export const dangerIdentificationGetReportsByDateRangeQueryKey = (
+  options?: Options<DangerIdentificationGetReportsByDateRangeData>,
+) => createQueryKey('dangerIdentificationGetReportsByDateRange', options);
+
+export const dangerIdentificationGetReportsByDateRangeOptions = (
+  options?: Options<DangerIdentificationGetReportsByDateRangeData>,
+) =>
+  queryOptions<
+    DangerIdentificationGetReportsByDateRangeResponse,
+    AxiosError<DangerIdentificationGetReportsByDateRangeError>,
+    DangerIdentificationGetReportsByDateRangeResponse,
+    ReturnType<typeof dangerIdentificationGetReportsByDateRangeQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await dangerIdentificationGetReportsByDateRange({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: dangerIdentificationGetReportsByDateRangeQueryKey(options),
+  });
+
+export const dangerIdentificationGetIdentificationWithAllByIdQueryKey = (
+  options: Options<DangerIdentificationGetIdentificationWithAllByIdData>,
+) => createQueryKey('dangerIdentificationGetIdentificationWithAllById', options);
+
+export const dangerIdentificationGetIdentificationWithAllByIdOptions = (
+  options: Options<DangerIdentificationGetIdentificationWithAllByIdData>,
+) =>
+  queryOptions<
+    DangerIdentificationGetIdentificationWithAllByIdResponse,
+    AxiosError<DangerIdentificationGetIdentificationWithAllByIdError>,
+    DangerIdentificationGetIdentificationWithAllByIdResponse,
+    ReturnType<typeof dangerIdentificationGetIdentificationWithAllByIdQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await dangerIdentificationGetIdentificationWithAllById({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: dangerIdentificationGetIdentificationWithAllByIdQueryKey(options),
+  });
+
+export const dangerIdentificationGetDangerIdentificationsCountedByInformationSourceTypeQueryKey = (
+  options: Options<DangerIdentificationGetDangerIdentificationsCountedByInformationSourceTypeData>,
+) => createQueryKey('dangerIdentificationGetDangerIdentificationsCountedByInformationSourceType', options);
+
+export const dangerIdentificationGetDangerIdentificationsCountedByInformationSourceTypeOptions = (
+  options: Options<DangerIdentificationGetDangerIdentificationsCountedByInformationSourceTypeData>,
+) =>
+  queryOptions<
+    DangerIdentificationGetDangerIdentificationsCountedByInformationSourceTypeResponse,
+    AxiosError<DangerIdentificationGetDangerIdentificationsCountedByInformationSourceTypeError>,
+    DangerIdentificationGetDangerIdentificationsCountedByInformationSourceTypeResponse,
+    ReturnType<typeof dangerIdentificationGetDangerIdentificationsCountedByInformationSourceTypeQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await dangerIdentificationGetDangerIdentificationsCountedByInformationSourceType({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: dangerIdentificationGetDangerIdentificationsCountedByInformationSourceTypeQueryKey(options),
+  });
+
+export const dangerIdentificationGetDangerIdentificationsCountedByInformationSourceNameQueryKey = (
+  options: Options<DangerIdentificationGetDangerIdentificationsCountedByInformationSourceNameData>,
+) => createQueryKey('dangerIdentificationGetDangerIdentificationsCountedByInformationSourceName', options);
+
+export const dangerIdentificationGetDangerIdentificationsCountedByInformationSourceNameOptions = (
+  options: Options<DangerIdentificationGetDangerIdentificationsCountedByInformationSourceNameData>,
+) =>
+  queryOptions<
+    DangerIdentificationGetDangerIdentificationsCountedByInformationSourceNameResponse,
+    AxiosError<DangerIdentificationGetDangerIdentificationsCountedByInformationSourceNameError>,
+    DangerIdentificationGetDangerIdentificationsCountedByInformationSourceNameResponse,
+    ReturnType<typeof dangerIdentificationGetDangerIdentificationsCountedByInformationSourceNameQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await dangerIdentificationGetDangerIdentificationsCountedByInformationSourceName({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: dangerIdentificationGetDangerIdentificationsCountedByInformationSourceNameQueryKey(options),
+  });
+
+export const dangerIdentificationGetDangerIdentificationsCountedByTypeQueryKey = (
+  options: Options<DangerIdentificationGetDangerIdentificationsCountedByTypeData>,
+) => createQueryKey('dangerIdentificationGetDangerIdentificationsCountedByType', options);
+
+export const dangerIdentificationGetDangerIdentificationsCountedByTypeOptions = (
+  options: Options<DangerIdentificationGetDangerIdentificationsCountedByTypeData>,
+) =>
+  queryOptions<
+    DangerIdentificationGetDangerIdentificationsCountedByTypeResponse,
+    AxiosError<DangerIdentificationGetDangerIdentificationsCountedByTypeError>,
+    DangerIdentificationGetDangerIdentificationsCountedByTypeResponse,
+    ReturnType<typeof dangerIdentificationGetDangerIdentificationsCountedByTypeQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await dangerIdentificationGetDangerIdentificationsCountedByType({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: dangerIdentificationGetDangerIdentificationsCountedByTypeQueryKey(options),
+  });
+
+export const dangerIdentificationIndexQueryKey = (options: Options<DangerIdentificationIndexData>) =>
+  createQueryKey('dangerIdentificationIndex', options);
+
+export const dangerIdentificationIndexOptions = (options: Options<DangerIdentificationIndexData>) =>
+  queryOptions<
+    DangerIdentificationIndexResponse,
+    AxiosError<DangerIdentificationIndexError>,
+    DangerIdentificationIndexResponse,
+    ReturnType<typeof dangerIdentificationIndexQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await dangerIdentificationIndex({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: dangerIdentificationIndexQueryKey(options),
+  });
+
+export const dangerIdentificationDestroyMutation = (
+  options?: Partial<Options<DangerIdentificationDestroyData>>,
+): UseMutationOptions<
+  DangerIdentificationDestroyResponse,
+  AxiosError<DangerIdentificationDestroyError>,
+  Options<DangerIdentificationDestroyData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    DangerIdentificationDestroyResponse,
+    AxiosError<DangerIdentificationDestroyError>,
+    Options<DangerIdentificationDestroyData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await dangerIdentificationDestroy({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+export const dangerIdentificationShowQueryKey = (options: Options<DangerIdentificationShowData>) =>
+  createQueryKey('dangerIdentificationShow', options);
+
+export const dangerIdentificationShowOptions = (options: Options<DangerIdentificationShowData>) =>
+  queryOptions<
+    DangerIdentificationShowResponse,
+    AxiosError<DangerIdentificationShowError>,
+    DangerIdentificationShowResponse,
+    ReturnType<typeof dangerIdentificationShowQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await dangerIdentificationShow({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: dangerIdentificationShowQueryKey(options),
+  });
+
+export const dangerIdentificationUpdateMutation = (
+  options?: Partial<Options<DangerIdentificationUpdateData>>,
+): UseMutationOptions<
+  DangerIdentificationUpdateResponse,
+  AxiosError<DangerIdentificationUpdateError>,
+  Options<DangerIdentificationUpdateData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    DangerIdentificationUpdateResponse,
+    AxiosError<DangerIdentificationUpdateError>,
+    Options<DangerIdentificationUpdateData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await dangerIdentificationUpdate({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+export const dangerIdentificationStoreMutation = (
+  options?: Partial<Options<DangerIdentificationStoreData>>,
+): UseMutationOptions<
+  DangerIdentificationStoreResponse,
+  AxiosError<DangerIdentificationStoreError>,
+  Options<DangerIdentificationStoreData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    DangerIdentificationStoreResponse,
+    AxiosError<DangerIdentificationStoreError>,
+    Options<DangerIdentificationStoreData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await dangerIdentificationStore({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
 export const dashboardVerifyCompanyLocationsMutation = (
   options?: Partial<Options<DashboardVerifyCompanyLocationsData>>,
 ): UseMutationOptions<
@@ -6513,6 +7486,723 @@ export const flightControlUpdateMutation = (
   return mutationOptions;
 };
 
+export const followUpControllIndexQueryKey = (options: Options<FollowUpControllIndexData>) =>
+  createQueryKey('followUpControllIndex', options);
+
+export const followUpControllIndexOptions = (options: Options<FollowUpControllIndexData>) =>
+  queryOptions<
+    FollowUpControllIndexResponse,
+    AxiosError<FollowUpControllIndexError>,
+    FollowUpControllIndexResponse,
+    ReturnType<typeof followUpControllIndexQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await followUpControllIndex({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: followUpControllIndexQueryKey(options),
+  });
+
+export const followUpControllStoreMutation = (
+  options?: Partial<Options<FollowUpControllStoreData>>,
+): UseMutationOptions<
+  FollowUpControllStoreResponse,
+  AxiosError<FollowUpControllStoreError>,
+  Options<FollowUpControllStoreData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    FollowUpControllStoreResponse,
+    AxiosError<FollowUpControllStoreError>,
+    Options<FollowUpControllStoreData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await followUpControllStore({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+export const followUpControllUpdateMutation = (
+  options?: Partial<Options<FollowUpControllUpdateData>>,
+): UseMutationOptions<
+  FollowUpControllUpdateResponse,
+  AxiosError<FollowUpControllUpdateError>,
+  Options<FollowUpControllUpdateData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    FollowUpControllUpdateResponse,
+    AxiosError<FollowUpControllUpdateError>,
+    Options<FollowUpControllUpdateData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await followUpControllUpdate({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+export const followUpControllGetFollowUpControlByMeasureIdQueryKey = (
+  options: Options<FollowUpControllGetFollowUpControlByMeasureIdData>,
+) => createQueryKey('followUpControllGetFollowUpControlByMeasureId', options);
+
+export const followUpControllGetFollowUpControlByMeasureIdOptions = (
+  options: Options<FollowUpControllGetFollowUpControlByMeasureIdData>,
+) =>
+  queryOptions<
+    FollowUpControllGetFollowUpControlByMeasureIdResponse,
+    AxiosError<FollowUpControllGetFollowUpControlByMeasureIdError>,
+    FollowUpControllGetFollowUpControlByMeasureIdResponse,
+    ReturnType<typeof followUpControllGetFollowUpControlByMeasureIdQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await followUpControllGetFollowUpControlByMeasureId({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: followUpControllGetFollowUpControlByMeasureIdQueryKey(options),
+  });
+
+export const followUpControllDestroyMutation = (
+  options?: Partial<Options<FollowUpControllDestroyData>>,
+): UseMutationOptions<
+  FollowUpControllDestroyResponse,
+  AxiosError<FollowUpControllDestroyError>,
+  Options<FollowUpControllDestroyData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    FollowUpControllDestroyResponse,
+    AxiosError<FollowUpControllDestroyError>,
+    Options<FollowUpControllDestroyData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await followUpControllDestroy({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+export const hardTimeCategoryIndexQueryKey = (options?: Options<HardTimeCategoryIndexData>) =>
+  createQueryKey('hardTimeCategoryIndex', options);
+
+export const hardTimeCategoryIndexOptions = (options?: Options<HardTimeCategoryIndexData>) =>
+  queryOptions<
+    HardTimeCategoryIndexResponse,
+    AxiosError<HardTimeCategoryIndexError>,
+    HardTimeCategoryIndexResponse,
+    ReturnType<typeof hardTimeCategoryIndexQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await hardTimeCategoryIndex({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: hardTimeCategoryIndexQueryKey(options),
+  });
+
+export const hardTimeCategoryStoreMutation = (
+  options?: Partial<Options<HardTimeCategoryStoreData>>,
+): UseMutationOptions<
+  HardTimeCategoryStoreResponse,
+  AxiosError<HardTimeCategoryStoreError>,
+  Options<HardTimeCategoryStoreData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    HardTimeCategoryStoreResponse,
+    AxiosError<HardTimeCategoryStoreError>,
+    Options<HardTimeCategoryStoreData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await hardTimeCategoryStore({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+export const hardTimeCategoryDestroyMutation = (
+  options?: Partial<Options<HardTimeCategoryDestroyData>>,
+): UseMutationOptions<
+  HardTimeCategoryDestroyResponse,
+  AxiosError<HardTimeCategoryDestroyError>,
+  Options<HardTimeCategoryDestroyData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    HardTimeCategoryDestroyResponse,
+    AxiosError<HardTimeCategoryDestroyError>,
+    Options<HardTimeCategoryDestroyData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await hardTimeCategoryDestroy({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+export const hardTimeCategoryUpdateMutation = (
+  options?: Partial<Options<HardTimeCategoryUpdateData>>,
+): UseMutationOptions<
+  HardTimeCategoryUpdateResponse,
+  AxiosError<HardTimeCategoryUpdateError>,
+  Options<HardTimeCategoryUpdateData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    HardTimeCategoryUpdateResponse,
+    AxiosError<HardTimeCategoryUpdateError>,
+    Options<HardTimeCategoryUpdateData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await hardTimeCategoryUpdate({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+export const hardTimeComplianceIndexQueryKey = (options: Options<HardTimeComplianceIndexData>) =>
+  createQueryKey('hardTimeComplianceIndex', options);
+
+/**
+ * List all compliances for a component (across all its intervals).
+ * GET /hard-time-components/{id}/compliances
+ */
+export const hardTimeComplianceIndexOptions = (options: Options<HardTimeComplianceIndexData>) =>
+  queryOptions<
+    HardTimeComplianceIndexResponse,
+    AxiosError<HardTimeComplianceIndexError>,
+    HardTimeComplianceIndexResponse,
+    ReturnType<typeof hardTimeComplianceIndexQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await hardTimeComplianceIndex({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: hardTimeComplianceIndexQueryKey(options),
+  });
+
+/**
+ * Register a new compliance for a component.
+ * POST /hard-time-components/{id}/compliances
+ *
+ * Auto-calculates next_due_* fields: compliance value + interval value.
+ */
+export const hardTimeComplianceStoreMutation = (
+  options?: Partial<Options<HardTimeComplianceStoreData>>,
+): UseMutationOptions<
+  HardTimeComplianceStoreResponse,
+  AxiosError<HardTimeComplianceStoreError>,
+  Options<HardTimeComplianceStoreData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    HardTimeComplianceStoreResponse,
+    AxiosError<HardTimeComplianceStoreError>,
+    Options<HardTimeComplianceStoreData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await hardTimeComplianceStore({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+export const hardTimeComponentIndexQueryKey = (options?: Options<HardTimeComponentIndexData>) =>
+  createQueryKey('hardTimeComponentIndex', options);
+
+/**
+ * List all controlled components for an aircraft, grouped by category with computed metrics.
+ * GET /hard-time-components?aircraft_id={id}
+ */
+export const hardTimeComponentIndexOptions = (options?: Options<HardTimeComponentIndexData>) =>
+  queryOptions<
+    HardTimeComponentIndexResponse,
+    AxiosError<HardTimeComponentIndexError>,
+    HardTimeComponentIndexResponse,
+    ReturnType<typeof hardTimeComponentIndexQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await hardTimeComponentIndex({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: hardTimeComponentIndexQueryKey(options),
+  });
+
+export const hardTimeComponentStoreMutation = (
+  options?: Partial<Options<HardTimeComponentStoreData>>,
+): UseMutationOptions<
+  HardTimeComponentStoreResponse,
+  AxiosError<HardTimeComponentStoreError>,
+  Options<HardTimeComponentStoreData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    HardTimeComponentStoreResponse,
+    AxiosError<HardTimeComponentStoreError>,
+    Options<HardTimeComponentStoreData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await hardTimeComponentStore({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+export const hardTimeComponentDestroyMutation = (
+  options?: Partial<Options<HardTimeComponentDestroyData>>,
+): UseMutationOptions<
+  HardTimeComponentDestroyResponse,
+  AxiosError<HardTimeComponentDestroyError>,
+  Options<HardTimeComponentDestroyData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    HardTimeComponentDestroyResponse,
+    AxiosError<HardTimeComponentDestroyError>,
+    Options<HardTimeComponentDestroyData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await hardTimeComponentDestroy({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+export const hardTimeComponentShowQueryKey = (options: Options<HardTimeComponentShowData>) =>
+  createQueryKey('hardTimeComponentShow', options);
+
+/**
+ * Show full component detail: intervals with last compliance, installation history, compliances.
+ * GET /hard-time-components/{id}
+ */
+export const hardTimeComponentShowOptions = (options: Options<HardTimeComponentShowData>) =>
+  queryOptions<
+    HardTimeComponentShowResponse,
+    AxiosError<HardTimeComponentShowError>,
+    HardTimeComponentShowResponse,
+    ReturnType<typeof hardTimeComponentShowQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await hardTimeComponentShow({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: hardTimeComponentShowQueryKey(options),
+  });
+
+export const hardTimeComponentUpdateMutation = (
+  options?: Partial<Options<HardTimeComponentUpdateData>>,
+): UseMutationOptions<
+  HardTimeComponentUpdateResponse,
+  AxiosError<HardTimeComponentUpdateError>,
+  Options<HardTimeComponentUpdateData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    HardTimeComponentUpdateResponse,
+    AxiosError<HardTimeComponentUpdateError>,
+    Options<HardTimeComponentUpdateData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await hardTimeComponentUpdate({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+export const hardTimeComponentInstallationsQueryKey = (options: Options<HardTimeComponentInstallationsData>) =>
+  createQueryKey('hardTimeComponentInstallations', options);
+
+/**
+ * List installation history for a position (traceability by position).
+ * GET /hard-time-components/{id}/installations
+ */
+export const hardTimeComponentInstallationsOptions = (options: Options<HardTimeComponentInstallationsData>) =>
+  queryOptions<
+    HardTimeComponentInstallationsResponse,
+    AxiosError<HardTimeComponentInstallationsError>,
+    HardTimeComponentInstallationsResponse,
+    ReturnType<typeof hardTimeComponentInstallationsQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await hardTimeComponentInstallations({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: hardTimeComponentInstallationsQueryKey(options),
+  });
+
+/**
+ * Mount a component into a controlled position.
+ * POST /hard-time-components/{id}/install
+ */
+export const hardTimeInstallationInstallMutation = (
+  options?: Partial<Options<HardTimeInstallationInstallData>>,
+): UseMutationOptions<
+  HardTimeInstallationInstallResponse,
+  AxiosError<HardTimeInstallationInstallError>,
+  Options<HardTimeInstallationInstallData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    HardTimeInstallationInstallResponse,
+    AxiosError<HardTimeInstallationInstallError>,
+    Options<HardTimeInstallationInstallData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await hardTimeInstallationInstall({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+/**
+ * Unmount the active component from a controlled position.
+ * POST /hard-time-components/{id}/uninstall
+ */
+export const hardTimeInstallationUninstallMutation = (
+  options?: Partial<Options<HardTimeInstallationUninstallData>>,
+): UseMutationOptions<
+  HardTimeInstallationUninstallResponse,
+  AxiosError<HardTimeInstallationUninstallError>,
+  Options<HardTimeInstallationUninstallData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    HardTimeInstallationUninstallResponse,
+    AxiosError<HardTimeInstallationUninstallError>,
+    Options<HardTimeInstallationUninstallData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await hardTimeInstallationUninstall({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+export const hardTimeIntervalIndexQueryKey = (options: Options<HardTimeIntervalIndexData>) =>
+  createQueryKey('hardTimeIntervalIndex', options);
+
+/**
+ * List all intervals for a component.
+ * GET /hard-time-components/{id}/intervals
+ */
+export const hardTimeIntervalIndexOptions = (options: Options<HardTimeIntervalIndexData>) =>
+  queryOptions<
+    HardTimeIntervalIndexResponse,
+    AxiosError<HardTimeIntervalIndexError>,
+    HardTimeIntervalIndexResponse,
+    ReturnType<typeof hardTimeIntervalIndexQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await hardTimeIntervalIndex({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: hardTimeIntervalIndexQueryKey(options),
+  });
+
+/**
+ * Create a new interval for a component.
+ * POST /hard-time-components/{id}/intervals
+ */
+export const hardTimeIntervalStoreMutation = (
+  options?: Partial<Options<HardTimeIntervalStoreData>>,
+): UseMutationOptions<
+  HardTimeIntervalStoreResponse,
+  AxiosError<HardTimeIntervalStoreError>,
+  Options<HardTimeIntervalStoreData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    HardTimeIntervalStoreResponse,
+    AxiosError<HardTimeIntervalStoreError>,
+    Options<HardTimeIntervalStoreData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await hardTimeIntervalStore({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+/**
+ * Update an interval.
+ * PUT /hard-time-intervals/{id}
+ */
+export const hardTimeIntervalUpdateMutation = (
+  options?: Partial<Options<HardTimeIntervalUpdateData>>,
+): UseMutationOptions<
+  HardTimeIntervalUpdateResponse,
+  AxiosError<HardTimeIntervalUpdateError>,
+  Options<HardTimeIntervalUpdateData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    HardTimeIntervalUpdateResponse,
+    AxiosError<HardTimeIntervalUpdateError>,
+    Options<HardTimeIntervalUpdateData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await hardTimeIntervalUpdate({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+/**
+ * Toggle interval active/inactive.
+ * PATCH /hard-time-intervals/{id}/toggle
+ */
+export const hardTimeIntervalToggleMutation = (
+  options?: Partial<Options<HardTimeIntervalToggleData>>,
+): UseMutationOptions<
+  HardTimeIntervalToggleResponse,
+  AxiosError<HardTimeIntervalToggleError>,
+  Options<HardTimeIntervalToggleData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    HardTimeIntervalToggleResponse,
+    AxiosError<HardTimeIntervalToggleError>,
+    Options<HardTimeIntervalToggleData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await hardTimeIntervalToggle({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+export const hardTimeTraceabilityIndexQueryKey = (options?: Options<HardTimeTraceabilityIndexData>) =>
+  createQueryKey('hardTimeTraceabilityIndex', options);
+
+/**
+ * Search component history by serial number across all company aircraft.
+ * GET /hard-time-traceability?serial_number={sn}
+ */
+export const hardTimeTraceabilityIndexOptions = (options?: Options<HardTimeTraceabilityIndexData>) =>
+  queryOptions<
+    HardTimeTraceabilityIndexResponse,
+    AxiosError<HardTimeTraceabilityIndexError>,
+    HardTimeTraceabilityIndexResponse,
+    ReturnType<typeof hardTimeTraceabilityIndexQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await hardTimeTraceabilityIndex({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: hardTimeTraceabilityIndexQueryKey(options),
+  });
+
+export const informationSourcesIndexQueryKey = (options: Options<InformationSourcesIndexData>) =>
+  createQueryKey('informationSourcesIndex', options);
+
+/**
+ * Display a listing of the resource
+ */
+export const informationSourcesIndexOptions = (options: Options<InformationSourcesIndexData>) =>
+  queryOptions<
+    InformationSourcesIndexResponse,
+    AxiosError<InformationSourcesIndexError>,
+    InformationSourcesIndexResponse,
+    ReturnType<typeof informationSourcesIndexQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await informationSourcesIndex({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: informationSourcesIndexQueryKey(options),
+  });
+
+/**
+ * Store a newly created resource in storage
+ */
+export const informationSourcesStoreMutation = (
+  options?: Partial<Options<InformationSourcesStoreData>>,
+): UseMutationOptions<
+  InformationSourcesStoreResponse,
+  AxiosError<InformationSourcesStoreError>,
+  Options<InformationSourcesStoreData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    InformationSourcesStoreResponse,
+    AxiosError<InformationSourcesStoreError>,
+    Options<InformationSourcesStoreData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await informationSourcesStore({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+/**
+ * Remove the specified resource from storage
+ */
+export const informationSourcesDestroyMutation = (
+  options?: Partial<Options<InformationSourcesDestroyData>>,
+): UseMutationOptions<
+  InformationSourcesDestroyResponse,
+  AxiosError<InformationSourcesDestroyError>,
+  Options<InformationSourcesDestroyData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    InformationSourcesDestroyResponse,
+    AxiosError<InformationSourcesDestroyError>,
+    Options<InformationSourcesDestroyData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await informationSourcesDestroy({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+/**
+ * Update the specified resource in storage
+ */
+export const informationSourcesUpdateMutation = (
+  options?: Partial<Options<InformationSourcesUpdateData>>,
+): UseMutationOptions<
+  InformationSourcesUpdateResponse,
+  AxiosError<InformationSourcesUpdateError>,
+  Options<InformationSourcesUpdateData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    InformationSourcesUpdateResponse,
+    AxiosError<InformationSourcesUpdateError>,
+    Options<InformationSourcesUpdateData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await informationSourcesUpdate({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
 export const ingestDocumentStoreMutation = (
   options?: Partial<Options<IngestDocumentStoreData>>,
 ): UseMutationOptions<
@@ -7252,6 +8942,291 @@ export const manufacturerUpdateMutation = (
   return mutationOptions;
 };
 
+export const mitigationMeasureIndexQueryKey = (options: Options<MitigationMeasureIndexData>) =>
+  createQueryKey('mitigationMeasureIndex', options);
+
+export const mitigationMeasureIndexOptions = (options: Options<MitigationMeasureIndexData>) =>
+  queryOptions<
+    MitigationMeasureIndexResponse,
+    AxiosError<MitigationMeasureIndexError>,
+    MitigationMeasureIndexResponse,
+    ReturnType<typeof mitigationMeasureIndexQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await mitigationMeasureIndex({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: mitigationMeasureIndexQueryKey(options),
+  });
+
+export const mitigationMeasureStoreMutation = (
+  options?: Partial<Options<MitigationMeasureStoreData>>,
+): UseMutationOptions<
+  MitigationMeasureStoreResponse,
+  AxiosError<MitigationMeasureStoreError>,
+  Options<MitigationMeasureStoreData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    MitigationMeasureStoreResponse,
+    AxiosError<MitigationMeasureStoreError>,
+    Options<MitigationMeasureStoreData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await mitigationMeasureStore({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+export const mitigationMeasureDestroyMutation = (
+  options?: Partial<Options<MitigationMeasureDestroyData>>,
+): UseMutationOptions<
+  MitigationMeasureDestroyResponse,
+  AxiosError<MitigationMeasureDestroyError>,
+  Options<MitigationMeasureDestroyData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    MitigationMeasureDestroyResponse,
+    AxiosError<MitigationMeasureDestroyError>,
+    Options<MitigationMeasureDestroyData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await mitigationMeasureDestroy({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+export const mitigationMeasureUpdateMutation = (
+  options?: Partial<Options<MitigationMeasureUpdateData>>,
+): UseMutationOptions<
+  MitigationMeasureUpdateResponse,
+  AxiosError<MitigationMeasureUpdateError>,
+  Options<MitigationMeasureUpdateData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    MitigationMeasureUpdateResponse,
+    AxiosError<MitigationMeasureUpdateError>,
+    Options<MitigationMeasureUpdateData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await mitigationMeasureUpdate({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+export const mitigationMeasureGetMitigationMeasureByPlanIdQueryKey = (
+  options: Options<MitigationMeasureGetMitigationMeasureByPlanIdData>,
+) => createQueryKey('mitigationMeasureGetMitigationMeasureByPlanId', options);
+
+export const mitigationMeasureGetMitigationMeasureByPlanIdOptions = (
+  options: Options<MitigationMeasureGetMitigationMeasureByPlanIdData>,
+) =>
+  queryOptions<
+    MitigationMeasureGetMitigationMeasureByPlanIdResponse,
+    AxiosError<MitigationMeasureGetMitigationMeasureByPlanIdError>,
+    MitigationMeasureGetMitigationMeasureByPlanIdResponse,
+    ReturnType<typeof mitigationMeasureGetMitigationMeasureByPlanIdQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await mitigationMeasureGetMitigationMeasureByPlanId({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: mitigationMeasureGetMitigationMeasureByPlanIdQueryKey(options),
+  });
+
+export const mitigationPlansIndexQueryKey = (options?: Options<MitigationPlansIndexData>) =>
+  createQueryKey('mitigationPlansIndex', options);
+
+export const mitigationPlansIndexOptions = (options?: Options<MitigationPlansIndexData>) =>
+  queryOptions<
+    MitigationPlansIndexResponse,
+    AxiosError<MitigationPlansIndexError>,
+    MitigationPlansIndexResponse,
+    ReturnType<typeof mitigationPlansIndexQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await mitigationPlansIndex({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: mitigationPlansIndexQueryKey(options),
+  });
+
+export const mitigationPlansStoreMutation = (
+  options?: Partial<Options<MitigationPlansStoreData>>,
+): UseMutationOptions<
+  MitigationPlansStoreResponse,
+  AxiosError<MitigationPlansStoreError>,
+  Options<MitigationPlansStoreData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    MitigationPlansStoreResponse,
+    AxiosError<MitigationPlansStoreError>,
+    Options<MitigationPlansStoreData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await mitigationPlansStore({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+export const mitigationPlansDestroyMutation = (
+  options?: Partial<Options<MitigationPlansDestroyData>>,
+): UseMutationOptions<
+  MitigationPlansDestroyResponse,
+  AxiosError<MitigationPlansDestroyError>,
+  Options<MitigationPlansDestroyData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    MitigationPlansDestroyResponse,
+    AxiosError<MitigationPlansDestroyError>,
+    Options<MitigationPlansDestroyData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await mitigationPlansDestroy({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+export const mitigationPlansUpdateMutation = (
+  options?: Partial<Options<MitigationPlansUpdateData>>,
+): UseMutationOptions<
+  MitigationPlansUpdateResponse,
+  AxiosError<MitigationPlansUpdateError>,
+  Options<MitigationPlansUpdateData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    MitigationPlansUpdateResponse,
+    AxiosError<MitigationPlansUpdateError>,
+    Options<MitigationPlansUpdateData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await mitigationPlansUpdate({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+export const smsMitigationPlanStore0Mutation = (
+  options?: Partial<Options<SmsMitigationPlanStore0Data>>,
+): UseMutationOptions<
+  SmsMitigationPlanStore0Response,
+  AxiosError<SmsMitigationPlanStore0Error>,
+  Options<SmsMitigationPlanStore0Data>
+> => {
+  const mutationOptions: UseMutationOptions<
+    SmsMitigationPlanStore0Response,
+    AxiosError<SmsMitigationPlanStore0Error>,
+    Options<SmsMitigationPlanStore0Data>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await smsMitigationPlanStore0({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+export const smsMitigationPlanDestroy1Mutation = (
+  options?: Partial<Options<SmsMitigationPlanDestroy1Data>>,
+): UseMutationOptions<
+  SmsMitigationPlanDestroy1Response,
+  AxiosError<SmsMitigationPlanDestroy1Error>,
+  Options<SmsMitigationPlanDestroy1Data>
+> => {
+  const mutationOptions: UseMutationOptions<
+    SmsMitigationPlanDestroy1Response,
+    AxiosError<SmsMitigationPlanDestroy1Error>,
+    Options<SmsMitigationPlanDestroy1Data>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await smsMitigationPlanDestroy1({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+export const smsMitigationPlanUpdate0Mutation = (
+  options?: Partial<Options<SmsMitigationPlanUpdate0Data>>,
+): UseMutationOptions<
+  SmsMitigationPlanUpdate0Response,
+  AxiosError<SmsMitigationPlanUpdate0Error>,
+  Options<SmsMitigationPlanUpdate0Data>
+> => {
+  const mutationOptions: UseMutationOptions<
+    SmsMitigationPlanUpdate0Response,
+    AxiosError<SmsMitigationPlanUpdate0Error>,
+    Options<SmsMitigationPlanUpdate0Data>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await smsMitigationPlanUpdate0({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
 export const modulesIndexQueryKey = (options?: Options<ModulesIndexData>) => createQueryKey('modulesIndex', options);
 
 export const modulesIndexOptions = (options?: Options<ModulesIndexData>) =>
@@ -7347,6 +9322,155 @@ export const modulesCompanyModuleMutation = (
   > = {
     mutationFn: async (fnOptions) => {
       const { data } = await modulesCompanyModule({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+export const obligatoryReportIndexQueryKey = (options: Options<ObligatoryReportIndexData>) =>
+  createQueryKey('obligatoryReportIndex', options);
+
+/**
+ * Display a listing of the resource
+ */
+export const obligatoryReportIndexOptions = (options: Options<ObligatoryReportIndexData>) =>
+  queryOptions<
+    ObligatoryReportIndexResponse,
+    AxiosError<ObligatoryReportIndexError>,
+    ObligatoryReportIndexResponse,
+    ReturnType<typeof obligatoryReportIndexQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await obligatoryReportIndex({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: obligatoryReportIndexQueryKey(options),
+  });
+
+/**
+ * Store a newly created resource in storage
+ */
+export const obligatoryReportStoreMutation = (
+  options?: Partial<Options<ObligatoryReportStoreData>>,
+): UseMutationOptions<
+  ObligatoryReportStoreResponse,
+  AxiosError<ObligatoryReportStoreError>,
+  Options<ObligatoryReportStoreData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    ObligatoryReportStoreResponse,
+    AxiosError<ObligatoryReportStoreError>,
+    Options<ObligatoryReportStoreData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await obligatoryReportStore({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+export const obligatoryReportUpdateMutation = (
+  options?: Partial<Options<ObligatoryReportUpdateData>>,
+): UseMutationOptions<
+  ObligatoryReportUpdateResponse,
+  AxiosError<ObligatoryReportUpdateError>,
+  Options<ObligatoryReportUpdateData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    ObligatoryReportUpdateResponse,
+    AxiosError<ObligatoryReportUpdateError>,
+    Options<ObligatoryReportUpdateData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await obligatoryReportUpdate({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+export const obligatoryReportDestroyMutation = (
+  options?: Partial<Options<ObligatoryReportDestroyData>>,
+): UseMutationOptions<
+  ObligatoryReportDestroyResponse,
+  AxiosError<ObligatoryReportDestroyError>,
+  Options<ObligatoryReportDestroyData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    ObligatoryReportDestroyResponse,
+    AxiosError<ObligatoryReportDestroyError>,
+    Options<ObligatoryReportDestroyData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await obligatoryReportDestroy({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+export const obligatoryReportShowQueryKey = (options: Options<ObligatoryReportShowData>) =>
+  createQueryKey('obligatoryReportShow', options);
+
+/**
+ * Display the specified resource
+ */
+export const obligatoryReportShowOptions = (options: Options<ObligatoryReportShowData>) =>
+  queryOptions<
+    ObligatoryReportShowResponse,
+    AxiosError<ObligatoryReportShowError>,
+    ObligatoryReportShowResponse,
+    ReturnType<typeof obligatoryReportShowQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await obligatoryReportShow({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: obligatoryReportShowQueryKey(options),
+  });
+
+export const obligatoryReportAcceptObligatoryReportMutation = (
+  options?: Partial<Options<ObligatoryReportAcceptObligatoryReportData>>,
+): UseMutationOptions<
+  ObligatoryReportAcceptObligatoryReportResponse,
+  AxiosError<ObligatoryReportAcceptObligatoryReportError>,
+  Options<ObligatoryReportAcceptObligatoryReportData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    ObligatoryReportAcceptObligatoryReportResponse,
+    AxiosError<ObligatoryReportAcceptObligatoryReportError>,
+    Options<ObligatoryReportAcceptObligatoryReportData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await obligatoryReportAcceptObligatoryReport({
         ...options,
         ...fnOptions,
         throwOnError: true,
@@ -9366,6 +11490,118 @@ export const articleUpdate2Mutation = (
   return mutationOptions;
 };
 
+export const sMsActivityIndexQueryKey = (options: Options<SMsActivityIndexData>) =>
+  createQueryKey('sMsActivityIndex', options);
+
+export const sMsActivityIndexOptions = (options: Options<SMsActivityIndexData>) =>
+  queryOptions<
+    SMsActivityIndexResponse,
+    AxiosError<SMsActivityIndexError>,
+    SMsActivityIndexResponse,
+    ReturnType<typeof sMsActivityIndexQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await sMsActivityIndex({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: sMsActivityIndexQueryKey(options),
+  });
+
+export const sMsActivityStoreMutation = (
+  options?: Partial<Options<SMsActivityStoreData>>,
+): UseMutationOptions<SMsActivityStoreResponse, AxiosError<SMsActivityStoreError>, Options<SMsActivityStoreData>> => {
+  const mutationOptions: UseMutationOptions<
+    SMsActivityStoreResponse,
+    AxiosError<SMsActivityStoreError>,
+    Options<SMsActivityStoreData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await sMsActivityStore({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+export const sMsActivityDestroyMutation = (
+  options?: Partial<Options<SMsActivityDestroyData>>,
+): UseMutationOptions<
+  SMsActivityDestroyResponse,
+  AxiosError<SMsActivityDestroyError>,
+  Options<SMsActivityDestroyData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    SMsActivityDestroyResponse,
+    AxiosError<SMsActivityDestroyError>,
+    Options<SMsActivityDestroyData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await sMsActivityDestroy({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+export const sMsActivityShowQueryKey = (options: Options<SMsActivityShowData>) =>
+  createQueryKey('sMsActivityShow', options);
+
+export const sMsActivityShowOptions = (options: Options<SMsActivityShowData>) =>
+  queryOptions<
+    SMsActivityShowResponse,
+    AxiosError<SMsActivityShowError>,
+    SMsActivityShowResponse,
+    ReturnType<typeof sMsActivityShowQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await sMsActivityShow({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: sMsActivityShowQueryKey(options),
+  });
+
+export const sMsActivityUpdateMutation = (
+  options?: Partial<Options<SMsActivityUpdateData>>,
+): UseMutationOptions<
+  SMsActivityUpdateResponse,
+  AxiosError<SMsActivityUpdateError>,
+  Options<SMsActivityUpdateData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    SMsActivityUpdateResponse,
+    AxiosError<SMsActivityUpdateError>,
+    Options<SMsActivityUpdateData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await sMsActivityUpdate({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
 export const sMsActivityAttendanceGetEnrollementStatusQueryKey = (
   options: Options<SMsActivityAttendanceGetEnrollementStatusData>,
 ) => createQueryKey('sMsActivityAttendanceGetEnrollementStatus', options);
@@ -10136,6 +12372,428 @@ export const vendorUpdateMutation = (
   > = {
     mutationFn: async (fnOptions) => {
       const { data } = await vendorUpdate({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+export const voluntaryReportGetVoluntaryReportByYearQueryKey = (
+  options: Options<VoluntaryReportGetVoluntaryReportByYearData>,
+) => createQueryKey('voluntaryReportGetVoluntaryReportByYear', options);
+
+export const voluntaryReportGetVoluntaryReportByYearOptions = (
+  options: Options<VoluntaryReportGetVoluntaryReportByYearData>,
+) =>
+  queryOptions<
+    VoluntaryReportGetVoluntaryReportByYearResponse,
+    AxiosError<VoluntaryReportGetVoluntaryReportByYearError>,
+    VoluntaryReportGetVoluntaryReportByYearResponse,
+    ReturnType<typeof voluntaryReportGetVoluntaryReportByYearQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await voluntaryReportGetVoluntaryReportByYear({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: voluntaryReportGetVoluntaryReportByYearQueryKey(options),
+  });
+
+export const voluntaryReportGetReportStatsByMonthsQueryKey = (
+  options?: Options<VoluntaryReportGetReportStatsByMonthsData>,
+) => createQueryKey('voluntaryReportGetReportStatsByMonths', options);
+
+export const voluntaryReportGetReportStatsByMonthsOptions = (
+  options?: Options<VoluntaryReportGetReportStatsByMonthsData>,
+) =>
+  queryOptions<
+    VoluntaryReportGetReportStatsByMonthsResponse,
+    AxiosError<VoluntaryReportGetReportStatsByMonthsError>,
+    VoluntaryReportGetReportStatsByMonthsResponse,
+    ReturnType<typeof voluntaryReportGetReportStatsByMonthsQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await voluntaryReportGetReportStatsByMonths({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: voluntaryReportGetReportStatsByMonthsQueryKey(options),
+  });
+
+export const voluntaryReportGetProcessedReportsQueryKey = (options: Options<VoluntaryReportGetProcessedReportsData>) =>
+  createQueryKey('voluntaryReportGetProcessedReports', options);
+
+export const voluntaryReportGetProcessedReportsOptions = (options: Options<VoluntaryReportGetProcessedReportsData>) =>
+  queryOptions<
+    VoluntaryReportGetProcessedReportsResponse,
+    AxiosError<VoluntaryReportGetProcessedReportsError>,
+    VoluntaryReportGetProcessedReportsResponse,
+    ReturnType<typeof voluntaryReportGetProcessedReportsQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await voluntaryReportGetProcessedReports({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: voluntaryReportGetProcessedReportsQueryKey(options),
+  });
+
+export const voluntaryReportGetObligatoryReportsAvegeByDateRangeQueryKey = (
+  options: Options<VoluntaryReportGetObligatoryReportsAvegeByDateRangeData>,
+) => createQueryKey('voluntaryReportGetObligatoryReportsAvegeByDateRange', options);
+
+export const voluntaryReportGetObligatoryReportsAvegeByDateRangeOptions = (
+  options: Options<VoluntaryReportGetObligatoryReportsAvegeByDateRangeData>,
+) =>
+  queryOptions<
+    VoluntaryReportGetObligatoryReportsAvegeByDateRangeResponse,
+    AxiosError<VoluntaryReportGetObligatoryReportsAvegeByDateRangeError>,
+    VoluntaryReportGetObligatoryReportsAvegeByDateRangeResponse,
+    ReturnType<typeof voluntaryReportGetObligatoryReportsAvegeByDateRangeQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await voluntaryReportGetObligatoryReportsAvegeByDateRange({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: voluntaryReportGetObligatoryReportsAvegeByDateRangeQueryKey(options),
+  });
+
+export const voluntaryReportGetTotalReportsCountedByAreaQueryKey = (
+  options: Options<VoluntaryReportGetTotalReportsCountedByAreaData>,
+) => createQueryKey('voluntaryReportGetTotalReportsCountedByArea', options);
+
+export const voluntaryReportGetTotalReportsCountedByAreaOptions = (
+  options: Options<VoluntaryReportGetTotalReportsCountedByAreaData>,
+) =>
+  queryOptions<
+    VoluntaryReportGetTotalReportsCountedByAreaResponse,
+    AxiosError<VoluntaryReportGetTotalReportsCountedByAreaError>,
+    VoluntaryReportGetTotalReportsCountedByAreaResponse,
+    ReturnType<typeof voluntaryReportGetTotalReportsCountedByAreaQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await voluntaryReportGetTotalReportsCountedByArea({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: voluntaryReportGetTotalReportsCountedByAreaQueryKey(options),
+  });
+
+export const voluntaryReportGetVoluntaryReportWithManagementQueryKey = (
+  options?: Options<VoluntaryReportGetVoluntaryReportWithManagementData>,
+) => createQueryKey('voluntaryReportGetVoluntaryReportWithManagement', options);
+
+export const voluntaryReportGetVoluntaryReportWithManagementOptions = (
+  options?: Options<VoluntaryReportGetVoluntaryReportWithManagementData>,
+) =>
+  queryOptions<
+    VoluntaryReportGetVoluntaryReportWithManagementResponse,
+    AxiosError<VoluntaryReportGetVoluntaryReportWithManagementError>,
+    VoluntaryReportGetVoluntaryReportWithManagementResponse,
+    ReturnType<typeof voluntaryReportGetVoluntaryReportWithManagementQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await voluntaryReportGetVoluntaryReportWithManagement({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: voluntaryReportGetVoluntaryReportWithManagementQueryKey(options),
+  });
+
+export const voluntaryReportGetVoluntaryReportsByDateRangeQueryKey = (
+  options: Options<VoluntaryReportGetVoluntaryReportsByDateRangeData>,
+) => createQueryKey('voluntaryReportGetVoluntaryReportsByDateRange', options);
+
+export const voluntaryReportGetVoluntaryReportsByDateRangeOptions = (
+  options: Options<VoluntaryReportGetVoluntaryReportsByDateRangeData>,
+) =>
+  queryOptions<
+    VoluntaryReportGetVoluntaryReportsByDateRangeResponse,
+    AxiosError<VoluntaryReportGetVoluntaryReportsByDateRangeError>,
+    VoluntaryReportGetVoluntaryReportsByDateRangeResponse,
+    ReturnType<typeof voluntaryReportGetVoluntaryReportsByDateRangeQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await voluntaryReportGetVoluntaryReportsByDateRange({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: voluntaryReportGetVoluntaryReportsByDateRangeQueryKey(options),
+  });
+
+export const voluntaryReportGetTotalReportStatsByYearQueryKey = (
+  options: Options<VoluntaryReportGetTotalReportStatsByYearData>,
+) => createQueryKey('voluntaryReportGetTotalReportStatsByYear', options);
+
+export const voluntaryReportGetTotalReportStatsByYearOptions = (
+  options: Options<VoluntaryReportGetTotalReportStatsByYearData>,
+) =>
+  queryOptions<
+    VoluntaryReportGetTotalReportStatsByYearResponse,
+    AxiosError<VoluntaryReportGetTotalReportStatsByYearError>,
+    VoluntaryReportGetTotalReportStatsByYearResponse,
+    ReturnType<typeof voluntaryReportGetTotalReportStatsByYearQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await voluntaryReportGetTotalReportStatsByYear({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: voluntaryReportGetTotalReportStatsByYearQueryKey(options),
+  });
+
+export const voluntaryReportGetReportStatsByYearQueryKey = (
+  options: Options<VoluntaryReportGetReportStatsByYearData>,
+) => createQueryKey('voluntaryReportGetReportStatsByYear', options);
+
+export const voluntaryReportGetReportStatsByYearOptions = (options: Options<VoluntaryReportGetReportStatsByYearData>) =>
+  queryOptions<
+    VoluntaryReportGetReportStatsByYearResponse,
+    AxiosError<VoluntaryReportGetReportStatsByYearError>,
+    VoluntaryReportGetReportStatsByYearResponse,
+    ReturnType<typeof voluntaryReportGetReportStatsByYearQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await voluntaryReportGetReportStatsByYear({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: voluntaryReportGetReportStatsByYearQueryKey(options),
+  });
+
+export const voluntaryReportGetReportsCountedByAreaQueryKey = (
+  options: Options<VoluntaryReportGetReportsCountedByAreaData>,
+) => createQueryKey('voluntaryReportGetReportsCountedByArea', options);
+
+export const voluntaryReportGetReportsCountedByAreaOptions = (
+  options: Options<VoluntaryReportGetReportsCountedByAreaData>,
+) =>
+  queryOptions<
+    VoluntaryReportGetReportsCountedByAreaResponse,
+    AxiosError<VoluntaryReportGetReportsCountedByAreaError>,
+    VoluntaryReportGetReportsCountedByAreaResponse,
+    ReturnType<typeof voluntaryReportGetReportsCountedByAreaQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await voluntaryReportGetReportsCountedByArea({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: voluntaryReportGetReportsCountedByAreaQueryKey(options),
+  });
+
+export const voluntaryReportGetVoluntaryReportsCountedByAirportLocationQueryKey = (
+  options: Options<VoluntaryReportGetVoluntaryReportsCountedByAirportLocationData>,
+) => createQueryKey('voluntaryReportGetVoluntaryReportsCountedByAirportLocation', options);
+
+export const voluntaryReportGetVoluntaryReportsCountedByAirportLocationOptions = (
+  options: Options<VoluntaryReportGetVoluntaryReportsCountedByAirportLocationData>,
+) =>
+  queryOptions<
+    VoluntaryReportGetVoluntaryReportsCountedByAirportLocationResponse,
+    AxiosError<VoluntaryReportGetVoluntaryReportsCountedByAirportLocationError>,
+    VoluntaryReportGetVoluntaryReportsCountedByAirportLocationResponse,
+    ReturnType<typeof voluntaryReportGetVoluntaryReportsCountedByAirportLocationQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await voluntaryReportGetVoluntaryReportsCountedByAirportLocation({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: voluntaryReportGetVoluntaryReportsCountedByAirportLocationQueryKey(options),
+  });
+
+export const voluntaryReportIndexQueryKey = (options: Options<VoluntaryReportIndexData>) =>
+  createQueryKey('voluntaryReportIndex', options);
+
+/**
+ * Devuelve artículos filtrados por categoría
+ */
+export const voluntaryReportIndexOptions = (options: Options<VoluntaryReportIndexData>) =>
+  queryOptions<
+    VoluntaryReportIndexResponse,
+    AxiosError<VoluntaryReportIndexError>,
+    VoluntaryReportIndexResponse,
+    ReturnType<typeof voluntaryReportIndexQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await voluntaryReportIndex({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: voluntaryReportIndexQueryKey(options),
+  });
+
+/**
+ * Store a newly created resource in storage
+ */
+export const voluntaryReportStoreMutation = (
+  options?: Partial<Options<VoluntaryReportStoreData>>,
+): UseMutationOptions<
+  VoluntaryReportStoreResponse,
+  AxiosError<VoluntaryReportStoreError>,
+  Options<VoluntaryReportStoreData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    VoluntaryReportStoreResponse,
+    AxiosError<VoluntaryReportStoreError>,
+    Options<VoluntaryReportStoreData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await voluntaryReportStore({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+export const voluntaryReportUpdateMutation = (
+  options?: Partial<Options<VoluntaryReportUpdateData>>,
+): UseMutationOptions<
+  VoluntaryReportUpdateResponse,
+  AxiosError<VoluntaryReportUpdateError>,
+  Options<VoluntaryReportUpdateData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    VoluntaryReportUpdateResponse,
+    AxiosError<VoluntaryReportUpdateError>,
+    Options<VoluntaryReportUpdateData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await voluntaryReportUpdate({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+/**
+ * Remove the specified resource from storage
+ */
+export const voluntaryReportDestroyMutation = (
+  options?: Partial<Options<VoluntaryReportDestroyData>>,
+): UseMutationOptions<
+  VoluntaryReportDestroyResponse,
+  AxiosError<VoluntaryReportDestroyError>,
+  Options<VoluntaryReportDestroyData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    VoluntaryReportDestroyResponse,
+    AxiosError<VoluntaryReportDestroyError>,
+    Options<VoluntaryReportDestroyData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await voluntaryReportDestroy({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+export const voluntaryReportShowQueryKey = (options: Options<VoluntaryReportShowData>) =>
+  createQueryKey('voluntaryReportShow', options);
+
+/**
+ * Display the specified resource
+ */
+export const voluntaryReportShowOptions = (options: Options<VoluntaryReportShowData>) =>
+  queryOptions<
+    VoluntaryReportShowResponse,
+    AxiosError<VoluntaryReportShowError>,
+    VoluntaryReportShowResponse,
+    ReturnType<typeof voluntaryReportShowQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await voluntaryReportShow({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: voluntaryReportShowQueryKey(options),
+  });
+
+export const voluntaryReportAcceptVoluntaryReportMutation = (
+  options?: Partial<Options<VoluntaryReportAcceptVoluntaryReportData>>,
+): UseMutationOptions<
+  VoluntaryReportAcceptVoluntaryReportResponse,
+  AxiosError<VoluntaryReportAcceptVoluntaryReportError>,
+  Options<VoluntaryReportAcceptVoluntaryReportData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    VoluntaryReportAcceptVoluntaryReportResponse,
+    AxiosError<VoluntaryReportAcceptVoluntaryReportError>,
+    Options<VoluntaryReportAcceptVoluntaryReportData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await voluntaryReportAcceptVoluntaryReport({
         ...options,
         ...fnOptions,
         throwOnError: true,
