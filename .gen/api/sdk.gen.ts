@@ -719,6 +719,9 @@ import type {
   HardTimeComponentUpdateData,
   HardTimeComponentUpdateErrors,
   HardTimeComponentUpdateResponses,
+  HardTimeInstallationHistoryByAircraftData,
+  HardTimeInstallationHistoryByAircraftErrors,
+  HardTimeInstallationHistoryByAircraftResponses,
   HardTimeInstallationInstallData,
   HardTimeInstallationInstallErrors,
   HardTimeInstallationInstallResponses,
@@ -4848,6 +4851,24 @@ export const hardTimeComponentInstallations = <ThrowOnError extends boolean = fa
     responseType: 'json',
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/hard-time-components/{id}/installations',
+    ...options,
+  });
+
+/**
+ * List installation history for a specific aircraft.
+ * GET /aircrafts/{aircraftId}/hard-time-installations
+ */
+export const hardTimeInstallationHistoryByAircraft = <ThrowOnError extends boolean = false>(
+  options: Options<HardTimeInstallationHistoryByAircraftData, ThrowOnError>,
+) =>
+  (options.client ?? client).get<
+    HardTimeInstallationHistoryByAircraftResponses,
+    HardTimeInstallationHistoryByAircraftErrors,
+    ThrowOnError
+  >({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/aircrafts/{aircraftId}/hard-time-installations',
     ...options,
   });
 

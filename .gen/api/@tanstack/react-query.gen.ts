@@ -244,6 +244,7 @@ import {
   hardTimeComponentShow,
   hardTimeComponentStore,
   hardTimeComponentUpdate,
+  hardTimeInstallationHistoryByAircraft,
   hardTimeInstallationInstall,
   hardTimeInstallationUninstall,
   hardTimeIntervalIndex,
@@ -1159,6 +1160,9 @@ import type {
   HardTimeComponentUpdateData,
   HardTimeComponentUpdateError,
   HardTimeComponentUpdateResponse,
+  HardTimeInstallationHistoryByAircraftData,
+  HardTimeInstallationHistoryByAircraftError,
+  HardTimeInstallationHistoryByAircraftResponse,
   HardTimeInstallationInstallData,
   HardTimeInstallationInstallError,
   HardTimeInstallationInstallResponse,
@@ -7903,6 +7907,35 @@ export const hardTimeComponentInstallationsOptions = (options: Options<HardTimeC
       return data;
     },
     queryKey: hardTimeComponentInstallationsQueryKey(options),
+  });
+
+export const hardTimeInstallationHistoryByAircraftQueryKey = (
+  options: Options<HardTimeInstallationHistoryByAircraftData>,
+) => createQueryKey('hardTimeInstallationHistoryByAircraft', options);
+
+/**
+ * List installation history for a specific aircraft.
+ * GET /aircrafts/{aircraftId}/hard-time-installations
+ */
+export const hardTimeInstallationHistoryByAircraftOptions = (
+  options: Options<HardTimeInstallationHistoryByAircraftData>,
+) =>
+  queryOptions<
+    HardTimeInstallationHistoryByAircraftResponse,
+    AxiosError<HardTimeInstallationHistoryByAircraftError>,
+    HardTimeInstallationHistoryByAircraftResponse,
+    ReturnType<typeof hardTimeInstallationHistoryByAircraftQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await hardTimeInstallationHistoryByAircraft({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: hardTimeInstallationHistoryByAircraftQueryKey(options),
   });
 
 /**
