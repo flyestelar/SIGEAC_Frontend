@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { AlertCircle, ArrowLeft, ClipboardCheck, Loader2, PackageMinus, PackagePlus } from 'lucide-react';
+import { AlertCircle, ArrowLeft, ClipboardCheck, ClipboardPlus, Loader2, PackageMinus, PackagePlus } from 'lucide-react';
 import { HardTimeIntervalCard } from './hard-time-interval-card';
 import { AlertBadge, LEVEL_CONFIG } from './hard-time-shared';
 
@@ -18,6 +18,7 @@ interface HardTimeDetailViewProps {
   onBack: () => void;
   onInstall?: () => void;
   onUninstall?: () => void;
+  onCreateInterval?: () => void;
   onRegisterCompliance?: () => void;
 }
 
@@ -87,6 +88,7 @@ export function HardTimeDetailView({
   onBack,
   onInstall,
   onUninstall,
+  onCreateInterval,
   onRegisterCompliance,
 }: HardTimeDetailViewProps) {
   const {
@@ -190,6 +192,10 @@ export function HardTimeDetailView({
               </div>
 
               <div className="flex flex-wrap items-center gap-2">
+                <Button variant="outline" className="gap-2" onClick={onCreateInterval}>
+                  <ClipboardPlus className="size-4" />
+                  Nuevo intervalo
+                </Button>
                 <Button
                   variant="outline"
                   className="gap-2"

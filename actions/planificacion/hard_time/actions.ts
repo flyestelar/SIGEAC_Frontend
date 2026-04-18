@@ -1,22 +1,50 @@
-import axiosInstance from '@/lib/axios';
 import {
-  HardTimeCreateComponentData,
-  HardTimeCreateIntervalData,
-  HardTimeInstallComponentData,
-  HardTimeRegisterComplianceData,
-  HardTimeUninstallComponentData,
-} from '@/types';
+  hardTimeComplianceStore,
+  hardTimeComponentDestroy,
+  hardTimeComponentStore,
+  hardTimeInstallationInstall,
+  hardTimeInstallationUninstall,
+  hardTimeIntervalStore,
+  hardTimeIntervalToggle,
+  hardTimeIntervalUpdate,
+} from '@api/sdk.gen';
+import {
+  InstallComponentRequest,
+  StoreComplianceRequest,
+  StoreComponentRequest,
+  StoreIntervalRequest,
+  UninstallComponentRequest,
+  UpdateIntervalRequest,
+} from '@api/types';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
 export const hardTimeComponentsQueryKey = (aircraftId: number | null) => ['hard-time-components', aircraftId];
 export const hardTimeComponentDetailQueryKey = (componentId: number) => ['hard-time-component-detail', componentId];
 
+export type HardTimeImportStructureComponentInput = {
+  description: string;
+  part_number: string;
+  position: string;
+  ata_chapter?: string;
+  intervals: StoreIntervalRequest[];
+};
+
+export type HardTimeImportStructureRequest = {
+  aircraft_id: number;
+  category_code: string;
+  components: HardTimeImportStructureComponentInput[];
+};
+
 export const useInstallHardTimeComponent = (componentId: number, aircraftId: number | null) => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (data: HardTimeInstallComponentData) =>
-      (await axiosInstance.post(`/hard-time-components/${componentId}/install`, data)).data,
+    mutationFn: async (data: InstallComponentRequest) =>
+      hardTimeInstallationInstall({
+        path: { id: componentId },
+        body: data,
+        throwOnError: true,
+      }).then((res) => res.data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: hardTimeComponentsQueryKey(aircraftId) });
       queryClient.invalidateQueries({ queryKey: hardTimeComponentDetailQueryKey(componentId) });
@@ -29,8 +57,12 @@ export const useInstallHardTimeComponent = (componentId: number, aircraftId: num
 export const useUninstallHardTimeComponent = (componentId: number, aircraftId: number | null) => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (data: HardTimeUninstallComponentData) =>
-      (await axiosInstance.post(`/hard-time-components/${componentId}/uninstall`, data)).data,
+    mutationFn: async (data: UninstallComponentRequest) =>
+      hardTimeInstallationUninstall({
+        path: { id: componentId },
+        body: data,
+        throwOnError: true,
+      }).then((res) => res.data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: hardTimeComponentsQueryKey(aircraftId) });
       queryClient.invalidateQueries({ queryKey: hardTimeComponentDetailQueryKey(componentId) });
@@ -43,8 +75,12 @@ export const useUninstallHardTimeComponent = (componentId: number, aircraftId: n
 export const useRegisterHardTimeCompliance = (componentId: number, aircraftId: number | null) => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (data: HardTimeRegisterComplianceData) =>
-      (await axiosInstance.post(`/hard-time-components/${componentId}/compliances`, data)).data,
+    mutationFn: async (data: StoreComplianceRequest) =>
+      hardTimeComplianceStore({
+        path: { componentId },
+        body: data,
+        throwOnError: true,
+      }).then((res) => res.data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: hardTimeComponentsQueryKey(aircraftId) });
       queryClient.invalidateQueries({ queryKey: hardTimeComponentDetailQueryKey(componentId) });
@@ -57,8 +93,12 @@ export const useRegisterHardTimeCompliance = (componentId: number, aircraftId: n
 export const useCreateHardTimeInterval = (componentId: number, aircraftId: number | null) => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (data: HardTimeCreateIntervalData) =>
-      (await axiosInstance.post(`/hard-time-components/${componentId}/intervals`, data)).data,
+    mutationFn: async (data: StoreIntervalRequest) =>
+      hardTimeIntervalStore({
+        path: { componentId },
+        body: data,
+        throwOnError: true,
+      }).then((res) => res.data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: hardTimeComponentsQueryKey(aircraftId) });
       queryClient.invalidateQueries({ queryKey: hardTimeComponentDetailQueryKey(componentId) });
@@ -71,8 +111,12 @@ export const useCreateHardTimeInterval = (componentId: number, aircraftId: numbe
 export const useUpdateHardTimeInterval = (intervalId: number, componentId: number, aircraftId: number | null) => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (data: HardTimeCreateIntervalData) =>
-      (await axiosInstance.put(`/hard-time-intervals/${intervalId}`, data)).data,
+    mutationFn: async (data: UpdateIntervalRequest) =>
+      hardTimeIntervalUpdate({
+        path: { id: intervalId },
+        body: data,
+        throwOnError: true,
+      }).then((res) => res.data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: hardTimeComponentsQueryKey(aircraftId) });
       queryClient.invalidateQueries({ queryKey: hardTimeComponentDetailQueryKey(componentId) });
@@ -85,7 +129,11 @@ export const useUpdateHardTimeInterval = (intervalId: number, componentId: numbe
 export const useToggleHardTimeInterval = (intervalId: number, componentId: number, aircraftId: number | null) => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async () => (await axiosInstance.patch(`/hard-time-intervals/${intervalId}/toggle`)).data,
+    mutationFn: async () =>
+      hardTimeIntervalToggle({
+        path: { id: intervalId },
+        throwOnError: true,
+      }).then((res) => res.data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: hardTimeComponentsQueryKey(aircraftId) });
       queryClient.invalidateQueries({ queryKey: hardTimeComponentDetailQueryKey(componentId) });
@@ -98,8 +146,11 @@ export const useToggleHardTimeInterval = (intervalId: number, componentId: numbe
 export const useCreateHardTimeComponent = (aircraftId: number | null) => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (data: HardTimeCreateComponentData) =>
-      (await axiosInstance.post('/hard-time-components', data)).data,
+    mutationFn: async (data: StoreComponentRequest) =>
+      hardTimeComponentStore({
+        body: data,
+        throwOnError: true,
+      }).then((res) => res.data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: hardTimeComponentsQueryKey(aircraftId) });
       toast.success('Componente controlado creado');
@@ -112,11 +163,66 @@ export const useDeleteHardTimeComponent = (aircraftId: number | null) => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (componentId: number) =>
-      (await axiosInstance.delete(`/hard-time-components/${componentId}`)).data,
+      hardTimeComponentDestroy({
+        path: { id: componentId },
+        throwOnError: true,
+      }).then((res) => res.data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: hardTimeComponentsQueryKey(aircraftId) });
       toast.success('Componente eliminado');
     },
     onError: () => toast.error('No se pudo eliminar el componente'),
+  });
+};
+
+export const useImportHardTimeStructure = (aircraftId: number | null) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (data: HardTimeImportStructureRequest) => {
+      const importedComponentIds: number[] = [];
+
+      for (const component of data.components) {
+        const componentPayload: StoreComponentRequest = {
+          aircraft_id: data.aircraft_id,
+          category_code: data.category_code,
+          part_number: component.part_number,
+          description: component.description,
+          position: component.position,
+          ata_chapter: component.ata_chapter,
+        };
+
+        const componentResponse = await hardTimeComponentStore({
+          body: componentPayload,
+          throwOnError: true,
+        }).then((res) => res.data);
+
+        const componentId = componentResponse.component.id;
+        importedComponentIds.push(componentId);
+
+        for (const interval of component.intervals) {
+          await hardTimeIntervalStore({
+            path: { componentId },
+            body: interval,
+            throwOnError: true,
+          });
+        }
+      }
+
+      return {
+        imported_components: importedComponentIds.length,
+        imported_intervals: data.components.reduce((total, component) => total + component.intervals.length, 0),
+      };
+    },
+    onSuccess: (result) => {
+      queryClient.invalidateQueries({ queryKey: hardTimeComponentsQueryKey(aircraftId) });
+      toast.success('Importación completada', {
+        description: `${result.imported_components} componentes y ${result.imported_intervals} intervalos creados.`,
+      });
+    },
+    onError: () =>
+      toast.error('No se pudo completar la importación', {
+        description: 'Se importan sólo posiciones e intervalos. El histórico de cumplimiento sigue fuera de esta fase.',
+      }),
   });
 };

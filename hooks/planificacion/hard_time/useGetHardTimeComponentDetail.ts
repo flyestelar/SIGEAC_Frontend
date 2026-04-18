@@ -1,8 +1,6 @@
-import axiosInstance from '@/lib/axios';
+import { hardTimeComponentShow } from '@api/sdk.gen';
 import { HardTimeComponentDetail } from '@/types';
 import { useQuery } from '@tanstack/react-query';
-
-type HardTimeComponentDetailResponse = HardTimeComponentDetail | { data: HardTimeComponentDetail };
 
 export const hardTimeComponentDetailQueryKey = (componentId: number | null) => [
   'hard-time-component-detail',
@@ -12,13 +10,12 @@ export const hardTimeComponentDetailQueryKey = (componentId: number | null) => [
 export const useGetHardTimeComponentDetail = (componentId: number | null, aircraftId?: number | null) => {
   return useQuery<HardTimeComponentDetail>({
     queryKey: hardTimeComponentDetailQueryKey(componentId),
-    queryFn: ({ signal }) =>
-      axiosInstance
-        .get<HardTimeComponentDetailResponse>(`/hard-time-components/${componentId}`, {
-          signal,
-          params: { aircraft_id: aircraftId ?? undefined },
-        })
-        .then((res) => ('data' in res.data ? res.data.data : res.data)),
+    queryFn: async () =>
+      hardTimeComponentShow({
+        path: { id: componentId ?? 0 },
+        query: { aircraft_id: aircraftId ?? undefined },
+        throwOnError: true,
+      }).then((res) => res.data.data as unknown as HardTimeComponentDetail),
     enabled: !!componentId,
   });
 };

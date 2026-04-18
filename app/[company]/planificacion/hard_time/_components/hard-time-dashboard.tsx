@@ -1,11 +1,33 @@
 'use client';
 
 import { workOrdersIndexOptions } from '@api/queries';
-import { AircraftResource, WorkOrderResource } from '@api/types';
+import {
+  AircraftResource,
+  HardTimeCategoryResource,
+  InstallComponentRequest,
+  StoreComplianceRequest,
+  StoreComponentRequest,
+  StoreIntervalRequest,
+  UninstallComponentRequest,
+  UpdateIntervalRequest,
+  WorkOrderResource,
+} from '@api/types';
 import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
 import { startTransition, useEffect, useMemo, useState } from 'react';
-import { AlertCircle, Loader2, Plus, SearchCheck, Wrench } from 'lucide-react';
+import {
+  AlertCircle,
+  CalendarClock,
+  ClipboardCheck,
+  ClipboardList,
+  Hash,
+  Loader2,
+  Plus,
+  SearchCheck,
+  TimerReset,
+  Upload,
+  Wrench,
+} from 'lucide-react';
 
 import {
   useCreateHardTimeComponent,
@@ -44,19 +66,12 @@ import { useGetHardTimeCategories } from '@/hooks/planificacion/hard_time/useGet
 import { useGetHardTimeComponentDetail } from '@/hooks/planificacion/hard_time/useGetHardTimeComponentDetail';
 import { useGetHardTimeComponents } from '@/hooks/planificacion/hard_time/useGetHardTimeComponents';
 import { useCompanyStore } from '@/stores/CompanyStore';
-import {
-  HardTimeCategory,
-  HardTimeCreateComponentData,
-  HardTimeCreateIntervalData,
-  HardTimeInstallComponentData,
-  HardTimeInterval,
-  HardTimeRegisterComplianceData,
-  HardTimeUninstallComponentData,
-} from '@/types';
+import { HardTimeInterval } from '@/types';
 import { AircraftAverageSummaryCard } from '../../control_mantenimiento/_components/aircraft-average-summary-card';
 import { AircraftSelector } from '../../control_mantenimiento/_components/aircraft-selector';
 import { HardTimeCardView } from './hard-time-card-view';
 import { HardTimeDetailView } from './hard-time-detail-view';
+import { HardTimeImportDialog } from './hard-time-import-dialog';
 
 type ComponentFormState = {
   category_code: string;
@@ -141,6 +156,76 @@ function SectionEmpty({
   );
 }
 
+function FormSection({
+  icon: Icon,
+  title,
+  description,
+  children,
+}: {
+  icon: typeof ClipboardList;
+  title: string;
+  description: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="rounded-xl border border-border/60 bg-muted/15 p-4">
+      <div className="mb-4 flex items-start gap-3">
+        <div className="rounded-lg border border-border/60 bg-background p-2">
+          <Icon className="size-4 text-muted-foreground" />
+        </div>
+        <div>
+          <p className="text-sm font-semibold text-foreground">{title}</p>
+          <p className="text-xs text-muted-foreground">{description}</p>
+        </div>
+      </div>
+      {children}
+    </div>
+  );
+}
+
+function MetricFieldCard({
+  icon: Icon,
+  title,
+  unit,
+  hint,
+  value,
+  step,
+  onChange,
+}: {
+  icon: typeof TimerReset;
+  title: string;
+  unit: string;
+  hint: string;
+  value: string;
+  step?: string;
+  onChange: (value: string) => void;
+}) {
+  return (
+    <div className="rounded-xl border border-border/60 bg-background p-3">
+      <div className="mb-3 flex items-start gap-2">
+        <div className="rounded-md border border-border/60 bg-muted/30 p-1.5">
+          <Icon className="size-3.5 text-muted-foreground" />
+        </div>
+        <div>
+          <p className="text-sm font-medium text-foreground">{title}</p>
+          <p className="text-[11px] text-muted-foreground">{hint}</p>
+        </div>
+      </div>
+      <div className="flex items-center rounded-lg border border-border/60 bg-muted/10 px-3">
+        <Input
+          type="number"
+          step={step}
+          value={value}
+          onChange={(event) => onChange(event.target.value)}
+          className="border-0 bg-transparent px-0 shadow-none focus-visible:ring-0"
+          placeholder="0"
+        />
+        <span className="ml-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">{unit}</span>
+      </div>
+    </div>
+  );
+}
+
 function CreateComponentDialog({
   open,
   onOpenChange,
@@ -150,7 +235,7 @@ function CreateComponentDialog({
   open: boolean;
   onOpenChange: (open: boolean) => void;
   aircraftId: number | null;
-  categories: HardTimeCategory[];
+  categories: HardTimeCategoryResource[];
 }) {
   const createComponent = useCreateHardTimeComponent(aircraftId);
   const [form, setForm] = useState<ComponentFormState>({
@@ -177,7 +262,7 @@ function CreateComponentDialog({
     event.preventDefault();
     if (!aircraftId) return;
 
-    const payload: HardTimeCreateComponentData = {
+    const payload: StoreComponentRequest = {
       aircraft_id: aircraftId,
       category_code: form.category_code,
       part_number: form.part_number.trim(),
@@ -313,7 +398,7 @@ function InstallComponentDialog({
     event.preventDefault();
     if (!componentId) return;
 
-    const payload: HardTimeInstallComponentData = {
+    const payload: InstallComponentRequest = {
       serial_number: form.serial_number.trim(),
       part_number: form.part_number.trim(),
       article_id: parseOptionalInteger(form.article_id) ?? undefined,
@@ -499,7 +584,7 @@ function UninstallComponentDialog({
     event.preventDefault();
     if (!componentId) return;
 
-    const payload: HardTimeUninstallComponentData = {
+    const payload: UninstallComponentRequest = {
       removed_at: form.removed_at,
       aircraft_hours_at_removal: Number(form.aircraft_hours_at_removal),
       aircraft_cycles_at_removal: Number(form.aircraft_cycles_at_removal),
@@ -627,16 +712,21 @@ function IntervalDialog({
     event.preventDefault();
     if (!componentId) return;
 
-    const payload: HardTimeCreateIntervalData = {
-      task_description: form.task_description.trim(),
-      interval_hours: parseOptionalNumber(form.interval_hours),
-      interval_cycles: parseOptionalInteger(form.interval_cycles),
-      interval_days: parseOptionalInteger(form.interval_days),
-    };
-
     if (interval) {
+      const payload: UpdateIntervalRequest = {
+        task_description: form.task_description.trim(),
+        interval_hours: parseOptionalNumber(form.interval_hours),
+        interval_cycles: parseOptionalInteger(form.interval_cycles),
+        interval_days: parseOptionalInteger(form.interval_days),
+      };
       await updateInterval.mutateAsync(payload);
     } else {
+      const payload: StoreIntervalRequest = {
+        task_description: form.task_description.trim(),
+        interval_hours: parseOptionalNumber(form.interval_hours),
+        interval_cycles: parseOptionalInteger(form.interval_cycles),
+        interval_days: parseOptionalInteger(form.interval_days),
+      };
       await createInterval.mutateAsync(payload);
     }
 
@@ -644,61 +734,82 @@ function IntervalDialog({
   };
 
   const isPending = createInterval.isPending || updateInterval.isPending;
+  const hasAnyThreshold =
+    Boolean(form.interval_hours.trim()) || Boolean(form.interval_cycles.trim()) || Boolean(form.interval_days.trim());
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent className="sm:max-w-3xl">
         <DialogHeader>
           <DialogTitle>{interval ? 'Editar intervalo' : 'Nuevo intervalo'}</DialogTitle>
-          <DialogDescription>Configura vencimiento por horas, ciclos o calendario.</DialogDescription>
+          <DialogDescription>
+            Define tarea y umbrales. Usa uno o varios disparadores: horas, ciclos o calendario.
+          </DialogDescription>
         </DialogHeader>
 
         <form className="space-y-4" onSubmit={handleSubmit}>
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Tarea</label>
-            <Input
-              value={form.task_description}
-              onChange={(event) => setForm((current) => ({ ...current, task_description: event.target.value }))}
-              placeholder="Overhaul"
-              required
-            />
-          </div>
+          <FormSection
+            icon={ClipboardList}
+            title="Tarea controlada"
+            description="Nombre operativo que verá planificación al revisar esta posición."
+          >
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Descripción de tarea</label>
+              <Input
+                value={form.task_description}
+                onChange={(event) => setForm((current) => ({ ...current, task_description: event.target.value }))}
+                placeholder="Inspección 500 FH / overhaul / replacement"
+                required
+              />
+            </div>
+          </FormSection>
 
-          <div className="grid gap-4 sm:grid-cols-3">
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Intervalo FH</label>
-              <Input
-                type="number"
-                step="0.01"
+          <FormSection
+            icon={TimerReset}
+            title="Umbrales de vencimiento"
+            description="Completa sólo métricas aplicables. Debe existir al menos una."
+          >
+            <div className="grid gap-3 sm:grid-cols-3">
+              <MetricFieldCard
+                icon={TimerReset}
+                title="Horas de vuelo"
+                unit="FH"
+                hint="Límite por consumo operativo."
                 value={form.interval_hours}
-                onChange={(event) => setForm((current) => ({ ...current, interval_hours: event.target.value }))}
+                step="0.01"
+                onChange={(value) => setForm((current) => ({ ...current, interval_hours: value }))}
               />
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Intervalo FC</label>
-              <Input
-                type="number"
+              <MetricFieldCard
+                icon={Hash}
+                title="Ciclos"
+                unit="FC"
+                hint="Para aterrizajes, arranques o eventos repetitivos."
                 value={form.interval_cycles}
-                onChange={(event) => setForm((current) => ({ ...current, interval_cycles: event.target.value }))}
+                onChange={(value) => setForm((current) => ({ ...current, interval_cycles: value }))}
               />
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Intervalo días</label>
-              <Input
-                type="number"
+              <MetricFieldCard
+                icon={CalendarClock}
+                title="Calendario"
+                unit="DÍAS"
+                hint="Límite por tiempo calendario."
                 value={form.interval_days}
-                onChange={(event) => setForm((current) => ({ ...current, interval_days: event.target.value }))}
+                onChange={(value) => setForm((current) => ({ ...current, interval_days: value }))}
               />
             </div>
-          </div>
+            <div className="mt-3 rounded-lg border border-border/60 bg-background px-3 py-2 text-[11px] text-muted-foreground">
+              {hasAnyThreshold
+                ? 'Intervalo listo para guardarse con métricas seleccionadas.'
+                : 'Falta definir al menos un umbral para poder guardar este intervalo.'}
+            </div>
+          </FormSection>
 
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Cancelar
             </Button>
-            <Button type="submit" disabled={!componentId || isPending}>
+            <Button type="submit" disabled={!componentId || !hasAnyThreshold || isPending}>
               {isPending && <Loader2 className="mr-2 size-4 animate-spin" />}
-              Guardar
+              {interval ? 'Actualizar intervalo' : 'Crear intervalo'}
             </Button>
           </DialogFooter>
         </form>
@@ -749,7 +860,7 @@ function ComplianceDialog({
     event.preventDefault();
     if (!componentId) return;
 
-    const payload: HardTimeRegisterComplianceData = {
+    const payload: StoreComplianceRequest = {
       hard_time_interval_id: Number(form.hard_time_interval_id),
       work_order_id: Number(form.work_order_id),
       compliance_date: form.compliance_date,
@@ -762,100 +873,136 @@ function ComplianceDialog({
     onOpenChange(false);
   };
 
+  const selectedInterval = intervals.find((interval) => interval.id === Number(form.hard_time_interval_id));
+  const selectedWorkOrder = workOrders.find((workOrder) => workOrder.id === Number(form.work_order_id));
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent className="sm:max-w-3xl">
         <DialogHeader>
           <DialogTitle>Registrar cumplimiento</DialogTitle>
-          <DialogDescription>Asocia cumplimiento con intervalo y orden de trabajo.</DialogDescription>
+          <DialogDescription>
+            Vincula intervalo, OT y lectura real de aeronave al momento del cumplimiento.
+          </DialogDescription>
         </DialogHeader>
 
         <form className="space-y-4" onSubmit={handleSubmit}>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Intervalo</label>
-              <Select
-                value={form.hard_time_interval_id}
-                onValueChange={(value) => setForm((current) => ({ ...current, hard_time_interval_id: value }))}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecciona intervalo" />
-                </SelectTrigger>
-                <SelectContent>
-                  {intervals
-                    .filter((interval) => interval.is_active)
-                    .map((interval) => (
-                      <SelectItem key={interval.id} value={String(interval.id)}>
-                        {interval.task_description}
+          <FormSection
+            icon={ClipboardCheck}
+            title="Qué se cumplió"
+            description="Selecciona intervalo activo y orden de trabajo ejecutada."
+          >
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Intervalo</label>
+                <Select
+                  value={form.hard_time_interval_id}
+                  onValueChange={(value) => setForm((current) => ({ ...current, hard_time_interval_id: value }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecciona intervalo" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {intervals
+                      .filter((interval) => interval.is_active)
+                      .map((interval) => (
+                        <SelectItem key={interval.id} value={String(interval.id)}>
+                          {interval.task_description}
+                        </SelectItem>
+                      ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Orden de trabajo</label>
+                <Select
+                  value={form.work_order_id}
+                  onValueChange={(value) => setForm((current) => ({ ...current, work_order_id: value }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecciona OT" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {workOrders.map((workOrder) => (
+                      <SelectItem key={workOrder.id} value={String(workOrder.id)}>
+                        {workOrder.order_number}
                       </SelectItem>
                     ))}
-                </SelectContent>
-              </Select>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
 
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Orden de trabajo</label>
-              <Select
-                value={form.work_order_id}
-                onValueChange={(value) => setForm((current) => ({ ...current, work_order_id: value }))}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecciona OT" />
-                </SelectTrigger>
-                <SelectContent>
-                  {workOrders.map((workOrder) => (
-                    <SelectItem key={workOrder.id} value={String(workOrder.id)}>
-                      {workOrder.order_number}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            <div className="mt-3 grid gap-3 sm:grid-cols-2">
+              <div className="rounded-lg border border-border/60 bg-background px-3 py-2">
+                <p className="text-[11px] uppercase tracking-wide text-muted-foreground">Intervalo elegido</p>
+                <p className="text-sm font-medium text-foreground">
+                  {selectedInterval?.task_description ?? 'Sin seleccionar'}
+                </p>
+              </div>
+              <div className="rounded-lg border border-border/60 bg-background px-3 py-2">
+                <p className="text-[11px] uppercase tracking-wide text-muted-foreground">Orden de trabajo</p>
+                <p className="font-mono text-sm font-medium text-foreground">
+                  {selectedWorkOrder?.order_number ?? 'Sin seleccionar'}
+                </p>
+              </div>
             </div>
-          </div>
+          </FormSection>
 
-          <div className="grid gap-4 sm:grid-cols-3">
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Fecha</label>
-              <Input
-                type="date"
-                value={form.compliance_date}
-                onChange={(event) => setForm((current) => ({ ...current, compliance_date: event.target.value }))}
-                required
-              />
+          <FormSection
+            icon={CalendarClock}
+            title="Lectura al cumplimiento"
+            description="Registra fecha y lectura real de aeronave cuando se ejecutó trabajo."
+          >
+            <div className="grid gap-4 sm:grid-cols-3">
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Fecha</label>
+                <Input
+                  type="date"
+                  value={form.compliance_date}
+                  onChange={(event) => setForm((current) => ({ ...current, compliance_date: event.target.value }))}
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">FH aeronave</label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  value={form.aircraft_hours_at_compliance}
+                  onChange={(event) =>
+                    setForm((current) => ({ ...current, aircraft_hours_at_compliance: event.target.value }))
+                  }
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">FC aeronave</label>
+                <Input
+                  type="number"
+                  value={form.aircraft_cycles_at_compliance}
+                  onChange={(event) =>
+                    setForm((current) => ({ ...current, aircraft_cycles_at_compliance: event.target.value }))
+                  }
+                  required
+                />
+              </div>
             </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium">FH aeronave</label>
-              <Input
-                type="number"
-                step="0.01"
-                value={form.aircraft_hours_at_compliance}
-                onChange={(event) =>
-                  setForm((current) => ({ ...current, aircraft_hours_at_compliance: event.target.value }))
-                }
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium">FC aeronave</label>
-              <Input
-                type="number"
-                value={form.aircraft_cycles_at_compliance}
-                onChange={(event) =>
-                  setForm((current) => ({ ...current, aircraft_cycles_at_compliance: event.target.value }))
-                }
-                required
-              />
-            </div>
-          </div>
+          </FormSection>
 
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Observaciones</label>
+          <FormSection
+            icon={AlertCircle}
+            title="Observaciones"
+            description="Anota aclaratorias, hallazgos o contexto adicional del trabajo."
+          >
             <Textarea
               value={form.remarks}
               onChange={(event) => setForm((current) => ({ ...current, remarks: event.target.value }))}
               rows={4}
+              placeholder="Opcional"
             />
-          </div>
+          </FormSection>
 
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
@@ -885,6 +1032,7 @@ export function HardTimeDashboard() {
   const [selectedAircraftId, setSelectedAircraftId] = useState<number | null>(null);
   const [selectedComponentId, setSelectedComponentId] = useState<number | null>(null);
   const [isCreateComponentOpen, setIsCreateComponentOpen] = useState(false);
+  const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
   const [installingComponentId, setInstallingComponentId] = useState<number | null>(null);
   const [uninstallingComponentId, setUninstallingComponentId] = useState<number | null>(null);
   const [isIntervalDialogOpen, setIsIntervalDialogOpen] = useState(false);
@@ -970,6 +1118,15 @@ export function HardTimeDashboard() {
             </div>
 
             <div className="flex flex-wrap items-center gap-2">
+              <Button
+                variant="outline"
+                className="gap-2"
+                onClick={() => setIsImportDialogOpen(true)}
+                disabled={!selectedAircraftId}
+              >
+                <Upload className="size-4" />
+                Importar INAC
+              </Button>
               <Button asChild variant="outline" className="gap-2">
                 <Link href={`/${selectedCompany?.slug}/planificacion/hard_time/trazabilidad`}>
                   <SearchCheck className="size-4" />
@@ -1033,6 +1190,10 @@ export function HardTimeDashboard() {
                   onBack={() => setSelectedComponentId(null)}
                   onInstall={() => openInstall(selectedComponentId)}
                   onUninstall={() => openUninstall(selectedComponentId)}
+                  onCreateInterval={() => {
+                    setEditingInterval(null);
+                    setIsIntervalDialogOpen(true);
+                  }}
                   onRegisterCompliance={() => setIsComplianceDialogOpen(true)}
                 />
               ) : (
@@ -1080,6 +1241,13 @@ export function HardTimeDashboard() {
       <CreateComponentDialog
         open={isCreateComponentOpen}
         onOpenChange={setIsCreateComponentOpen}
+        aircraftId={selectedAircraftId}
+        categories={categories}
+      />
+
+      <HardTimeImportDialog
+        open={isImportDialogOpen}
+        onOpenChange={setIsImportDialogOpen}
         aircraftId={selectedAircraftId}
         categories={categories}
       />

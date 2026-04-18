@@ -1,13 +1,13 @@
-import axiosInstance from '@/lib/axios';
-import { HardTimeCategory } from '@/types';
+import { hardTimeCategoryIndex } from '@api/sdk.gen';
+import { HardTimeCategoryResource } from '@api/types';
 import { useQuery } from '@tanstack/react-query';
 
 export const useGetHardTimeCategories = () => {
-  return useQuery<HardTimeCategory[]>({
+  return useQuery<HardTimeCategoryResource[]>({
     queryKey: ['hard-time-categories'],
-    queryFn: ({ signal }) =>
-      axiosInstance
-        .get<HardTimeCategory[]>('/hard-time-categories', { signal })
-        .then((res) => ((res.data as { data?: HardTimeCategory[] }).data ?? res.data)),
+    queryFn: async () =>
+      hardTimeCategoryIndex({
+        throwOnError: true,
+      }).then((res) => res.data.data),
   });
 };
