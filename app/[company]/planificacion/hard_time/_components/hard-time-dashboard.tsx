@@ -3,18 +3,15 @@
 import { workOrdersIndexOptions } from '@api/queries';
 import { AircraftResource, WorkOrderResource } from '@api/types';
 import { useQuery } from '@tanstack/react-query';
-import { format } from 'date-fns';
-import { es } from 'date-fns/locale';
 import Link from 'next/link';
 import { startTransition, useEffect, useMemo, useState } from 'react';
-import { AlertCircle, ClipboardCheck, ClipboardList, Link2, Loader2, Plus, SearchCheck, Wrench } from 'lucide-react';
+import { AlertCircle, Loader2, Plus, SearchCheck, Wrench } from 'lucide-react';
 
 import {
   useCreateHardTimeComponent,
   useCreateHardTimeInterval,
   useInstallHardTimeComponent,
   useRegisterHardTimeCompliance,
-  useToggleHardTimeInterval,
   useUninstallHardTimeComponent,
   useUpdateHardTimeInterval,
 } from '@/actions/planificacion/hard_time/actions';
@@ -24,7 +21,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import {
   Dialog,
   DialogContent,
@@ -41,8 +38,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import { useGetMaintenanceAircrafts } from '@/hooks/planificacion/useGetMaintenanceAircrafts';
 import { useGetHardTimeCategories } from '@/hooks/planificacion/hard_time/useGetHardTimeCategories';
@@ -61,7 +56,7 @@ import {
 import { AircraftAverageSummaryCard } from '../../control_mantenimiento/_components/aircraft-average-summary-card';
 import { AircraftSelector } from '../../control_mantenimiento/_components/aircraft-selector';
 import { HardTimeCardView } from './hard-time-card-view';
-import { AlertBadge } from './hard-time-shared';
+import { HardTimeDetailView } from './hard-time-detail-view';
 
 type ComponentFormState = {
   category_code: string;
@@ -111,21 +106,6 @@ function todayDate() {
   return new Date().toISOString().slice(0, 10);
 }
 
-function formatDate(value?: string | null) {
-  if (!value) return '—';
-  const parsed = new Date(value);
-  if (Number.isNaN(parsed.getTime())) return '—';
-  return format(parsed, 'dd MMM yyyy', { locale: es });
-}
-
-function formatNumber(value?: number | null, digits = 1) {
-  if (value === null || value === undefined || Number.isNaN(value)) return '—';
-  return value.toLocaleString(undefined, {
-    minimumFractionDigits: 0,
-    maximumFractionDigits: digits,
-  });
-}
-
 function parseOptionalNumber(value: string) {
   if (!value.trim()) return null;
   return Number(value);
@@ -158,32 +138,6 @@ function SectionEmpty({
         {action}
       </CardContent>
     </Card>
-  );
-}
-
-function IntervalStatusAction({
-  interval,
-  componentId,
-  aircraftId,
-}: {
-  interval: HardTimeInterval;
-  componentId: number;
-  aircraftId: number | null;
-}) {
-  const toggleInterval = useToggleHardTimeInterval(interval.id, componentId, aircraftId);
-
-  return (
-    <Button
-      type="button"
-      size="sm"
-      variant="outline"
-      className="h-8"
-      onClick={() => toggleInterval.mutate()}
-      disabled={toggleInterval.isPending}
-    >
-      {toggleInterval.isPending && <Loader2 className="mr-1 size-3 animate-spin" />}
-      {interval.is_active ? 'Desactivar' : 'Activar'}
-    </Button>
   );
 }
 
@@ -941,10 +895,7 @@ export function HardTimeDashboard() {
   const { data: categories = [] } = useGetHardTimeCategories();
   const { data: groupsResponse, isLoading: isComponentsLoading, isError: isComponentsError } =
     useGetHardTimeComponents(selectedAircraftId);
-  const { data: selectedComponentDetail, isFetching: isDetailFetching } = useGetHardTimeComponentDetail(
-    selectedComponentId,
-    selectedAircraftId,
-  );
+  const { data: selectedComponentDetail } = useGetHardTimeComponentDetail(selectedComponentId, selectedAircraftId);
 
   const selectedAircraft = useMemo(
     () => aircraft.find((item) => item.id === selectedAircraftId) ?? null,
@@ -956,11 +907,6 @@ export function HardTimeDashboard() {
   const allComponents = useMemo(
     () => categoryGroups.flatMap((group) => group.components),
     [categoryGroups],
-  );
-
-  const selectedComponentCard = useMemo(
-    () => allComponents.find((component) => component.id === selectedComponentId) ?? null,
-    [allComponents, selectedComponentId],
   );
 
   useEffect(() => {
@@ -1078,6 +1024,17 @@ export function HardTimeDashboard() {
                     </Button>
                   }
                 />
+              ) : selectedComponentId ? (
+                <HardTimeDetailView
+                  componentId={selectedComponentId}
+                  aircraftId={selectedAircraftId}
+                  averageDailyFH={averages?.average_daily_flight_hours ?? null}
+                  averageDailyFC={averages?.average_daily_flight_cycles ?? null}
+                  onBack={() => setSelectedComponentId(null)}
+                  onInstall={() => openInstall(selectedComponentId)}
+                  onUninstall={() => openUninstall(selectedComponentId)}
+                  onRegisterCompliance={() => setIsComplianceDialogOpen(true)}
+                />
               ) : (
                 <Accordion
                   type="multiple"
@@ -1114,254 +1071,6 @@ export function HardTimeDashboard() {
                     </AccordionItem>
                   ))}
                 </Accordion>
-              )}
-
-              {selectedComponentCard && (
-                <Card className="border-border/60">
-                  <CardHeader className="gap-4">
-                    <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-                      <div className="space-y-2">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <Badge variant="outline" className="font-mono">
-                            {selectedComponentCard.position}
-                          </Badge>
-                          <AlertBadge status={selectedComponentCard.status} size="medium" />
-                          {isDetailFetching && (
-                            <Badge variant="outline" className="gap-1">
-                              <Loader2 className="size-3 animate-spin" />
-                              Actualizando
-                            </Badge>
-                          )}
-                        </div>
-                        <div>
-                          <CardTitle>{selectedComponentCard.description}</CardTitle>
-                          <p className="mt-1 text-sm text-muted-foreground">
-                            P/N {selectedComponentCard.active_installation?.part_number ?? selectedComponentCard.part_number}
-                            {selectedComponentCard.active_installation?.serial_number
-                              ? ` · S/N ${selectedComponentCard.active_installation.serial_number}`
-                              : ' · Vacante'}
-                            {selectedComponentCard.ata_chapter ? ` · ATA ${selectedComponentCard.ata_chapter}` : ''}
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="flex flex-wrap items-center gap-2">
-                        <Button
-                          variant="outline"
-                          className="gap-2"
-                          onClick={() => {
-                            setEditingInterval(null);
-                            setIsIntervalDialogOpen(true);
-                          }}
-                        >
-                          <ClipboardList className="size-4" />
-                          Intervalo
-                        </Button>
-                        <Button
-                          variant="outline"
-                          className="gap-2"
-                          onClick={() => setIsComplianceDialogOpen(true)}
-                          disabled={!selectedComponentDetail?.active_installation}
-                        >
-                          <ClipboardCheck className="size-4" />
-                          Cumplimiento
-                        </Button>
-                        {selectedComponentCard.active_installation ? (
-                          <Button variant="outline" className="gap-2" onClick={() => openUninstall(selectedComponentCard.id)}>
-                            <Link2 className="size-4" />
-                            Desmontar
-                          </Button>
-                        ) : (
-                          <Button variant="outline" className="gap-2" onClick={() => openInstall(selectedComponentCard.id)}>
-                            <Link2 className="size-4" />
-                            Montar
-                          </Button>
-                        )}
-                      </div>
-                    </div>
-                  </CardHeader>
-
-                  <CardContent>
-                    {selectedComponentDetail ? (
-                      <Tabs defaultValue="intervalos" className="space-y-4">
-                        <TabsList className="grid w-full grid-cols-3">
-                          <TabsTrigger value="intervalos">Intervalos</TabsTrigger>
-                          <TabsTrigger value="cumplimientos">Cumplimientos</TabsTrigger>
-                          <TabsTrigger value="historial">Historial</TabsTrigger>
-                        </TabsList>
-
-                        <TabsContent value="intervalos">
-                          <Table>
-                            <TableHeader>
-                              <TableRow>
-                                <TableHead>Tarea</TableHead>
-                                <TableHead>Intervalos</TableHead>
-                                <TableHead>Último cumplimiento</TableHead>
-                                <TableHead>Próximo vencimiento</TableHead>
-                                <TableHead>Status</TableHead>
-                                <TableHead className="text-right">Acciones</TableHead>
-                              </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                              {selectedComponentDetail.intervals.map((interval) => (
-                                <TableRow key={interval.id}>
-                                  <TableCell>
-                                    <div>
-                                      <p className="font-medium">{interval.task_description}</p>
-                                      <p className="text-xs text-muted-foreground">
-                                        {interval.is_active ? 'Activo' : 'Inactivo'}
-                                      </p>
-                                    </div>
-                                  </TableCell>
-                                  <TableCell className="text-xs text-muted-foreground">
-                                    <div>FH: {formatNumber(interval.interval_hours, 2)}</div>
-                                    <div>FC: {formatNumber(interval.interval_cycles, 0)}</div>
-                                    <div>Días: {formatNumber(interval.interval_days, 0)}</div>
-                                  </TableCell>
-                                  <TableCell className="text-xs text-muted-foreground">
-                                    {interval.last_compliance ? (
-                                      <div>
-                                        <div>{formatDate(interval.last_compliance.compliance_date)}</div>
-                                        <div className="font-mono">
-                                          OT {interval.last_compliance.work_order?.order_number ?? '—'}
-                                        </div>
-                                      </div>
-                                    ) : (
-                                      'Sin registro'
-                                    )}
-                                  </TableCell>
-                                  <TableCell className="text-xs text-muted-foreground">
-                                    {interval.last_compliance ? (
-                                      <div>
-                                        <div>FH: {formatNumber(interval.last_compliance.next_due_hours, 2)}</div>
-                                        <div>FC: {formatNumber(interval.last_compliance.next_due_cycles, 0)}</div>
-                                        <div>{formatDate(interval.last_compliance.next_due_date)}</div>
-                                      </div>
-                                    ) : (
-                                      'Desde instalación'
-                                    )}
-                                  </TableCell>
-                                  <TableCell>
-                                    <AlertBadge status={interval.status ?? 'OK'} />
-                                  </TableCell>
-                                  <TableCell className="text-right">
-                                    <div className="flex justify-end gap-2">
-                                      <Button
-                                        type="button"
-                                        size="sm"
-                                        variant="outline"
-                                        className="h-8"
-                                        onClick={() => {
-                                          setEditingInterval(interval);
-                                          setIsIntervalDialogOpen(true);
-                                        }}
-                                      >
-                                        Editar
-                                      </Button>
-                                      <IntervalStatusAction
-                                        interval={interval}
-                                        componentId={selectedComponentDetail.id}
-                                        aircraftId={selectedAircraftId}
-                                      />
-                                    </div>
-                                  </TableCell>
-                                </TableRow>
-                              ))}
-                            </TableBody>
-                          </Table>
-                        </TabsContent>
-
-                        <TabsContent value="cumplimientos">
-                          <Table>
-                            <TableHeader>
-                              <TableRow>
-                                <TableHead>Fecha</TableHead>
-                                <TableHead>Intervalo</TableHead>
-                                <TableHead>FH / FC</TableHead>
-                                <TableHead>OT</TableHead>
-                                <TableHead>Observaciones</TableHead>
-                              </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                              {selectedComponentDetail.compliances.length > 0 ? (
-                                selectedComponentDetail.compliances.map((compliance) => {
-                                  const interval = selectedComponentDetail.intervals.find(
-                                    (item) => item.id === compliance.hard_time_interval_id,
-                                  );
-
-                                  return (
-                                    <TableRow key={compliance.id}>
-                                      <TableCell>{formatDate(compliance.compliance_date)}</TableCell>
-                                      <TableCell>{interval?.task_description ?? '—'}</TableCell>
-                                      <TableCell className="font-mono text-xs">
-                                        {formatNumber(compliance.aircraft_hours_at_compliance, 2)} /{' '}
-                                        {formatNumber(compliance.aircraft_cycles_at_compliance, 0)}
-                                      </TableCell>
-                                      <TableCell className="font-mono">
-                                        {compliance.work_order?.order_number ?? '—'}
-                                      </TableCell>
-                                      <TableCell className="text-muted-foreground">
-                                        {compliance.remarks || '—'}
-                                      </TableCell>
-                                    </TableRow>
-                                  );
-                                })
-                              ) : (
-                                <TableRow>
-                                  <TableCell colSpan={5} className="text-center text-muted-foreground">
-                                    Sin cumplimientos registrados.
-                                  </TableCell>
-                                </TableRow>
-                              )}
-                            </TableBody>
-                          </Table>
-                        </TabsContent>
-
-                        <TabsContent value="historial">
-                          <Table>
-                            <TableHeader>
-                              <TableRow>
-                                <TableHead>S/N</TableHead>
-                                <TableHead>P/N</TableHead>
-                                <TableHead>Montado</TableHead>
-                                <TableHead>Desmontado</TableHead>
-                                <TableHead>FH / FC inicial</TableHead>
-                                <TableHead>Motivo</TableHead>
-                              </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                              {selectedComponentDetail.installations.length > 0 ? (
-                                selectedComponentDetail.installations.map((installation) => (
-                                  <TableRow key={installation.id}>
-                                    <TableCell className="font-mono">{installation.serial_number}</TableCell>
-                                    <TableCell className="font-mono">{installation.part_number}</TableCell>
-                                    <TableCell>{formatDate(installation.installed_at)}</TableCell>
-                                    <TableCell>{formatDate(installation.removed_at)}</TableCell>
-                                    <TableCell className="font-mono text-xs">
-                                      {formatNumber(installation.component_hours_at_install, 2)} /{' '}
-                                      {formatNumber(installation.component_cycles_at_install, 0)}
-                                    </TableCell>
-                                    <TableCell>{installation.removal_reason || 'Activa'}</TableCell>
-                                  </TableRow>
-                                ))
-                              ) : (
-                                <TableRow>
-                                  <TableCell colSpan={6} className="text-center text-muted-foreground">
-                                    Sin historial disponible.
-                                  </TableCell>
-                                </TableRow>
-                              )}
-                            </TableBody>
-                          </Table>
-                        </TabsContent>
-                      </Tabs>
-                    ) : (
-                      <div className="flex min-h-32 items-center justify-center text-sm text-muted-foreground">
-                        Selecciona componente para ver detalle.
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
               )}
             </>
           )}

@@ -1273,7 +1273,7 @@ export type HardTimeComponentWithMetrics = {
   ata_chapter: string | null;
   is_active: boolean;
   active_installation: HardTimeActiveInstallation | null;
-  intervals: HardTimeInterval[];
+  intervals: Array<HardTimeInterval & { status?: HardTimeAlertLevel }>;
   status: HardTimeAlertLevel;
 };
 

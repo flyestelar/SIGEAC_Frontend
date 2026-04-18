@@ -3,70 +3,20 @@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { Progress } from '@/components/ui/progress';
-import { HardTimeComponentWithMetrics, HardTimeMetric } from '@/types';
-import { addDays, format } from 'date-fns';
-import { es } from 'date-fns/locale';
-import { CalendarClock, CircleOff, PackageMinus, PackagePlus } from 'lucide-react';
-import { AlertBadge, LEVEL_CONFIG, METRIC_ICONS, METRIC_LABELS, METRIC_UNITS } from './hard-time-shared';
+import { HardTimeAlertLevel, HardTimeComponentWithMetrics, HardTimeMetric } from '@/types';
+import { CircleOff, PackageMinus, PackagePlus, Timer } from 'lucide-react';
+import { AlertBadge, LEVEL_CONFIG, METRIC_ICONS, METRIC_UNITS } from './hard-time-shared';
 
-interface MetricCardProps {
-  metric: HardTimeMetric;
-  taskDescription: string;
-  averageDailyFH?: number | null;
-  averageDailyFC?: number | null;
-}
-
-function MetricCard({ metric, taskDescription, averageDailyFH, averageDailyFC }: MetricCardProps) {
-  const cfg = LEVEL_CONFIG[metric.status];
-  const Icon = METRIC_ICONS[metric.type];
-
-  // Estimate due date based on remaining and daily averages
-  const estimatedDate = (() => {
-    if (metric.remaining <= 0) return null;
-    if (metric.type === 'FH' && averageDailyFH && averageDailyFH > 0) {
-      return addDays(new Date(), Math.ceil(metric.remaining / averageDailyFH));
-    }
-    if (metric.type === 'FC' && averageDailyFC && averageDailyFC > 0) {
-      return addDays(new Date(), Math.ceil(metric.remaining / averageDailyFC));
-    }
-    if (metric.type === 'DAYS') {
-      return addDays(new Date(), Math.ceil(metric.remaining));
-    }
-    return null;
-  })();
-
-  return (
-    <div className="rounded-md border border-border/50 bg-muted/15 px-3 py-2">
-      <p className="flex items-center gap-1 text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
-        <Icon className="h-3 w-3 shrink-0" />
-        {METRIC_LABELS[metric.type]}
-      </p>
-      <p className="mt-0.5 truncate text-[10px] text-muted-foreground/70">{taskDescription}</p>
-      <p className="mt-1 font-mono text-sm font-semibold tabular-nums">
-        <span className={cfg.iconText}>{metric.consumed.toFixed(1)}</span>
-        <span className="text-muted-foreground">/{metric.interval}</span>
-        <span className="ml-1 text-[11px] font-normal text-muted-foreground">{METRIC_UNITS[metric.type]}</span>
-      </p>
-      <p className="font-mono text-[11px] text-muted-foreground">
-        ({metric.remaining.toFixed(1)} {METRIC_UNITS[metric.type]} rest.)
-      </p>
-      <Progress value={Math.min(metric.percentage, 100)} className="mt-2 h-1.5" indicatorClassName={cfg.progressIndicator} />
-      <div className="mt-2 border-t border-border/30 pt-1.5">
-        {estimatedDate ? (
-          <div className="flex items-center gap-1 text-[10px]">
-            <CalendarClock className="h-3 w-3 shrink-0 text-muted-foreground" />
-            <span className="font-mono font-medium">{format(estimatedDate, 'dd MMM yy', { locale: es })}</span>
-          </div>
-        ) : (
-          <div className="flex items-center gap-1 text-[10px] text-muted-foreground/60">
-            <CalendarClock className="h-3 w-3" />
-            <span>Sin datos</span>
-          </div>
-        )}
-      </div>
-    </div>
-  );
+function estimatedDaysToExpiry(
+  metric: HardTimeMetric,
+  averageDailyFH?: number | null,
+  averageDailyFC?: number | null,
+): number | null {
+  if (metric.remaining <= 0) return 0;
+  if (metric.type === 'DAYS') return metric.remaining;
+  if (metric.type === 'FH' && averageDailyFH && averageDailyFH > 0) return metric.remaining / averageDailyFH;
+  if (metric.type === 'FC' && averageDailyFC && averageDailyFC > 0) return metric.remaining / averageDailyFC;
+  return null;
 }
 
 interface HardTimeCardProps {
@@ -86,14 +36,39 @@ export function HardTimeCard({
   onInstall,
   onUninstall,
 }: HardTimeCardProps) {
-  const cfg = LEVEL_CONFIG[component.status];
+  const cfg = LEVEL_CONFIG[component.status ?? 'OK'];
   const LevelIcon = cfg.icon;
+  const isVacant = !component.active_installation;
 
-  const allMetrics = component.intervals.flatMap((interval) =>
-    (interval.metrics ?? []).map((metric) => ({ metric, taskDescription: interval.task_description })),
+  // Compute status counters
+  const statusCounts: Record<HardTimeAlertLevel, number> = { OK: 0, WARNING: 0, OVERDUE: 0 };
+  component.intervals.forEach((i) => {
+    const s = i.status ?? 'OK';
+    statusCounts[s]++;
+  });
+
+  // Find closest deadline by converting all metrics to estimated days
+  const allMetricsWithTask = component.intervals.flatMap((i) =>
+    (i.metrics ?? []).map((m) => ({ ...m, taskDescription: i.task_description })),
   );
 
-  const isVacant = !component.active_installation;
+  const closestMetric = (() => {
+    if (allMetricsWithTask.length === 0) return null;
+
+    const withEstimates = allMetricsWithTask
+      .map((m) => ({ ...m, estDays: estimatedDaysToExpiry(m, averageDailyFH, averageDailyFC) }))
+      .filter((m) => m.estDays !== null);
+
+    if (withEstimates.length === 0) return null;
+
+    // If all are overdue (estDays === 0), pick the most overdue (highest percentage)
+    const allOverdue = withEstimates.every((m) => m.estDays === 0);
+    if (allOverdue) {
+      return withEstimates.sort((a, b) => b.percentage - a.percentage)[0];
+    }
+
+    return withEstimates.sort((a, b) => a.estDays! - b.estDays!)[0];
+  })();
 
   return (
     <Card
@@ -143,30 +118,60 @@ export function HardTimeCard({
       </CardHeader>
 
       <CardContent className="space-y-3 px-4 pb-4 pt-0">
-        {allMetrics.length > 0 && (
-          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-            {allMetrics.map(({ metric, taskDescription }, idx) => (
-              <MetricCard
-                key={idx}
-                metric={metric}
-                taskDescription={taskDescription}
-                averageDailyFH={averageDailyFH}
-                averageDailyFC={averageDailyFC}
-              />
-            ))}
+        {closestMetric ? (
+          <div className="flex items-center gap-2 rounded-md border border-border/50 bg-muted/15 px-3 py-2">
+            <Timer className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+            <div className="min-w-0 text-[11px]">
+              {closestMetric.remaining <= 0 ? (
+                <span className="font-semibold text-red-600 dark:text-red-400">VENCIDO</span>
+              ) : (
+                <>
+                  <span className="font-mono font-semibold">
+                    {closestMetric.remaining.toFixed(1)} {METRIC_UNITS[closestMetric.type]}
+                  </span>
+                  <span className="text-muted-foreground"> rest.</span>
+                </>
+              )}
+              <span className="ml-1.5 truncate text-muted-foreground/70">({closestMetric.taskDescription})</span>
+            </div>
+            {(() => {
+              const Icon = METRIC_ICONS[closestMetric.type];
+              return <Icon className="ml-auto h-3 w-3 shrink-0 text-muted-foreground/50" />;
+            })()}
           </div>
-        )}
-
-        {allMetrics.length === 0 && (
-          <div className="rounded-md border border-dashed border-border/50 py-3 text-center">
-            <p className="text-xs text-muted-foreground">Sin intervalos configurados</p>
+        ) : allMetricsWithTask.length > 0 && !isVacant ? (
+          <div className="flex items-center gap-2 rounded-md border border-border/50 bg-muted/15 px-3 py-2">
+            <Timer className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+            <div className="min-w-0 text-[11px] text-muted-foreground">
+              <span className="font-medium text-foreground">Sin datos</span>
+              <span className="ml-1.5">sin promedio diario para estimar vencimiento</span>
+            </div>
           </div>
-        )}
+        ) : allMetricsWithTask.length === 0 && !isVacant ? (
+          <div className="rounded-md border border-dashed border-border/50 py-2.5 text-center">
+            <p className="text-[11px] text-muted-foreground">Sin intervalos configurados</p>
+          </div>
+        ) : null}
 
         <div className="flex items-center justify-between pt-1">
-          <Badge variant="outline" className="h-5 border-border/50 px-2 text-[10px] font-normal">
-            {component.intervals.length} intervalo{component.intervals.length !== 1 && 's'}
-          </Badge>
+          <div className="flex items-center gap-3">
+            <Badge variant="outline" className="h-5 border-border/50 px-2 text-[10px] font-normal">
+              {component.intervals.length} intervalo{component.intervals.length !== 1 && 's'}
+            </Badge>
+            {component.intervals.length > 0 && (
+              <div className="flex items-center gap-2 text-[10px] font-medium">
+                {statusCounts.OVERDUE > 0 && (
+                  <span className="text-red-600 dark:text-red-400">{statusCounts.OVERDUE} Vencido{statusCounts.OVERDUE !== 1 && 's'}</span>
+                )}
+                {statusCounts.WARNING > 0 && (
+                  <span className="text-amber-600 dark:text-amber-400">{statusCounts.WARNING} Próximo{statusCounts.WARNING !== 1 && 's'}</span>
+                )}
+                {statusCounts.OK > 0 && (
+                  <span className="text-emerald-600 dark:text-emerald-400">{statusCounts.OK} OK</span>
+                )}
+              </div>
+            )}
+          </div>
           <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
             {isVacant ? (
               <Button

@@ -77,12 +77,12 @@ export const METRIC_ICONS: Record<HardTimeMetricType, typeof Clock> = {
 
 // ── Shared components ─────────────────────────────────────────────────────────
 
-export function AlertBadge({ status, size = 'small' }: { status: HardTimeAlertLevel; size?: 'small' | 'medium' }) {
-  const cfg = LEVEL_CONFIG[status];
+export function AlertBadge({ status, size = 'small' }: { status: HardTimeAlertLevel | null; size?: 'small' | 'medium' }) {
+  const cfg = LEVEL_CONFIG[status ?? 'OK'];
   const sizeClasses = size === 'small' ? 'h-5 px-1.5 text-[10px]' : 'h-6 px-2 text-[11px]';
   return (
     <Badge variant="outline" className={`whitespace-nowrap ${sizeClasses} ${cfg.badgeClass}`}>
-      {ALERT_LABELS[status]}
+      {ALERT_LABELS[status ?? 'OK']}
     </Badge>
   );
 }
