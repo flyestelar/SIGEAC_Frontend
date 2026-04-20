@@ -1,12 +1,19 @@
-import { useEffect, useState } from 'react';
-import { Loader2 } from 'lucide-react';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { useCreateHardTimeComponent } from '@/actions/planificacion/hard_time/actions';
+import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Button } from '@/components/ui/button';
-import { useCreateHardTimeComponent } from '@/actions/planificacion/hard_time/actions';
+import { HardTimeCategoryResource } from '@api/types';
+import { Loader2 } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { ComponentFormState } from './types';
-import { HardTimeCategoryResource, StoreComponentRequest } from '@api/types';
 
 type CreateComponentDialogProps = {
   open: boolean;
@@ -39,15 +46,15 @@ export function CreateComponentDialog({ open, onOpenChange, aircraftId, categori
     event.preventDefault();
     if (!aircraftId) return;
 
-    const payload: StoreComponentRequest = {
-      aircraft_id: aircraftId,
-      category_code: form.category_code,
-      part_number: form.part_number.trim(),
-      description: form.description.trim(),
-      position: form.position.trim(),
-    };
-
-    await createComponent.mutateAsync(payload);
+    await createComponent.mutateAsync({
+      body: {
+        aircraft_id: aircraftId,
+        category_code: form.category_code,
+        part_number: form.part_number.trim(),
+        description: form.description.trim(),
+        position: form.position.trim(),
+      },
+    });
     onOpenChange(false);
   };
 
