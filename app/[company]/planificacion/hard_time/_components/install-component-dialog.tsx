@@ -35,16 +35,18 @@ export function InstallComponentDialog({
   onOpenChange,
   componentId,
   aircraft,
+  defaultPartNumber,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   componentId: number | null;
   aircraft: AircraftResource | null;
+  defaultPartNumber?: string;
 }) {
   const installComponent = useInstallHardTimeComponent(componentId ?? 0, aircraft?.id ?? null);
   const [form, setForm] = useState<InstallFormState>({
     serial_number: '',
-    part_number: '',
+    part_number: defaultPartNumber ?? '',
     article_id: '',
     installed_at: todayDate(),
     aircraft_hours_at_install: String(aircraft?.flight_hours ?? 0),
@@ -58,12 +60,13 @@ export function InstallComponentDialog({
     if (open) {
       setForm((current) => ({
         ...current,
+        part_number: defaultPartNumber ?? current.part_number,
         installed_at: todayDate(),
         aircraft_hours_at_install: String(aircraft?.flight_hours ?? 0),
         aircraft_cycles_at_install: String(aircraft?.flight_cycles ?? 0),
       }));
     }
-  }, [aircraft, open]);
+  }, [aircraft, defaultPartNumber, open]);
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();

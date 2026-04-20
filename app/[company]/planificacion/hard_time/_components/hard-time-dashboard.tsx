@@ -854,6 +854,8 @@ export function HardTimeDashboard() {
 
   const workOrders = workOrdersResponse?.data ?? [];
   const averages = selectedAircraft?.last_average_metric ?? null;
+  const installingComponentPartNumber =
+    selectedComponentDetail?.part_number ?? allComponents.find((component) => component.id === installingComponentId)?.part_number ?? '';
 
   const handleSelectAircraft = (id: number) => {
     startTransition(() => {
@@ -1037,6 +1039,7 @@ export function HardTimeDashboard() {
         }}
         componentId={installingComponentId}
         aircraft={selectedAircraft}
+        defaultPartNumber={installingComponentPartNumber}
       />
 
       <UninstallComponentDialog
