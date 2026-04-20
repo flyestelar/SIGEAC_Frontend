@@ -20,11 +20,9 @@ import {
   ClipboardCheck,
   ClipboardList,
   Hash,
-  LayoutGrid,
   Loader2,
   Plus,
   SearchCheck,
-  Sidebar,
   TimerReset,
   Upload,
   Wrench,
@@ -61,7 +59,6 @@ import { useCompanyStore } from '@/stores/CompanyStore';
 import { HardTimeInterval } from '@/types';
 import { AircraftAverageSummaryCard } from '../../control_mantenimiento/_components/aircraft-average-summary-card';
 import { AircraftSelector } from '../../control_mantenimiento/_components/aircraft-selector';
-import { HardTimeCategoryAccordion } from './hard-time-category-accordion';
 import { HardTimeCategorySidebar } from './hard-time-category-sidebar';
 import { HardTimeDetailView } from './hard-time-detail-view';
 import { HardTimeImportDialog } from './hard-time-import-dialog';
@@ -97,8 +94,6 @@ type ComplianceFormState = {
   aircraft_cycles_at_compliance: string;
   remarks: string;
 };
-
-type HardTimeViewMode = 'accordion' | 'sidebar';
 
 function todayDate() {
   return new Date().toISOString().slice(0, 10);
@@ -810,7 +805,6 @@ export function HardTimeDashboard() {
   const { selectedCompany } = useCompanyStore();
   const [selectedAircraftId, setSelectedAircraftId] = useState<number | null>(null);
   const [selectedComponentId, setSelectedComponentId] = useState<number | null>(null);
-  const [viewMode, setViewMode] = useState<HardTimeViewMode>('accordion');
   const [isCreateComponentOpen, setIsCreateComponentOpen] = useState(false);
   const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
   const [installingComponentId, setInstallingComponentId] = useState<number | null>(null);
@@ -936,28 +930,6 @@ export function HardTimeDashboard() {
             <>
               <AircraftAverageSummaryCard averages={averages} />
 
-              {!selectedComponentId && (
-                <div className="flex items-center gap-1 rounded-xl border border-border/60 bg-background p-1">
-                  <Button
-                    variant={viewMode === 'accordion' ? 'secondary' : 'outline'}
-                    size="sm"
-                    className="gap-2"
-                    onClick={() => setViewMode('accordion')}
-                  >
-                    <LayoutGrid className="size-4" />
-                    Lista
-                  </Button>
-                  <Button
-                    variant={viewMode === 'sidebar' ? 'secondary' : 'outline'}
-                    size="sm"
-                    className="gap-2"
-                    onClick={() => setViewMode('sidebar')}
-                  >
-                    <Sidebar className="size-4" />
-                    Carpetas
-                  </Button>
-                </div>
-              )}
 
               {isComponentsError ? (
                 <Alert variant="destructive">
@@ -996,16 +968,8 @@ export function HardTimeDashboard() {
                   }}
                   onRegisterCompliance={() => setIsComplianceDialogOpen(true)}
                 />
-              ) : viewMode === 'sidebar' ? (
-                <HardTimeCategorySidebar
-                  categoryGroups={categoryGroups}
-                  averages={averages}
-                  onSelectComponent={handleSelectComponent}
-                  onInstallComponent={openInstall}
-                  onUninstallComponent={openUninstall}
-                />
               ) : (
-                <HardTimeCategoryAccordion
+                <HardTimeCategorySidebar
                   categoryGroups={categoryGroups}
                   averages={averages}
                   onSelectComponent={handleSelectComponent}
