@@ -1,13 +1,12 @@
 'use client';
 
 import { Badge } from '@/components/ui/badge';
-import { HardTimeCategoryGroup, HardTimeComponentWithMetrics } from '@/types';
 import { HardTimeComponentResource } from '@api/types';
 import { useEffect, useMemo, useState } from 'react';
 import { HardTimeCardView } from './hard-time-card-view';
 
 interface HardTimeCategorySidebarProps {
-  categoryGroups: HardTimeCategoryGroup[];
+  categoryGroups: HardTimeComponentResource[][];
   averages: { average_daily_flight_hours?: number | null; average_daily_flight_cycles?: number | null } | null;
   onSelectComponent: (id: number) => void;
   onInstallComponent: (componentId: number) => void;
@@ -28,32 +27,30 @@ export function HardTimeCategorySidebar({
   onInstallComponent,
   onUninstallComponent,
 }: HardTimeCategorySidebarProps) {
-  const [selectedCategoryCode, setSelectedCategoryCode] = useState<string>(categoryGroups[0]?.category.code ?? '');
+  const [selectedCategoryCode, setSelectedCategoryCode] = useState<string>(
+    categoryGroups[0]?.[0]?.category?.code ?? '',
+  );
 
   useEffect(() => {
     if (!categoryGroups.length) return;
     setSelectedCategoryCode((current) =>
-      categoryGroups.some((group) => group.category.code === current) ? current : categoryGroups[0].category.code,
+      categoryGroups.some((group) => group[0]?.category?.code === current)
+        ? current
+        : (categoryGroups[0][0]?.category?.code ?? ''),
     );
   }, [categoryGroups]);
 
   const selectedGroup = useMemo(
-    () => categoryGroups.find((group) => group.category.code === selectedCategoryCode) ?? categoryGroups[0],
+    () => categoryGroups.find((group) => group[0]?.category?.code === selectedCategoryCode) ?? categoryGroups[0] ?? [],
     [categoryGroups, selectedCategoryCode],
   );
 
   const averageDailyFH = averages?.average_daily_flight_hours ?? null;
   const averageDailyFC = averages?.average_daily_flight_cycles ?? null;
   const componentFamilies = useMemo<ComponentFamilyGroup[]>(() => {
-    const source = selectedGroup?.components ?? [];
-    const grouped = source.reduce<Record<string, HardTimeComponentResource[]>>((acc, component) => {
-      const key = component.description?.trim() || 'Sin nombre';
-      if (!acc[key]) acc[key] = [];
-      acc[key].push(component);
-      return acc;
-    }, {});
+    const grouped = Map.groupBy(selectedGroup, (component) => component.description?.trim() || 'Sin nombre');
 
-    return Object.entries(grouped)
+    return Array.from(grouped.entries())
       .map(([name, components]) => ({
         name,
         components: [...components].sort((a, b) => a.position.localeCompare(b.position)),
@@ -63,7 +60,9 @@ export function HardTimeCategorySidebar({
       .sort((a, b) => a.name.localeCompare(b.name));
   }, [selectedGroup]);
 
-  const totalSlots = selectedGroup?.components.length ?? 0;
+  const totalSlots = selectedGroup?.length ?? 0;
+
+  const selectedCategory = selectedGroup[0]?.category;
 
   return (
     <div className="grid gap-4 lg:grid-cols-[280px_1fr]">
@@ -74,8 +73,8 @@ export function HardTimeCategorySidebar({
           </p>
           <div className="mt-1 flex items-center justify-between gap-3">
             <div>
-              <p className="text-sm font-semibold text-foreground">{selectedGroup.category.name}</p>
-              <p className="text-xs text-muted-foreground">{selectedGroup.category.code}</p>
+              <p className="text-sm font-semibold text-foreground">{selectedCategory?.name}</p>
+              <p className="text-xs text-muted-foreground">{selectedCategory?.code}</p>
             </div>
             <Badge variant="outline" className="font-mono text-xs">
               {totalSlots}
@@ -83,24 +82,25 @@ export function HardTimeCategorySidebar({
           </div>
         </div>
         {categoryGroups.map((group) => {
-          const isActive = group.category.code === selectedCategoryCode;
+          const groupCategory = group[0].category!;
+          const isActive = groupCategory?.code === selectedCategoryCode;
           return (
             <button
-              key={group.category.code}
+              key={groupCategory.code}
               type="button"
               className={`flex w-full items-start justify-between gap-3 rounded-xl border p-3 text-left transition-colors ${
                 isActive
                   ? 'border-sky-500/40 bg-sky-500/[0.08]'
                   : 'border-border/60 bg-background hover:border-border/80 hover:bg-muted/20'
               }`}
-              onClick={() => setSelectedCategoryCode(group.category.code)}
+              onClick={() => setSelectedCategoryCode(groupCategory.code)}
             >
               <div>
-                <p className="text-sm font-semibold text-foreground">{group.category.name}</p>
-                <p className="text-xs text-muted-foreground">{group.category.code}</p>
+                <p className="text-sm font-semibold text-foreground">{groupCategory.name}</p>
+                <p className="text-xs text-muted-foreground">{groupCategory.code}</p>
               </div>
               <Badge variant="outline" className="self-start font-mono text-xs">
-                {group.components.length}
+                {group.length}
               </Badge>
             </button>
           );
@@ -115,8 +115,8 @@ export function HardTimeCategorySidebar({
                 <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
                   Tablero por familia
                 </p>
-                <h2 className="text-lg font-semibold tracking-tight text-foreground">{selectedGroup.category.name}</h2>
-                <p className="text-xs text-muted-foreground">{selectedGroup.category.code}</p>
+                <h2 className="text-lg font-semibold tracking-tight text-foreground">{selectedCategory?.name}</h2>
+                <p className="text-xs text-muted-foreground">{selectedCategory?.code}</p>
               </div>
               <p className="text-sm text-muted-foreground">
                 El panel agrupa por nombre de componente y debajo muestra cada slot o ubicación disponible dentro del
@@ -133,7 +133,7 @@ export function HardTimeCategorySidebar({
                     <p className="text-base font-semibold tracking-tight text-foreground">{family.name}</p>
                     <p className="text-xs text-muted-foreground">
                       {family.components.length} slot{family.components.length !== 1 && 's'} dentro de{' '}
-                      {selectedGroup.category.code}
+                      {selectedCategory?.code}
                     </p>
                   </div>
 

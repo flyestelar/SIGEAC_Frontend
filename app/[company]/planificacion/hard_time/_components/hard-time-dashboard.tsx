@@ -55,15 +55,18 @@ export function HardTimeDashboard() {
     [aircraft, selectedAircraftId],
   );
 
-  const categoryGroups = useMemo(() => groupsResponse?.data ?? [], [groupsResponse]);
+  const componentsList = useMemo(() => groupsResponse?.data ?? [], [groupsResponse]);
 
-  const allComponents = useMemo(() => categoryGroups.flatMap((group) => group.components), [categoryGroups]);
+  const categoryGroups = useMemo(() => {
+    const map = Map.groupBy(componentsList, (comp) => comp?.category?.code ?? comp?.category_code ?? 'uncategorized');
+    return Array.from(map.values());
+  }, [componentsList]);
 
   useEffect(() => {
     if (!selectedComponentId) return;
-    if (allComponents.some((component) => component.id === selectedComponentId)) return;
+    if (componentsList.some((component) => component.id === selectedComponentId)) return;
     setSelectedComponentId(null);
-  }, [allComponents, selectedComponentId]);
+  }, [componentsList, selectedComponentId]);
 
   const { data: workOrdersResponse } = useQuery({
     ...workOrdersIndexOptions({
@@ -77,7 +80,9 @@ export function HardTimeDashboard() {
   const workOrders = workOrdersResponse?.data ?? [];
   const averages = selectedAircraft?.last_average_metric ?? null;
   const installingComponentPartNumber =
-    selectedComponentDetail?.part_number ?? allComponents.find((component) => component.id === installingComponentId)?.part_number ?? '';
+    selectedComponentDetail?.part_number ??
+    componentsList.find((component) => component.id === installingComponentId)?.part_number ??
+    '';
 
   const handleSelectAircraft = (id: number) => {
     startTransition(() => {
@@ -157,7 +162,6 @@ export function HardTimeDashboard() {
           ) : (
             <>
               <AircraftAverageSummaryCard averages={averages} />
-
 
               {isComponentsError ? (
                 <Alert variant="destructive">
