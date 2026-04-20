@@ -89,11 +89,10 @@ export function HardTimeCategorySidebar({
             <button
               key={group.category.code}
               type="button"
-              className={`flex w-full items-start justify-between gap-3 rounded-xl border p-3 text-left transition-colors ${
-                isActive
-                  ? 'border-sky-500/40 bg-sky-500/[0.08]'
-                  : 'border-border/60 bg-background hover:border-border/80 hover:bg-muted/20'
-              }`}
+              className={`flex w-full items-start justify-between gap-3 rounded-xl border p-3 text-left transition-colors ${isActive
+                ? 'border-sky-500/40 bg-sky-500/[0.08]'
+                : 'border-border/60 bg-background hover:border-border/80 hover:bg-muted/20'
+                }`}
               onClick={() => setSelectedCategoryCode(group.category.code)}
             >
               <div>
@@ -119,7 +118,7 @@ export function HardTimeCategorySidebar({
                 <h2 className="text-lg font-semibold tracking-tight text-foreground">{selectedGroup.category.name}</h2>
                 <p className="text-xs text-muted-foreground">{selectedGroup.category.code}</p>
               </div>
-              <p className="max-w-2xl text-sm text-muted-foreground">
+              <p className="text-sm text-muted-foreground">
                 El panel agrupa por nombre de componente y debajo muestra cada slot o ubicación disponible dentro del ATA seleccionado.
               </p>
             </div>
