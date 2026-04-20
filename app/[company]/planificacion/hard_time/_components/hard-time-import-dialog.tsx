@@ -234,8 +234,8 @@ export function HardTimeImportDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[92vh] max-w-7xl overflow-hidden p-0">
-        <div className="flex h-full flex-col">
+      <DialogContent className="max-h-[92vh] max-w-7xl overflow-hidden p-0 flex flex-col">
+        <div className="flex size-full flex-col min-w-0 min-h-0">
           <DialogHeader className="border-b border-border/60 bg-muted/15 px-6 py-5">
             <div className="flex items-start gap-3">
               <div className="rounded-2xl border border-border/60 bg-background p-3">
@@ -250,7 +250,7 @@ export function HardTimeImportDialog({
             </div>
           </DialogHeader>
 
-          <div className="flex-1 space-y-4 overflow-y-auto px-6 py-5">
+          <div className="flex-1 space-y-4 overflow-y-auto px-6 py-5 min-w-0 min-h-0">
             <div className="grid gap-4 xl:grid-cols-[1.2fr_0.8fr]">
               <div
                 {...getRootProps()}
