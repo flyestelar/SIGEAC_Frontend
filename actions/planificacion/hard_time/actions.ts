@@ -1,5 +1,10 @@
-import { hardTimeComponentIndexQueryKey, hardTimeComponentStoreMutation } from '@api/queries';
 import {
+  aircraftComponentSlotIndexQueryKey,
+  aircraftComponentSlotStoreMutation,
+  hardTimeComponentIndexQueryKey,
+} from '@api/queries';
+import {
+  aircraftComponentSlotStore,
   hardTimeComplianceStore,
   hardTimeComponentDestroy,
   hardTimeComponentStore,
@@ -147,8 +152,12 @@ export const useToggleHardTimeInterval = (intervalId: number, componentId: numbe
 export const useCreateHardTimeComponent = (aircraftId: number | null) => {
   const queryClient = useQueryClient();
   return useMutation({
-    ...hardTimeComponentStoreMutation(),
+    ...aircraftComponentSlotStoreMutation(),
+
     onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: aircraftComponentSlotIndexQueryKey({ query: { aircraft_id: aircraftId! } }),
+      });
       queryClient.invalidateQueries({
         queryKey: hardTimeComponentIndexQueryKey({ query: { aircraft_id: aircraftId! } }),
       });

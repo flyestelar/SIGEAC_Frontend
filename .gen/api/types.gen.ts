@@ -2694,7 +2694,7 @@ export type AircraftComponentSlotIndexData = {
   body?: never;
   path?: never;
   query?: {
-    'aircraft_id|exists:aircraft,id'?: number;
+    aircraft_id?: number;
   };
   url: '/aircraft-component-slots';
 };
