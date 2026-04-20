@@ -178,7 +178,7 @@ export function HardTimeDetailView({
                 </div>
 
                 <div className="space-y-1">
-                  <p className="text-sm text-muted-foreground">{component.part_name}</p>
+                  <p className="text-sm text-muted-foreground">{component.description}</p>
                   <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
                     <span className="font-mono">P/N: {installation?.part_number ?? component.part_number}</span>
                     <span className="font-mono">S/N: {installation?.serial_number ?? '—'}</span>

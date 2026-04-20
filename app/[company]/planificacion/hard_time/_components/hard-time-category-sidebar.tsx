@@ -1,8 +1,9 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { HardTimeCategoryGroup, HardTimeComponentWithMetrics } from '@/types';
+import { HardTimeComponentResource } from '@api/types';
+import { useEffect, useMemo, useState } from 'react';
 import { HardTimeCardView } from './hard-time-card-view';
 
 interface HardTimeCategorySidebarProps {
@@ -15,7 +16,7 @@ interface HardTimeCategorySidebarProps {
 
 type ComponentFamilyGroup = {
   name: string;
-  components: HardTimeComponentWithMetrics[];
+  components: HardTimeComponentResource[];
   mountedCount: number;
   vacantCount: number;
 };
@@ -27,16 +28,12 @@ export function HardTimeCategorySidebar({
   onInstallComponent,
   onUninstallComponent,
 }: HardTimeCategorySidebarProps) {
-  const [selectedCategoryCode, setSelectedCategoryCode] = useState<string>(
-    categoryGroups[0]?.category.code ?? '',
-  );
+  const [selectedCategoryCode, setSelectedCategoryCode] = useState<string>(categoryGroups[0]?.category.code ?? '');
 
   useEffect(() => {
     if (!categoryGroups.length) return;
     setSelectedCategoryCode((current) =>
-      categoryGroups.some((group) => group.category.code === current)
-        ? current
-        : categoryGroups[0].category.code,
+      categoryGroups.some((group) => group.category.code === current) ? current : categoryGroups[0].category.code,
     );
   }, [categoryGroups]);
 
@@ -49,8 +46,8 @@ export function HardTimeCategorySidebar({
   const averageDailyFC = averages?.average_daily_flight_cycles ?? null;
   const componentFamilies = useMemo<ComponentFamilyGroup[]>(() => {
     const source = selectedGroup?.components ?? [];
-    const grouped = source.reduce<Record<string, HardTimeComponentWithMetrics[]>>((acc, component) => {
-      const key = component.part_name.trim() || 'Sin nombre';
+    const grouped = source.reduce<Record<string, HardTimeComponentResource[]>>((acc, component) => {
+      const key = component.description?.trim() || 'Sin nombre';
       if (!acc[key]) acc[key] = [];
       acc[key].push(component);
       return acc;
@@ -72,7 +69,9 @@ export function HardTimeCategorySidebar({
     <div className="grid gap-4 lg:grid-cols-[280px_1fr]">
       <aside className="space-y-2 rounded-xl border border-border/60 bg-background p-3">
         <div className="rounded-lg border border-border/60 bg-muted/15 px-4 py-3">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">ATA seleccionado</p>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+            ATA seleccionado
+          </p>
           <div className="mt-1 flex items-center justify-between gap-3">
             <div>
               <p className="text-sm font-semibold text-foreground">{selectedGroup.category.name}</p>
@@ -89,10 +88,11 @@ export function HardTimeCategorySidebar({
             <button
               key={group.category.code}
               type="button"
-              className={`flex w-full items-start justify-between gap-3 rounded-xl border p-3 text-left transition-colors ${isActive
-                ? 'border-sky-500/40 bg-sky-500/[0.08]'
-                : 'border-border/60 bg-background hover:border-border/80 hover:bg-muted/20'
-                }`}
+              className={`flex w-full items-start justify-between gap-3 rounded-xl border p-3 text-left transition-colors ${
+                isActive
+                  ? 'border-sky-500/40 bg-sky-500/[0.08]'
+                  : 'border-border/60 bg-background hover:border-border/80 hover:bg-muted/20'
+              }`}
               onClick={() => setSelectedCategoryCode(group.category.code)}
             >
               <div>
@@ -119,7 +119,8 @@ export function HardTimeCategorySidebar({
                 <p className="text-xs text-muted-foreground">{selectedGroup.category.code}</p>
               </div>
               <p className="text-sm text-muted-foreground">
-                El panel agrupa por nombre de componente y debajo muestra cada slot o ubicación disponible dentro del ATA seleccionado.
+                El panel agrupa por nombre de componente y debajo muestra cada slot o ubicación disponible dentro del
+                ATA seleccionado.
               </p>
             </div>
           </div>
@@ -131,7 +132,8 @@ export function HardTimeCategorySidebar({
                   <div>
                     <p className="text-base font-semibold tracking-tight text-foreground">{family.name}</p>
                     <p className="text-xs text-muted-foreground">
-                      {family.components.length} slot{family.components.length !== 1 && 's'} dentro de {selectedGroup.category.code}
+                      {family.components.length} slot{family.components.length !== 1 && 's'} dentro de{' '}
+                      {selectedGroup.category.code}
                     </p>
                   </div>
 

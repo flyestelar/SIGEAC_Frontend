@@ -92,7 +92,7 @@ export function HardTimeTraceabilityClient() {
                       <TableCell>
                         <div>
                           <p className="font-medium">{record.component?.position ?? '—'}</p>
-                          <p className="text-xs text-muted-foreground">{record.component?.part_name ?? '—'}</p>
+                          <p className="text-xs text-muted-foreground">{record.component?.description ?? '—'}</p>
                         </div>
                       </TableCell>
                       <TableCell>{formatDate(record.installation.installed_at)}</TableCell>

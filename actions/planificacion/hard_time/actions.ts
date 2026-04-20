@@ -1,3 +1,4 @@
+import { hardTimeComponentIndexQueryKey, hardTimeComponentStoreMutation } from '@api/queries';
 import {
   hardTimeComplianceStore,
   hardTimeComponentDestroy,
@@ -23,8 +24,8 @@ export const hardTimeComponentsQueryKey = (aircraftId: number | null) => ['hard-
 export const hardTimeComponentDetailQueryKey = (componentId: number) => ['hard-time-component-detail', componentId];
 
 export type HardTimeImportStructureComponentInput = {
-  part_name: string;
   part_number: string;
+  description: string;
   position: string;
   ata_chapter?: string;
   intervals: StoreIntervalRequest[];
@@ -146,13 +147,11 @@ export const useToggleHardTimeInterval = (intervalId: number, componentId: numbe
 export const useCreateHardTimeComponent = (aircraftId: number | null) => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (data: StoreComponentRequest) =>
-      hardTimeComponentStore({
-        body: data,
-        throwOnError: true,
-      }).then((res) => res.data),
+    ...hardTimeComponentStoreMutation(),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: hardTimeComponentsQueryKey(aircraftId) });
+      queryClient.invalidateQueries({
+        queryKey: hardTimeComponentIndexQueryKey({ query: { aircraft_id: aircraftId! } }),
+      });
       toast.success('Componente controlado creado');
     },
     onError: () => toast.error('No se pudo crear el componente'),
@@ -187,7 +186,7 @@ export const useImportHardTimeStructure = (aircraftId: number | null) => {
           aircraft_id: data.aircraft_id,
           category_code: data.category_code,
           part_number: component.part_number,
-          part_name: component.part_name,
+          description: component.description,
           position: component.position,
           ata_chapter: component.ata_chapter,
         };

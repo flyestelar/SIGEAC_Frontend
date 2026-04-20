@@ -31,6 +31,11 @@ import {
   adminRegister,
   aircraftAdministrationShowAircraftStatistics,
   aircraftAverageByDateRange,
+  aircraftComponentSlotDestroy,
+  aircraftComponentSlotIndex,
+  aircraftComponentSlotShow,
+  aircraftComponentSlotStore,
+  aircraftComponentSlotUpdate,
   aircraftDestroy,
   aircraftGetAircraftAcronyms,
   aircraftIndex,
@@ -541,6 +546,21 @@ import type {
   AircraftAverageByDateRangeData,
   AircraftAverageByDateRangeError,
   AircraftAverageByDateRangeResponse,
+  AircraftComponentSlotDestroyData,
+  AircraftComponentSlotDestroyError,
+  AircraftComponentSlotDestroyResponse,
+  AircraftComponentSlotIndexData,
+  AircraftComponentSlotIndexError,
+  AircraftComponentSlotIndexResponse,
+  AircraftComponentSlotShowData,
+  AircraftComponentSlotShowError,
+  AircraftComponentSlotShowResponse,
+  AircraftComponentSlotStoreData,
+  AircraftComponentSlotStoreError,
+  AircraftComponentSlotStoreResponse,
+  AircraftComponentSlotUpdateData,
+  AircraftComponentSlotUpdateError,
+  AircraftComponentSlotUpdateResponse,
   AircraftDestroyData,
   AircraftDestroyError,
   AircraftDestroyResponse,
@@ -2804,6 +2824,129 @@ export const aircraftAdministrationShowAircraftStatisticsOptions = (
     },
     queryKey: aircraftAdministrationShowAircraftStatisticsQueryKey(options),
   });
+
+export const aircraftComponentSlotIndexQueryKey = (options?: Options<AircraftComponentSlotIndexData>) =>
+  createQueryKey('aircraftComponentSlotIndex', options);
+
+/**
+ * GET /aircraft-component-slots?aircraft_id={id}
+ * Returns all slots for a specific aircraft (aircraft_id required)
+ */
+export const aircraftComponentSlotIndexOptions = (options?: Options<AircraftComponentSlotIndexData>) =>
+  queryOptions<
+    AircraftComponentSlotIndexResponse,
+    AxiosError<AircraftComponentSlotIndexError>,
+    AircraftComponentSlotIndexResponse,
+    ReturnType<typeof aircraftComponentSlotIndexQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await aircraftComponentSlotIndex({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: aircraftComponentSlotIndexQueryKey(options),
+  });
+
+export const aircraftComponentSlotStoreMutation = (
+  options?: Partial<Options<AircraftComponentSlotStoreData>>,
+): UseMutationOptions<
+  AircraftComponentSlotStoreResponse,
+  AxiosError<AircraftComponentSlotStoreError>,
+  Options<AircraftComponentSlotStoreData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    AircraftComponentSlotStoreResponse,
+    AxiosError<AircraftComponentSlotStoreError>,
+    Options<AircraftComponentSlotStoreData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await aircraftComponentSlotStore({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+/**
+ * Destroy with relation checks. If related installations or intervals exist, return explanatory message
+ */
+export const aircraftComponentSlotDestroyMutation = (
+  options?: Partial<Options<AircraftComponentSlotDestroyData>>,
+): UseMutationOptions<
+  AircraftComponentSlotDestroyResponse,
+  AxiosError<AircraftComponentSlotDestroyError>,
+  Options<AircraftComponentSlotDestroyData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    AircraftComponentSlotDestroyResponse,
+    AxiosError<AircraftComponentSlotDestroyError>,
+    Options<AircraftComponentSlotDestroyData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await aircraftComponentSlotDestroy({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+export const aircraftComponentSlotShowQueryKey = (options: Options<AircraftComponentSlotShowData>) =>
+  createQueryKey('aircraftComponentSlotShow', options);
+
+export const aircraftComponentSlotShowOptions = (options: Options<AircraftComponentSlotShowData>) =>
+  queryOptions<
+    AircraftComponentSlotShowResponse,
+    AxiosError<AircraftComponentSlotShowError>,
+    AircraftComponentSlotShowResponse,
+    ReturnType<typeof aircraftComponentSlotShowQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await aircraftComponentSlotShow({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: aircraftComponentSlotShowQueryKey(options),
+  });
+
+export const aircraftComponentSlotUpdateMutation = (
+  options?: Partial<Options<AircraftComponentSlotUpdateData>>,
+): UseMutationOptions<
+  AircraftComponentSlotUpdateResponse,
+  AxiosError<AircraftComponentSlotUpdateError>,
+  Options<AircraftComponentSlotUpdateData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    AircraftComponentSlotUpdateResponse,
+    AxiosError<AircraftComponentSlotUpdateError>,
+    Options<AircraftComponentSlotUpdateData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await aircraftComponentSlotUpdate({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
 
 export const aircraftTypesIndexQueryKey = (options?: Options<AircraftTypesIndexData>) =>
   createQueryKey('aircraftTypesIndex', options);

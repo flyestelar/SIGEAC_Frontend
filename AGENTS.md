@@ -13,6 +13,8 @@ This repository is a Next.js 14 App Router frontend. Route files live under `app
 ## Coding Style & Naming Conventions
 Use TypeScript with strict mode enabled and prefer the `@/*` import alias over long relative paths. Prettier is configured for 2-space indentation, single quotes, trailing commas, and a 120-character line width. Follow the existing naming pattern: PascalCase for React components (`ContentLayout.tsx`), camelCase for hooks and utilities (`useDebounce.ts`), and descriptive route folders in lowercase. Keep domain-specific logic in `actions/` or `hooks/`, not inside page components.
 
+- Forms: Use React Hook Form (paired with Zod schemas for validation) for handling forms and form state. Do not use TypeScript `any` as a shortcut to bypass type errors; prefer proper typings or `unknown` with explicit guards when necessary.
+
 ## Testing Guidelines
 There is no dedicated automated test suite checked in today. At minimum, run `npm run lint` and `npm run build` before opening a PR. For risky UI or workflow changes, manually verify the affected route under `app/[company]/...` and document what you tested. If you add tests, keep them close to the feature and use clear names such as `ComponentName.test.tsx`.
 

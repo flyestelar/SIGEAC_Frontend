@@ -1,4 +1,9 @@
-import { AircraftResource, AircraftTypeResource } from '@api/types';
+import {
+  AircraftResource,
+  AircraftTypeResource,
+  HardTimeCategoryResource,
+  HardTimeComponentResource,
+} from '@api/types';
 
 export type Accountant = {
   id: number;
@@ -1263,26 +1268,11 @@ export type HardTimeActiveInstallation = {
   component_cycles_current: number;
 };
 
-export type HardTimeComponentWithMetrics = {
-  id: number;
-  aircraft_id: number;
-  category_code: string;
-  part_number: string;
-  part_name: string;
-  position: string;
-  ata_chapter: string | null;
-  is_active: boolean;
-  active_installation: HardTimeActiveInstallation | null;
-  intervals: Array<HardTimeInterval & { status?: HardTimeAlertLevel }>;
-  status: HardTimeAlertLevel;
-};
+export type HardTimeComponentWithMetrics = HardTimeComponentResource;
 
 export type HardTimeCategoryGroup = {
-  category: {
-    code: string;
-    name: string;
-  };
-  components: HardTimeComponentWithMetrics[];
+  category: HardTimeCategoryResource;
+  components: Array<HardTimeComponentResource>;
 };
 
 export type HardTimeComponentsResponse = {

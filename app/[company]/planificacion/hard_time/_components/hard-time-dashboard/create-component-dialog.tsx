@@ -20,7 +20,7 @@ export function CreateComponentDialog({ open, onOpenChange, aircraftId, categori
   const [form, setForm] = useState<ComponentFormState>({
     category_code: '',
     part_number: '',
-    part_name: '',
+    description: '',
     position: '',
   });
 
@@ -29,7 +29,7 @@ export function CreateComponentDialog({ open, onOpenChange, aircraftId, categori
       setForm({
         category_code: '',
         part_number: '',
-        part_name: '',
+        description: '',
         position: '',
       });
     }
@@ -43,7 +43,7 @@ export function CreateComponentDialog({ open, onOpenChange, aircraftId, categori
       aircraft_id: aircraftId,
       category_code: form.category_code,
       part_number: form.part_number.trim(),
-      part_name: form.part_name.trim(),
+      description: form.description.trim(),
       position: form.position.trim(),
     };
 
@@ -100,10 +100,10 @@ export function CreateComponentDialog({ open, onOpenChange, aircraftId, categori
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium">Nombre del componente</label>
+            <label className="text-sm font-medium">Descripción</label>
             <Input
-              value={form.part_name}
-              onChange={(event) => setForm((current) => ({ ...current, part_name: event.target.value }))}
+              value={form.description}
+              onChange={(event) => setForm((current) => ({ ...current, description: event.target.value }))}
               required
             />
           </div>
@@ -114,7 +114,7 @@ export function CreateComponentDialog({ open, onOpenChange, aircraftId, categori
             </Button>
             <Button
               type="submit"
-              disabled={!aircraftId || !form.category_code || !form.part_name.trim() || createComponent.isPending}
+              disabled={!aircraftId || !form.category_code || !form.description.trim() || createComponent.isPending}
             >
               {createComponent.isPending && <Loader2 className="mr-2 size-4 animate-spin" />}
               Crear componente

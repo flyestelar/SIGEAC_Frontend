@@ -1,7 +1,7 @@
 export type ComponentFormState = {
   category_code: string;
   part_number: string;
-  part_name: string;
+  description: string;
   position: string;
 };
 

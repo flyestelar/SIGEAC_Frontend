@@ -81,6 +81,21 @@ import type {
   AircraftAverageByDateRangeData,
   AircraftAverageByDateRangeErrors,
   AircraftAverageByDateRangeResponses,
+  AircraftComponentSlotDestroyData,
+  AircraftComponentSlotDestroyErrors,
+  AircraftComponentSlotDestroyResponses,
+  AircraftComponentSlotIndexData,
+  AircraftComponentSlotIndexErrors,
+  AircraftComponentSlotIndexResponses,
+  AircraftComponentSlotShowData,
+  AircraftComponentSlotShowErrors,
+  AircraftComponentSlotShowResponses,
+  AircraftComponentSlotStoreData,
+  AircraftComponentSlotStoreErrors,
+  AircraftComponentSlotStoreResponses,
+  AircraftComponentSlotUpdateData,
+  AircraftComponentSlotUpdateErrors,
+  AircraftComponentSlotUpdateResponses,
   AircraftDestroyData,
   AircraftDestroyErrors,
   AircraftDestroyResponses,
@@ -1975,6 +1990,77 @@ export const aircraftAdministrationShowAircraftStatistics = <ThrowOnError extend
     url: '/{company}/aircraft-statistics/{acronym}',
     ...options,
   });
+
+/**
+ * GET /aircraft-component-slots?aircraft_id={id}
+ * Returns all slots for a specific aircraft (aircraft_id required)
+ */
+export const aircraftComponentSlotIndex = <ThrowOnError extends boolean = false>(
+  options?: Options<AircraftComponentSlotIndexData, ThrowOnError>,
+) =>
+  (options?.client ?? client).get<AircraftComponentSlotIndexResponses, AircraftComponentSlotIndexErrors, ThrowOnError>({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/aircraft-component-slots',
+    ...options,
+  });
+
+export const aircraftComponentSlotStore = <ThrowOnError extends boolean = false>(
+  options: Options<AircraftComponentSlotStoreData, ThrowOnError>,
+) =>
+  (options.client ?? client).post<AircraftComponentSlotStoreResponses, AircraftComponentSlotStoreErrors, ThrowOnError>({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/aircraft-component-slots',
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    },
+  });
+
+/**
+ * Destroy with relation checks. If related installations or intervals exist, return explanatory message
+ */
+export const aircraftComponentSlotDestroy = <ThrowOnError extends boolean = false>(
+  options: Options<AircraftComponentSlotDestroyData, ThrowOnError>,
+) =>
+  (options.client ?? client).delete<
+    AircraftComponentSlotDestroyResponses,
+    AircraftComponentSlotDestroyErrors,
+    ThrowOnError
+  >({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/aircraft-component-slots/{id}',
+    ...options,
+  });
+
+export const aircraftComponentSlotShow = <ThrowOnError extends boolean = false>(
+  options: Options<AircraftComponentSlotShowData, ThrowOnError>,
+) =>
+  (options.client ?? client).get<AircraftComponentSlotShowResponses, AircraftComponentSlotShowErrors, ThrowOnError>({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/aircraft-component-slots/{id}',
+    ...options,
+  });
+
+export const aircraftComponentSlotUpdate = <ThrowOnError extends boolean = false>(
+  options: Options<AircraftComponentSlotUpdateData, ThrowOnError>,
+) =>
+  (options.client ?? client).put<AircraftComponentSlotUpdateResponses, AircraftComponentSlotUpdateErrors, ThrowOnError>(
+    {
+      responseType: 'json',
+      security: [{ scheme: 'bearer', type: 'http' }],
+      url: '/aircraft-component-slots/{id}',
+      ...options,
+      headers: {
+        'Content-Type': 'application/json',
+        ...options.headers,
+      },
+    },
+  );
 
 export const aircraftTypesIndex = <ThrowOnError extends boolean = false>(
   options?: Options<AircraftTypesIndexData, ThrowOnError>,
