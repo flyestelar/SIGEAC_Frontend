@@ -4,13 +4,13 @@ import { workOrdersIndexOptions } from '@api/queries';
 import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
 import { startTransition, useEffect, useMemo, useState } from 'react';
-import { AlertCircle, Loader2, Plus, SearchCheck, Upload, Wrench } from 'lucide-react';
+import { AlertCircle, Plus, SearchCheck, Upload, Wrench } from 'lucide-react';
 
 import { ContentLayout } from '@/components/layout/ContentLayout';
 import LoadingPage from '@/components/misc/LoadingPage';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import { HardTimeCardSkeletonGrid } from './hard-time-card-skeleton';
 import { useGetMaintenanceAircrafts } from '@/hooks/planificacion/useGetMaintenanceAircrafts';
 import { useGetHardTimeCategories } from '@/hooks/planificacion/hard_time/useGetHardTimeCategories';
 import { useGetHardTimeComponentDetail } from '@/hooks/planificacion/hard_time/useGetHardTimeComponentDetail';
@@ -34,11 +34,13 @@ export function HardTimeDashboard() {
   const [selectedAircraftId, setSelectedAircraftId] = useState<number | null>(null);
   const [selectedComponentId, setSelectedComponentId] = useState<number | null>(null);
   const [isCreateComponentOpen, setIsCreateComponentOpen] = useState(false);
+  const [createComponentDefaultCategory, setCreateComponentDefaultCategory] = useState<string | null>(null);
   const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
   const [installingComponentId, setInstallingComponentId] = useState<number | null>(null);
   const [uninstallingComponentId, setUninstallingComponentId] = useState<number | null>(null);
   const [isIntervalDialogOpen, setIsIntervalDialogOpen] = useState(false);
   const [editingInterval, setEditingInterval] = useState<HardTimeInterval | null>(null);
+  const [intervalTargetComponentId, setIntervalTargetComponentId] = useState<number | null>(null);
   const [isComplianceDialogOpen, setIsComplianceDialogOpen] = useState(false);
 
   const { data: aircraft = [], isLoading: isAircraftLoading } = useGetMaintenanceAircrafts(selectedCompany?.slug);
@@ -106,6 +108,17 @@ export function HardTimeDashboard() {
     setUninstallingComponentId(componentId);
   };
 
+  const openCreateInterval = (componentId: number) => {
+    setIntervalTargetComponentId(componentId);
+    setEditingInterval(null);
+    setIsIntervalDialogOpen(true);
+  };
+
+  const openCreateComponent = (categoryCode: string | null = null) => {
+    setCreateComponentDefaultCategory(categoryCode);
+    setIsCreateComponentOpen(true);
+  };
+
   if (isAircraftLoading) return <LoadingPage />;
 
   return (
@@ -141,7 +154,7 @@ export function HardTimeDashboard() {
                   Trazabilidad
                 </Link>
               </Button>
-              <Button className="gap-2" onClick={() => setIsCreateComponentOpen(true)} disabled={!selectedAircraftId}>
+              <Button className="gap-2" onClick={() => openCreateComponent(null)} disabled={!selectedAircraftId}>
                 <Plus className="size-4" />
                 Nuevo componente ATA
               </Button>
@@ -169,21 +182,23 @@ export function HardTimeDashboard() {
                   <AlertDescription>No se pudieron cargar los componentes Hard Time.</AlertDescription>
                 </Alert>
               ) : isComponentsLoading ? (
-                <Card>
-                  <CardContent className="flex min-h-40 items-center justify-center">
-                    <Loader2 className="size-6 animate-spin text-muted-foreground" />
-                  </CardContent>
-                </Card>
-              ) : categoryGroups.length === 0 ? (
+                <div className="grid gap-4 lg:grid-cols-[280px_1fr]">
+                  <aside className="space-y-2 rounded-xl border border-border/60 bg-background p-3">
+                    {Array.from({ length: 6 }).map((_, i) => (
+                      <div
+                        key={i}
+                        className="h-[60px] animate-pulse rounded-xl border border-border/60 bg-muted/20"
+                      />
+                    ))}
+                  </aside>
+                  <div className="overflow-hidden rounded-xl border border-border/60 bg-background p-4">
+                    <HardTimeCardSkeletonGrid count={6} />
+                  </div>
+                </div>
+              ) : categories.length === 0 ? (
                 <SectionEmpty
-                  title="Sin componentes controlados"
-                  description="Aeronave aún no tiene componentes Hard Time registrados."
-                  action={
-                    <Button onClick={() => setIsCreateComponentOpen(true)} className="gap-2">
-                      <Plus className="size-4" />
-                      Crear primer componente
-                    </Button>
-                  }
+                  title="Sin capítulos ATA disponibles"
+                  description="No hay capítulos ATA configurados. Contacta al administrador."
                 />
               ) : selectedComponentId ? (
                 <HardTimeDetailView
@@ -194,19 +209,19 @@ export function HardTimeDashboard() {
                   onBack={() => setSelectedComponentId(null)}
                   onInstall={() => openInstall(selectedComponentId)}
                   onUninstall={() => openUninstall(selectedComponentId)}
-                  onCreateInterval={() => {
-                    setEditingInterval(null);
-                    setIsIntervalDialogOpen(true);
-                  }}
+                  onCreateInterval={() => openCreateInterval(selectedComponentId)}
                   onRegisterCompliance={() => setIsComplianceDialogOpen(true)}
                 />
               ) : (
                 <HardTimeCategorySidebar
+                  categories={categories}
                   categoryGroups={categoryGroups}
                   averages={averages}
                   onSelectComponent={handleSelectComponent}
                   onInstallComponent={openInstall}
                   onUninstallComponent={openUninstall}
+                  onCreateIntervalForComponent={openCreateInterval}
+                  onCreateComponentInAta={(code) => openCreateComponent(code)}
                 />
               )}
             </>
@@ -216,9 +231,13 @@ export function HardTimeDashboard() {
 
       <CreateComponentDialog
         open={isCreateComponentOpen}
-        onOpenChange={setIsCreateComponentOpen}
+        onOpenChange={(open) => {
+          setIsCreateComponentOpen(open);
+          if (!open) setCreateComponentDefaultCategory(null);
+        }}
         aircraftId={selectedAircraftId}
         categories={categories}
+        defaultCategoryCode={createComponentDefaultCategory}
       />
 
       <HardTimeImportDialog
@@ -251,9 +270,12 @@ export function HardTimeDashboard() {
         open={isIntervalDialogOpen}
         onOpenChange={(open) => {
           setIsIntervalDialogOpen(open);
-          if (!open) setEditingInterval(null);
+          if (!open) {
+            setEditingInterval(null);
+            setIntervalTargetComponentId(null);
+          }
         }}
-        componentId={selectedComponentId}
+        componentId={intervalTargetComponentId ?? selectedComponentId}
         aircraftId={selectedAircraftId}
         interval={editingInterval}
       />

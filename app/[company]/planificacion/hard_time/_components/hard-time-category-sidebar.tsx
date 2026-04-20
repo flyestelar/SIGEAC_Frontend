@@ -1,167 +1,353 @@
 'use client';
 
 import { Badge } from '@/components/ui/badge';
-import { HardTimeComponentResource } from '@api/types';
+import { Input } from '@/components/ui/input';
+import { HardTimeCategoryResource, HardTimeComponentResource } from '@api/types';
+import {
+  AlertTriangle,
+  Boxes,
+  PackageOpen,
+  PlusCircle,
+  Search,
+  ShieldCheck,
+  TriangleAlert,
+  X,
+} from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
-import { HardTimeCardView } from './hard-time-card-view';
+import { HardTimeCard } from './hard-time-card';
 
 interface HardTimeCategorySidebarProps {
+  categories: HardTimeCategoryResource[];
   categoryGroups: HardTimeComponentResource[][];
   averages: { average_daily_flight_hours?: number | null; average_daily_flight_cycles?: number | null } | null;
   onSelectComponent: (id: number) => void;
   onInstallComponent: (componentId: number) => void;
   onUninstallComponent: (componentId: number) => void;
+  onCreateIntervalForComponent: (componentId: number) => void;
+  onCreateComponentInAta: (categoryCode: string) => void;
 }
 
-type ComponentFamilyGroup = {
-  name: string;
-  components: HardTimeComponentResource[];
-  mountedCount: number;
-  vacantCount: number;
+type CategoryStats = {
+  total: number;
+  mounted: number;
+  vacant: number;
+  overdue: number;
+  warning: number;
 };
 
+type CategoryEntry = {
+  category: HardTimeCategoryResource;
+  components: HardTimeComponentResource[];
+  stats: CategoryStats;
+};
+
+function computeStats(components: HardTimeComponentResource[]): CategoryStats {
+  const stats: CategoryStats = { total: components.length, mounted: 0, vacant: 0, overdue: 0, warning: 0 };
+  for (const c of components) {
+    if (c.active_installation) stats.mounted++;
+    else stats.vacant++;
+    if (c.status === 'OVERDUE') stats.overdue++;
+    else if (c.status === 'WARNING') stats.warning++;
+  }
+  return stats;
+}
+
 export function HardTimeCategorySidebar({
+  categories,
   categoryGroups,
   averages,
   onSelectComponent,
   onInstallComponent,
   onUninstallComponent,
+  onCreateIntervalForComponent,
+  onCreateComponentInAta,
 }: HardTimeCategorySidebarProps) {
-  const [selectedCategoryCode, setSelectedCategoryCode] = useState<string>(
-    categoryGroups[0]?.[0]?.category?.code ?? '',
-  );
+  const [searchTerm, setSearchTerm] = useState('');
+
+  const entries = useMemo<CategoryEntry[]>(() => {
+    const componentsByCode = new Map<string, HardTimeComponentResource[]>();
+    for (const group of categoryGroups) {
+      const code = group[0]?.category?.code;
+      if (code) componentsByCode.set(code, group);
+    }
+
+    return categories
+      .map((category) => {
+        const components = componentsByCode.get(category.code) ?? [];
+        return { category, components, stats: computeStats(components) };
+      })
+      .sort((a, b) => {
+        if (b.stats.total !== a.stats.total) return b.stats.total - a.stats.total;
+        return a.category.code.localeCompare(b.category.code, undefined, { numeric: true });
+      });
+  }, [categories, categoryGroups]);
+
+  const [selectedCategoryCode, setSelectedCategoryCode] = useState<string>(entries[0]?.category.code ?? '');
 
   useEffect(() => {
-    if (!categoryGroups.length) return;
+    if (!entries.length) return;
     setSelectedCategoryCode((current) =>
-      categoryGroups.some((group) => group[0]?.category?.code === current)
-        ? current
-        : (categoryGroups[0][0]?.category?.code ?? ''),
+      entries.some((entry) => entry.category.code === current) ? current : entries[0].category.code,
     );
-  }, [categoryGroups]);
+  }, [entries]);
 
-  const selectedGroup = useMemo(
-    () => categoryGroups.find((group) => group[0]?.category?.code === selectedCategoryCode) ?? categoryGroups[0] ?? [],
-    [categoryGroups, selectedCategoryCode],
+  const normalizedSearch = searchTerm.trim().toLowerCase();
+  const filteredEntries = useMemo(() => {
+    if (!normalizedSearch) return entries;
+    return entries.filter(
+      (entry) =>
+        entry.category.code.toLowerCase().includes(normalizedSearch) ||
+        entry.category.name.toLowerCase().includes(normalizedSearch) ||
+        (entry.category.ata_chapter ?? '').toLowerCase().includes(normalizedSearch),
+    );
+  }, [entries, normalizedSearch]);
+
+  const selectedEntry = useMemo(
+    () => entries.find((entry) => entry.category.code === selectedCategoryCode) ?? entries[0],
+    [entries, selectedCategoryCode],
   );
 
   const averageDailyFH = averages?.average_daily_flight_hours ?? null;
   const averageDailyFC = averages?.average_daily_flight_cycles ?? null;
-  const componentFamilies = useMemo<ComponentFamilyGroup[]>(() => {
-    const grouped = Map.groupBy(selectedGroup, (component) => component.description?.trim() || 'Sin nombre');
+  const selectedCategory = selectedEntry?.category ?? null;
+  const selectedComponents = selectedEntry?.components ?? [];
+  const stats = selectedEntry?.stats ?? { total: 0, mounted: 0, vacant: 0, overdue: 0, warning: 0 };
 
-    return Array.from(grouped.entries())
-      .map(([name, components]) => ({
-        name,
-        components: [...components].sort((a, b) => a.position.localeCompare(b.position)),
-        mountedCount: components.filter((component) => component.active_installation).length,
-        vacantCount: components.filter((component) => !component.active_installation).length,
-      }))
-      .sort((a, b) => a.name.localeCompare(b.name));
-  }, [selectedGroup]);
-
-  const totalSlots = selectedGroup?.length ?? 0;
-
-  const selectedCategory = selectedGroup[0]?.category;
+  const sortedComponents = useMemo(() => {
+    const statusRank: Record<string, number> = { OVERDUE: 0, WARNING: 1, OK: 2 };
+    return [...selectedComponents].sort((a, b) => {
+      const aVacant = a.active_installation ? 0 : 1;
+      const bVacant = b.active_installation ? 0 : 1;
+      if (aVacant !== bVacant) return aVacant - bVacant;
+      const aRank = statusRank[a.status ?? 'OK'] ?? 2;
+      const bRank = statusRank[b.status ?? 'OK'] ?? 2;
+      if (aRank !== bRank) return aRank - bRank;
+      return a.position.localeCompare(b.position);
+    });
+  }, [selectedComponents]);
 
   return (
-    <div className="grid gap-4 lg:grid-cols-[280px_1fr]">
-      <aside className="space-y-2 rounded-xl border border-border/60 bg-background p-3">
-        <div className="rounded-lg border border-border/60 bg-muted/15 px-4 py-3">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-            ATA seleccionado
-          </p>
-          <div className="mt-1 flex items-center justify-between gap-3">
-            <div>
-              <p className="text-sm font-semibold text-foreground">{selectedCategory?.name}</p>
-              <p className="text-xs text-muted-foreground">{selectedCategory?.code}</p>
-            </div>
-            <Badge variant="outline" className="font-mono text-xs">
-              {totalSlots}
-            </Badge>
+    <div className="grid gap-4 lg:grid-cols-[300px_1fr]">
+      <aside className="flex max-h-[calc(100vh-12rem)] flex-col overflow-hidden rounded-xl border border-border/60 bg-background">
+        <div className="space-y-3 border-b border-border/60 bg-muted/15 px-3 py-3">
+          <div>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+              Capítulos ATA
+            </p>
+            <p className="mt-0.5 text-xs text-muted-foreground">
+              {entries.length} en total · {selectedCategory?.code ?? '—'}
+            </p>
+          </div>
+
+          <div className="relative">
+            <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              type="search"
+              value={searchTerm}
+              onChange={(event) => setSearchTerm(event.target.value)}
+              placeholder="Buscar ATA o nombre"
+              className="h-8 pl-8 pr-8 text-xs"
+            />
+            {searchTerm && (
+              <button
+                type="button"
+                onClick={() => setSearchTerm('')}
+                className="absolute right-1 top-1/2 flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-md text-muted-foreground hover:bg-muted/40 hover:text-foreground"
+                aria-label="Limpiar búsqueda"
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            )}
           </div>
         </div>
-        {categoryGroups.map((group) => {
-          const groupCategory = group[0].category!;
-          const isActive = groupCategory?.code === selectedCategoryCode;
-          return (
-            <button
-              key={groupCategory.code}
-              type="button"
-              className={`flex w-full items-start justify-between gap-3 rounded-xl border p-3 text-left transition-colors ${
-                isActive
-                  ? 'border-sky-500/40 bg-sky-500/[0.08]'
-                  : 'border-border/60 bg-background hover:border-border/80 hover:bg-muted/20'
-              }`}
-              onClick={() => setSelectedCategoryCode(groupCategory.code)}
-            >
-              <div>
-                <p className="text-sm font-semibold text-foreground">{groupCategory.name}</p>
-                <p className="text-xs text-muted-foreground">{groupCategory.code}</p>
+
+        <div className="flex-1 overflow-y-auto p-2">
+          {filteredEntries.length === 0 ? (
+            <div className="flex flex-col items-center justify-center gap-2 px-4 py-8 text-center">
+              <div className="flex h-9 w-9 items-center justify-center rounded-full border border-border/60 bg-muted/20">
+                <Search className="h-4 w-4 text-muted-foreground" />
               </div>
-              <Badge variant="outline" className="self-start font-mono text-xs">
-                {group.length}
-              </Badge>
-            </button>
-          );
-        })}
+              <p className="text-xs font-medium text-foreground">Sin resultados</p>
+              <p className="text-[11px] text-muted-foreground">
+                No se encontraron ATA que coincidan con “{searchTerm}”.
+              </p>
+            </div>
+          ) : (
+            <ul className="space-y-1">
+              {filteredEntries.map((entry) => {
+                const isActive = entry.category.code === selectedCategoryCode;
+                const isEmpty = entry.stats.total === 0;
+                return (
+                  <li key={entry.category.code}>
+                    <button
+                      type="button"
+                      className={`flex w-full items-start justify-between gap-2 rounded-lg border px-3 py-2 text-left transition-colors ${
+                        isActive
+                          ? 'border-sky-500/40 bg-sky-500/[0.08]'
+                          : 'border-transparent hover:border-border/60 hover:bg-muted/20'
+                      }`}
+                      onClick={() => setSelectedCategoryCode(entry.category.code)}
+                    >
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-1.5">
+                          <span className="font-mono text-xs font-semibold text-foreground">
+                            {entry.category.code}
+                          </span>
+                          {entry.stats.overdue > 0 && (
+                            <span className="inline-flex items-center gap-0.5 text-[10px] font-semibold text-red-600 dark:text-red-400">
+                              <TriangleAlert className="h-2.5 w-2.5" />
+                              {entry.stats.overdue}
+                            </span>
+                          )}
+                          {entry.stats.warning > 0 && (
+                            <span className="inline-flex items-center gap-0.5 text-[10px] font-semibold text-amber-600 dark:text-amber-400">
+                              <AlertTriangle className="h-2.5 w-2.5" />
+                              {entry.stats.warning}
+                            </span>
+                          )}
+                        </div>
+                        <p className="mt-0.5 truncate text-xs text-muted-foreground">{entry.category.name}</p>
+                      </div>
+                      <Badge
+                        variant="outline"
+                        className={`shrink-0 self-start font-mono text-[10px] ${
+                          isEmpty
+                            ? 'border-dashed border-border/50 text-muted-foreground'
+                            : 'border-border/70'
+                        }`}
+                      >
+                        {entry.stats.total}
+                      </Badge>
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </div>
       </aside>
 
       <div className="space-y-4">
-        <div className="rounded-xl border border-border/60 bg-background p-4">
-          <div className="rounded-xl border border-sky-500/20 bg-sky-500/[0.04] p-4">
-            <div className="space-y-2">
-              <div>
-                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-                  Tablero por familia
-                </p>
-                <h2 className="text-lg font-semibold tracking-tight text-foreground">{selectedCategory?.name}</h2>
-                <p className="text-xs text-muted-foreground">{selectedCategory?.code}</p>
-              </div>
-              <p className="text-sm text-muted-foreground">
-                El panel agrupa por nombre de componente y debajo muestra cada slot o ubicación disponible dentro del
-                ATA seleccionado.
+        <div className="overflow-hidden rounded-xl border border-border/60 bg-background">
+          <div className="flex flex-col gap-3 border-b border-border/60 bg-sky-500/[0.04] px-5 py-3 lg:flex-row lg:items-center lg:justify-between">
+            <div className="min-w-0">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                Capítulo ATA
               </p>
+              <h2 className="truncate text-base font-semibold tracking-tight text-foreground">
+                {selectedCategory?.name ?? '—'}
+              </h2>
+              <p className="font-mono text-xs text-muted-foreground">{selectedCategory?.code ?? ''}</p>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-1.5">
+              <Badge variant="outline" className="h-6 gap-1 border-border/60 px-2 font-mono text-[11px]">
+                <Boxes className="h-3 w-3 text-muted-foreground" />
+                {stats.total} slot{stats.total !== 1 && 's'}
+              </Badge>
+              {stats.mounted > 0 && (
+                <Badge
+                  variant="outline"
+                  className="h-6 gap-1 border-emerald-500/30 bg-emerald-500/10 px-2 font-mono text-[11px] text-emerald-700 dark:text-emerald-400"
+                >
+                  <ShieldCheck className="h-3 w-3" />
+                  {stats.mounted} montado{stats.mounted !== 1 && 's'}
+                </Badge>
+              )}
+              {stats.vacant > 0 && (
+                <Badge
+                  variant="outline"
+                  className="h-6 gap-1 border-sky-500/30 bg-sky-500/10 px-2 font-mono text-[11px] text-sky-700 dark:text-sky-300"
+                >
+                  <PackageOpen className="h-3 w-3" />
+                  {stats.vacant} vacío{stats.vacant !== 1 && 's'}
+                </Badge>
+              )}
+              {stats.warning > 0 && (
+                <Badge
+                  variant="outline"
+                  className="h-6 gap-1 border-amber-500/30 bg-amber-500/10 px-2 font-mono text-[11px] text-amber-600 dark:text-amber-400"
+                >
+                  <AlertTriangle className="h-3 w-3" />
+                  {stats.warning} próximo{stats.warning !== 1 && 's'}
+                </Badge>
+              )}
+              {stats.overdue > 0 && (
+                <Badge
+                  variant="outline"
+                  className="h-6 gap-1 border-red-500/30 bg-red-500/10 px-2 font-mono text-[11px] text-red-600 dark:text-red-400"
+                >
+                  <TriangleAlert className="h-3 w-3" />
+                  {stats.overdue} vencido{stats.overdue !== 1 && 's'}
+                </Badge>
+              )}
             </div>
           </div>
 
-          <div className="mt-4 space-y-4">
-            {componentFamilies.map((family) => (
-              <section key={family.name} className="overflow-hidden rounded-xl border border-border/60 bg-card">
-                <div className="flex flex-col gap-3 border-b border-border/60 bg-muted/15 px-4 py-3 lg:flex-row lg:items-center lg:justify-between">
-                  <div>
-                    <p className="text-base font-semibold tracking-tight text-foreground">{family.name}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {family.components.length} slot{family.components.length !== 1 && 's'} dentro de{' '}
-                      {selectedCategory?.code}
-                    </p>
-                  </div>
-
-                  <div className="flex flex-wrap items-center gap-2">
-                    <Badge variant="outline" className="font-mono text-xs">
-                      {family.mountedCount} montado{family.mountedCount !== 1 && 's'}
-                    </Badge>
-                    <Badge
-                      variant="outline"
-                      className={`font-mono text-xs ${family.vacantCount > 0 ? 'border-sky-500/30 bg-sky-500/10 text-sky-700 dark:text-sky-300' : ''}`}
-                    >
-                      {family.vacantCount} vacío{family.vacantCount !== 1 && 's'}
-                    </Badge>
-                  </div>
+          <div className="p-4">
+            {sortedComponents.length === 0 ? (
+              <div className="flex flex-col items-center justify-center gap-3 rounded-lg border border-dashed border-border/60 bg-muted/10 px-6 py-10 text-center">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full border border-border/60 bg-background">
+                  <PackageOpen className="h-5 w-5 text-muted-foreground" />
                 </div>
-
-                <div className="p-4">
-                  <HardTimeCardView
-                    components={family.components}
-                    onSelectComponent={onSelectComponent}
+                <p className="text-sm font-medium text-foreground">Sin componentes en este ATA</p>
+                <p className="max-w-xs text-xs text-muted-foreground">
+                  Registra un componente controlado o importa la estructura INAC para poblar este capítulo.
+                </p>
+                {selectedCategory?.code && (
+                  <button
+                    type="button"
+                    onClick={() => onCreateComponentInAta(selectedCategory.code)}
+                    className="mt-1 inline-flex items-center gap-1.5 rounded-md border border-sky-500/30 bg-sky-500/10 px-3 py-1.5 text-[11px] font-medium text-sky-700 transition-colors hover:bg-sky-500/15 dark:text-sky-300"
+                  >
+                    <PlusCircle className="h-3.5 w-3.5" />
+                    Crear componente en {selectedCategory.code}
+                  </button>
+                )}
+              </div>
+            ) : (
+              <div className="grid gap-3 md:grid-cols-2 2xl:grid-cols-3">
+                {sortedComponents.map((component) => (
+                  <HardTimeCard
+                    key={component.id}
+                    component={component}
+                    onSelect={() => onSelectComponent(component.id)}
                     averageDailyFH={averageDailyFH}
                     averageDailyFC={averageDailyFC}
-                    onInstallComponent={onInstallComponent}
-                    onUninstallComponent={onUninstallComponent}
+                    onInstall={() => onInstallComponent(component.id)}
+                    onUninstall={() => onUninstallComponent(component.id)}
+                    onCreateInterval={() => onCreateIntervalForComponent(component.id)}
                   />
-                </div>
-              </section>
-            ))}
+                ))}
+                {selectedCategory?.code && (
+                  <button
+                    type="button"
+                    onClick={() => onCreateComponentInAta(selectedCategory.code)}
+                    className="group flex min-h-[148px] flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-border/60 bg-muted/5 p-4 text-center transition-colors hover:border-sky-500/40 hover:bg-sky-500/[0.04]"
+                    aria-label={`Crear componente en ATA ${selectedCategory.code}`}
+                  >
+                    <div className="flex h-9 w-9 items-center justify-center rounded-full border border-border/60 bg-background transition-colors group-hover:border-sky-500/40 group-hover:bg-sky-500/10">
+                      <PlusCircle className="h-4 w-4 text-muted-foreground transition-colors group-hover:text-sky-700 dark:group-hover:text-sky-300" />
+                    </div>
+                    <div className="space-y-0.5">
+                      <p className="text-sm font-medium text-foreground/90 group-hover:text-foreground">
+                        Nuevo componente
+                      </p>
+                      <p className="text-[11px] text-muted-foreground">
+                        en{' '}
+                        <span className="font-mono text-foreground/80">{selectedCategory.code}</span>
+                        {selectedCategory.name && (
+                          <>
+                            {' · '}
+                            <span className="truncate">{selectedCategory.name}</span>
+                          </>
+                        )}
+                      </p>
+                    </div>
+                  </button>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </div>

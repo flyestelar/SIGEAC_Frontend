@@ -4,7 +4,6 @@ import {
   hardTimeComponentIndexQueryKey,
 } from '@api/queries';
 import {
-  aircraftComponentSlotStore,
   hardTimeComplianceStore,
   hardTimeComponentDestroy,
   hardTimeComponentStore,

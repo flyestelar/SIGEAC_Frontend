@@ -237,12 +237,7 @@ import {
   hardTimeCategoryUpdate,
   hardTimeComplianceIndex,
   hardTimeComplianceStore,
-  hardTimeComponentDestroy,
-  hardTimeComponentIndex,
   hardTimeComponentInstallations,
-  hardTimeComponentShow,
-  hardTimeComponentStore,
-  hardTimeComponentUpdate,
   hardTimeInstallationHistoryByAircraft,
   hardTimeInstallationInstall,
   hardTimeInstallationUninstall,
@@ -1138,24 +1133,9 @@ import type {
   HardTimeComplianceStoreData,
   HardTimeComplianceStoreError,
   HardTimeComplianceStoreResponse,
-  HardTimeComponentDestroyData,
-  HardTimeComponentDestroyError,
-  HardTimeComponentDestroyResponse,
-  HardTimeComponentIndexData,
-  HardTimeComponentIndexError,
-  HardTimeComponentIndexResponse,
   HardTimeComponentInstallationsData,
   HardTimeComponentInstallationsError,
   HardTimeComponentInstallationsResponse,
-  HardTimeComponentShowData,
-  HardTimeComponentShowError,
-  HardTimeComponentShowResponse,
-  HardTimeComponentStoreData,
-  HardTimeComponentStoreError,
-  HardTimeComponentStoreResponse,
-  HardTimeComponentUpdateData,
-  HardTimeComponentUpdateError,
-  HardTimeComponentUpdateResponse,
   HardTimeInstallationHistoryByAircraftData,
   HardTimeInstallationHistoryByAircraftError,
   HardTimeInstallationHistoryByAircraftResponse,
@@ -7723,130 +7703,6 @@ export const hardTimeComplianceStoreMutation = (
   return mutationOptions;
 };
 
-export const hardTimeComponentIndexQueryKey = (options?: Options<HardTimeComponentIndexData>) =>
-  createQueryKey('hardTimeComponentIndex', options);
-
-/**
- * List all controlled components for an aircraft, grouped by category with computed metrics.
- * GET /hard-time-components?aircraft_id={id}
- */
-export const hardTimeComponentIndexOptions = (options?: Options<HardTimeComponentIndexData>) =>
-  queryOptions<
-    HardTimeComponentIndexResponse,
-    AxiosError<HardTimeComponentIndexError>,
-    HardTimeComponentIndexResponse,
-    ReturnType<typeof hardTimeComponentIndexQueryKey>
-  >({
-    queryFn: async ({ queryKey, signal }) => {
-      const { data } = await hardTimeComponentIndex({
-        ...options,
-        ...queryKey[0],
-        signal,
-        throwOnError: true,
-      });
-      return data;
-    },
-    queryKey: hardTimeComponentIndexQueryKey(options),
-  });
-
-export const hardTimeComponentStoreMutation = (
-  options?: Partial<Options<HardTimeComponentStoreData>>,
-): UseMutationOptions<
-  HardTimeComponentStoreResponse,
-  AxiosError<HardTimeComponentStoreError>,
-  Options<HardTimeComponentStoreData>
-> => {
-  const mutationOptions: UseMutationOptions<
-    HardTimeComponentStoreResponse,
-    AxiosError<HardTimeComponentStoreError>,
-    Options<HardTimeComponentStoreData>
-  > = {
-    mutationFn: async (fnOptions) => {
-      const { data } = await hardTimeComponentStore({
-        ...options,
-        ...fnOptions,
-        throwOnError: true,
-      });
-      return data;
-    },
-  };
-  return mutationOptions;
-};
-
-export const hardTimeComponentDestroyMutation = (
-  options?: Partial<Options<HardTimeComponentDestroyData>>,
-): UseMutationOptions<
-  HardTimeComponentDestroyResponse,
-  AxiosError<HardTimeComponentDestroyError>,
-  Options<HardTimeComponentDestroyData>
-> => {
-  const mutationOptions: UseMutationOptions<
-    HardTimeComponentDestroyResponse,
-    AxiosError<HardTimeComponentDestroyError>,
-    Options<HardTimeComponentDestroyData>
-  > = {
-    mutationFn: async (fnOptions) => {
-      const { data } = await hardTimeComponentDestroy({
-        ...options,
-        ...fnOptions,
-        throwOnError: true,
-      });
-      return data;
-    },
-  };
-  return mutationOptions;
-};
-
-export const hardTimeComponentShowQueryKey = (options: Options<HardTimeComponentShowData>) =>
-  createQueryKey('hardTimeComponentShow', options);
-
-/**
- * Show full component detail: intervals with last compliance, installation history, compliances.
- * GET /hard-time-components/{id}
- */
-export const hardTimeComponentShowOptions = (options: Options<HardTimeComponentShowData>) =>
-  queryOptions<
-    HardTimeComponentShowResponse,
-    AxiosError<HardTimeComponentShowError>,
-    HardTimeComponentShowResponse,
-    ReturnType<typeof hardTimeComponentShowQueryKey>
-  >({
-    queryFn: async ({ queryKey, signal }) => {
-      const { data } = await hardTimeComponentShow({
-        ...options,
-        ...queryKey[0],
-        signal,
-        throwOnError: true,
-      });
-      return data;
-    },
-    queryKey: hardTimeComponentShowQueryKey(options),
-  });
-
-export const hardTimeComponentUpdateMutation = (
-  options?: Partial<Options<HardTimeComponentUpdateData>>,
-): UseMutationOptions<
-  HardTimeComponentUpdateResponse,
-  AxiosError<HardTimeComponentUpdateError>,
-  Options<HardTimeComponentUpdateData>
-> => {
-  const mutationOptions: UseMutationOptions<
-    HardTimeComponentUpdateResponse,
-    AxiosError<HardTimeComponentUpdateError>,
-    Options<HardTimeComponentUpdateData>
-  > = {
-    mutationFn: async (fnOptions) => {
-      const { data } = await hardTimeComponentUpdate({
-        ...options,
-        ...fnOptions,
-        throwOnError: true,
-      });
-      return data;
-    },
-  };
-  return mutationOptions;
-};
-
 export const hardTimeComponentInstallationsQueryKey = (options: Options<HardTimeComponentInstallationsData>) =>
   createQueryKey('hardTimeComponentInstallations', options);
 
@@ -7873,38 +7729,8 @@ export const hardTimeComponentInstallationsOptions = (options: Options<HardTimeC
     queryKey: hardTimeComponentInstallationsQueryKey(options),
   });
 
-export const hardTimeInstallationHistoryByAircraftQueryKey = (
-  options: Options<HardTimeInstallationHistoryByAircraftData>,
-) => createQueryKey('hardTimeInstallationHistoryByAircraft', options);
-
 /**
- * List installation history for a specific aircraft.
- * GET /aircrafts/{aircraftId}/hard-time-installations
- */
-export const hardTimeInstallationHistoryByAircraftOptions = (
-  options: Options<HardTimeInstallationHistoryByAircraftData>,
-) =>
-  queryOptions<
-    HardTimeInstallationHistoryByAircraftResponse,
-    AxiosError<HardTimeInstallationHistoryByAircraftError>,
-    HardTimeInstallationHistoryByAircraftResponse,
-    ReturnType<typeof hardTimeInstallationHistoryByAircraftQueryKey>
-  >({
-    queryFn: async ({ queryKey, signal }) => {
-      const { data } = await hardTimeInstallationHistoryByAircraft({
-        ...options,
-        ...queryKey[0],
-        signal,
-        throwOnError: true,
-      });
-      return data;
-    },
-    queryKey: hardTimeInstallationHistoryByAircraftQueryKey(options),
-  });
-
-/**
- * Mount a component into a controlled position.
- * POST /hard-time-components/{id}/install
+ * Mount a component into a controlled position
  */
 export const hardTimeInstallationInstallMutation = (
   options?: Partial<Options<HardTimeInstallationInstallData>>,
@@ -7957,6 +7783,35 @@ export const hardTimeInstallationUninstallMutation = (
   };
   return mutationOptions;
 };
+
+export const hardTimeInstallationHistoryByAircraftQueryKey = (
+  options: Options<HardTimeInstallationHistoryByAircraftData>,
+) => createQueryKey('hardTimeInstallationHistoryByAircraft', options);
+
+/**
+ * List installation history for a specific aircraft.
+ * GET /aircrafts/{aircraftId}/hard-time-installations
+ */
+export const hardTimeInstallationHistoryByAircraftOptions = (
+  options: Options<HardTimeInstallationHistoryByAircraftData>,
+) =>
+  queryOptions<
+    HardTimeInstallationHistoryByAircraftResponse,
+    AxiosError<HardTimeInstallationHistoryByAircraftError>,
+    HardTimeInstallationHistoryByAircraftResponse,
+    ReturnType<typeof hardTimeInstallationHistoryByAircraftQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await hardTimeInstallationHistoryByAircraft({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: hardTimeInstallationHistoryByAircraftQueryKey(options),
+  });
 
 export const hardTimeIntervalIndexQueryKey = (options: Options<HardTimeIntervalIndexData>) =>
   createQueryKey('hardTimeIntervalIndex', options);

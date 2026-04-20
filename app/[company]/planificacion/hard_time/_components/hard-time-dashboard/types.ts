@@ -1,5 +1,6 @@
 export type ComponentFormState = {
   category_code: string;
+  batch_id: string;
   part_number: string;
   description: string;
   position: string;

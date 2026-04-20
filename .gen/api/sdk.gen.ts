@@ -698,24 +698,9 @@ import type {
   HardTimeComplianceStoreData,
   HardTimeComplianceStoreErrors,
   HardTimeComplianceStoreResponses,
-  HardTimeComponentDestroyData,
-  HardTimeComponentDestroyErrors,
-  HardTimeComponentDestroyResponses,
-  HardTimeComponentIndexData,
-  HardTimeComponentIndexErrors,
-  HardTimeComponentIndexResponses,
   HardTimeComponentInstallationsData,
   HardTimeComponentInstallationsErrors,
   HardTimeComponentInstallationsResponses,
-  HardTimeComponentShowData,
-  HardTimeComponentShowErrors,
-  HardTimeComponentShowResponses,
-  HardTimeComponentStoreData,
-  HardTimeComponentStoreErrors,
-  HardTimeComponentStoreResponses,
-  HardTimeComponentUpdateData,
-  HardTimeComponentUpdateErrors,
-  HardTimeComponentUpdateResponses,
   HardTimeInstallationHistoryByAircraftData,
   HardTimeInstallationHistoryByAircraftErrors,
   HardTimeInstallationHistoryByAircraftResponses,
@@ -4756,72 +4741,6 @@ export const hardTimeComplianceStore = <ThrowOnError extends boolean = false>(
   });
 
 /**
- * List all controlled components for an aircraft, grouped by category with computed metrics.
- * GET /hard-time-components?aircraft_id={id}
- */
-export const hardTimeComponentIndex = <ThrowOnError extends boolean = false>(
-  options?: Options<HardTimeComponentIndexData, ThrowOnError>,
-) =>
-  (options?.client ?? client).get<HardTimeComponentIndexResponses, HardTimeComponentIndexErrors, ThrowOnError>({
-    responseType: 'json',
-    security: [{ scheme: 'bearer', type: 'http' }],
-    url: '/hard-time-components',
-    ...options,
-  });
-
-export const hardTimeComponentStore = <ThrowOnError extends boolean = false>(
-  options: Options<HardTimeComponentStoreData, ThrowOnError>,
-) =>
-  (options.client ?? client).post<HardTimeComponentStoreResponses, HardTimeComponentStoreErrors, ThrowOnError>({
-    responseType: 'json',
-    security: [{ scheme: 'bearer', type: 'http' }],
-    url: '/hard-time-components',
-    ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      ...options.headers,
-    },
-  });
-
-export const hardTimeComponentDestroy = <ThrowOnError extends boolean = false>(
-  options: Options<HardTimeComponentDestroyData, ThrowOnError>,
-) =>
-  (options.client ?? client).delete<HardTimeComponentDestroyResponses, HardTimeComponentDestroyErrors, ThrowOnError>({
-    responseType: 'json',
-    security: [{ scheme: 'bearer', type: 'http' }],
-    url: '/hard-time-components/{id}',
-    ...options,
-  });
-
-/**
- * Show full component detail: intervals with last compliance, installation history, compliances.
- * GET /hard-time-components/{id}
- */
-export const hardTimeComponentShow = <ThrowOnError extends boolean = false>(
-  options: Options<HardTimeComponentShowData, ThrowOnError>,
-) =>
-  (options.client ?? client).get<HardTimeComponentShowResponses, HardTimeComponentShowErrors, ThrowOnError>({
-    responseType: 'json',
-    security: [{ scheme: 'bearer', type: 'http' }],
-    url: '/hard-time-components/{id}',
-    ...options,
-  });
-
-export const hardTimeComponentUpdate = <ThrowOnError extends boolean = false>(
-  options: Options<HardTimeComponentUpdateData, ThrowOnError>,
-) =>
-  (options.client ?? client).put<HardTimeComponentUpdateResponses, HardTimeComponentUpdateErrors, ThrowOnError>({
-    responseType: 'json',
-    security: [{ scheme: 'bearer', type: 'http' }],
-    url: '/hard-time-components/{id}',
-    ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      ...options.headers,
-    },
-  });
-
-/**
  * List installation history for a position (traceability by position).
  * GET /hard-time-components/{id}/installations
  */
@@ -4840,26 +4759,7 @@ export const hardTimeComponentInstallations = <ThrowOnError extends boolean = fa
   });
 
 /**
- * List installation history for a specific aircraft.
- * GET /aircrafts/{aircraftId}/hard-time-installations
- */
-export const hardTimeInstallationHistoryByAircraft = <ThrowOnError extends boolean = false>(
-  options: Options<HardTimeInstallationHistoryByAircraftData, ThrowOnError>,
-) =>
-  (options.client ?? client).get<
-    HardTimeInstallationHistoryByAircraftResponses,
-    HardTimeInstallationHistoryByAircraftErrors,
-    ThrowOnError
-  >({
-    responseType: 'json',
-    security: [{ scheme: 'bearer', type: 'http' }],
-    url: '/aircrafts/{aircraftId}/hard-time-installations',
-    ...options,
-  });
-
-/**
- * Mount a component into a controlled position.
- * POST /hard-time-components/{id}/install
+ * Mount a component into a controlled position
  */
 export const hardTimeInstallationInstall = <ThrowOnError extends boolean = false>(
   options: Options<HardTimeInstallationInstallData, ThrowOnError>,
@@ -4871,7 +4771,7 @@ export const hardTimeInstallationInstall = <ThrowOnError extends boolean = false
   >({
     responseType: 'json',
     security: [{ scheme: 'bearer', type: 'http' }],
-    url: '/hard-time-components/{id}/install',
+    url: '/aircraft-component-slots/{id}/install',
     ...options,
     headers: {
       'Content-Type': 'application/json',
@@ -4893,12 +4793,30 @@ export const hardTimeInstallationUninstall = <ThrowOnError extends boolean = fal
   >({
     responseType: 'json',
     security: [{ scheme: 'bearer', type: 'http' }],
-    url: '/hard-time-components/{id}/uninstall',
+    url: '/aircraft-component-slots/{id}/uninstall',
     ...options,
     headers: {
       'Content-Type': 'application/json',
       ...options.headers,
     },
+  });
+
+/**
+ * List installation history for a specific aircraft.
+ * GET /aircrafts/{aircraftId}/hard-time-installations
+ */
+export const hardTimeInstallationHistoryByAircraft = <ThrowOnError extends boolean = false>(
+  options: Options<HardTimeInstallationHistoryByAircraftData, ThrowOnError>,
+) =>
+  (options.client ?? client).get<
+    HardTimeInstallationHistoryByAircraftResponses,
+    HardTimeInstallationHistoryByAircraftErrors,
+    ThrowOnError
+  >({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/aircrafts/{aircraftId}/hard-time-installations',
+    ...options,
   });
 
 /**

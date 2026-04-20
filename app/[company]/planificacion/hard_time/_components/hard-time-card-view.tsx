@@ -10,6 +10,7 @@ interface HardTimeCardViewProps {
   averageDailyFC?: number | null;
   onInstallComponent?: (id: number) => void;
   onUninstallComponent?: (id: number) => void;
+  onCreateInterval?: (id: number) => void;
 }
 
 export function HardTimeCardView({
@@ -19,6 +20,7 @@ export function HardTimeCardView({
   averageDailyFC,
   onInstallComponent,
   onUninstallComponent,
+  onCreateInterval,
 }: HardTimeCardViewProps) {
   return (
     <div className="grid gap-3 md:grid-cols-2 2xl:grid-cols-3">
@@ -31,6 +33,7 @@ export function HardTimeCardView({
           averageDailyFC={averageDailyFC}
           onInstall={() => onInstallComponent?.(component.id)}
           onUninstall={() => onUninstallComponent?.(component.id)}
+          onCreateInterval={onCreateInterval ? () => onCreateInterval(component.id) : undefined}
         />
       ))}
     </div>

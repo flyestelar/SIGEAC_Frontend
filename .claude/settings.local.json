@@ -12,7 +12,8 @@
       "Bash(npx:*)",
       "Bash(npm run:*)",
       "Bash(git show:*)",
-      "Bash(cat:*)"
+      "Bash(cat:*)",
+      "Bash(git stash *)"
     ]
   }
 }
