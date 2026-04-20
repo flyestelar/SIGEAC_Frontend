@@ -12,11 +12,11 @@ import {
 } from "@/components/ui/dialog";
 import { useState } from "react";
 import { CreateVoluntaryReportForm } from "@/components/forms/sms/CreateVoluntaryReportForm";
-import { VoluntaryReport } from "@/types";
+import { VoluntaryReportResource } from "@/.gen/api/types.gen";
 
 interface FormProps {
   title: string;
-  initialData?: VoluntaryReport;
+  initialData?: VoluntaryReportResource;
   isEditing?: boolean;
 }
 

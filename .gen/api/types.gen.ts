@@ -316,7 +316,9 @@ export type DangerIdentificationResource = {
   information_source_id: number | null;
   registered_by: string;
   updated_by: string | null;
-  information_source?: InformationSourceResource;
+  information_source: {
+    [key: string]: unknown;
+  };
   analysis?: AnalysisResource;
   mitigation_plan?: MitigationPlanResource;
 };
@@ -395,15 +397,6 @@ export type FollowUpControl = Array<string>;
  * InformationSource
  */
 export type InformationSource = Array<string>;
-
-/**
- * InformationSourceResource
- */
-export type InformationSourceResource = {
-  id: number;
-  name: string;
-  type: string;
-};
 
 /**
  * JobTitle
@@ -1327,7 +1320,6 @@ export type VoluntaryReport = {
   reporter_phone: string | null;
   reporter_email: string | null;
   status: string | null;
-  location_id: number;
   image: string | null;
   document: string | null;
   close_date: string | null;
@@ -1337,8 +1329,7 @@ export type VoluntaryReport = {
   validation_status: string | null;
   referred_to: string | null;
   referred_to_other: string | null;
-  sms_coordinator_name: string | null;
-  sms_processed_date: string | null;
+  sms_coordinator: string | null;
   registered_by: string;
   updated_by: string | null;
   source_reference: string | null;
@@ -1369,10 +1360,8 @@ export type VoluntaryReportRequest = {
   validation_status?: boolean | null;
   referred_to?: 'COMITE_OPERACIONAL' | 'DUENO_PROCESO';
   referred_to_other?: string | null;
-  sms_coordinator_name?: string | null;
-  sms_processed_date?: string | null;
+  sms_coordinator?: string | null;
   danger_identification_id?: number | null;
-  location_id?: number | null;
   image?: Blob | File | null;
   document?: string | null;
 };
@@ -1402,7 +1391,6 @@ export type VoluntaryReportResource = {
   registered_by: string;
   updated_by: string | null;
   is_anonymous: boolean;
-  location_id: number;
   source_reference: string | null;
   recommendations: string | null;
   reporter_area: string | null;
@@ -1410,8 +1398,10 @@ export type VoluntaryReportResource = {
   validation_status: boolean | null;
   referred_to: string | null;
   referred_to_other: string | null;
-  sms_coordinator_name: string | null;
-  sms_processed_date: string | null;
+  sms_coordinator: string | null;
+  /**
+   * 'sms_processed_date'      => $this->sms_processed_date !== null ? (string) $this->sms_processed_date : null,
+   */
   danger_identification?: DangerIdentificationResource;
 };
 
@@ -1419,6 +1409,125 @@ export type VoluntaryReportResource = {
  * WorkShop
  */
 export type WorkShop = Array<string>;
+
+export type BatchesIndexData = {
+  body?: never;
+  path: {
+    company: string;
+  };
+  query?: never;
+  url: '/{company}/batches';
+};
+
+export type BatchesIndexErrors = {
+  /**
+   * Unauthenticated
+   */
+  401: {
+    /**
+     * Error overview.
+     */
+    message: string;
+  };
+};
+
+export type BatchesIndexError = BatchesIndexErrors[keyof BatchesIndexErrors];
+
+export type BatchesIndexResponses = {
+  200: Array<Batch>;
+};
+
+export type BatchesIndexResponse = BatchesIndexResponses[keyof BatchesIndexResponses];
+
+export type PostByCompanyBatchesData = {
+  body?: never;
+  path: {
+    company: string;
+  };
+  query?: never;
+  url: '/{company}/batches';
+};
+
+export type PostByCompanyBatchesErrors = {
+  /**
+   * Unauthenticated
+   */
+  401: {
+    /**
+     * Error overview.
+     */
+    message: string;
+  };
+};
+
+export type PostByCompanyBatchesError = PostByCompanyBatchesErrors[keyof PostByCompanyBatchesErrors];
+
+export type PostByCompanyBatchesResponses = {
+  200: string;
+};
+
+export type PostByCompanyBatchesResponse = PostByCompanyBatchesResponses[keyof PostByCompanyBatchesResponses];
+
+export type PutByCompanyUpdateToolStatusByIdData = {
+  body?: never;
+  path: {
+    company: string;
+    id: string;
+  };
+  query?: never;
+  url: '/{company}/update-tool-status/{id}';
+};
+
+export type PutByCompanyUpdateToolStatusByIdErrors = {
+  /**
+   * Unauthenticated
+   */
+  401: {
+    /**
+     * Error overview.
+     */
+    message: string;
+  };
+};
+
+export type PutByCompanyUpdateToolStatusByIdError =
+  PutByCompanyUpdateToolStatusByIdErrors[keyof PutByCompanyUpdateToolStatusByIdErrors];
+
+export type PutByCompanyUpdateToolStatusByIdResponses = {
+  200: string;
+};
+
+export type PutByCompanyUpdateToolStatusByIdResponse =
+  PutByCompanyUpdateToolStatusByIdResponses[keyof PutByCompanyUpdateToolStatusByIdResponses];
+
+export type GetMailableData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: '/mailable';
+};
+
+export type GetMailableErrors = {
+  /**
+   * Unauthenticated
+   */
+  401: {
+    /**
+     * Error overview.
+     */
+    message: string;
+  };
+};
+
+export type GetMailableError = GetMailableErrors[keyof GetMailableErrors];
+
+export type GetMailableResponses = {
+  200: {
+    [key: string]: unknown;
+  };
+};
+
+export type GetMailableResponse = GetMailableResponses[keyof GetMailableResponses];
 
 export type AccountantsIndexData = {
   body?: never;
@@ -4152,35 +4261,6 @@ export type BankAccountAccountByBankResponses = {
 
 export type BankAccountAccountByBankResponse =
   BankAccountAccountByBankResponses[keyof BankAccountAccountByBankResponses];
-
-export type BatchesIndexData = {
-  body?: never;
-  path: {
-    company: string;
-  };
-  query?: never;
-  url: '/{company}/batches';
-};
-
-export type BatchesIndexErrors = {
-  /**
-   * Unauthenticated
-   */
-  401: {
-    /**
-     * Error overview.
-     */
-    message: string;
-  };
-};
-
-export type BatchesIndexError = BatchesIndexErrors[keyof BatchesIndexErrors];
-
-export type BatchesIndexResponses = {
-  200: Array<Batch>;
-};
-
-export type BatchesIndexResponse = BatchesIndexResponses[keyof BatchesIndexResponses];
 
 export type BatchesDestroyData = {
   body?: never;
@@ -17762,6 +17842,87 @@ export type VoluntaryReportGeneratePdfResponses = {
 
 export type VoluntaryReportGeneratePdfResponse =
   VoluntaryReportGeneratePdfResponses[keyof VoluntaryReportGeneratePdfResponses];
+
+export type VoluntaryReportServeImageData = {
+  body?: never;
+  path: {
+    company: string;
+    filePath: string;
+  };
+  query?: never;
+  url: '/{company}/sms/voluntary-reports/{filePath}/image/{filePath}';
+};
+
+export type VoluntaryReportServeImageErrors = {
+  /**
+   * Unauthenticated
+   */
+  401: {
+    /**
+     * Error overview.
+     */
+    message: string;
+  };
+  403: {
+    error: 'No autorizado';
+  };
+  404: {
+    error: 'Imagen no encontrada';
+  };
+};
+
+export type VoluntaryReportServeImageError = VoluntaryReportServeImageErrors[keyof VoluntaryReportServeImageErrors];
+
+export type VoluntaryReportServeImageResponses = {
+  /**
+   * Esto SIRVE el archivo de imagen
+   */
+  200: Blob | File;
+};
+
+export type VoluntaryReportServeImageResponse =
+  VoluntaryReportServeImageResponses[keyof VoluntaryReportServeImageResponses];
+
+export type VoluntaryReportServeDocumentData = {
+  body?: never;
+  path: {
+    company: string;
+    filePath: string;
+  };
+  query?: never;
+  url: '/{company}/sms/voluntary-reports/{filePath}/document/{filePath}';
+};
+
+export type VoluntaryReportServeDocumentErrors = {
+  /**
+   * Unauthenticated
+   */
+  401: {
+    /**
+     * Error overview.
+     */
+    message: string;
+  };
+  403: {
+    error: 'No autorizado';
+  };
+  404: {
+    error: 'Documento no encontrado';
+  };
+};
+
+export type VoluntaryReportServeDocumentError =
+  VoluntaryReportServeDocumentErrors[keyof VoluntaryReportServeDocumentErrors];
+
+export type VoluntaryReportServeDocumentResponses = {
+  /**
+   * Esto SIRVE el archivo de documento
+   */
+  200: Blob | File;
+};
+
+export type VoluntaryReportServeDocumentResponse =
+  VoluntaryReportServeDocumentResponses[keyof VoluntaryReportServeDocumentResponses];
 
 export type VoluntaryReportGetReportStatsByYearData = {
   body?: never;

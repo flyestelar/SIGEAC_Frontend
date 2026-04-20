@@ -299,6 +299,22 @@ const ShowVoluntaryReport = () => {
     </Card>
   );
 
+  const renderRecommendations = () => (
+    <Card>
+      <CardHeader className="pb-3">
+        <h3 className="text-lg font-semibold flex items-center gap-2">
+          <FileText className="w-5 h-5" />
+          Recomendaciones
+        </h3>
+      </CardHeader>
+      <CardContent>
+        <p className="leading-relaxed ">
+          {voluntaryReport?.recommendations || "N/A"}
+        </p>
+      </CardContent>
+    </Card>
+  );
+
   const renderReporterInfo = () => {
     const isAnonymous =
       !voluntaryReport?.reporter_phone &&
@@ -456,6 +472,7 @@ const ShowVoluntaryReport = () => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {renderDescription()}
             {renderConsequences()}
+            {renderRecommendations()}
           </div>
 
           {renderReporterInfo()}

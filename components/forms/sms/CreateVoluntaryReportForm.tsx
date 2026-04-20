@@ -46,7 +46,6 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Label } from "@/components/ui/label";
 import { useCompanyStore } from "@/stores/CompanyStore";
-import { useGetLocationsByCompany } from "@/hooks/sistema/useGetLocationsByCompany";
 
 interface FormProps {
   onClose: () => void;
@@ -79,8 +78,6 @@ export function CreateVoluntaryReportForm({
 
   const { data: nextNumberData, isPending: isLoadingNextNumber } =
     useGetNextReportNumber(selectedCompany?.slug || null);
-
-  const { data: locations, isLoading: isLoadingLocations } = useGetLocationsByCompany();
 
   const FormSchema = z.object({
     identification_date: z
@@ -122,6 +119,14 @@ export function CreateVoluntaryReportForm({
       })
       .max(999, {
         message: "Las consecuencias no debe exceder los 255 caracteres",
+      }),
+    recommendations: z
+      .string()
+      .min(3, {
+        message: "Las recomendaciones deben tener al menos 3 caracteres",
+      })
+      .max(999, {
+        message: "Las recomendaciones no deben exceder los 999 caracteres",
       }),
 
     reporter_name: z
@@ -169,8 +174,7 @@ export function CreateVoluntaryReportForm({
         "Solo se permiten archivos PDF",
       )
       .optional(),
-    is_anonymous: z.boolean(),
-    location_id: z.number({ required_error: "La localización es requerida." }),
+    is_anonymous: z.boolean()
   });
 
   type FormSchemaType = z.infer<typeof FormSchema>;
@@ -183,9 +187,9 @@ export function CreateVoluntaryReportForm({
       danger_location: initialData?.danger_location || "",
       description: initialData?.description || "",
       possible_consequences: initialData?.possible_consequences || "",
+      recommendations: initialData?.recommendations || "",
       airport_location: initialData?.airport_location || "",
       is_anonymous: initialData ? !initialData.is_anonymous : false,
-      location_id: initialData?.location_id ?? undefined,
       identification_date: initialData?.identification_date
         ? addDays(new Date(initialData.identification_date), 1)
         : new Date(),
@@ -463,34 +467,6 @@ export function CreateVoluntaryReportForm({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <FormField
               control={form.control}
-              name="location_id"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Localización</FormLabel>
-                  <Select
-                    onValueChange={(val) => field.onChange(Number(val))}
-                    defaultValue={field.value?.toString()}
-                    disabled={isLoadingLocations}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder={isLoadingLocations ? "Cargando..." : "Seleccionar localización"} />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {locations?.map((location) => (
-                        <SelectItem key={location.id} value={location.id.toString()}>
-                          {location.address}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
               name="danger_location"
               render={({ field }) => (
                 <FormItem>
@@ -747,6 +723,24 @@ export function CreateVoluntaryReportForm({
               <FormItem className="hidden">
                 <FormControl>
                   <Input type="hidden" {...field} />
+                </FormControl>
+                <FormMessage className="text-xs" />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="recommendations"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Recomendaciones</FormLabel>
+                <FormControl>
+                  <Textarea
+                    placeholder="Breve descripción de las recomendaciones"
+                    {...field}
+                    className="min-h-[100px]"
+                  />
                 </FormControl>
                 <FormMessage className="text-xs" />
               </FormItem>

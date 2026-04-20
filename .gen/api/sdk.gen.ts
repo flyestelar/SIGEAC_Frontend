@@ -692,6 +692,9 @@ import type {
   GeneralLocationIndex0Data,
   GeneralLocationIndex0Errors,
   GeneralLocationIndex0Responses,
+  GetMailableData,
+  GetMailableErrors,
+  GetMailableResponses,
   InformationSourcesDestroyData,
   InformationSourcesDestroyErrors,
   InformationSourcesDestroyResponses,
@@ -944,6 +947,9 @@ import type {
   PlanificationReportWorkOrderPreInspectionData,
   PlanificationReportWorkOrderPreInspectionErrors,
   PlanificationReportWorkOrderPreInspectionResponses,
+  PostByCompanyBatchesData,
+  PostByCompanyBatchesErrors,
+  PostByCompanyBatchesResponses,
   PreliminaryInspectionDestroyData,
   PreliminaryInspectionDestroyErrors,
   PreliminaryInspectionDestroyResponses,
@@ -1001,6 +1007,9 @@ import type {
   PurchaseQuoteOrderUpdate2Data,
   PurchaseQuoteOrderUpdate2Errors,
   PurchaseQuoteOrderUpdate2Responses,
+  PutByCompanyUpdateToolStatusByIdData,
+  PutByCompanyUpdateToolStatusByIdErrors,
+  PutByCompanyUpdateToolStatusByIdResponses,
   QuestionsDestroyData,
   QuestionsDestroyErrors,
   QuestionsDestroyResponses,
@@ -1369,6 +1378,12 @@ import type {
   VoluntaryReportIndexData,
   VoluntaryReportIndexErrors,
   VoluntaryReportIndexResponses,
+  VoluntaryReportServeDocumentData,
+  VoluntaryReportServeDocumentErrors,
+  VoluntaryReportServeDocumentResponses,
+  VoluntaryReportServeImageData,
+  VoluntaryReportServeImageErrors,
+  VoluntaryReportServeImageResponses,
   VoluntaryReportShowData,
   VoluntaryReportShowErrors,
   VoluntaryReportShowResponses,
@@ -1448,6 +1463,46 @@ export type Options<
    */
   meta?: Record<string, unknown>;
 };
+
+export const batchesIndex = <ThrowOnError extends boolean = false>(options: Options<BatchesIndexData, ThrowOnError>) =>
+  (options.client ?? client).get<BatchesIndexResponses, BatchesIndexErrors, ThrowOnError>({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/{company}/batches',
+    ...options,
+  });
+
+export const postByCompanyBatches = <ThrowOnError extends boolean = false>(
+  options: Options<PostByCompanyBatchesData, ThrowOnError>,
+) =>
+  (options.client ?? client).post<PostByCompanyBatchesResponses, PostByCompanyBatchesErrors, ThrowOnError>({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/{company}/batches',
+    ...options,
+  });
+
+export const putByCompanyUpdateToolStatusById = <ThrowOnError extends boolean = false>(
+  options: Options<PutByCompanyUpdateToolStatusByIdData, ThrowOnError>,
+) =>
+  (options.client ?? client).put<
+    PutByCompanyUpdateToolStatusByIdResponses,
+    PutByCompanyUpdateToolStatusByIdErrors,
+    ThrowOnError
+  >({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/{company}/update-tool-status/{id}',
+    ...options,
+  });
+
+export const getMailable = <ThrowOnError extends boolean = false>(options?: Options<GetMailableData, ThrowOnError>) =>
+  (options?.client ?? client).get<GetMailableResponses, GetMailableErrors, ThrowOnError>({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/mailable',
+    ...options,
+  });
 
 /**
  * Method: Get
@@ -2561,14 +2616,6 @@ export const bankAccountAccountByBank = <ThrowOnError extends boolean = false>(
     responseType: 'json',
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/bank-accounts-by-bank/{bank_id}',
-    ...options,
-  });
-
-export const batchesIndex = <ThrowOnError extends boolean = false>(options: Options<BatchesIndexData, ThrowOnError>) =>
-  (options.client ?? client).get<BatchesIndexResponses, BatchesIndexErrors, ThrowOnError>({
-    responseType: 'json',
-    security: [{ scheme: 'bearer', type: 'http' }],
-    url: '/{company}/batches',
     ...options,
   });
 
@@ -7695,6 +7742,30 @@ export const voluntaryReportGeneratePdf = <ThrowOnError extends boolean = false>
     responseType: 'json',
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/{company}/sms/voluntary-reports/{id}/pdf',
+    ...options,
+  });
+
+export const voluntaryReportServeImage = <ThrowOnError extends boolean = false>(
+  options: Options<VoluntaryReportServeImageData, ThrowOnError>,
+) =>
+  (options.client ?? client).get<VoluntaryReportServeImageResponses, VoluntaryReportServeImageErrors, ThrowOnError>({
+    responseType: 'blob',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/{company}/sms/voluntary-reports/{filePath}/image/{filePath}',
+    ...options,
+  });
+
+export const voluntaryReportServeDocument = <ThrowOnError extends boolean = false>(
+  options: Options<VoluntaryReportServeDocumentData, ThrowOnError>,
+) =>
+  (options.client ?? client).get<
+    VoluntaryReportServeDocumentResponses,
+    VoluntaryReportServeDocumentErrors,
+    ThrowOnError
+  >({
+    responseType: 'blob',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/{company}/sms/voluntary-reports/{filePath}/document/{filePath}',
     ...options,
   });
 
