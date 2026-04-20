@@ -39,9 +39,7 @@ import {
 } from '@/actions/planificacion/hard_time/actions';
 import { ContentLayout } from '@/components/layout/ContentLayout';
 import LoadingPage from '@/components/misc/LoadingPage';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import {
@@ -53,13 +51,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { useGetMaintenanceAircrafts } from '@/hooks/planificacion/useGetMaintenanceAircrafts';
 import { useGetHardTimeCategories } from '@/hooks/planificacion/hard_time/useGetHardTimeCategories';
@@ -69,6 +61,7 @@ import { useCompanyStore } from '@/stores/CompanyStore';
 import { HardTimeInterval } from '@/types';
 import { AircraftAverageSummaryCard } from '../../control_mantenimiento/_components/aircraft-average-summary-card';
 import { AircraftSelector } from '../../control_mantenimiento/_components/aircraft-selector';
+import { HardTimeCategoryAccordion } from './hard-time-category-accordion';
 import { HardTimeCardView } from './hard-time-card-view';
 import { HardTimeDetailView } from './hard-time-detail-view';
 import { HardTimeImportDialog } from './hard-time-import-dialog';
@@ -345,10 +338,7 @@ function CreateComponentDialog({
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Cancelar
             </Button>
-            <Button
-              type="submit"
-              disabled={!aircraftId || !form.category_code || createComponent.isPending}
-            >
+            <Button type="submit" disabled={!aircraftId || !form.category_code || createComponent.isPending}>
               {createComponent.isPending && <Loader2 className="mr-2 size-4 animate-spin" />}
               Crear posición
             </Button>
@@ -1011,10 +1001,7 @@ function ComplianceDialog({
             <Button
               type="submit"
               disabled={
-                !componentId ||
-                !form.hard_time_interval_id ||
-                !form.work_order_id ||
-                registerCompliance.isPending
+                !componentId || !form.hard_time_interval_id || !form.work_order_id || registerCompliance.isPending
               }
             >
               {registerCompliance.isPending && <Loader2 className="mr-2 size-4 animate-spin" />}
@@ -1041,8 +1028,11 @@ export function HardTimeDashboard() {
 
   const { data: aircraft = [], isLoading: isAircraftLoading } = useGetMaintenanceAircrafts(selectedCompany?.slug);
   const { data: categories = [] } = useGetHardTimeCategories();
-  const { data: groupsResponse, isLoading: isComponentsLoading, isError: isComponentsError } =
-    useGetHardTimeComponents(selectedAircraftId);
+  const {
+    data: groupsResponse,
+    isLoading: isComponentsLoading,
+    isError: isComponentsError,
+  } = useGetHardTimeComponents(selectedAircraftId);
   const { data: selectedComponentDetail } = useGetHardTimeComponentDetail(selectedComponentId, selectedAircraftId);
 
   const selectedAircraft = useMemo(
@@ -1052,10 +1042,7 @@ export function HardTimeDashboard() {
 
   const categoryGroups = useMemo(() => groupsResponse?.data ?? [], [groupsResponse]);
 
-  const allComponents = useMemo(
-    () => categoryGroups.flatMap((group) => group.components),
-    [categoryGroups],
-  );
+  const allComponents = useMemo(() => categoryGroups.flatMap((group) => group.components), [categoryGroups]);
 
   useEffect(() => {
     if (!selectedComponentId) return;
@@ -1133,11 +1120,7 @@ export function HardTimeDashboard() {
                   Trazabilidad
                 </Link>
               </Button>
-              <Button
-                className="gap-2"
-                onClick={() => setIsCreateComponentOpen(true)}
-                disabled={!selectedAircraftId}
-              >
+              <Button className="gap-2" onClick={() => setIsCreateComponentOpen(true)} disabled={!selectedAircraftId}>
                 <Plus className="size-4" />
                 Nueva posición
               </Button>
@@ -1197,41 +1180,13 @@ export function HardTimeDashboard() {
                   onRegisterCompliance={() => setIsComplianceDialogOpen(true)}
                 />
               ) : (
-                <Accordion
-                  type="multiple"
-                  defaultValue={categoryGroups.map((group) => group.category.code)}
-                  className="space-y-3"
-                >
-                  {categoryGroups.map((group) => (
-                    <AccordionItem
-                      key={group.category.code}
-                      value={group.category.code}
-                      className="overflow-hidden rounded-xl border border-border/60 bg-card"
-                    >
-                      <AccordionTrigger className="px-4 py-3 hover:no-underline">
-                        <div className="flex w-full items-center justify-between gap-4 pr-2 text-left">
-                          <div>
-                            <p className="text-sm font-semibold">{group.category.name}</p>
-                            <p className="text-xs text-muted-foreground">{group.category.code}</p>
-                          </div>
-                          <Badge variant="outline" className="font-mono text-xs">
-                            {group.components.length}
-                          </Badge>
-                        </div>
-                      </AccordionTrigger>
-                      <AccordionContent className="border-t border-border/50 px-4 py-4">
-                        <HardTimeCardView
-                          components={group.components}
-                          onSelectComponent={handleSelectComponent}
-                          averageDailyFH={averages?.average_daily_flight_hours ?? null}
-                          averageDailyFC={averages?.average_daily_flight_cycles ?? null}
-                          onInstallComponent={openInstall}
-                          onUninstallComponent={openUninstall}
-                        />
-                      </AccordionContent>
-                    </AccordionItem>
-                  ))}
-                </Accordion>
+                <HardTimeCategoryAccordion
+                  categoryGroups={categoryGroups}
+                  averages={averages}
+                  onSelectComponent={handleSelectComponent}
+                  onInstallComponent={openInstall}
+                  onUninstallComponent={openUninstall}
+                />
               )}
             </>
           )}
