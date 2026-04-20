@@ -77,7 +77,7 @@ export function HardTimeTraceabilityClient() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Aeronave</TableHead>
-                  <TableHead>Posición</TableHead>
+                  <TableHead>Ubicación</TableHead>
                   <TableHead>Montado</TableHead>
                   <TableHead>Desmontado</TableHead>
                   <TableHead>FH / FC montaje</TableHead>
@@ -92,7 +92,7 @@ export function HardTimeTraceabilityClient() {
                       <TableCell>
                         <div>
                           <p className="font-medium">{record.component?.position ?? '—'}</p>
-                          <p className="text-xs text-muted-foreground">{record.component?.description ?? '—'}</p>
+                          <p className="text-xs text-muted-foreground">{record.component?.part_name ?? '—'}</p>
                         </div>
                       </TableCell>
                       <TableCell>{formatDate(record.installation.installed_at)}</TableCell>

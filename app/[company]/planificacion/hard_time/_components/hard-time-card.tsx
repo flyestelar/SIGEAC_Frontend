@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { HardTimeAlertLevel, HardTimeComponentWithMetrics, HardTimeMetric } from '@/types';
-import { CircleOff, PackageMinus, PackagePlus, Timer } from 'lucide-react';
+import { CircleOff, MapPinned, PackageMinus, PackagePlus, Timer } from 'lucide-react';
 import { AlertBadge, LEVEL_CONFIG, METRIC_ICONS, METRIC_UNITS } from './hard-time-shared';
 
 function estimatedDaysToExpiry(
@@ -70,6 +70,69 @@ export function HardTimeCard({
     return withEstimates.sort((a, b) => a.estDays! - b.estDays!)[0];
   })();
 
+  if (isVacant) {
+    return (
+      <Card
+        className="group cursor-pointer overflow-hidden rounded-xl border border-dashed border-sky-500/30 bg-sky-500/[0.04] transition hover:border-sky-500/40 hover:bg-sky-500/[0.07]"
+        onClick={onSelect}
+      >
+        <CardHeader className="space-y-3 px-4 py-4">
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex items-start gap-3">
+              <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-sky-500/20 bg-sky-500/10">
+                <PackagePlus className="h-4 w-4 text-sky-700 dark:text-sky-300" />
+              </div>
+              <div className="min-w-0 space-y-1">
+                <p className="truncate text-sm font-semibold leading-snug text-foreground">{component.position}</p>
+                <div className="flex flex-wrap items-center gap-2 text-[11px] text-muted-foreground">
+                  <span className="inline-flex items-center gap-1">
+                    <MapPinned className="h-3 w-3" />
+                    Ubicación disponible
+                  </span>
+                  <span className="font-mono">P/N: {component.part_number}</span>
+                </div>
+              </div>
+            </div>
+            <Badge
+              variant="outline"
+              className="h-5 shrink-0 border-sky-500/20 bg-sky-500/10 px-1.5 text-[10px] text-sky-700 dark:text-sky-300"
+            >
+              <CircleOff className="mr-1 h-2.5 w-2.5" />
+              Slot vacío
+            </Badge>
+          </div>
+        </CardHeader>
+
+        <CardContent className="space-y-4 px-4 pb-4 pt-0">
+          <div className="rounded-lg border border-dashed border-border/60 bg-background/70 px-3 py-3">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Acción sugerida</p>
+            <p className="mt-1 text-sm text-foreground">Monta un componente en esta ubicación para activar el control hard time.</p>
+          </div>
+
+          <div className="flex items-center justify-between gap-3">
+            <Badge variant="outline" className="h-5 border-border/50 px-2 text-[10px] font-normal">
+              {component.intervals.length} intervalo{component.intervals.length !== 1 && 's'}
+            </Badge>
+            <div onClick={(e) => e.stopPropagation()}>
+              <Button
+                size="sm"
+                variant="outline"
+                className="h-7 gap-1.5 border-sky-500/30 px-2.5 text-[11px] text-sky-700 hover:bg-sky-500/10 dark:text-sky-300"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onInstall?.();
+                }}
+              >
+                <PackagePlus className="h-3.5 w-3.5" />
+                Montar componente
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <Card
       className={`group cursor-pointer overflow-hidden transition hover:-translate-y-0.5 ${cfg.cardBorder} ${cfg.cardBg}`}
@@ -83,19 +146,16 @@ export function HardTimeCard({
             </div>
             <div className="min-w-0">
               <p className="truncate text-sm font-semibold leading-snug text-foreground">{component.position}</p>
-              <p className="truncate text-[11px] text-muted-foreground">{component.description}</p>
+              <div className="mt-1 flex flex-wrap items-center gap-2 text-[11px] text-muted-foreground">
+                <span className="inline-flex items-center gap-1">
+                  <MapPinned className="h-3 w-3" />
+                  Ubicación activa
+                </span>
+                {component.ata_chapter && <span>ATA {component.ata_chapter}</span>}
+              </div>
             </div>
           </div>
           <div className="flex shrink-0 items-center gap-1.5">
-            {isVacant && (
-              <Badge
-                variant="outline"
-                className="h-5 border-muted-foreground/30 bg-muted/20 px-1.5 text-[10px] text-muted-foreground"
-              >
-                <CircleOff className="mr-0.5 h-2.5 w-2.5" />
-                Vacante
-              </Badge>
-            )}
             <AlertBadge status={component.status} size="small" />
           </div>
         </div>
@@ -106,12 +166,6 @@ export function HardTimeCard({
             <>
               <span className="text-border">·</span>
               <span className="font-mono">S/N: {component.active_installation.serial_number}</span>
-            </>
-          )}
-          {component.ata_chapter && (
-            <>
-              <span className="text-border">·</span>
-              <span>ATA {component.ata_chapter}</span>
             </>
           )}
         </div>

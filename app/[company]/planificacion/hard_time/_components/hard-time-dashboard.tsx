@@ -71,9 +71,8 @@ import { HardTimeImportDialog } from './hard-time-import-dialog';
 type ComponentFormState = {
   category_code: string;
   part_number: string;
-  description: string;
+  part_name: string;
   position: string;
-  ata_chapter: string;
 };
 
 type InstallFormState = {
@@ -238,9 +237,8 @@ function CreateComponentDialog({
   const [form, setForm] = useState<ComponentFormState>({
     category_code: '',
     part_number: '',
-    description: '',
+    part_name: '',
     position: '',
-    ata_chapter: '',
   });
 
   useEffect(() => {
@@ -248,9 +246,8 @@ function CreateComponentDialog({
       setForm({
         category_code: '',
         part_number: '',
-        description: '',
+        part_name: '',
         position: '',
-        ata_chapter: '',
       });
     }
   }, [open]);
@@ -263,9 +260,8 @@ function CreateComponentDialog({
       aircraft_id: aircraftId,
       category_code: form.category_code,
       part_number: form.part_number.trim(),
-      description: form.description.trim(),
+      part_name: form.part_name.trim(),
       position: form.position.trim(),
-      ata_chapter: form.ata_chapter.trim() || undefined,
     };
 
     await createComponent.mutateAsync(payload);
@@ -276,19 +272,19 @@ function CreateComponentDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Nueva posición Hard Time</DialogTitle>
-          <DialogDescription>Registra posición controlada dentro de aeronave seleccionada.</DialogDescription>
+          <DialogTitle>Nuevo componente ATA</DialogTitle>
+          <DialogDescription>Registra un componente controlado dentro del capítulo ATA seleccionado.</DialogDescription>
         </DialogHeader>
 
         <form className="space-y-4" onSubmit={handleSubmit}>
           <div className="space-y-2">
-            <label className="text-sm font-medium">Categoría</label>
+            <label className="text-sm font-medium">Capítulo ATA</label>
             <Select
               value={form.category_code}
               onValueChange={(value) => setForm((current) => ({ ...current, category_code: value }))}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Selecciona categoría" />
+                <SelectValue placeholder="Selecciona capítulo ATA" />
               </SelectTrigger>
               <SelectContent>
                 {categories.map((category) => (
@@ -310,7 +306,7 @@ function CreateComponentDialog({
               />
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium">Posición</label>
+              <label className="text-sm font-medium">Ubicación</label>
               <Input
                 value={form.position}
                 onChange={(event) => setForm((current) => ({ ...current, position: event.target.value }))}
@@ -321,20 +317,11 @@ function CreateComponentDialog({
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium">Descripción</label>
+            <label className="text-sm font-medium">Nombre del componente</label>
             <Input
-              value={form.description}
-              onChange={(event) => setForm((current) => ({ ...current, description: event.target.value }))}
+              value={form.part_name}
+              onChange={(event) => setForm((current) => ({ ...current, part_name: event.target.value }))}
               required
-            />
-          </div>
-
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Capítulo ATA</label>
-            <Input
-              value={form.ata_chapter}
-              onChange={(event) => setForm((current) => ({ ...current, ata_chapter: event.target.value }))}
-              placeholder="72"
             />
           </div>
 
@@ -342,9 +329,12 @@ function CreateComponentDialog({
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Cancelar
             </Button>
-            <Button type="submit" disabled={!aircraftId || !form.category_code || createComponent.isPending}>
+            <Button
+              type="submit"
+              disabled={!aircraftId || !form.category_code || !form.part_name.trim() || createComponent.isPending}
+            >
               {createComponent.isPending && <Loader2 className="mr-2 size-4 animate-spin" />}
-              Crear posición
+              Crear componente
             </Button>
           </DialogFooter>
         </form>
@@ -745,7 +735,7 @@ function IntervalDialog({
           <FormSection
             icon={ClipboardList}
             title="Tarea controlada"
-            description="Nombre operativo que verá planificación al revisar esta posición."
+            description="Nombre operativo que verá planificación al revisar este componente."
           >
             <div className="space-y-2">
               <label className="text-sm font-medium">Descripción de tarea</label>
@@ -1127,7 +1117,7 @@ export function HardTimeDashboard() {
               </Button>
               <Button className="gap-2" onClick={() => setIsCreateComponentOpen(true)} disabled={!selectedAircraftId}>
                 <Plus className="size-4" />
-                Nueva posición
+                Nuevo componente ATA
               </Button>
             </div>
           </div>
@@ -1141,7 +1131,7 @@ export function HardTimeDashboard() {
           {!selectedAircraftId ? (
             <SectionEmpty
               title="Selecciona aeronave"
-              description="Escoge aeronave para cargar posiciones controladas, intervalos y cumplimientos Hard Time."
+              description="Escoge aeronave para cargar componentes controlados, intervalos y cumplimientos Hard Time."
             />
           ) : (
             <>
@@ -1184,11 +1174,11 @@ export function HardTimeDashboard() {
               ) : categoryGroups.length === 0 ? (
                 <SectionEmpty
                   title="Sin componentes controlados"
-                  description="Aeronave aún no tiene posiciones Hard Time registradas."
+                  description="Aeronave aún no tiene componentes Hard Time registrados."
                   action={
                     <Button onClick={() => setIsCreateComponentOpen(true)} className="gap-2">
                       <Plus className="size-4" />
-                      Crear primera posición
+                      Crear primer componente
                     </Button>
                   }
                 />

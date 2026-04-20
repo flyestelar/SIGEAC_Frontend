@@ -121,7 +121,7 @@ function getImportPayload(
   if (issues.length > 0 || !component.part_number?.trim()) return null;
 
   return {
-    description: component.description,
+    part_name: component.description,
     part_number: component.part_number.trim(),
     position: position.trim(),
     ata_chapter: undefined,
@@ -244,7 +244,7 @@ export function HardTimeImportDialog({
               <div className="space-y-1">
                 <DialogTitle>Importar control INAC Hard Time</DialogTitle>
                 <DialogDescription>
-                  Carga libro INAC, revisa posiciones inferidas y confirma importación de estructura.
+                  Carga libro INAC, revisa ubicaciones inferidas y confirma importación de estructura.
                 </DialogDescription>
               </div>
             </div>
@@ -267,7 +267,7 @@ export function HardTimeImportDialog({
                     </div>
                     <p className="max-w-xl text-sm text-muted-foreground">
                       Se leen sólo hojas INAC, se deduplican registros repetidos y se prepara preview antes de crear
-                      posiciones controladas.
+                      componentes controlados.
                     </p>
                     {fileName && <p className="text-xs text-muted-foreground">Archivo cargado: {fileName}</p>}
                   </div>
@@ -287,10 +287,10 @@ export function HardTimeImportDialog({
 
                 <div className="space-y-4">
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-foreground">Categoría Hard Time</label>
+                    <label className="text-sm font-medium text-foreground">Capítulo ATA</label>
                     <Select value={selectedCategoryCode} onValueChange={setSelectedCategoryCode}>
                       <SelectTrigger>
-                        <SelectValue placeholder="Selecciona categoría para posiciones importadas" />
+                        <SelectValue placeholder="Selecciona capítulo ATA para componentes importados" />
                       </SelectTrigger>
                       <SelectContent>
                         {categories.map((category) => (
@@ -301,7 +301,7 @@ export function HardTimeImportDialog({
                       </SelectContent>
                     </Select>
                     <p className="text-[11px] text-muted-foreground">
-                      Esta fase crea posición controlada e intervalos. No monta seriales ni reconstruye cumplimientos.
+                      Esta fase crea componentes controlados e intervalos. No monta seriales ni reconstruye cumplimientos.
                     </p>
                   </div>
 
@@ -311,7 +311,7 @@ export function HardTimeImportDialog({
                       Alcance de esta confirmación
                     </div>
                     <p className="text-xs leading-5 text-amber-800/90 dark:text-amber-200/80">
-                      El Excel no trae posición ni datos consistentes para montaje legado. Por seguridad, esta
+                      El Excel no trae ubicación ni datos consistentes para montaje legado. Por seguridad, esta
                       importación deja lista la estructura del control y sus intervalos para completar montaje después.
                     </p>
                   </div>
@@ -352,7 +352,7 @@ export function HardTimeImportDialog({
                       <p className="text-sm font-medium">Revisar</p>
                     </div>
                     <p className="text-2xl font-semibold text-foreground">{summary.medium + summary.low}</p>
-                    <p className="text-xs text-muted-foreground">Posiciones sugeridas con menor confianza</p>
+                    <p className="text-xs text-muted-foreground">Ubicaciones sugeridas con menor confianza</p>
                   </div>
 
                   <div className="rounded-xl border border-red-500/20 bg-red-500/5 p-4">
@@ -361,7 +361,7 @@ export function HardTimeImportDialog({
                       <p className="text-sm font-medium">Bloqueados</p>
                     </div>
                     <p className="text-2xl font-semibold text-foreground">{blockedCount}</p>
-                    <p className="text-xs text-muted-foreground">Faltan datos mínimos para crear posición</p>
+                    <p className="text-xs text-muted-foreground">Faltan datos mínimos para crear componente</p>
                   </div>
 
                   <div className="rounded-xl border border-sky-500/20 bg-sky-500/5 p-4">
@@ -370,7 +370,7 @@ export function HardTimeImportDialog({
                       <p className="text-sm font-medium">Manual</p>
                     </div>
                     <p className="text-2xl font-semibold text-foreground">{summary.manual}</p>
-                    <p className="text-xs text-muted-foreground">Sin posición inferida automáticamente</p>
+                    <p className="text-xs text-muted-foreground">Sin ubicación inferida automáticamente</p>
                   </div>
                 </div>
 
@@ -379,7 +379,7 @@ export function HardTimeImportDialog({
                     <div>
                       <p className="text-sm font-semibold text-foreground">Preview operativo</p>
                       <p className="text-xs text-muted-foreground">
-                        Ajusta posición. Los registros sin P/N, sin posición o sin intervalos válidos quedan fuera.
+                        Ajusta ubicación. Los registros sin P/N, sin ubicación o sin intervalos válidos quedan fuera.
                       </p>
                     </div>
 
@@ -404,7 +404,7 @@ export function HardTimeImportDialog({
                         <TableRow>
                           <TableHead>Componente</TableHead>
                           <TableHead>Identidad</TableHead>
-                          <TableHead>Posición</TableHead>
+                          <TableHead>Ubicación</TableHead>
                           <TableHead>Confianza</TableHead>
                           <TableHead>Intervalos</TableHead>
                           <TableHead>Estado importación</TableHead>
@@ -443,7 +443,7 @@ export function HardTimeImportDialog({
                                     onChange={(event) =>
                                       setEditedPositions((current) => ({ ...current, [key]: event.target.value }))
                                     }
-                                    placeholder="Definir posición"
+                                    placeholder="Definir ubicación"
                                   />
                                   {component.position_suggestion.rule && (
                                     <p className="text-[11px] text-muted-foreground">
@@ -514,7 +514,7 @@ export function HardTimeImportDialog({
           <DialogFooter className="border-t border-border/60 bg-background px-6 py-4 sm:justify-between">
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
               <AlertCircle className="size-3.5" />
-              Se importan sólo posiciones controladas e intervalos desde `.gen/api`.
+              Se importan sólo componentes controlados e intervalos desde `.gen/api`.
             </div>
 
             <div className="flex items-center gap-2">

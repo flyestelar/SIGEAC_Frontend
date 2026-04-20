@@ -1268,7 +1268,7 @@ export type HardTimeComponentWithMetrics = {
   aircraft_id: number;
   category_code: string;
   part_number: string;
-  description: string;
+  part_name: string;
   position: string;
   ata_chapter: string | null;
   is_active: boolean;

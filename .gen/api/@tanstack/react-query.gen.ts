@@ -34,13 +34,7 @@ import {
   aircraftDestroy,
   aircraftGetAircraftAcronyms,
   aircraftIndex,
-  aircraftPartAssignmentAircraft,
   aircraftShow,
-  aircraftsPartsDestroy,
-  aircraftsPartsIndex,
-  aircraftsPartsShow,
-  aircraftsPartsStore,
-  aircraftsPartsUpdate,
   aircraftStore,
   aircraftTypesDestroy,
   aircraftTypesIndex,
@@ -556,27 +550,9 @@ import type {
   AircraftIndexData,
   AircraftIndexError,
   AircraftIndexResponse,
-  AircraftPartAssignmentAircraftData,
-  AircraftPartAssignmentAircraftError,
-  AircraftPartAssignmentAircraftResponse,
   AircraftShowData,
   AircraftShowError,
   AircraftShowResponse,
-  AircraftsPartsDestroyData,
-  AircraftsPartsDestroyError,
-  AircraftsPartsDestroyResponse,
-  AircraftsPartsIndexData,
-  AircraftsPartsIndexError,
-  AircraftsPartsIndexResponse,
-  AircraftsPartsShowData,
-  AircraftsPartsShowError,
-  AircraftsPartsShowResponse,
-  AircraftsPartsStoreData,
-  AircraftsPartsStoreError,
-  AircraftsPartsStoreResponse,
-  AircraftsPartsUpdateData,
-  AircraftsPartsUpdateError,
-  AircraftsPartsUpdateResponse,
   AircraftStoreData,
   AircraftStoreError,
   AircraftStoreResponse,
@@ -2828,161 +2804,6 @@ export const aircraftAdministrationShowAircraftStatisticsOptions = (
     },
     queryKey: aircraftAdministrationShowAircraftStatisticsQueryKey(options),
   });
-
-export const aircraftsPartsIndexQueryKey = (options: Options<AircraftsPartsIndexData>) =>
-  createQueryKey('aircraftsPartsIndex', options);
-
-/**
- * Display a listing of the resource
- */
-export const aircraftsPartsIndexOptions = (options: Options<AircraftsPartsIndexData>) =>
-  queryOptions<
-    AircraftsPartsIndexResponse,
-    AxiosError<AircraftsPartsIndexError>,
-    AircraftsPartsIndexResponse,
-    ReturnType<typeof aircraftsPartsIndexQueryKey>
-  >({
-    queryFn: async ({ queryKey, signal }) => {
-      const { data } = await aircraftsPartsIndex({
-        ...options,
-        ...queryKey[0],
-        signal,
-        throwOnError: true,
-      });
-      return data;
-    },
-    queryKey: aircraftsPartsIndexQueryKey(options),
-  });
-
-/**
- * Store a newly created resource in storage
- */
-export const aircraftsPartsStoreMutation = (
-  options?: Partial<Options<AircraftsPartsStoreData>>,
-): UseMutationOptions<
-  AircraftsPartsStoreResponse,
-  AxiosError<AircraftsPartsStoreError>,
-  Options<AircraftsPartsStoreData>
-> => {
-  const mutationOptions: UseMutationOptions<
-    AircraftsPartsStoreResponse,
-    AxiosError<AircraftsPartsStoreError>,
-    Options<AircraftsPartsStoreData>
-  > = {
-    mutationFn: async (fnOptions) => {
-      const { data } = await aircraftsPartsStore({
-        ...options,
-        ...fnOptions,
-        throwOnError: true,
-      });
-      return data;
-    },
-  };
-  return mutationOptions;
-};
-
-/**
- * Remove the specified resource from storage
- */
-export const aircraftsPartsDestroyMutation = (
-  options?: Partial<Options<AircraftsPartsDestroyData>>,
-): UseMutationOptions<
-  AircraftsPartsDestroyResponse,
-  AxiosError<AircraftsPartsDestroyError>,
-  Options<AircraftsPartsDestroyData>
-> => {
-  const mutationOptions: UseMutationOptions<
-    AircraftsPartsDestroyResponse,
-    AxiosError<AircraftsPartsDestroyError>,
-    Options<AircraftsPartsDestroyData>
-  > = {
-    mutationFn: async (fnOptions) => {
-      const { data } = await aircraftsPartsDestroy({
-        ...options,
-        ...fnOptions,
-        throwOnError: true,
-      });
-      return data;
-    },
-  };
-  return mutationOptions;
-};
-
-export const aircraftsPartsShowQueryKey = (options: Options<AircraftsPartsShowData>) =>
-  createQueryKey('aircraftsPartsShow', options);
-
-/**
- * Display the specified resource
- */
-export const aircraftsPartsShowOptions = (options: Options<AircraftsPartsShowData>) =>
-  queryOptions<
-    AircraftsPartsShowResponse,
-    AxiosError<AircraftsPartsShowError>,
-    AircraftsPartsShowResponse,
-    ReturnType<typeof aircraftsPartsShowQueryKey>
-  >({
-    queryFn: async ({ queryKey, signal }) => {
-      const { data } = await aircraftsPartsShow({
-        ...options,
-        ...queryKey[0],
-        signal,
-        throwOnError: true,
-      });
-      return data;
-    },
-    queryKey: aircraftsPartsShowQueryKey(options),
-  });
-
-/**
- * Update the specified resource in storage
- */
-export const aircraftsPartsUpdateMutation = (
-  options?: Partial<Options<AircraftsPartsUpdateData>>,
-): UseMutationOptions<
-  AircraftsPartsUpdateResponse,
-  AxiosError<AircraftsPartsUpdateError>,
-  Options<AircraftsPartsUpdateData>
-> => {
-  const mutationOptions: UseMutationOptions<
-    AircraftsPartsUpdateResponse,
-    AxiosError<AircraftsPartsUpdateError>,
-    Options<AircraftsPartsUpdateData>
-  > = {
-    mutationFn: async (fnOptions) => {
-      const { data } = await aircraftsPartsUpdate({
-        ...options,
-        ...fnOptions,
-        throwOnError: true,
-      });
-      return data;
-    },
-  };
-  return mutationOptions;
-};
-
-export const aircraftPartAssignmentAircraftMutation = (
-  options?: Partial<Options<AircraftPartAssignmentAircraftData>>,
-): UseMutationOptions<
-  AircraftPartAssignmentAircraftResponse,
-  AxiosError<AircraftPartAssignmentAircraftError>,
-  Options<AircraftPartAssignmentAircraftData>
-> => {
-  const mutationOptions: UseMutationOptions<
-    AircraftPartAssignmentAircraftResponse,
-    AxiosError<AircraftPartAssignmentAircraftError>,
-    Options<AircraftPartAssignmentAircraftData>
-  > = {
-    mutationFn: async (fnOptions) => {
-      const { data } = await aircraftPartAssignmentAircraft({
-        ...options,
-        ...fnOptions,
-        throwOnError: true,
-      });
-      return data;
-    },
-  };
-  return mutationOptions;
-};
 
 export const aircraftTypesIndexQueryKey = (options?: Options<AircraftTypesIndexData>) =>
   createQueryKey('aircraftTypesIndex', options);

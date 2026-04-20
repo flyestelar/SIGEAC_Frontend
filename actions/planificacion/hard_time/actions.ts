@@ -23,7 +23,7 @@ export const hardTimeComponentsQueryKey = (aircraftId: number | null) => ['hard-
 export const hardTimeComponentDetailQueryKey = (componentId: number) => ['hard-time-component-detail', componentId];
 
 export type HardTimeImportStructureComponentInput = {
-  description: string;
+  part_name: string;
   part_number: string;
   position: string;
   ata_chapter?: string;
@@ -187,7 +187,7 @@ export const useImportHardTimeStructure = (aircraftId: number | null) => {
           aircraft_id: data.aircraft_id,
           category_code: data.category_code,
           part_number: component.part_number,
-          description: component.description,
+          part_name: component.part_name,
           position: component.position,
           ata_chapter: component.ata_chapter,
         };

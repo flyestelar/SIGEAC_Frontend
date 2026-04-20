@@ -90,27 +90,9 @@ import type {
   AircraftIndexData,
   AircraftIndexErrors,
   AircraftIndexResponses,
-  AircraftPartAssignmentAircraftData,
-  AircraftPartAssignmentAircraftErrors,
-  AircraftPartAssignmentAircraftResponses,
   AircraftShowData,
   AircraftShowErrors,
   AircraftShowResponses,
-  AircraftsPartsDestroyData,
-  AircraftsPartsDestroyErrors,
-  AircraftsPartsDestroyResponses,
-  AircraftsPartsIndexData,
-  AircraftsPartsIndexErrors,
-  AircraftsPartsIndexResponses,
-  AircraftsPartsShowData,
-  AircraftsPartsShowErrors,
-  AircraftsPartsShowResponses,
-  AircraftsPartsStoreData,
-  AircraftsPartsStoreErrors,
-  AircraftsPartsStoreResponses,
-  AircraftsPartsUpdateData,
-  AircraftsPartsUpdateErrors,
-  AircraftsPartsUpdateResponses,
   AircraftStoreData,
   AircraftStoreErrors,
   AircraftStoreResponses,
@@ -1991,89 +1973,6 @@ export const aircraftAdministrationShowAircraftStatistics = <ThrowOnError extend
     responseType: 'json',
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/{company}/aircraft-statistics/{acronym}',
-    ...options,
-  });
-
-/**
- * Display a listing of the resource
- */
-export const aircraftsPartsIndex = <ThrowOnError extends boolean = false>(
-  options: Options<AircraftsPartsIndexData, ThrowOnError>,
-) =>
-  (options.client ?? client).get<AircraftsPartsIndexResponses, AircraftsPartsIndexErrors, ThrowOnError>({
-    responseType: 'json',
-    security: [{ scheme: 'bearer', type: 'http' }],
-    url: '/{company}/aircrafts-parts',
-    ...options,
-  });
-
-/**
- * Store a newly created resource in storage
- */
-export const aircraftsPartsStore = <ThrowOnError extends boolean = false>(
-  options: Options<AircraftsPartsStoreData, ThrowOnError>,
-) =>
-  (options.client ?? client).post<AircraftsPartsStoreResponses, AircraftsPartsStoreErrors, ThrowOnError>({
-    responseType: 'json',
-    security: [{ scheme: 'bearer', type: 'http' }],
-    url: '/{company}/aircrafts-parts',
-    ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      ...options.headers,
-    },
-  });
-
-/**
- * Remove the specified resource from storage
- */
-export const aircraftsPartsDestroy = <ThrowOnError extends boolean = false>(
-  options: Options<AircraftsPartsDestroyData, ThrowOnError>,
-) =>
-  (options.client ?? client).delete<AircraftsPartsDestroyResponses, AircraftsPartsDestroyErrors, ThrowOnError>({
-    responseType: 'json',
-    security: [{ scheme: 'bearer', type: 'http' }],
-    url: '/{company}/aircrafts-parts/{id}',
-    ...options,
-  });
-
-/**
- * Display the specified resource
- */
-export const aircraftsPartsShow = <ThrowOnError extends boolean = false>(
-  options: Options<AircraftsPartsShowData, ThrowOnError>,
-) =>
-  (options.client ?? client).get<AircraftsPartsShowResponses, AircraftsPartsShowErrors, ThrowOnError>({
-    responseType: 'json',
-    security: [{ scheme: 'bearer', type: 'http' }],
-    url: '/{company}/aircrafts-parts/{id}',
-    ...options,
-  });
-
-/**
- * Update the specified resource in storage
- */
-export const aircraftsPartsUpdate = <ThrowOnError extends boolean = false>(
-  options: Options<AircraftsPartsUpdateData, ThrowOnError>,
-) =>
-  (options.client ?? client).put<AircraftsPartsUpdateResponses, AircraftsPartsUpdateErrors, ThrowOnError>({
-    responseType: 'json',
-    security: [{ scheme: 'bearer', type: 'http' }],
-    url: '/{company}/aircrafts-parts/{id}',
-    ...options,
-  });
-
-export const aircraftPartAssignmentAircraft = <ThrowOnError extends boolean = false>(
-  options: Options<AircraftPartAssignmentAircraftData, ThrowOnError>,
-) =>
-  (options.client ?? client).put<
-    AircraftPartAssignmentAircraftResponses,
-    AircraftPartAssignmentAircraftErrors,
-    ThrowOnError
-  >({
-    responseType: 'json',
-    security: [{ scheme: 'bearer', type: 'http' }],
-    url: '/{company}/aircrafts-part/{part_id}/assignment',
     ...options,
   });
 
