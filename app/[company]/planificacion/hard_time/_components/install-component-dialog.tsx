@@ -3,7 +3,14 @@
 import { AircraftResource, InstallComponentRequest } from '@api/types';
 import { useInstallHardTimeComponent } from '@/actions/planificacion/hard_time/actions';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Loader2 } from 'lucide-react';
@@ -14,8 +21,6 @@ type InstallFormState = {
   part_number: string;
   article_id: string;
   installed_at: string;
-  aircraft_hours_at_install: string;
-  aircraft_cycles_at_install: string;
   component_hours_at_install: string;
   component_cycles_at_install: string;
   is_manual_entry: 'true' | 'false';
@@ -49,8 +54,6 @@ export function InstallComponentDialog({
     part_number: defaultPartNumber ?? '',
     article_id: '',
     installed_at: todayDate(),
-    aircraft_hours_at_install: String(aircraft?.flight_hours ?? 0),
-    aircraft_cycles_at_install: String(aircraft?.flight_cycles ?? 0),
     component_hours_at_install: '0',
     component_cycles_at_install: '0',
     is_manual_entry: 'true',
@@ -62,8 +65,6 @@ export function InstallComponentDialog({
         ...current,
         part_number: defaultPartNumber ?? current.part_number,
         installed_at: todayDate(),
-        aircraft_hours_at_install: String(aircraft?.flight_hours ?? 0),
-        aircraft_cycles_at_install: String(aircraft?.flight_cycles ?? 0),
       }));
     }
   }, [aircraft, defaultPartNumber, open]);
@@ -72,19 +73,18 @@ export function InstallComponentDialog({
     event.preventDefault();
     if (!componentId) return;
 
-    const payload: InstallComponentRequest = {
-      serial_number: form.serial_number.trim(),
-      part_number: form.part_number.trim(),
-      article_id: parseOptionalInteger(form.article_id) ?? undefined,
-      installed_at: form.installed_at,
-      aircraft_hours_at_install: Number(form.aircraft_hours_at_install),
-      aircraft_cycles_at_install: Number(form.aircraft_cycles_at_install),
-      component_hours_at_install: Number(form.component_hours_at_install),
-      component_cycles_at_install: Number(form.component_cycles_at_install),
-      is_manual_entry: form.is_manual_entry === 'true',
-    };
-
-    await installComponent.mutateAsync(payload);
+    await installComponent.mutateAsync({
+      path: { id: componentId },
+      body: {
+        serial_number: form.serial_number.trim(),
+        part_number: form.part_number.trim(),
+        article_id: parseOptionalInteger(form.article_id) ?? undefined,
+        installed_at: form.installed_at,
+        component_hours_at_install: Number(form.component_hours_at_install),
+        component_cycles_at_install: Number(form.component_cycles_at_install),
+        is_manual_entry: form.is_manual_entry === 'true',
+      },
+    });
     onOpenChange(false);
   };
 
@@ -151,29 +151,18 @@ export function InstallComponentDialog({
             </div>
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-2">
-              <label className="text-sm font-medium">FH aeronave al montar</label>
-              <Input
-                type="number"
-                step="0.01"
-                value={form.aircraft_hours_at_install}
-                onChange={(event) =>
-                  setForm((current) => ({ ...current, aircraft_hours_at_install: event.target.value }))
-                }
-                required
-              />
+          <div className="grid gap-4 sm:grid-cols-2 p-3 rounded-lg border bg-background">
+            <div>
+              <div className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+                FH aeronave al montar
+              </div>
+              <div className="text-sm font-mono">{aircraft?.flight_hours ?? '-'}</div>
             </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium">FC aeronave al montar</label>
-              <Input
-                type="number"
-                value={form.aircraft_cycles_at_install}
-                onChange={(event) =>
-                  setForm((current) => ({ ...current, aircraft_cycles_at_install: event.target.value }))
-                }
-                required
-              />
+            <div>
+              <div className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+                FC aeronave al montar
+              </div>
+              <div className="text-sm font-mono">{aircraft?.flight_cycles ?? '-'}</div>
             </div>
           </div>
 

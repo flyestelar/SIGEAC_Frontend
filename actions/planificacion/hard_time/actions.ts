@@ -3,6 +3,7 @@ import {
   aircraftComponentSlotIndexQueryKey,
   aircraftComponentSlotShowQueryKey,
   aircraftComponentSlotStoreMutation,
+  hardTimeInstallationInstallMutation,
   hardTimeIntervalStoreMutation,
   hardTimeIntervalToggleMutation,
 } from '@api/queries';
@@ -19,7 +20,7 @@ import {
   StoreComplianceRequest,
   StoreIntervalRequest,
   UninstallComponentRequest,
-  UpdateIntervalRequest
+  UpdateIntervalRequest,
 } from '@api/types';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
@@ -41,12 +42,7 @@ export type HardTimeImportStructureRequest = {
 export const useInstallHardTimeComponent = (componentId: number, aircraftId: number | null) => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (data: InstallComponentRequest) =>
-      hardTimeInstallationInstall({
-        path: { id: componentId },
-        body: data,
-        throwOnError: true,
-      }).then((res) => res.data),
+    ...hardTimeInstallationInstallMutation({ path: { id: componentId } }),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: aircraftComponentSlotIndexQueryKey({ query: { aircraft_id: aircraftId! } }),

@@ -519,9 +519,9 @@ export type HardTimeInstallationResource = {
   part_number: string;
   article_id: number | null;
   installed_at: string;
-  aircraft_hours_at_install: string;
+  aircraft_hours_at_install: number;
   aircraft_cycles_at_install: number;
-  component_hours_at_install: string;
+  component_hours_at_install: number;
   component_cycles_at_install: number;
   removed_at: string | null;
   aircraft_hours_at_removal: string | null;
@@ -567,8 +567,6 @@ export type InstallComponentRequest = {
   part_number: string;
   article_id?: number | null;
   installed_at: string;
-  aircraft_hours_at_install: number;
-  aircraft_cycles_at_install: number;
   component_hours_at_install: number;
   component_cycles_at_install: number;
   is_manual_entry: boolean;
