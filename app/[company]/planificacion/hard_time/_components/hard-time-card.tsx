@@ -70,6 +70,10 @@ export function HardTimeCard({
   })();
 
   const category = component.category;
+  const hasInstalledPart = Boolean(
+    component?.installed_part_id ?? component?.installed_part?.id ?? component?.active_installation,
+  );
+  const canCreateInterval = Boolean(onCreateInterval && hasInstalledPart);
   if (isVacant) {
     return (
       <Card
@@ -122,20 +126,20 @@ export function HardTimeCard({
               {intervals.length} intervalo{intervals.length !== 1 && 's'}
             </Badge>
             <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
-              {onCreateInterval && (
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  className="h-7 gap-1 px-2 text-[11px] text-muted-foreground hover:text-foreground"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onCreateInterval();
-                  }}
-                >
-                  <ListPlus className="h-3.5 w-3.5" />
-                  Intervalo
-                </Button>
-              )}
+                {canCreateInterval ? (
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="h-7 gap-1 px-2 text-[11px] text-muted-foreground hover:text-foreground"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onCreateInterval?.();
+                    }}
+                  >
+                    <ListPlus className="h-3.5 w-3.5" />
+                    Intervalo
+                  </Button>
+                ) : null}
               <Button
                 size="sm"
                 variant="outline"
@@ -227,17 +231,19 @@ export function HardTimeCard({
             </div>
           </div>
         ) : (
-          <button
-            type="button"
-            className="flex w-full items-center justify-center gap-1.5 rounded-md border border-dashed border-border/70 bg-background/50 py-2 text-[11px] text-muted-foreground transition-colors hover:border-border hover:text-foreground"
-            onClick={(e) => {
-              e.stopPropagation();
-              onCreateInterval?.();
-            }}
-          >
-            <ListPlus className="h-3.5 w-3.5" />
-            Sin intervalos — añadir uno
-          </button>
+          canCreateInterval ? (
+            <button
+              type="button"
+              className="flex w-full items-center justify-center gap-1.5 rounded-md border border-dashed border-border/70 bg-background/50 py-2 text-[11px] text-muted-foreground transition-colors hover:border-border hover:text-foreground"
+              onClick={(e) => {
+                e.stopPropagation();
+                onCreateInterval?.();
+              }}
+            >
+              <ListPlus className="h-3.5 w-3.5" />
+              Sin intervalos — añadir uno
+            </button>
+          ) : null
         )}
 
         <div className="flex items-center justify-between gap-2 pt-0.5">
@@ -264,7 +270,7 @@ export function HardTimeCard({
             )}
           </div>
           <div className="flex shrink-0 items-center gap-1" onClick={(e) => e.stopPropagation()}>
-            {onCreateInterval && (
+            {canCreateInterval && (
               <Button
                 size="sm"
                 variant="ghost"

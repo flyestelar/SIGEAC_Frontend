@@ -100,8 +100,8 @@ export function HardTimeCategorySidebar({
 
   const averageDailyFH = averages?.average_daily_flight_hours ?? null;
   const averageDailyFC = averages?.average_daily_flight_cycles ?? null;
-  const selectedCategory = selectedEntry?.category ?? null;
-  const selectedComponents = selectedEntry?.components ?? [];
+  const selectedCategory = selectedEntry?.category;
+  const selectedComponents = selectedEntry?.components;
   const stats = selectedEntry?.stats ?? { total: 0, mounted: 0, vacant: 0, overdue: 0, warning: 0 };
 
   const sortedComponents = useMemo(() => {
@@ -213,7 +213,6 @@ export function HardTimeCategorySidebar({
           )}
         </div>
       </aside>
-
       <div className="space-y-4">
         <div className="overflow-hidden rounded-xl border border-border/60 bg-background">
           <div className="flex flex-col gap-3 border-b border-border/60 bg-sky-500/[0.04] px-5 py-3 lg:flex-row lg:items-center lg:justify-between">

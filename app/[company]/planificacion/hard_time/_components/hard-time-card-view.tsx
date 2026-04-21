@@ -33,7 +33,7 @@ export function HardTimeCardView({
           averageDailyFC={averageDailyFC}
           onInstall={() => onInstallComponent?.(component.id)}
           onUninstall={() => onUninstallComponent?.(component.id)}
-          onCreateInterval={onCreateInterval ? () => onCreateInterval(component.id) : undefined}
+          onCreateInterval={() => onCreateInterval?.(component.id)}
         />
       ))}
     </div>

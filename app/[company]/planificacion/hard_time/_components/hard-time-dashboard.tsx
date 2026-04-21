@@ -110,6 +110,10 @@ export function HardTimeDashboard() {
   };
 
   const openCreateInterval = (component: AircraftComponentSlotResource) => {
+    // Only allow creating intervals when the component has an installed part
+    const hasInstalledPart = Boolean(component?.installed_part_id ?? component?.installed_part?.id);
+    if (!hasInstalledPart) return;
+
     setIntervalTargetComponent(component);
     setEditingInterval(null);
     setIsIntervalDialogOpen(true);

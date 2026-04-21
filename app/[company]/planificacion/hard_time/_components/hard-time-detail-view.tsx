@@ -1,12 +1,21 @@
 'use client';
 
-import { useGetHardTimeComponentDetail } from '@/hooks/planificacion/hard_time/useGetHardTimeComponentDetail';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { useGetHardTimeComponentDetail } from '@/hooks/planificacion/hard_time/useGetHardTimeComponentDetail';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { AlertCircle, ArrowLeft, ClipboardCheck, ClipboardPlus, Loader2, PackageMinus, PackagePlus } from 'lucide-react';
+import {
+  AlertCircle,
+  ArrowLeft,
+  ClipboardCheck,
+  ClipboardPlus,
+  Loader2,
+  PackageMinus,
+  PackagePlus,
+} from 'lucide-react';
 import { HardTimeIntervalCard } from './hard-time-interval-card';
 import { AlertBadge, LEVEL_CONFIG } from './hard-time-shared';
 
@@ -148,7 +157,8 @@ export function HardTimeDetailView({
   const status = component.status ?? 'OK';
   const cfg = LEVEL_CONFIG[status];
   const StatusIcon = cfg.icon;
-  const activeIntervals = component.intervals.filter((interval) => interval.is_active);
+  const intervals = component.installed_part?.intervals ?? [];
+  const activeIntervals = intervals.filter((interval) => interval.is_active);
   const installation = component.active_installation;
 
   return (
@@ -182,7 +192,7 @@ export function HardTimeDetailView({
                   <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
                     <span className="font-mono">P/N: {installation?.part_number ?? component.part_number}</span>
                     <span className="font-mono">S/N: {installation?.serial_number ?? '—'}</span>
-                    {component.ata_chapter && <span>ATA {component.ata_chapter}</span>}
+                    {component.category?.ata_chapter && <span>ATA {component.category.ata_chapter}</span>}
                   </div>
                   <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
                     <span>Instalado: {formatDate(installation?.installed_at)}</span>
@@ -192,24 +202,31 @@ export function HardTimeDetailView({
               </div>
 
               <div className="flex flex-wrap items-center gap-2">
-                <Button variant="outline" className="gap-2" onClick={onCreateInterval}>
-                  <ClipboardPlus className="size-4" />
-                  Nuevo intervalo
-                </Button>
-                <Button
-                  variant="outline"
-                  className="gap-2"
-                  onClick={installation ? onUninstall : onInstall}
-                >
+                {installation ? (
+                  <Button variant="outline" className="gap-2" onClick={onCreateInterval}>
+                    <ClipboardPlus className="size-4" />
+                    Nuevo intervalo
+                  </Button>
+                ) : (
+                  <TooltipProvider>
+                    <Tooltip delayDuration={80}>
+                      <TooltipTrigger asChild>
+                        <span>
+                          <Button variant="outline" className="gap-2" disabled>
+                            <ClipboardPlus className="size-4" />
+                            Nuevo intervalo
+                          </Button>
+                        </span>
+                      </TooltipTrigger>
+                      <TooltipContent side="bottom">Monta una parte antes de crear intervalos</TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                )}
+                <Button variant="outline" className="gap-2" onClick={installation ? onUninstall : onInstall}>
                   {installation ? <PackageMinus className="size-4" /> : <PackagePlus className="size-4" />}
                   {installation ? 'Desmontar' : 'Montar'}
                 </Button>
-                <Button
-                  variant="outline"
-                  className="gap-2"
-                  onClick={onRegisterCompliance}
-                  disabled={!installation}
-                >
+                <Button variant="outline" className="gap-2" onClick={onRegisterCompliance} disabled={!installation}>
                   <ClipboardCheck className="size-4" />
                   Registrar cumplimiento
                 </Button>
