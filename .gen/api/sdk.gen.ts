@@ -4843,7 +4843,7 @@ export const hardTimeIntervalStore = <ThrowOnError extends boolean = false>(
   (options.client ?? client).post<HardTimeIntervalStoreResponses, HardTimeIntervalStoreErrors, ThrowOnError>({
     responseType: 'json',
     security: [{ scheme: 'bearer', type: 'http' }],
-    url: '/hard-time-components/{componentId}/intervals',
+    url: '/hard-time-components/{partId}/intervals',
     ...options,
     headers: {
       'Content-Type': 'application/json',

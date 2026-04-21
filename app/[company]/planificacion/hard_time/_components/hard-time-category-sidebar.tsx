@@ -2,28 +2,19 @@
 
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { HardTimeCategoryResource, HardTimeComponentResource } from '@api/types';
-import {
-  AlertTriangle,
-  Boxes,
-  PackageOpen,
-  PlusCircle,
-  Search,
-  ShieldCheck,
-  TriangleAlert,
-  X,
-} from 'lucide-react';
+import { AircraftComponentSlotResource, HardTimeCategoryResource } from '@api/types';
+import { AlertTriangle, Boxes, PackageOpen, PlusCircle, Search, ShieldCheck, TriangleAlert, X } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { HardTimeCard } from './hard-time-card';
 
 interface HardTimeCategorySidebarProps {
   categories: HardTimeCategoryResource[];
-  categoryGroups: HardTimeComponentResource[][];
+  categoryGroups: AircraftComponentSlotResource[][];
   averages: { average_daily_flight_hours?: number | null; average_daily_flight_cycles?: number | null } | null;
-  onSelectComponent: (id: number) => void;
-  onInstallComponent: (componentId: number) => void;
-  onUninstallComponent: (componentId: number) => void;
-  onCreateIntervalForComponent: (componentId: number) => void;
+  onSelectComponent: (component: AircraftComponentSlotResource) => void;
+  onInstallComponent: (component: AircraftComponentSlotResource) => void;
+  onUninstallComponent: (component: AircraftComponentSlotResource) => void;
+  onCreateIntervalForComponent: (component: AircraftComponentSlotResource) => void;
   onCreateComponentInAta: (categoryCode: string) => void;
 }
 
@@ -37,11 +28,11 @@ type CategoryStats = {
 
 type CategoryEntry = {
   category: HardTimeCategoryResource;
-  components: HardTimeComponentResource[];
+  components: AircraftComponentSlotResource[];
   stats: CategoryStats;
 };
 
-function computeStats(components: HardTimeComponentResource[]): CategoryStats {
+function computeStats(components: AircraftComponentSlotResource[]): CategoryStats {
   const stats: CategoryStats = { total: components.length, mounted: 0, vacant: 0, overdue: 0, warning: 0 };
   for (const c of components) {
     if (c.active_installation) stats.mounted++;
@@ -65,7 +56,7 @@ export function HardTimeCategorySidebar({
   const [searchTerm, setSearchTerm] = useState('');
 
   const entries = useMemo<CategoryEntry[]>(() => {
-    const componentsByCode = new Map<string, HardTimeComponentResource[]>();
+    const componentsByCode = new Map<string, AircraftComponentSlotResource[]>();
     for (const group of categoryGroups) {
       const code = group[0]?.category?.code;
       if (code) componentsByCode.set(code, group);
@@ -131,9 +122,7 @@ export function HardTimeCategorySidebar({
       <aside className="flex max-h-[calc(100vh-12rem)] flex-col overflow-hidden rounded-xl border border-border/60 bg-background">
         <div className="space-y-3 border-b border-border/60 bg-muted/15 px-3 py-3">
           <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-              Capítulos ATA
-            </p>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Capítulos ATA</p>
             <p className="mt-0.5 text-xs text-muted-foreground">
               {entries.length} en total · {selectedCategory?.code ?? '—'}
             </p>
@@ -190,9 +179,7 @@ export function HardTimeCategorySidebar({
                     >
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-1.5">
-                          <span className="font-mono text-xs font-semibold text-foreground">
-                            {entry.category.code}
-                          </span>
+                          <span className="font-mono text-xs font-semibold text-foreground">{entry.category.code}</span>
                           {entry.stats.overdue > 0 && (
                             <span className="inline-flex items-center gap-0.5 text-[10px] font-semibold text-red-600 dark:text-red-400">
                               <TriangleAlert className="h-2.5 w-2.5" />
@@ -208,16 +195,16 @@ export function HardTimeCategorySidebar({
                         </div>
                         <p className="mt-0.5 truncate text-xs text-muted-foreground">{entry.category.name}</p>
                       </div>
-                      <Badge
-                        variant="outline"
-                        className={`shrink-0 self-start font-mono text-[10px] ${
-                          isEmpty
-                            ? 'border-dashed border-border/50 text-muted-foreground'
-                            : 'border-border/70'
-                        }`}
-                      >
-                        {entry.stats.total}
-                      </Badge>
+                      {entry.stats.total !== 0 && (
+                        <Badge
+                          variant="outline"
+                          className={`shrink-0 self-start font-mono text-[10px] ${
+                            isEmpty ? 'border-dashed border-border/50 text-muted-foreground' : 'border-border/70'
+                          }`}
+                        >
+                          {entry.stats.total}
+                        </Badge>
+                      )}
                     </button>
                   </li>
                 );
@@ -311,12 +298,12 @@ export function HardTimeCategorySidebar({
                   <HardTimeCard
                     key={component.id}
                     component={component}
-                    onSelect={() => onSelectComponent(component.id)}
+                    onSelect={() => onSelectComponent(component)}
                     averageDailyFH={averageDailyFH}
                     averageDailyFC={averageDailyFC}
-                    onInstall={() => onInstallComponent(component.id)}
-                    onUninstall={() => onUninstallComponent(component.id)}
-                    onCreateInterval={() => onCreateIntervalForComponent(component.id)}
+                    onInstall={() => onInstallComponent(component)}
+                    onUninstall={() => onUninstallComponent(component)}
+                    onCreateInterval={() => onCreateIntervalForComponent(component)}
                   />
                 ))}
                 {selectedCategory?.code && (
@@ -334,8 +321,7 @@ export function HardTimeCategorySidebar({
                         Nuevo componente
                       </p>
                       <p className="text-[11px] text-muted-foreground">
-                        en{' '}
-                        <span className="font-mono text-foreground/80">{selectedCategory.code}</span>
+                        en <span className="font-mono text-foreground/80">{selectedCategory.code}</span>
                         {selectedCategory.name && (
                           <>
                             {' · '}

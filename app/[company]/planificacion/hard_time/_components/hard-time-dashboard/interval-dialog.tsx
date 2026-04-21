@@ -1,26 +1,33 @@
-import { useEffect, useState } from 'react';
-import { Loader2, CalendarClock } from 'lucide-react';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
 import { useCreateHardTimeInterval, useUpdateHardTimeInterval } from '@/actions/planificacion/hard_time/actions';
+import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { HardTimeIntervalResource, UpdateIntervalRequest } from '@api/types';
+import { CalendarClock, Loader2 } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { FormSection } from './form-section';
 import { MetricFieldCard } from './metric-field-card';
 import { IntervalFormState } from './types';
-import { todayDate, parseOptionalInteger, parseOptionalNumber } from './utils';
-import { StoreIntervalRequest, UpdateIntervalRequest } from '@api/types';
-import { HardTimeInterval } from '@/types';
+import { parseOptionalInteger, parseOptionalNumber } from './utils';
 
 type IntervalDialogProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  partId: number;
   componentId: number | null;
   aircraftId: number | null;
-  interval: HardTimeInterval | null;
+  interval: HardTimeIntervalResource | null;
 };
 
-export function IntervalDialog({ open, onOpenChange, componentId, aircraftId, interval }: IntervalDialogProps) {
-  const createInterval = useCreateHardTimeInterval(componentId ?? 0, aircraftId);
+export function IntervalDialog({ open, onOpenChange, partId, componentId, aircraftId, interval }: IntervalDialogProps) {
+  const createInterval = useCreateHardTimeInterval();
   const updateInterval = useUpdateHardTimeInterval(interval?.id ?? 0, componentId ?? 0, aircraftId);
   const [form, setForm] = useState<IntervalFormState>({
     task_description: '',
@@ -52,13 +59,16 @@ export function IntervalDialog({ open, onOpenChange, componentId, aircraftId, in
       };
       await updateInterval.mutateAsync(payload);
     } else {
-      const payload: StoreIntervalRequest = {
-        task_description: form.task_description.trim(),
-        interval_hours: parseOptionalNumber(form.interval_hours),
-        interval_cycles: parseOptionalInteger(form.interval_cycles),
-        interval_days: parseOptionalInteger(form.interval_days),
-      };
-      await createInterval.mutateAsync(payload);
+      await createInterval.mutateAsync({
+        path: { partId },
+        body: {
+          task_description: form.task_description.trim(),
+          interval_hours: parseOptionalNumber(form.interval_hours),
+          interval_cycles: parseOptionalInteger(form.interval_cycles),
+          interval_days: parseOptionalInteger(form.interval_days),
+          is_active: true,
+        },
+      });
     }
 
     onOpenChange(false);

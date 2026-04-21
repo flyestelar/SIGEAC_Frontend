@@ -1,8 +1,6 @@
 'use client';
 
 import { AircraftAverageMetric } from '@api/types';
-import { format } from 'date-fns';
-import { es } from 'date-fns/locale';
 import { Activity, CalendarClock, Clock, Plane, RefreshCw, TrendingUp } from 'lucide-react';
 
 interface AircraftAverageSummaryCardProps {
@@ -13,16 +11,16 @@ function formatDate(value: string | null | undefined) {
   if (!value) return '—';
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return '—';
-  return format(date, 'dd MMM yyyy', { locale: es });
+  return date.toLocaleDateString(undefined, { day: 'numeric', month: '2-digit', year: 'numeric' });
 }
 
 function formatNumber(value: number | null | undefined, decimals = 1) {
-  if (value === null || value === undefined || Number.isNaN(value)) return '—';
+  if (value == null || Number.isNaN(value)) return '—';
   return value.toLocaleString(undefined, { maximumFractionDigits: decimals, minimumFractionDigits: decimals });
 }
 
 function formatInt(value: number | null | undefined) {
-  if (value === null || value === undefined || Number.isNaN(value)) return '—';
+  if (value == null || Number.isNaN(value)) return '—';
   return value.toLocaleString();
 }
 
@@ -57,13 +55,13 @@ const ACCENT: Record<Kpi['accent'], { iconBg: string; iconText: string }> = {
 function KpiTile({ icon: Icon, label, value, unit, accent, hint }: Kpi) {
   const cfg = ACCENT[accent];
   return (
-    <div className="flex items-start gap-3 px-4 py-3">
+    <div className="flex items-start gap-3 px-4 py-3 bg-background">
       <div className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-md border ${cfg.iconBg}`}>
         <Icon className={`h-4 w-4 ${cfg.iconText}`} />
       </div>
-      <div className="min-w-0 flex-1">
+      <div className="min-w-0 flex-1 self-stretch flex flex-col gap-0.5">
         <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">{label}</p>
-        <p className="mt-0.5 truncate">
+        <p className="mt-auto whitespace-nowrap">
           <span className="font-mono text-lg font-semibold leading-tight tracking-tight text-foreground">{value}</span>
           <span className="ml-1 text-[11px] font-medium text-muted-foreground">{unit}</span>
         </p>
@@ -148,16 +146,9 @@ export function AircraftAverageSummaryCard({ averages }: AircraftAverageSummaryC
         </div>
       </div>
 
-      <div className="grid grid-cols-1 divide-y divide-border/60 sm:grid-cols-2 sm:divide-x sm:divide-y-0 lg:grid-cols-5">
-        {kpis.map((kpi, index) => (
-          <div
-            key={kpi.label}
-            className={`${
-              index >= 2 ? 'sm:border-t sm:border-border/60 sm:first-of-type:border-l-0 lg:border-t-0' : ''
-            }`}
-          >
-            <KpiTile {...kpi} />
-          </div>
+      <div className="flex flex-col flex-wrap gap-px bg-border/60 sm:flex-row *:flex-1 sm:*:basis-[30%] md:*:basis-[20%]">
+        {kpis.map((kpi) => (
+          <KpiTile {...kpi} key={kpi.label} />
         ))}
       </div>
     </div>

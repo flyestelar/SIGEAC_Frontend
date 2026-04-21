@@ -3,6 +3,7 @@ import {
   AircraftTypeResource,
   HardTimeCategoryResource,
   HardTimeComponentResource,
+  HardTimeIntervalResource,
 } from '@api/types';
 
 export type Accountant = {
@@ -1238,20 +1239,7 @@ export type HardTimeMetric = {
   status: HardTimeAlertLevel;
 };
 
-export type HardTimeInterval = {
-  id: number;
-  hard_time_component_id: number;
-  task_description: string;
-  interval_hours: number | null;
-  interval_cycles: number | null;
-  interval_days: number | null;
-  is_active: boolean;
-  metrics?: HardTimeMetric[];
-  created_at: string;
-  updated_at: string;
-};
-
-export type HardTimeIntervalDetail = HardTimeInterval & {
+export type HardTimeIntervalDetail = HardTimeIntervalResource & {
   last_compliance: HardTimeCompliance | null;
   next_due_hours: number | null;
   next_due_cycles: number | null;

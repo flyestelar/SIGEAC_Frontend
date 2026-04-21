@@ -4,8 +4,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { HardTimeInterval } from '@/types';
-import { AircraftResource, StoreComplianceRequest, WorkOrderResource } from '@api/types';
+import { AircraftResource, HardTimeIntervalResource, StoreComplianceRequest, WorkOrderResource } from '@api/types';
 import { AlertCircle, CalendarClock, ClipboardCheck, Loader2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { ComplianceFormState } from './types';
@@ -16,7 +15,7 @@ type ComplianceDialogProps = {
   onOpenChange: (open: boolean) => void;
   componentId: number | null;
   aircraft: AircraftResource | null;
-  intervals: HardTimeInterval[];
+  intervals: HardTimeIntervalResource[];
   workOrders: WorkOrderResource[];
 };
 

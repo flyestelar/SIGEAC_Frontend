@@ -3,17 +3,10 @@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { HardTimeAlertLevel, HardTimeComponentWithMetrics, HardTimeMetric } from '@/types';
-import {
-  CircleOff,
-  ListPlus,
-  MapPinned,
-  PackageMinus,
-  PackagePlus,
-  PlusCircle,
-  Timer,
-} from 'lucide-react';
+import { HardTimeAlertLevel, HardTimeMetric } from '@/types';
+import { CircleOff, ListPlus, MapPinned, PackageMinus, PackagePlus, PlusCircle, Timer } from 'lucide-react';
 import { AlertBadge, LEVEL_CONFIG, METRIC_ICONS, METRIC_UNITS } from './hard-time-shared';
+import { AircraftComponentSlotResource } from '@api/types';
 
 function estimatedDaysToExpiry(
   metric: HardTimeMetric,
@@ -28,7 +21,7 @@ function estimatedDaysToExpiry(
 }
 
 interface HardTimeCardProps {
-  component: HardTimeComponentWithMetrics;
+  component: AircraftComponentSlotResource;
   onSelect: () => void;
   averageDailyFH?: number | null;
   averageDailyFC?: number | null;
@@ -49,16 +42,15 @@ export function HardTimeCard({
   const cfg = LEVEL_CONFIG[component.status ?? 'OK'];
   const LevelIcon = cfg.icon;
   const isVacant = !component.active_installation;
+  const intervals = component.installed_part?.intervals ?? [];
 
   const statusCounts: Record<HardTimeAlertLevel, number> = { OK: 0, WARNING: 0, OVERDUE: 0 };
-  component.intervals.forEach((i) => {
+  intervals.forEach((i) => {
     const s = i.status ?? 'OK';
     statusCounts[s]++;
   });
 
-  const allMetricsWithTask = component.intervals.flatMap((i) =>
-    (i.metrics ?? []).map((m) => ({ ...m, taskDescription: i.task_description })),
-  );
+  const allMetricsWithTask = intervals.flatMap((i) => i.metrics ?? []);
 
   const closestMetric = (() => {
     if (allMetricsWithTask.length === 0) return null;
@@ -77,6 +69,7 @@ export function HardTimeCard({
     return withEstimates.sort((a, b) => a.estDays! - b.estDays!)[0];
   })();
 
+  const category = component.category;
   if (isVacant) {
     return (
       <Card
@@ -96,10 +89,10 @@ export function HardTimeCard({
                 <div className="flex flex-wrap items-center gap-1.5 text-[11px] text-muted-foreground">
                   <MapPinned className="h-3 w-3" />
                   <span className="font-mono text-foreground/80">{component.position}</span>
-                  {component.ata_chapter && (
+                  {category?.ata_chapter && (
                     <>
                       <span className="text-border">·</span>
-                      <span className="font-mono">ATA {component.ata_chapter}</span>
+                      <span className="font-mono">ATA {category.ata_chapter}</span>
                     </>
                   )}
                 </div>
@@ -121,14 +114,12 @@ export function HardTimeCard({
         <CardContent className="space-y-3 px-4 pb-3 pt-0">
           <div className="flex items-center gap-2 rounded-md border border-dashed border-sky-500/20 bg-background/60 px-3 py-2">
             <PlusCircle className="h-3.5 w-3.5 shrink-0 text-sky-700 dark:text-sky-300" />
-            <p className="text-[11px] text-foreground/80">
-              Monta un componente para activar el control hard time.
-            </p>
+            <p className="text-[11px] text-foreground/80">Monta un componente para activar el control hard time.</p>
           </div>
 
           <div className="flex items-center justify-between gap-3">
             <Badge variant="outline" className="h-5 border-border/60 px-2 text-[10px] font-normal">
-              {component.intervals.length} intervalo{component.intervals.length !== 1 && 's'}
+              {intervals.length} intervalo{intervals.length !== 1 && 's'}
             </Badge>
             <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
               {onCreateInterval && (
@@ -182,10 +173,10 @@ export function HardTimeCard({
               <div className="flex flex-wrap items-center gap-1.5 text-[11px] text-muted-foreground">
                 <MapPinned className="h-3 w-3" />
                 <span className="font-mono text-foreground/80">{component.position}</span>
-                {component.ata_chapter && (
+                {category?.ata_chapter && (
                   <>
                     <span className="text-border">·</span>
-                    <span className="font-mono">ATA {component.ata_chapter}</span>
+                    <span className="font-mono">ATA {category.ata_chapter}</span>
                   </>
                 )}
               </div>
@@ -195,9 +186,7 @@ export function HardTimeCard({
         </div>
 
         <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 pl-[38px] text-[11px] text-muted-foreground">
-          <span className="font-mono">
-            P/N: {component.active_installation?.part_number ?? component.part_number}
-          </span>
+          <span className="font-mono">P/N: {component.active_installation?.part_number ?? component.part_number}</span>
           {component.active_installation && (
             <>
               <span className="text-border">·</span>
@@ -254,9 +243,9 @@ export function HardTimeCard({
         <div className="flex items-center justify-between gap-2 pt-0.5">
           <div className="flex min-w-0 items-center gap-2">
             <Badge variant="outline" className="h-5 shrink-0 border-border/60 px-2 text-[10px] font-normal">
-              {component.intervals.length} intervalo{component.intervals.length !== 1 && 's'}
+              {intervals.length} intervalo{intervals.length !== 1 && 's'}
             </Badge>
-            {component.intervals.length > 0 && (
+            {intervals.length > 0 && (
               <div className="flex items-center gap-2 text-[10px] font-medium">
                 {statusCounts.OVERDUE > 0 && (
                   <span className="text-red-600 dark:text-red-400">
@@ -264,7 +253,9 @@ export function HardTimeCard({
                   </span>
                 )}
                 {statusCounts.WARNING > 0 && (
-                  <span className="text-amber-600 dark:text-amber-400">{statusCounts.WARNING} próximo{statusCounts.WARNING !== 1 && 's'}</span>
+                  <span className="text-amber-600 dark:text-amber-400">
+                    {statusCounts.WARNING} próximo{statusCounts.WARNING !== 1 && 's'}
+                  </span>
                 )}
                 {statusCounts.OK > 0 && (
                   <span className="text-emerald-600 dark:text-emerald-400">{statusCounts.OK} OK</span>

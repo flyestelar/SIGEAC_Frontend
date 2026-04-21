@@ -1,25 +1,25 @@
 import {
+  aircraftComponentSlotDestroyMutation,
   aircraftComponentSlotIndexQueryKey,
   aircraftComponentSlotShowQueryKey,
   aircraftComponentSlotStoreMutation,
+  hardTimeIntervalStoreMutation,
+  hardTimeIntervalToggleMutation,
 } from '@api/queries';
 import {
-  aircraftComponentSlotDestroy,
   aircraftComponentSlotStore,
   hardTimeComplianceStore,
   hardTimeInstallationInstall,
   hardTimeInstallationUninstall,
   hardTimeIntervalStore,
-  hardTimeIntervalToggle,
   hardTimeIntervalUpdate,
 } from '@api/sdk.gen';
 import {
-  AircraftComponentSlotStoreData,
   InstallComponentRequest,
   StoreComplianceRequest,
   StoreIntervalRequest,
   UninstallComponentRequest,
-  UpdateIntervalRequest,
+  UpdateIntervalRequest
 } from '@api/types';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
@@ -68,7 +68,9 @@ export const useUninstallHardTimeComponent = (componentId: number, aircraftId: n
         throwOnError: true,
       }).then((res) => res.data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: aircraftComponentSlotIndexQueryKey({ query: { aircraft_id: aircraftId! } }) });
+      queryClient.invalidateQueries({
+        queryKey: aircraftComponentSlotIndexQueryKey({ query: { aircraft_id: aircraftId! } }),
+      });
       queryClient.invalidateQueries({ queryKey: aircraftComponentSlotShowQueryKey({ path: { id: componentId } }) });
       toast.success('Componente desmontado', { description: 'El componente fue removido correctamente.' });
     },
@@ -86,7 +88,9 @@ export const useRegisterHardTimeCompliance = (componentId: number, aircraftId: n
         throwOnError: true,
       }).then((res) => res.data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: aircraftComponentSlotIndexQueryKey({ query: { aircraft_id: aircraftId! } }) });
+      queryClient.invalidateQueries({
+        queryKey: aircraftComponentSlotIndexQueryKey({ query: { aircraft_id: aircraftId! } }),
+      });
       queryClient.invalidateQueries({ queryKey: aircraftComponentSlotShowQueryKey({ path: { id: componentId } }) });
       toast.success('Cumplimiento registrado');
     },
@@ -94,18 +98,15 @@ export const useRegisterHardTimeCompliance = (componentId: number, aircraftId: n
   });
 };
 
-export const useCreateHardTimeInterval = (componentId: number, aircraftId: number | null) => {
+export const useCreateHardTimeInterval = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (data: StoreIntervalRequest) =>
-      hardTimeIntervalStore({
-        path: { componentId },
-        body: data,
-        throwOnError: true,
-      }).then((res) => res.data),
+    ...hardTimeIntervalStoreMutation(),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: aircraftComponentSlotIndexQueryKey({ query: { aircraft_id: aircraftId! } }) });
-      queryClient.invalidateQueries({ queryKey: aircraftComponentSlotShowQueryKey({ path: { id: componentId } }) });
+      queryClient.invalidateQueries({
+        queryKey: aircraftComponentSlotIndexQueryKey({}),
+      });
+      queryClient.invalidateQueries({ queryKey: aircraftComponentSlotShowQueryKey(undefined as any) });
       toast.success('Intervalo creado');
     },
     onError: () => toast.error('No se pudo crear el intervalo'),
@@ -122,7 +123,9 @@ export const useUpdateHardTimeInterval = (intervalId: number, componentId: numbe
         throwOnError: true,
       }).then((res) => res.data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: aircraftComponentSlotIndexQueryKey({ query: { aircraft_id: aircraftId! } }) });
+      queryClient.invalidateQueries({
+        queryKey: aircraftComponentSlotIndexQueryKey({ query: { aircraft_id: aircraftId! } }),
+      });
       queryClient.invalidateQueries({ queryKey: aircraftComponentSlotShowQueryKey({ path: { id: componentId } }) });
       toast.success('Intervalo actualizado');
     },
@@ -133,13 +136,11 @@ export const useUpdateHardTimeInterval = (intervalId: number, componentId: numbe
 export const useToggleHardTimeInterval = (intervalId: number, componentId: number, aircraftId: number | null) => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async () =>
-      hardTimeIntervalToggle({
-        path: { id: intervalId },
-        throwOnError: true,
-      }).then((res) => res.data),
+    ...hardTimeIntervalToggleMutation({ path: { id: intervalId } }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: aircraftComponentSlotIndexQueryKey({ query: { aircraft_id: aircraftId! } }) });
+      queryClient.invalidateQueries({
+        queryKey: aircraftComponentSlotIndexQueryKey({ query: { aircraft_id: aircraftId! } }),
+      });
       queryClient.invalidateQueries({ queryKey: aircraftComponentSlotShowQueryKey({ path: { id: componentId } }) });
       toast.success('Intervalo actualizado');
     },
@@ -165,13 +166,11 @@ export const useCreateHardTimeComponent = (aircraftId: number | null) => {
 export const useDeleteHardTimeComponent = (aircraftId: number | null) => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (componentId: number) =>
-      aircraftComponentSlotDestroy({
-        path: { id: componentId },
-        throwOnError: true,
-      }).then((res) => res.data),
+    ...aircraftComponentSlotDestroyMutation(),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: aircraftComponentSlotIndexQueryKey({ query: { aircraft_id: aircraftId! } }) });
+      queryClient.invalidateQueries({
+        queryKey: aircraftComponentSlotIndexQueryKey({ query: { aircraft_id: aircraftId! } }),
+      });
       toast.success('Componente eliminado');
     },
     onError: () => toast.error('No se pudo eliminar el componente'),
@@ -183,29 +182,27 @@ export const useImportHardTimeStructure = (aircraftId: number | null) => {
 
   return useMutation({
     mutationFn: async (data: HardTimeImportStructureRequest) => {
-      const importedComponentIds: number[] = [];
+      const importedPartIds: number[] = [];
 
       for (const component of data.components) {
-        const componentPayload: AircraftComponentSlotStoreData['body'] = {
-          aircraft_id: data.aircraft_id,
-          category_code: data.category_code,
-          part_number: component.part_number,
-          description: component.description,
-          position: component.position,
-          ata_chapter: component.ata_chapter,
-        };
-
         const componentResponse = await aircraftComponentSlotStore({
-          body: componentPayload,
+          body: {
+            aircraft_id: data.aircraft_id,
+            category_code: data.category_code,
+            part_number: component.part_number,
+            description: component.description,
+            position: component.position,
+            ata_chapter: component.ata_chapter,
+          },
           throwOnError: true,
         }).then((res) => res.data);
 
-        const componentId = componentResponse.data.id;
-        importedComponentIds.push(componentId);
+        const partId = componentResponse.data.id;
+        importedPartIds.push(partId);
 
         for (const interval of component.intervals) {
           await hardTimeIntervalStore({
-            path: { componentId },
+            path: { partId },
             body: interval,
             throwOnError: true,
           });
@@ -213,12 +210,14 @@ export const useImportHardTimeStructure = (aircraftId: number | null) => {
       }
 
       return {
-        imported_components: importedComponentIds.length,
+        imported_parts: importedPartIds.length,
         imported_intervals: data.components.reduce((total, component) => total + component.intervals.length, 0),
       };
     },
     onSuccess: (result) => {
-      queryClient.invalidateQueries({ queryKey: aircraftComponentSlotIndexQueryKey({ query: { aircraft_id: aircraftId! } }) });
+      queryClient.invalidateQueries({
+        queryKey: aircraftComponentSlotIndexQueryKey({ query: { aircraft_id: aircraftId! } }),
+      });
       toast.success('Importación completada', {
         description: `${result.imported_components} componentes y ${result.imported_intervals} intervalos creados.`,
       });
