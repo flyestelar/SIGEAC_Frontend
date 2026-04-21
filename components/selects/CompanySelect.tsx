@@ -1,16 +1,11 @@
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { useAuth } from "@/contexts/AuthContext";
-import { useGetUserLocationsByCompanyId } from "@/hooks/sistema/usuario/useGetUserLocationsByCompanyId";
-import { useCompanyStore } from "@/stores/CompanyStore";
-import { Company } from "@/types";
-import { useQueryClient } from "@tanstack/react-query";
-import { Loader2 } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useAuth } from '@/contexts/AuthContext';
+import { useGetUserLocationsByCompanyId } from '@/hooks/sistema/usuario/useGetUserLocationsByCompanyId';
+import { useCompanyStore } from '@/stores/CompanyStore';
+import { Company } from '@/types';
+import { useQueryClient } from '@tanstack/react-query';
+import { Loader2 } from 'lucide-react';
+import { useCallback, useEffect } from 'react';
 
 const CompanySelect = () => {
   // Hooks y estados
@@ -18,18 +13,14 @@ const CompanySelect = () => {
   const queryClient = useQueryClient();
 
   const { selectedCompany, selectedStation, setSelectedCompany, setSelectedStation } = useCompanyStore();
-  
-  const {
-    data: locations,
-    isPending: locationsLoading,
-    isError,
-  } = useGetUserLocationsByCompanyId(selectedCompany?.id);
+
+  const { data: locations, isPending: locationsLoading, isError } = useGetUserLocationsByCompanyId(selectedCompany?.id);
 
   const selectedLocation = selectedStation
     ? locations?.find((location) => location.id.toString() === selectedStation)
     : null;
 
-    const stationAddress = selectedLocation ? `${selectedLocation.cod_iata} - ${selectedLocation.type}` : null;
+  const stationAddress = selectedLocation ? `${selectedLocation.cod_iata} - ${selectedLocation.type}` : null;
 
   // Handlers
   const handleCompanySelect = (companyId: string) => {
@@ -40,10 +31,20 @@ const CompanySelect = () => {
     }
   };
 
-  const handleStationSelect = (value: string) => {
+  const handleStationSelect = useCallback((value: string) => {
     setSelectedStation(value);
     queryClient.clear();
-  };
+  }, [setSelectedStation, queryClient]);
+
+  // Auto-select station when the selected company has exactly one location
+  useEffect(() => {
+    if (!locationsLoading && locations && locations.length === 1) {
+      const onlyLocationId = locations[0].id.toString();
+      if (selectedStation !== onlyLocationId) {
+        handleStationSelect(onlyLocationId);
+      }
+    }
+  }, [locations, locationsLoading, selectedStation, handleStationSelect]);
 
   // Funciones auxiliares
   const getCompanySelectValue = () => {
@@ -51,18 +52,13 @@ const CompanySelect = () => {
   };
 
   const getCompanySelectPlaceholder = () => {
-    return selectedCompany
-      ? selectedCompany.name[0].toUpperCase() + selectedCompany.name.slice(1)
-      : 'Empresa';
+    return selectedCompany ? selectedCompany.name[0].toUpperCase() + selectedCompany.name.slice(1) : 'Empresa';
   };
 
   // Render
   return (
     <div className="hidden items-center space-x-2 justify-center md:flex md:flex-1">
-      <Select
-        value={getCompanySelectValue()}
-        onValueChange={handleCompanySelect}
-      >
+      <Select value={getCompanySelectValue()} onValueChange={handleCompanySelect}>
         <SelectTrigger className="w-[180px]">
           <SelectValue placeholder={getCompanySelectPlaceholder()} />
         </SelectTrigger>
@@ -81,20 +77,10 @@ const CompanySelect = () => {
         </SelectContent>
       </Select>
 
-      <Select
-        disabled={!selectedCompany}
-        value={selectedStation || ''}
-        onValueChange={handleStationSelect}
-      >
+      <Select disabled={!selectedCompany} value={selectedStation || ''} onValueChange={handleStationSelect}>
         <SelectTrigger className="w-[180px]">
           <SelectValue
-            placeholder={
-              locationsLoading ? (
-                <Loader2 className="animate-spin size-4" />
-              ) : (
-                stationAddress || 'Estación'
-              )
-            }
+            placeholder={locationsLoading ? <Loader2 className="animate-spin size-4" /> : stationAddress || 'Estación'}
           />
         </SelectTrigger>
         <SelectContent>
@@ -103,13 +89,9 @@ const CompanySelect = () => {
               <Loader2 className="size-4 animate-spin" />
             </div>
           ) : isError ? (
-            <p className="p-2 text-xs text-muted-foreground italic">
-              Ha ocurrido un error al cargar las estaciones...
-            </p>
+            <p className="p-2 text-xs text-muted-foreground italic">Ha ocurrido un error al cargar las estaciones...</p>
           ) : locations?.length === 0 ? (
-            <p className="p-2 text-xs text-muted-foreground italic">
-              No hay estaciones disponibles
-            </p>
+            <p className="p-2 text-xs text-muted-foreground italic">No hay estaciones disponibles</p>
           ) : (
             locations?.map((location) => (
               <SelectItem value={location.id.toString()} key={location.id}>
