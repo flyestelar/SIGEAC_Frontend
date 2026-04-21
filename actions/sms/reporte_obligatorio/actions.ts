@@ -1,53 +1,19 @@
 import axiosInstance from "@/lib/axios";
+import { ObligatoryReportRequest, UpdateObligatoryReportRequest } from "@/.gen/api/types.gen";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
-interface ObligatoryReportData {
-  report_number?: string;
-  description: string;
-  incident_location: string;
-  report_date: Date;
-  incident_date: Date;
-  incident_time: string;
-  flight_time: string;
-  pilot_id: string;
-  copilot_id: string;
-  aircraft_id: string;
-  flight_number: string;
-  flight_origin: string;
-  flight_destiny: string;
-  flight_alt_destiny: string;
-  incidents?: string[];
-  other_incidents?: string;
-  status: string;
-  image?: File | string;
-  document?: File | string;
+interface CreateObligatoryReportPayload {
+  company: string;
+  data: ObligatoryReportRequest;
 }
 
-interface UpdateObligatoryReportData {
+interface UpdateObligatoryReportPayload {
   company: string | null;
   id: string;
-  data: {
-    report_number: string;
-    description: string;
-    incident_location: string;
-    report_date: Date;
-    incident_date: Date;
-    incident_time: string;
-    flight_time: string;
-    pilot_id: string | number;
-    copilot_id: string | number;
-    aircraft_id: string | number;
-    flight_number: string;
-    flight_origin: string;
-    flight_destiny: string;
-    flight_alt_destiny: string;
-    incidents?: string[];
-    status: string;
-    danger_identification_id: string | number | null;
-    other_incidents?: string;
-    image?: string | File;
-    document?: string | File;
+  data: UpdateObligatoryReportRequest & {
+    status?: string;
+    danger_identification_id?: string | number | null;
   };
 }
 
@@ -58,9 +24,9 @@ interface NextNumberResponse {
 export const useCreateObligatoryReport = () => {
   const queryClient = useQueryClient();
   const createMutation = useMutation({
-    mutationFn: async (data: ObligatoryReportData) => {
+    mutationFn: async ({ company, data }: CreateObligatoryReportPayload) => {
       const response = await axiosInstance.post(
-        "/transmandu/sms/obligatory-reports",
+        `/${company}/sms/obligatory-reports`,
         data,
         {
           headers: {
@@ -73,7 +39,7 @@ export const useCreateObligatoryReport = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["obligatory-reports"] });
       toast.success("¡Creado!", {
-        description: ` El reporte obligatorio ha sido creado correctamente.`,
+        description: `El reporte obligatorio ha sido creado correctamente.`,
       });
     },
     onError: (error) => {
@@ -108,10 +74,10 @@ export const useDeleteObligatoryReport = () => {
       });
       queryClient.invalidateQueries({ queryKey: ["obligatory-reports"] });
       toast.success("¡Eliminado!", {
-        description: `¡El reporte ha sido eliminada correctamente!`,
+        description: `¡El reporte ha sido eliminado correctamente!`,
       });
     },
-    onError: (e) => {
+    onError: () => {
       toast.error("Oops!", {
         description: "¡Hubo un error al eliminar el reporte!",
       });
@@ -128,7 +94,7 @@ export const useUpdateObligatoryReport = () => {
 
   const updateObligatoryReportMutation = useMutation({
     mutationKey: ["obligatory-reports"],
-    mutationFn: async ({ company, id, data }: UpdateObligatoryReportData) => {
+    mutationFn: async ({ company, id, data }: UpdateObligatoryReportPayload) => {
       await axiosInstance.post(
         `/${company}/sms/update-obligatory-reports/${id}`,
         data,
@@ -141,13 +107,14 @@ export const useUpdateObligatoryReport = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["obligatory-reports"] });
+      queryClient.invalidateQueries({ queryKey: ["obligatory-report"] });
       toast.success("¡Actualizado!", {
-        description: `El reporte voluntario ha sido actualizado correctamente.`,
+        description: `El reporte obligatorio ha sido actualizado correctamente.`,
       });
     },
     onError: (error) => {
       toast.error("Oops!", {
-        description: "No se pudo actualizar el reporte voluntario...",
+        description: "No se pudo actualizar el reporte obligatorio...",
       });
       console.log(error);
     },
@@ -162,7 +129,7 @@ export const useAcceptObligatoryReport = () => {
 
   const acceptObligatoryReportMutation = useMutation({
     mutationKey: ["obligatory-reports"],
-    mutationFn: async ({ company, id, data }: UpdateObligatoryReportData) => {
+    mutationFn: async ({ company, id, data }: UpdateObligatoryReportPayload) => {
       await axiosInstance.patch(
         `/${company}/sms/accept-obligatory-reports/${id}`,
         data,
@@ -191,7 +158,7 @@ export const useGetNextReportNumber = (company: string | null) => {
     queryKey: ["next-obligatory-report-number", company],
     queryFn: async () => {
       const { data } = await axiosInstance.get(
-        `/${company}/sms/next-obligatory-report-number`,
+        `/${company}/sms/obligatory-reports/next-number`,
       );
       return data;
     },

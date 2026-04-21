@@ -28,11 +28,13 @@ import { useState } from "react";
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
+  company: string;
 }
 
 export function DataTable<TData, TValue>({
   columns,
   data,
+  company,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
@@ -69,7 +71,7 @@ export function DataTable<TData, TValue>({
       <div className="flex items-center py-4">
         <Button
           onClick={() => {
-            router.push(`/transmandu/sms/reportes/reportes_obligatorios/nuevo_reporte`);
+            router.push(`/${company}/sms/reportes/reportes_obligatorios/nuevo_reporte`);
           }}
           variant="outline"
           size="sm"
@@ -78,7 +80,7 @@ export function DataTable<TData, TValue>({
           Nuevo Reporte
         </Button>
         <DataTableViewOptions table={table} />
-      </div>
+      </div> 
 
       <div className="rounded-md border mb-4">
         <Table>

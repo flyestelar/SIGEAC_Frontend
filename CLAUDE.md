@@ -118,3 +118,151 @@ Key vars in `.env`:
 - `SECRET_KEY_JWT` — server-side JWT signing key (never expose client-side)
 
 When adding integrations, centralize config in `lib/axios.ts`, `lib/session.ts`, or the relevant `actions/` module — do not duplicate across pages.
+
+## Common Patterns & Solutions
+
+### Loading & Error States
+
+**Standard query loading pattern:**
+```typescript
+const { data, isLoading, isError } = useGetResource();
+
+return (
+  <>
+    {isLoading && <div className="flex justify-center"><Loader2 className="w-8 h-8 animate-spin" /></div>}
+    {isError && <Card className="border-red-200"><p className="text-red-600">Error loading resource...</p></Card>}
+    {data && <YourComponent data={data} />}
+  </>
+)
+```
+
+**Mutation loading & error:**
+```typescript
+const mutation = useMutation({
+  mutationFn: async (payload) => (await axiosInstance.post('/endpoint', payload)).data,
+  onSuccess: () => {
+    queryClient.invalidateQueries({ queryKey: ['resource'] })
+    toast.success('Success!')
+  },
+  onError: (error: any) => toast.error(error.response?.data?.message || 'Error occurred')
+})
+
+// Use in component:
+<Button onClick={() => mutation.mutate(data)} disabled={mutation.isPending}>
+  {mutation.isPending ? 'Saving...' : 'Save'}
+</Button>
+```
+
+### Reusable Component Patterns
+
+**InfoCell** — Display label + value pair (often used in detail pages):
+```typescript
+// Usage:
+<InfoCell label="Part Number" value="ABC-123-XYZ" mono />
+<InfoCell label="Status" value="Active" />
+
+// Suggested implementation (in components/misc/InfoCell.tsx):
+interface InfoCellProps {
+  label: string
+  value: string | number | null | undefined
+  mono?: boolean
+}
+export function InfoCell({ label, value, mono }: InfoCellProps) {
+  return (
+    <div>
+      <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{label}</p>
+      <p className={cn("text-sm font-medium", mono && "font-mono")}>{value || 'N/A'}</p>
+    </div>
+  )
+}
+```
+
+**DocPreview** — Display PDF/image with consistent header and sizing (fixed h-[240px]):
+```typescript
+// Suggested implementation:
+<DocPreview 
+  title="Document"
+  src={url}
+  type="pdf" | "image"
+  onDownload={handleDownload}
+/>
+```
+
+**Context Strip** — Full-width accent band below page header, color by entity type:
+```typescript
+// Pattern: Use a TARGET_CONFIG object to centralize color decisions
+const TARGET_CONFIG = {
+  AIRCRAFT: { bg: 'bg-sky-50', border: 'border-sky-500', text: 'text-sky-900' },
+  FLEET: { bg: 'bg-indigo-50', border: 'border-indigo-500', text: 'text-indigo-900' },
+  WORKSHOP: { bg: 'bg-orange-50', border: 'border-orange-500', text: 'text-orange-900' }
+}
+
+<div className={cn("border-l-4 p-4", TARGET_CONFIG[target].bg, TARGET_CONFIG[target].border)}>
+  <p className={cn("text-sm font-medium", TARGET_CONFIG[target].text)}>Context information</p>
+</div>
+```
+
+**FieldLabel** — Consistent field label styling per design system:
+```typescript
+<label className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+  Field Name
+</label>
+```
+
+### Role-Based Access Control
+
+Authentication and roles are managed centrally:
+
+**AuthContext:**
+- `useAuth()` hook returns `{ user, isAuthenticated, login, logout, roles }`
+- `user.roles` array contains role strings (e.g., `['admin', 'purchaser']`)
+
+**Route Protection:**
+```typescript
+// Wrap page content with ProtectedLayout:
+<ProtectedLayout roles={['warehouse_manager', 'admin']}>
+  <YourPageContent />
+</ProtectedLayout>
+
+// Or conditionally render features:
+{user?.roles?.includes('admin') && <AdminPanel />}
+```
+
+**Middleware:**
+- Checks for `auth_token` cookie presence only
+- Redirects missing auth to `/login?from=<current-path>`
+- Does NOT check roles — use `ProtectedLayout` for that
+
+### API Type Generation
+
+**Workflow:**
+1. Backend OpenAPI spec located at external URL or `/api.json` in backend project
+2. Frontend config in `openapi-ts.config.ts`
+3. Run: `npm run api:generate`
+4. Output: `.gen/api/types.gen.ts` (auto-generated, never edit)
+5. Import types: `import { Resource } from '@api/types.gen'`
+
+**When to regenerate:**
+- After backend API changes schema
+- Before opening PR if using new API endpoints
+- If TS compiler complains about type mismatches
+
+## 🚨 Critical Gotchas
+
+**Multi-tenant is mandatory.** Routes must nest under `app/[company]/...` for company selector to work. Root-level routes bypass tenant isolation.
+
+**`'use client'` required for all hooks.** Server components cannot use `useQuery()`, `useCompanyStore()`, or mutation hooks. Add directive at top of file.
+
+**Auth token injected automatically.** Don't manually set Authorization headers in requests — `lib/axios.ts` interceptor handles it from cookie.
+
+**Query invalidation critical.** After mutations, call `queryClient.invalidateQueries({ queryKey: [...] })` or data won't refresh on screen.
+
+**No global error boundary.** Error handling is manual — use try-catch + `toast.error()` or query error states. No centralized Sentry/error logging.
+
+**localStorage persists state.** `CompanyStore` persists to localStorage. Multi-tab workflows may have sync issues. Test carefully.
+
+**ProtectedLayout for role checks.** Middleware only checks auth token. Role-based route access requires wrapping with `<ProtectedLayout roles={[...]} />`.
+
+**OpenAPI types auto-generated.** Never edit `.gen/api/types.gen.ts` by hand. Run `npm run api:generate` to regenerate from backend spec.
+
+**Prettier format enforced.** ESLint includes formatting rules. Run `npm run lint -- --fix` before commits to auto-format.

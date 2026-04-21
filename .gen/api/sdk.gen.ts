@@ -869,6 +869,9 @@ import type {
   ObligatoryReportDestroyData,
   ObligatoryReportDestroyErrors,
   ObligatoryReportDestroyResponses,
+  ObligatoryReportGetNextReportNumberData,
+  ObligatoryReportGetNextReportNumberErrors,
+  ObligatoryReportGetNextReportNumberResponses,
   ObligatoryReportIndexData,
   ObligatoryReportIndexErrors,
   ObligatoryReportIndexResponses,
@@ -5460,14 +5463,29 @@ export const obligatoryReportStore = <ThrowOnError extends boolean = false>(
   options: Options<ObligatoryReportStoreData, ThrowOnError>,
 ) =>
   (options.client ?? client).post<ObligatoryReportStoreResponses, ObligatoryReportStoreErrors, ThrowOnError>({
+    ...formDataBodySerializer,
     responseType: 'json',
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/{company}/sms/obligatory-reports',
     ...options,
     headers: {
-      'Content-Type': 'application/json',
+      'Content-Type': null,
       ...options.headers,
     },
+  });
+
+export const obligatoryReportGetNextReportNumber = <ThrowOnError extends boolean = false>(
+  options: Options<ObligatoryReportGetNextReportNumberData, ThrowOnError>,
+) =>
+  (options.client ?? client).get<
+    ObligatoryReportGetNextReportNumberResponses,
+    ObligatoryReportGetNextReportNumberErrors,
+    ThrowOnError
+  >({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/{company}/sms/obligatory-reports/next-number',
+    ...options,
   });
 
 export const obligatoryReportDestroy = <ThrowOnError extends boolean = false>(
@@ -5497,12 +5515,13 @@ export const obligatoryReportUpdate = <ThrowOnError extends boolean = false>(
   options: Options<ObligatoryReportUpdateData, ThrowOnError>,
 ) =>
   (options.client ?? client).post<ObligatoryReportUpdateResponses, ObligatoryReportUpdateErrors, ThrowOnError>({
+    ...formDataBodySerializer,
     responseType: 'json',
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/{company}/sms/obligatory-reports/update/{id}',
     ...options,
     headers: {
-      'Content-Type': 'application/json',
+      'Content-Type': null,
       ...options.headers,
     },
   });
@@ -5519,6 +5538,10 @@ export const obligatoryReportAcceptObligatoryReport = <ThrowOnError extends bool
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/{company}/sms/obligatory-reports/accept/{id}',
     ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    },
   });
 
 /**

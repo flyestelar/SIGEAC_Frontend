@@ -101,9 +101,11 @@ export function CreateVoluntaryReportForm({
           })
           .optional(),
 
-    danger_location: z.string(),
+    station: z.string(),
     danger_area: z.string(),
-    airport_location: z.string(),
+    finding_location: z.string(),
+    finding_location_other: z.string(),
+    danger_type: z.string(),
     description: z
       .string()
       .min(3, {
@@ -184,12 +186,14 @@ export function CreateVoluntaryReportForm({
     defaultValues: {
       report_number: initialData?.report_number || "",
       danger_area: initialData?.danger_area || "",
-      danger_location: initialData?.danger_location || "",
+      station: initialData?.station || "",
       description: initialData?.description || "",
       possible_consequences: initialData?.possible_consequences || "",
       recommendations: initialData?.recommendations || "",
-      airport_location: initialData?.airport_location || "",
-      is_anonymous: initialData ? !initialData.is_anonymous : false,
+      finding_location: initialData?.finding_location || "",
+      finding_location_other: initialData?.finding_location_other || "",
+      danger_type: initialData?.danger_type || "",
+      is_anonymous: initialData ? !initialData.is_anonymous : true,
       identification_date: initialData?.identification_date
         ? addDays(new Date(initialData.identification_date), 1)
         : new Date(),
@@ -467,7 +471,7 @@ export function CreateVoluntaryReportForm({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <FormField
               control={form.control}
-              name="danger_location"
+              name="station"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Base de Localización</FormLabel>
@@ -623,10 +627,10 @@ export function CreateVoluntaryReportForm({
               )}
             />
           </div>
-
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <FormField
             control={form.control}
-            name="airport_location"
+            name="finding_location"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Lugar de Identificación</FormLabel>
@@ -652,6 +656,49 @@ export function CreateVoluntaryReportForm({
                     <SelectItem value="N/A">
                      NO APLICA
                     </SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="finding_location_other"
+            render={({ field }) => (
+              <FormItem className="flex-1">
+                <FormLabel>Otro Lugar de Identificacion</FormLabel>
+                <FormControl>
+                  <Input placeholder="Especificar" {...field} />
+                </FormControl>
+                <FormMessage className="text-xs" />
+              </FormItem>
+            )}
+          />
+
+          </div>
+
+          <FormField
+            control={form.control}
+            name="danger_type"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Tipo de Peligro</FormLabel>
+                <Select
+                  onValueChange={field.onChange}
+                  defaultValue={field.value}
+                >
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Seleccionar" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="HUMANO">HUMANO</SelectItem>
+                    <SelectItem value="ORGANIZACIONAL">ORGANIZACIONAL</SelectItem>
+                    <SelectItem value="TECNICOS">TECNICOS</SelectItem>
+                    <SelectItem value="AMBIENTALES">AMBIENTALES</SelectItem>
                   </SelectContent>
                 </Select>
                 <FormMessage />

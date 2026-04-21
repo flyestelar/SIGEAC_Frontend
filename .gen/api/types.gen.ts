@@ -531,25 +531,28 @@ export type NonRoutine = Array<string>;
  */
 export type ObligatoryReportRequest = {
   report_number?: string | null;
-  pilot_id: string;
-  copilot_id: string;
-  incident_location: string;
-  description: string;
+  reference_number?: string | null;
   report_date: string;
   incident_date: string;
-  incident_time: string;
-  flight_time: string;
-  aircraft_id: string;
-  flight_number: string;
-  flight_origin: string;
-  /**
-   * Código IATA (3 letras)
-   */
-  flight_destiny: string;
-  flight_alt_destiny: string;
-  status: 'CERRADO' | 'ABIERTO' | 'PROCESO';
+  station?: string | null;
+  incident_location: string;
+  incident_location_other?: string | null;
+  danger_type?: string | null;
   incidents?: Array<string> | null;
   other_incidents?: string | null;
+  description: string;
+  reporter_name?: string | null;
+  reporter_email?: string | null;
+  reporter_phone?: string | null;
+  reporter_area?: string | null;
+  reporter_position?: string | null;
+  sms_coordinator?: string | null;
+  aircraft_id?: string | null;
+  pilot_id?: string | null;
+  copilot_id?: string | null;
+  status: 'CERRADO' | 'ABIERTO' | 'PROCESO';
+  image?: Blob | File | null;
+  document?: Blob | File | null;
 };
 
 /**
@@ -557,28 +560,32 @@ export type ObligatoryReportRequest = {
  */
 export type ObligatoryReportResource = {
   id: number;
-  report_number: string;
-  incident_location: string;
-  description: string;
+  report_number: string | null;
+  reference_number: string | null;
   report_date: string | null;
-  incident_time: string | null;
   incident_date: string | null;
-  flight_time: string | null;
+  station: string | null;
+  incident_location: string;
+  incident_location_other: string | null;
+  danger_type: string | null;
+  incidents: Array<unknown> | null;
+  other_incidents: string | null;
+  description: string;
+  reporter_name: string | null;
+  reporter_email: string | null;
+  reporter_phone: string | null;
+  reporter_area: string | null;
+  reporter_position: string | null;
+  sms_coordinator: string | null;
   aircraft_id: number | null;
-  flight_number: string | null;
-  flight_origin: string | null;
-  flight_destiny: string | null;
-  flight_alt_destiny: string | null;
-  incidents: string | null;
-  status: 'ABIERTO' | 'CERRADO';
-  danger_identification_id: number | null;
-  other_incidents: boolean | null;
-  identification_date: string | null;
-  information_resource_id: number | null;
   pilot_id: number | null;
   copilot_id: number | null;
+  information_resource_id: number | null;
+  danger_identification_id: number | null;
+  identification_date: string | null;
   image: string | null;
   document: string | null;
+  status: 'ABIERTO' | 'CERRADO';
   registered_by: string;
   updated_by: string | null;
   close_date: string | null;
@@ -1155,22 +1162,28 @@ export type UpdateMitigationPlanRequest = {
  */
 export type UpdateObligatoryReportRequest = {
   report_number?: string | null;
-  description?: string | null;
-  incident_location?: string | null;
+  reference_number?: string | null;
   report_date?: string | null;
   incident_date?: string | null;
-  incident_time?: string | null;
-  flight_time?: string | null;
-  aircraft_acronym?: string | null;
-  aircraft_model?: string | null;
-  flight_number?: string | null;
-  flight_origin?: string | null;
-  flight_destiny?: string | null;
-  flight_alt_destiny?: string | null;
+  station?: string | null;
+  incident_location?: string | null;
+  incident_location_other?: string | null;
+  danger_type?: string | null;
+  incidents?: Array<string> | null;
+  other_incidents?: string | null;
+  description?: string | null;
+  reporter_name?: string | null;
+  reporter_email?: string | null;
+  reporter_phone?: string | null;
+  reporter_area?: string | null;
+  reporter_position?: string | null;
+  sms_coordinator?: string | null;
+  aircraft_id?: string | null;
   pilot_id?: string | null;
   copilot_id?: string | null;
-  other_incidents?: string | null;
-  incidents?: Array<string | null> | null;
+  status?: 'CERRADO' | 'ABIERTO' | 'PROCESO';
+  image?: Blob | File | null;
+  document?: Blob | File | null;
 };
 
 /**
@@ -1246,7 +1259,7 @@ export type UpdateVoluntaryReportRequest = {
   source_reference?: string | null;
   report_date?: string;
   identification_date?: string;
-  danger_location?: string;
+  station?: string;
   danger_area?: string;
   airport_location?: string;
   is_anonymous?: boolean;
@@ -1310,10 +1323,10 @@ export type VoluntaryReport = {
   report_number: string | null;
   report_date: string;
   identification_date: string;
-  danger_location: string;
+  station: string;
   danger_area: string;
   description: string;
-  airport_location: string;
+  finding_location: string;
   possible_consequences: string;
   reporter_name: string | null;
   reporter_last_name: string | null;
@@ -1323,16 +1336,19 @@ export type VoluntaryReport = {
   image: string | null;
   document: string | null;
   close_date: string | null;
-  is_anonymous: string;
+  is_anonymous: boolean;
   reporter_position: string | null;
   recommendations: string | null;
   validation_status: string | null;
   referred_to: string | null;
   referred_to_other: string | null;
   sms_coordinator: string | null;
+  sms_processed_date: string | null;
   registered_by: string;
   updated_by: string | null;
   source_reference: string | null;
+  danger_type: string | null;
+  finding_location_other: string | null;
 };
 
 /**
@@ -1343,9 +1359,11 @@ export type VoluntaryReportRequest = {
   source_reference?: string | null;
   report_date: string;
   identification_date: string;
-  danger_location: string;
+  station: string;
   danger_area: string;
-  airport_location: string;
+  danger_type?: string | null;
+  finding_location: string;
+  finding_location_other?: string | null;
   is_anonymous: boolean;
   description: string;
   possible_consequences: string;
@@ -1374,9 +1392,11 @@ export type VoluntaryReportResource = {
   report_number: string;
   report_date: string;
   identification_date: string | null;
-  danger_location: string | null;
-  airport_location: string | null;
+  station: string | null;
+  finding_location: string | null;
+  finding_location_other: string | null;
   danger_area: string | null;
+  danger_type: string | null;
   description: string;
   possible_consequences: string | null;
   reporter_name: string | null;
@@ -11720,6 +11740,39 @@ export type ObligatoryReportStoreResponses = {
 
 export type ObligatoryReportStoreResponse = ObligatoryReportStoreResponses[keyof ObligatoryReportStoreResponses];
 
+export type ObligatoryReportGetNextReportNumberData = {
+  body?: never;
+  path: {
+    company: string;
+  };
+  query?: never;
+  url: '/{company}/sms/obligatory-reports/next-number';
+};
+
+export type ObligatoryReportGetNextReportNumberErrors = {
+  /**
+   * Unauthenticated
+   */
+  401: {
+    /**
+     * Error overview.
+     */
+    message: string;
+  };
+};
+
+export type ObligatoryReportGetNextReportNumberError =
+  ObligatoryReportGetNextReportNumberErrors[keyof ObligatoryReportGetNextReportNumberErrors];
+
+export type ObligatoryReportGetNextReportNumberResponses = {
+  200: {
+    next_number: string;
+  };
+};
+
+export type ObligatoryReportGetNextReportNumberResponse =
+  ObligatoryReportGetNextReportNumberResponses[keyof ObligatoryReportGetNextReportNumberResponses];
+
 export type ObligatoryReportDestroyData = {
   body?: never;
   path: {
@@ -11777,6 +11830,9 @@ export type ObligatoryReportShowErrors = {
      * Error overview.
      */
     message: string;
+  };
+  404: {
+    message: 'Reporte Obligatorio No Encontrado';
   };
 };
 
@@ -11843,7 +11899,31 @@ export type ObligatoryReportUpdateResponses = {
 export type ObligatoryReportUpdateResponse = ObligatoryReportUpdateResponses[keyof ObligatoryReportUpdateResponses];
 
 export type ObligatoryReportAcceptObligatoryReportData = {
-  body?: never;
+  body?: {
+    report_number?: string;
+    reference_number?: string;
+    report_date?: string;
+    incident_date?: string;
+    identification_date?: string;
+    station?: string;
+    incident_location?: string;
+    incident_location_other?: string;
+    danger_type?: string;
+    incidents?: string;
+    other_incidents?: string;
+    description?: string;
+    reporter_name?: string;
+    reporter_email?: string;
+    reporter_phone?: string;
+    reporter_area?: string;
+    reporter_position?: string;
+    sms_coordinator?: string;
+    aircraft_id?: string;
+    pilot_id?: string;
+    copilot_id?: string;
+    status?: string;
+    close_date?: string;
+  };
   path: {
     company: string;
     id: string;
@@ -11870,7 +11950,6 @@ export type ObligatoryReportAcceptObligatoryReportError =
 export type ObligatoryReportAcceptObligatoryReportResponses = {
   200: {
     message: 'Reporte Obligatorio Aceptado';
-    obligatoryReport: string;
     status: 200;
   };
 };

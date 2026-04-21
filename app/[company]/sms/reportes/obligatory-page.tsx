@@ -36,7 +36,7 @@ export const ObligatoryReportsPage = ({
 
   const content = (
     <div className={`flex flex-col gap-y-2 ${className}`}>
-      {data && <DataTable columns={tableColumns} data={data} />}
+      {data && <DataTable columns={tableColumns} data={data} company={companySlug || selectedCompany?.slug || ""} />}
       {isError && (
         <p className="text-sm text-muted-foreground">
           Ha ocurrido un error al cargar los reportes...

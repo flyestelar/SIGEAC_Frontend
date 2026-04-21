@@ -7,9 +7,9 @@ import { DataTableColumnHeader } from "@/components/tables/DataTableHeader";
 import VoluntaryReportDropdownActions from "@/components/dropdowns/sms/VoluntaryReportDropDownMenu";
 import { Badge } from "@/components/ui/badge";
 import { dateFormat } from "@/lib/utils";
-import { VoluntaryReport } from "@/types";
+import { VoluntaryReportResource } from "@/.gen/api/types.gen";
 
-export const columns: ColumnDef<VoluntaryReport>[] = [
+export const columns: ColumnDef<VoluntaryReportResource>[] = [
   {
     accessorKey: "report_number",
     header: ({ column }) => (
@@ -35,7 +35,7 @@ export const columns: ColumnDef<VoluntaryReport>[] = [
     cell: ({ row }) => {
       return (
         <p className="font-medium text-center">
-          {dateFormat(row.original.report_date, "PPP")}
+          {row.original.report_date ? dateFormat(row.original.report_date, "PPP") : "N/A"}
         </p>
       );
     },
@@ -51,7 +51,7 @@ export const columns: ColumnDef<VoluntaryReport>[] = [
     ),
     cell: ({ row }) => {
       return (
-        <p className="font-medium text-center">{row.original.danger_area}</p>
+        <p className="font-medium text-center">{row.original.danger_area || "N/A"}</p>
       );
     },
   },

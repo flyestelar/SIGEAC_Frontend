@@ -294,6 +294,7 @@ import {
   noRoutineTaskUpdate,
   obligatoryReportAcceptObligatoryReport,
   obligatoryReportDestroy,
+  obligatoryReportGetNextReportNumber,
   obligatoryReportIndex,
   obligatoryReportShow,
   obligatoryReportStore,
@@ -1314,6 +1315,9 @@ import type {
   ObligatoryReportDestroyData,
   ObligatoryReportDestroyError,
   ObligatoryReportDestroyResponse,
+  ObligatoryReportGetNextReportNumberData,
+  ObligatoryReportGetNextReportNumberError,
+  ObligatoryReportGetNextReportNumberResponse,
   ObligatoryReportIndexData,
   ObligatoryReportIndexError,
   ObligatoryReportIndexResponse,
@@ -9028,6 +9032,29 @@ export const obligatoryReportStoreMutation = (
   };
   return mutationOptions;
 };
+
+export const obligatoryReportGetNextReportNumberQueryKey = (
+  options: Options<ObligatoryReportGetNextReportNumberData>,
+) => createQueryKey('obligatoryReportGetNextReportNumber', options);
+
+export const obligatoryReportGetNextReportNumberOptions = (options: Options<ObligatoryReportGetNextReportNumberData>) =>
+  queryOptions<
+    ObligatoryReportGetNextReportNumberResponse,
+    AxiosError<ObligatoryReportGetNextReportNumberError>,
+    ObligatoryReportGetNextReportNumberResponse,
+    ReturnType<typeof obligatoryReportGetNextReportNumberQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await obligatoryReportGetNextReportNumber({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: obligatoryReportGetNextReportNumberQueryKey(options),
+  });
 
 export const obligatoryReportDestroyMutation = (
   options?: Partial<Options<ObligatoryReportDestroyData>>,

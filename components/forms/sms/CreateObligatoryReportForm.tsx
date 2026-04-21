@@ -9,7 +9,6 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-
 import { Input } from "@/components/ui/input";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -23,13 +22,13 @@ import {
   useGetNextReportNumber,
 } from "@/actions/sms/reporte_obligatorio/actions";
 import { Calendar } from "@/components/ui/calendar";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Separator } from "@/components/ui/separator";
+import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/contexts/AuthContext";
 import { useGetAircraftAcronyms } from "@/hooks/aerolinea/aeronaves/useGetAircraftAcronyms";
 import { useGetPilots } from "@/hooks/sms/useGetPilots";
@@ -38,17 +37,9 @@ import { useCompanyStore } from "@/stores/CompanyStore";
 import { ObligatoryReportResource } from "@/.gen/api/types.gen";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
-import { CalendarIcon, Check, ChevronsUpDown, Loader2 } from "lucide-react";
+import { CalendarIcon, Loader2 } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from "@/components/ui/command";
 import {
   Select,
   SelectContent,
@@ -56,12 +47,60 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { ScrollArea } from "@/components/ui/scroll-area";
+
 interface FormProps {
   isEditing?: boolean;
   initialData?: ObligatoryReportResource;
   onClose: () => void;
 }
-import { ScrollArea } from "@/components/ui/scroll-area";
+
+const FormSchema = z.object({
+  report_number: z.string().optional(),
+  reference_number: z.string().optional(),
+  report_date: z
+    .date()
+    .refine((val) => !isNaN(val.getTime()), { message: "Fecha inválida" }),
+  incident_date: z
+    .date()
+    .refine((val) => !isNaN(val.getTime()), { message: "Fecha inválida" }),
+  station: z.string().optional(),
+  incident_location: z
+    .string()
+    .min(3, { message: "El lugar del incidente debe tener al menos 3 caracteres" })
+    .max(50, { message: "El lugar del incidente no debe exceder los 50 caracteres" }),
+  incident_location_other: z.string().optional(),
+  danger_type: z.string().optional(),
+  description: z
+    .string()
+    .min(3, { message: "La descripción debe tener al menos 3 caracteres" }),
+  reporter_name: z.string().optional(),
+  reporter_email: z.string().email({ message: "Correo inválido" }).optional().or(z.literal("")),
+  reporter_phone: z.string().optional(),
+  reporter_area: z.string().optional(),
+  reporter_position: z.string().optional(),
+  pilot_id: z.string().optional(),
+  copilot_id: z.string().optional(),
+  aircraft_id: z.string().optional(),
+  image: z
+    .instanceof(File)
+    .refine((file) => file.size <= 10 * 1024 * 1024, "Max 10MB")
+    .refine(
+      (file) => ["image/jpeg", "image/png"].includes(file.type),
+      "Solo JPEG/PNG",
+    )
+    .optional(),
+  document: z
+    .instanceof(File)
+    .refine((file) => file.size <= 10 * 1024 * 1024, "Máximo 10MB")
+    .refine(
+      (file) => file.type === "application/pdf",
+      "Solo se permiten archivos PDF",
+    )
+    .optional(),
+});
+
+type FormSchemaType = z.infer<typeof FormSchema>;
 
 export function CreateObligatoryReportForm({
   onClose,
@@ -69,170 +108,19 @@ export function CreateObligatoryReportForm({
   initialData,
 }: FormProps) {
   const { user } = useAuth();
+  const { selectedCompany } = useCompanyStore();
+  const router = useRouter();
 
   const userRoles = user?.roles?.map((role) => role.name) || [];
-
   const shouldEnableField = userRoles.some((role) =>
     ["SUPERUSER", "ANALISTA_SMS", "JEFE_SMS"].includes(role),
   );
 
-  const FormSchema = z
-    .object({
-      report_number: shouldEnableField
-        ? z
-            .string()
-            .min(1, "El número de reporte es obligatorio")
-            .refine((val) => !isNaN(Number(val)), {
-              message: "El valor debe ser un número",
-            })
-        : z
-            .string()
-            .refine((val) => val === "" || !isNaN(Number(val)), {
-              message: "El valor debe ser un número o estar vacío",
-            })
-            .optional(),
-      incident_location: z
-        .string()
-        .min(3, {
-          message: "El lugar de incidente debe tener al menos 3 caracteres",
-        })
-        .max(50, {
-          message: "El lugar de incidente no debe exceder los 50 caracteres",
-        }),
-      description: z.string(),
-      report_date: z
-        .date()
-        .refine((val) => !isNaN(val.getTime()), { message: "Fecha inválida" }),
-      incident_date: z
-        .date()
-        .refine((val) => !isNaN(val.getTime()), { message: "Fecha inválida" }),
-      incident_time: z.string().regex(/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/, {
-        message: "Formato de hora inválido (HH:mm)",
-      }),
-      flight_time: z.string().regex(/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/, {
-        message: "Formato de hora inválido (HH:mm)",
-      }),
-      pilot_id: z.string({
-        required_error: "El piloto es requerido.",
-      }),
-      copilot_id: z.string({
-        required_error: "El copiloto es requerido.",
-      }),
-      aircraft_id: z.string({
-        required_error: "La aeronave es requerida.",
-      }),
-      flight_number: z.string(),
-      flight_origin: z
-        .string()
-        .min(3, {
-          message: "El origen del vuelo debe tener al menos 3 caracteres.",
-        })
-        .max(4, {
-          message: "El origen del vuelo debe tener máximo 4 caracteres.",
-        }),
-      flight_destiny: z
-        .string()
-        .min(3, {
-          message: "El destino del vuelo debe tener al menos 3 caracteres.",
-        })
-        .max(4, {
-          message: "El destino del vuelo debe tener máximo 4 caracteres.",
-        }),
-      flight_alt_destiny: z
-        .string()
-        .min(3, {
-          message:
-            "El destino alterno de vuelo debe tener al menos 3 caracteres.",
-        })
-        .max(4, {
-          message:
-            "El destino alterno de vuelo debe tener máximo 4 caracteres.",
-        }),
-      incidents: z.array(z.string()).optional(),
-      other_incidents: z.preprocess(
-        (val) => (val === null || val === undefined ? "" : val),
-        z.string().optional(),
-      ),
-      image: z
-        .instanceof(File)
-        .refine((file) => file.size <= 10 * 1024 * 1024, "Max 10MB")
-        .refine(
-          (file) => ["image/jpeg", "image/png"].includes(file.type),
-          "Solo JPEG/PNG",
-        )
-        .optional(),
-      document: z
-        .instanceof(File)
-        .refine((file) => file.size <= 10 * 1024 * 1024, "Máximo 10MB")
-        .refine(
-          (file) => file.type === "application/pdf",
-          "Solo se permiten archivos PDF",
-        )
-        .optional(),
-    })
-    .refine(
-      (data) => {
-        const hasIncidents = data.incidents && data.incidents.length > 0;
-        const hasOtherIncidents = data.other_incidents?.trim() !== "";
-        return hasIncidents || hasOtherIncidents;
-      },
-      {
-        message: "Debe proporcionar al menos un incidente o descripción",
-        path: ["incidents"],
-      },
-    );
-
-  type FormSchemaType = z.infer<typeof FormSchema>;
-
   const { createObligatoryReport } = useCreateObligatoryReport();
   const { updateObligatoryReport } = useUpdateObligatoryReport();
-  const router = useRouter();
 
-  const [showOtherInput, setShowOtherInput] = useState(
-    initialData?.other_incidents ? true : false,
-  );
-
-  const [open, setOpen] = useState(false);
-
-  const [selectedValues, setSelectedValues] = useState<string[]>(() => {
-    if (initialData?.incidents) {
-      try {
-        return JSON.parse(initialData.incidents);
-      } catch (error) {
-        return []; // Devuelve un array vacío en caso de error de parseo
-      }
-    }
-    return []; // Devuelve un array vacío si initialData?.incidents es null o undefined
-  });
-
-  // No estoy seguro si esto va aca lol
-  const { selectedCompany } = useCompanyStore();
-  const { data: pilots, isLoading: isLoadingPilots } = useGetPilots(
-    selectedCompany?.slug,
-  );
-  const { data: aircrafts, isLoading: isLoadingAircrafts } =
-    useGetAircraftAcronyms(selectedCompany?.slug);
-
-  const OPTIONS_LIST = [
-    "La aereonave aterriza quedándose solo con el combustible de reserva o menos",
-    "Incursion en pista o calle de rodaje ( RUNAWAY INCURSION-RI)",
-    "Aproximacion no estabilizada por debajo de los 500 pies VRF o 1000 PIES IRF",
-    "Despresurizacion",
-    "Salida de pista - RUNAWAY INCURSION",
-    "Derrame de combustible",
-    "Error  de navegacion con desviacion significativa de la ruta",
-    "Casi colision (RESOLUCION ACVSORY-RA)",
-    "Despegue abortado(REJETED TAKE OFF-RTO)",
-    "Falla de motor",
-    "Tail Strike",
-    "Impacto con aves",
-    "Aterrizaje fuerte (HARD LANDING)",
-    "Alerta de fuego o humo",
-    "Wind Shear",
-    "El avion es evacuado",
-    "Fallo en los controles de vuelo",
-    "Parametros de vuelo anormales",
-  ];
+  const { data: pilots, isLoading: isLoadingPilots } = useGetPilots(selectedCompany?.slug);
+  const { data: aircrafts, isLoading: isLoadingAircrafts } = useGetAircraftAcronyms(selectedCompany?.slug);
 
   const { data: nextNumberData, isPending: isLoadingNextNumber } =
     useGetNextReportNumber(selectedCompany?.slug || null);
@@ -240,89 +128,64 @@ export function CreateObligatoryReportForm({
   const form = useForm<FormSchemaType>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
-      report_number: initialData?.report_number,
-      description: initialData?.description,
-      incident_location: initialData?.incident_location,
-      aircraft_id: initialData?.aircraft?.id.toString(),
-      pilot_id: initialData?.pilot?.id.toString(),
-      copilot_id: initialData?.copilot?.id.toString(),
-      flight_alt_destiny: initialData?.flight_alt_destiny,
-      flight_destiny: initialData?.flight_destiny,
-      flight_number: initialData?.flight_number,
-      flight_origin: initialData?.flight_origin,
-      incidents: initialData?.incidents
-        ? JSON.parse(initialData.incidents)
-        : [],
-      other_incidents: initialData?.other_incidents ?? "",
+      report_number: initialData?.report_number ?? "",
+      reference_number: initialData?.reference_number ?? "",
+      description: initialData?.description ?? "",
+      incident_location: initialData?.incident_location ?? "",
+      station: initialData?.station ?? "",
+      incident_location_other: initialData?.incident_location_other ?? "",
+      danger_type: initialData?.danger_type ?? "",
+      reporter_name: initialData?.reporter_name ?? "",
+      reporter_email: initialData?.reporter_email ?? "",
+      reporter_phone: initialData?.reporter_phone ?? "",
+      reporter_area: initialData?.reporter_area ?? "",
+      reporter_position: initialData?.reporter_position ?? "",
+      aircraft_id: initialData?.aircraft_id?.toString() ?? "",
+      pilot_id: initialData?.pilot_id?.toString() ?? "",
+      copilot_id: initialData?.copilot_id?.toString() ?? "",
       report_date: initialData?.report_date
-        ? new Date(initialData?.report_date)
+        ? new Date(initialData.report_date)
         : new Date(),
       incident_date: initialData?.incident_date
-        ? new Date(initialData?.incident_date)
+        ? new Date(initialData.incident_date)
         : new Date(),
-      flight_time: initialData?.flight_time
-        ? initialData.flight_time.substring(0, 5) // Extraemos solo HH:mm
-        : "00:00",
-      incident_time: initialData?.incident_time
-        ? initialData.incident_time.substring(0, 5) // Extraemos solo HH:mm
-        : "00:00",
     },
   });
 
+  useEffect(() => {
+    if (initialData && isEditing) {
+      if (initialData.report_number) {
+        form.setValue("report_number", initialData.report_number);
+      }
+    } else if (!isEditing && nextNumberData?.next_number) {
+      form.setValue("report_number", String(nextNumberData.next_number));
+    }
+  }, [initialData, isEditing, nextNumberData, form]);
+
   const onSubmit = async (data: FormSchemaType) => {
-    if (isEditing && initialData && data.report_number) {
-      const value = {
+    if (isEditing && initialData) {
+      await updateObligatoryReport.mutateAsync({
         company: selectedCompany!.slug,
         id: initialData.id.toString(),
         data: {
-          image: data.image,
-          document: data.document,
+          ...data,
+          report_date: data.report_date.toISOString(),
+          incident_date: data.incident_date.toISOString(),
           status: initialData.status,
-          danger_identification_id: initialData.danger_identification?.id,
-          report_number: data.report_number,
-          incident_location: data.incident_location,
-          description: data.description,
-          incident_date: data.incident_date,
-          report_date: data.report_date,
-          incident_time: `${data.incident_time}:00`, // Añadimos segundos para el backend
-          flight_time: `${data.flight_time}:00`, // Añadimos segundos para el backend
-          pilot_id: data.pilot_id,
-          copilot_id: data.copilot_id,
-          aircraft_id: data.aircraft_id,
-          flight_number: data.flight_number,
-          flight_origin: data.flight_origin,
-          flight_destiny: data.flight_destiny,
-          flight_alt_destiny: data.flight_alt_destiny,
-          incidents: data.incidents,
-          other_incidents: data.other_incidents,
+          danger_identification_id: initialData.danger_identification_id,
         },
-      };
-      await updateObligatoryReport.mutateAsync(value);
+      });
     } else {
-      const value = {
-        report_number: data.report_number,
-        incident_location: data.incident_location,
-        description: data.description,
-        incident_date: data.incident_date,
-        report_date: data.report_date,
-        incident_time: `${data.incident_time}:00`, // Añadimos segundos para el backend
-        flight_time: `${data.flight_time}:00`, // Añadimos segundos para el backend
-        pilot_id: data.pilot_id,
-        copilot_id: data.copilot_id,
-        aircraft_id: data.aircraft_id,
-        flight_number: data.flight_number,
-        flight_origin: data.flight_origin,
-        flight_destiny: data.flight_destiny,
-        flight_alt_destiny: data.flight_alt_destiny,
-        incidents: data.incidents,
-        other_incidents: data.other_incidents,
-        image: data.image,
-        document: data.document,
-        status: shouldEnableField ? "ABIERTO" : "PROCESO",
-      };
-
       try {
-        const response = await createObligatoryReport.mutateAsync(value);
+        const response = await createObligatoryReport.mutateAsync({
+          company: selectedCompany!.slug,
+          data: {
+            ...data,
+            report_date: data.report_date.toISOString(),
+            incident_date: data.incident_date.toISOString(),
+            status: (shouldEnableField ? "ABIERTO" : "PROCESO") as "ABIERTO" | "PROCESO" | "CERRADO",
+          },
+        });
         if (shouldEnableField) {
           router.push(
             `/${selectedCompany?.slug}/sms/reportes/reportes_obligatorios/${response.obligatory_report_id}`,
@@ -337,626 +200,503 @@ export function CreateObligatoryReportForm({
     onClose();
   };
 
-  const handleOtherCheckboxChange = (checked: boolean) => {
-    setShowOtherInput(checked);
-    if (!checked) {
-      form.setValue("other_incidents", "");
-    }
-  };
-
-  const handleOtherInputChange = (
-    event: React.ChangeEvent<HTMLInputElement>,
-  ) => {
-    form.setValue("other_incidents", event.target.value);
-  };
-
-  useEffect(() => {
-    if (initialData && isEditing) {
-      if (initialData.report_number) {
-        form.setValue("report_number", initialData.report_number);
-      }
-    } else if (!isEditing && nextNumberData?.next_number) {
-      form.setValue("report_number", String(nextNumberData.next_number));
-    }
-  }, [initialData, isEditing, nextNumberData, form]);
-
   return (
     <Form {...form}>
-      <form
-        onSubmit={form.handleSubmit(onSubmit)}
-        className={cn(
-          "flex w-full flex-col space-y-3",
-          isEditing && "max-h-[calc(100vh-10rem)]  overflow-auto",
-        )}
-      >
-        <FormLabel className="text-lg text-center m-2">
-          Reporte Obligatorio de suceso
-        </FormLabel>
+      <ScrollArea className={cn(isEditing && "max-h-[calc(100vh-10rem)]")}>
+        <form
+          onSubmit={form.handleSubmit(onSubmit)}
+          className="flex w-full flex-col space-y-4 p-1"
+        >
+          <FormLabel className="text-lg text-center m-2">
+            Reporte Obligatorio de Suceso
+          </FormLabel>
 
-        <div className="flex gap-2 items-center justify-evenly">
-          {shouldEnableField && (
+          {/* Códigos */}
+          <div className="flex gap-2 items-start">
+            {shouldEnableField && (
+              <FormField
+                control={form.control}
+                name="report_number"
+                render={({ field }) => (
+                  <FormItem className="flex-1">
+                    <FormLabel>Código del Reporte</FormLabel>
+                    <FormControl>
+                      <div className="relative flex items-center text-muted-foreground cursor-not-allowed select-none">
+                        <span className="absolute left-2 select-none pointer-events-none">
+                          ROS-
+                        </span>
+                        <Input
+                          {...field}
+                          placeholder={isLoadingNextNumber ? "Cargando..." : ""}
+                          readOnly
+                          tabIndex={-1}
+                          className="bg-muted pl-12 font-bold pointer-events-none select-none"
+                        />
+                        {isLoadingNextNumber && (
+                          <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                            <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                          </div>
+                        )}
+                      </div>
+                    </FormControl>
+                    <FormMessage className="text-xs" />
+                  </FormItem>
+                )}
+              />
+            )}
             <FormField
               control={form.control}
-              name="report_number"
+              name="reference_number"
               render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Codigo del Reporte</FormLabel>
+                <FormItem className="flex-1">
+                  <FormLabel>Número de Referencia</FormLabel>
                   <FormControl>
-                    <div className="relative flex items-center text-muted-foreground cursor-not-allowed select-none">
-                      <span className="absolute left-2 select-none pointer-events-none">
-                        ROS-
-                      </span>
-                      <Input
-                        {...field}
-                        placeholder={isLoadingNextNumber ? "Cargando..." : ""}
-                        readOnly={true}
-                        tabIndex={-1}
-                        className="bg-muted pl-12 font-bold pointer-events-none select-none"
-                      />
-                      {isLoadingNextNumber && (
-                        <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                          <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-                        </div>
-                      )}
-                    </div>
+                    <Input placeholder="Referencia" {...field} />
                   </FormControl>
                   <FormMessage className="text-xs" />
                 </FormItem>
               )}
             />
-          )}
+          </div>
+
+          {/* Fechas */}
+          <div className="flex gap-2 items-center">
+            <FormField
+              control={form.control}
+              name="incident_date"
+              render={({ field }) => (
+                <FormItem className="flex flex-col mt-2.5 w-full">
+                  <FormLabel>Fecha del Incidente</FormLabel>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <FormControl>
+                        <Button
+                          variant="outline"
+                          className={cn(
+                            "w-full pl-3 text-left font-normal",
+                            !field.value && "text-muted-foreground",
+                          )}
+                        >
+                          {field.value
+                            ? format(field.value, "PPP", { locale: es })
+                            : <span>Seleccione una fecha</span>}
+                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                        </Button>
+                      </FormControl>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={field.value}
+                        onSelect={field.onChange}
+                        disabled={(date) => date > new Date()}
+                        initialFocus
+                        fromYear={1980}
+                        toYear={new Date().getFullYear()}
+                        captionLayout="dropdown-buttons"
+                        components={{
+                          Dropdown: (props) => (
+                            <select {...props} className="bg-popover text-popover-foreground">
+                              {props.children}
+                            </select>
+                          ),
+                        }}
+                      />
+                    </PopoverContent>
+                  </Popover>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="report_date"
+              render={({ field }) => (
+                <FormItem className="flex flex-col mt-2.5 w-full">
+                  <FormLabel>Fecha del Reporte</FormLabel>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <FormControl>
+                        <Button
+                          variant="outline"
+                          className={cn(
+                            "w-full pl-3 text-left font-normal",
+                            !field.value && "text-muted-foreground",
+                          )}
+                        >
+                          {field.value
+                            ? format(field.value, "PPP", { locale: es })
+                            : <span>Seleccione una fecha</span>}
+                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                        </Button>
+                      </FormControl>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={field.value}
+                        onSelect={field.onChange}
+                        disabled={(date) => date > new Date()}
+                        initialFocus
+                        fromYear={1980}
+                        toYear={new Date().getFullYear()}
+                        captionLayout="dropdown-buttons"
+                        components={{
+                          Dropdown: (props) => (
+                            <select {...props} className="bg-popover text-popover-foreground">
+                              {props.children}
+                            </select>
+                          ),
+                        }}
+                      />
+                    </PopoverContent>
+                  </Popover>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+
+          {/* Ubicación */}
+          <div className="flex gap-2">
+            <FormField
+              control={form.control}
+              name="incident_location"
+              render={({ field }) => (
+                <FormItem className="flex-1">
+                  <FormLabel>Lugar del Incidente</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Lugar del incidente" {...field} maxLength={50} />
+                  </FormControl>
+                  <FormMessage className="text-xs" />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="station"
+              render={({ field }) => (
+                <FormItem className="flex-1">
+                  <FormLabel>Estación</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Estación" {...field} />
+                  </FormControl>
+                  <FormMessage className="text-xs" />
+                </FormItem>
+              )}
+            />
+          </div>
 
           <FormField
             control={form.control}
-            name="incident_location"
+            name="incident_location_other"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Lugar del Incidente</FormLabel>
+                <FormLabel>Otro Lugar del Incidente</FormLabel>
                 <FormControl>
-                  <Input placeholder="" {...field} maxLength={50} />
+                  <Input placeholder="Especificar otro lugar" {...field} />
                 </FormControl>
                 <FormMessage className="text-xs" />
               </FormItem>
             )}
           />
-        </div>
-        <FormField
-          control={form.control}
-          name="description"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Descripcion del Suceso</FormLabel>
-              <FormControl>
-                <Input placeholder="" {...field} />
-              </FormControl>
-              <FormMessage className="text-xs" />
-            </FormItem>
-          )}
-        />
 
-        <div className="flex gap-2 items-center justify-center">
+          {/* Tipo de peligro y descripción */}
           <FormField
             control={form.control}
-            name="incident_date"
+            name="danger_type"
             render={({ field }) => (
-              <FormItem className="flex flex-col mt-2.5 w-full">
-                <FormLabel>Fecha de Incidente</FormLabel>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <FormControl>
-                      <Button
-                        variant={"outline"}
-                        className={cn(
-                          "w-full pl-3 text-left font-normal",
-                          !field.value && "text-muted-foreground",
-                        )}
-                      >
-                        {field.value ? (
-                          format(field.value, "PPP", {
-                            locale: es,
-                          })
-                        ) : (
-                          <span>Seleccione una fecha</span>
-                        )}
-                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                      </Button>
-                    </FormControl>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={field.value}
-                      onSelect={field.onChange}
-                      disabled={(date) => date > new Date()} // Solo deshabilitar fechas futuras
-                      initialFocus
-                      fromYear={1980} // Año mínimo que se mostrará
-                      toYear={new Date().getFullYear()} // Año máximo (actual)
-                      captionLayout="dropdown-buttons" // Selectores de año/mes
-                      components={{
-                        Dropdown: (props) => (
-                          <select
-                            {...props}
-                            className="bg-popover text-popover-foreground"
-                          >
-                            {props.children}
-                          </select>
-                        ),
-                      }}
-                    />
-                  </PopoverContent>
-                </Popover>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="report_date"
-            render={({ field }) => (
-              <FormItem className="flex flex-col mt-2.5 w-full">
-                <FormLabel>Fecha de Reporte</FormLabel>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <FormControl>
-                      <Button
-                        variant={"outline"}
-                        className={cn(
-                          "w-full pl-3 text-left font-normal",
-                          !field.value && "text-muted-foreground",
-                        )}
-                      >
-                        {field.value ? (
-                          format(field.value, "PPP", {
-                            locale: es,
-                          })
-                        ) : (
-                          <span>Seleccione una fecha</span>
-                        )}
-                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                      </Button>
-                    </FormControl>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={field.value}
-                      onSelect={field.onChange}
-                      disabled={(date) => date > new Date()} // Solo deshabilitar fechas futuras
-                      initialFocus
-                      fromYear={1980} // Año mínimo que se mostrará
-                      toYear={new Date().getFullYear()} // Año máximo (actual)
-                      captionLayout="dropdown-buttons" // Selectores de año/mes
-                      components={{
-                        Dropdown: (props) => (
-                          <select
-                            {...props}
-                            className="bg-popover text-popover-foreground"
-                          >
-                            {props.children}
-                          </select>
-                        ),
-                      }}
-                    />
-                  </PopoverContent>
-                </Popover>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
-
-        <div className="flex gap-2 justify-center items-center">
-          <FormField
-            control={form.control}
-            name="pilot_id"
-            render={({ field }) => (
-              <FormItem className="w-full">
-                <FormLabel>Piloto (Capitan)</FormLabel>
-                {isLoadingPilots ? (
-                  <div className="flex items-center gap-2 p-2 border rounded-md bg-muted">
-                    <Loader2 className="h-4 w-4 animate-spin " />
-                    <span className="text-sm">Cargando pilotos...</span>
-                  </div>
-                ) : (
-                  <Select
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                    disabled={isLoadingPilots} // Deshabilitar durante carga
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Seleccionar Piloto" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {pilots?.map((pilot) => (
-                        <SelectItem key={pilot.id} value={pilot.id.toString()}>
-                          {pilot.employee.first_name} {pilot.employee.last_name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                )}
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="copilot_id"
-            render={({ field }) => (
-              <FormItem className="w-full">
-                <FormLabel>Piloto (Primer Oficial)</FormLabel>
-                {isLoadingPilots ? (
-                  <div className="flex items-center gap-2 p-2 border rounded-md bg-muted">
-                    <Loader2 className="h-4 w-4 animate-spin" />{" "}
-                    <span className="text-sm">Cargando pilotos...</span>
-                  </div>
-                ) : (
-                  <Select
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                    disabled={isLoadingPilots} // Deshabilitar durante carga
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Seleccionar Copiloto" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {pilots?.map((pilot) => (
-                        <SelectItem key={pilot.id} value={pilot.id.toString()}>
-                          {pilot.employee.first_name} {pilot.employee.last_name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                )}
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
-        <div className="flex gap-4 justify-center items-center">
-          <FormField
-            control={form.control}
-            name="flight_time"
-            render={({ field }) => (
-              <FormItem className="w-full">
-                <FormLabel>Hora de vuelo</FormLabel>
-                <FormControl>
-                  <Input
-                    type="time"
-                    {...field}
-                    onChange={(e) => {
-                      // Validamos que el formato sea correcto
-                      if (
-                        e.target.value.match(/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/)
-                      ) {
-                        field.onChange(e.target.value);
-                      }
-                    }}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="incident_time"
-            render={({ field }) => (
-              <FormItem className="w-full">
-                <FormLabel>Hora del incidente</FormLabel>
-                <FormControl>
-                  <Input
-                    type="time"
-                    {...field}
-                    onChange={(e) => {
-                      // Validamos que el formato sea correcto
-                      if (
-                        e.target.value.match(/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/)
-                      ) {
-                        field.onChange(e.target.value);
-                      }
-                    }}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
-        <FormField
-          control={form.control}
-          name="aircraft_id"
-          render={({ field }) => (
-            <FormItem className="w-full">
-              <FormLabel>Aeronave</FormLabel>
-              {isLoadingAircrafts ? (
-                <div className="flex items-center gap-2 p-2 border rounded-md bg-muted">
-                  <Loader2 className="h-4 w-4 animate-spin" />{" "}
-                  <span className="text-sm">Cargando Aeronaves...</span>
-                </div>
-              ) : (
+              <FormItem>
+                <FormLabel>Tipo de Peligro</FormLabel>
                 <Select
                   onValueChange={field.onChange}
                   defaultValue={field.value}
-                  disabled={isLoadingAircrafts} // Deshabilitar durante carga
                 >
                   <FormControl>
                     <SelectTrigger>
-                      <SelectValue placeholder="Seleccionar Matricula de la Aeronave" />
+                      <SelectValue placeholder="Seleccionar" />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    {aircrafts?.map((aircraft) => (
-                      <SelectItem
-                        key={aircraft.id}
-                        value={aircraft.id.toString()}
-                      >
-                        <p className="font-bold">
-                          Matricula : {aircraft.acronym}{" "}
-                        </p>
-                      </SelectItem>
-                    ))}
+                    <SelectItem value="HUMANO">HUMANO</SelectItem>
+                    <SelectItem value="ORGANIZACIONAL">ORGANIZACIONAL</SelectItem>
+                    <SelectItem value="TECNICOS">TECNICOS</SelectItem>
+                    <SelectItem value="AMBIENTALES">AMBIENTALES</SelectItem>
                   </SelectContent>
                 </Select>
-              )}
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-        <div className="flex gap-2 justify-center items-center">
           <FormField
             control={form.control}
-            name="flight_number"
-            render={({ field }) => (
-              <FormItem className="w-full">
-                <FormLabel>Numero de vuelo</FormLabel>
-                <FormControl>
-                  <Input
-                    placeholder="Numero del vuelo"
-                    {...field}
-                    maxLength={6}
-                  />
-                </FormControl>
-                <FormMessage className="text-xs" />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="flight_origin"
-            render={({ field }) => (
-              <FormItem className="w-full">
-                <FormLabel>Origen de vuelo</FormLabel>
-                <FormControl>
-                  <Input placeholder="Salida del vuelo" {...field} />
-                </FormControl>
-                <FormMessage className="text-xs" />
-              </FormItem>
-            )}
-          />
-        </div>
-
-        <div className="flex gap-2 justify-center items-center">
-          <FormField
-            control={form.control}
-            name="flight_destiny"
-            render={({ field }) => (
-              <FormItem className="w-full">
-                <FormLabel>Destino de vuelo</FormLabel>
-                <FormControl>
-                  <Input placeholder="Destino del vuelo" {...field} />
-                </FormControl>
-                <FormMessage className="text-xs" />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="flight_alt_destiny"
-            render={({ field }) => (
-              <FormItem className="w-full">
-                <FormLabel>Destino alterno del vuelo</FormLabel>
-                <FormControl>
-                  <Input placeholder="Destino alterno del vuelo" {...field} />
-                </FormControl>
-                <FormMessage className="text-xs" />
-              </FormItem>
-            )}
-          />
-        </div>
-
-        {!showOtherInput && (
-          <FormField
-            control={form.control}
-            name="incidents"
+            name="description"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="m-2">Incidentes:</FormLabel>
+                <FormLabel>Descripción del Suceso</FormLabel>
                 <FormControl>
-                  <Popover open={open} onOpenChange={setOpen}>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant="outline"
-                        role="combobox"
-                        aria-expanded={open}
-                        className="w-[300px] justify-between"
-                      >
-                        {selectedValues && selectedValues.length > 0 ? (
-                          <p>({selectedValues.length}) seleccionados</p>
-                        ) : (
-                          "Seleccionar opciones..."
-                        )}
-                        <ChevronsUpDown className="opacity-50" />
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-[300px] p-0">
-                      <Command>
-                        <CommandInput placeholder="Buscar opciones..." />
-                        <CommandList>
-                          <CommandEmpty>
-                            No se encontraron opciones.
-                          </CommandEmpty>
-                          <CommandGroup>
-                            {OPTIONS_LIST.map((option) => (
-                              <CommandItem
-                                key={option}
-                                value={option}
-                                onSelect={(currentValue) => {
-                                  const isSelected =
-                                    selectedValues.includes(currentValue);
-                                  const newValues = isSelected
-                                    ? selectedValues.filter(
-                                        (v) => v !== currentValue,
-                                      )
-                                    : [...selectedValues, currentValue];
-
-                                  setSelectedValues(newValues);
-                                  field.onChange(
-                                    newValues.length > 0 ? newValues : [],
-                                  ); // Actualizar el valor del campo de formulario
-                                }}
-                              >
-                                {option}
-                                {selectedValues && (
-                                  <Check
-                                    className={cn(
-                                      "ml-auto",
-                                      selectedValues.includes(option)
-                                        ? "opacity-100"
-                                        : "opacity-0",
-                                    )}
-                                  />
-                                )}
-                              </CommandItem>
-                            ))}
-                          </CommandGroup>
-                        </CommandList>
-                      </Command>
-                    </PopoverContent>
-                  </Popover>
+                  <Textarea
+                    placeholder="Descripción del suceso"
+                    {...field}
+                    className="min-h-[80px]"
+                  />
                 </FormControl>
                 <FormMessage className="text-xs" />
               </FormItem>
             )}
           />
-        )}
 
-        <FormField
-          control={form.control}
-          name="other_incidents" // Campo separado para "other_incidents"
-          render={() => (
-            <FormItem className="mt-4">
-              <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                <FormControl>
-                  <Checkbox
-                    checked={showOtherInput}
-                    onCheckedChange={handleOtherCheckboxChange}
-                  />
-                </FormControl>
-                <FormLabel className="text-sm font-normal">
-                  Otros incidentes
-                </FormLabel>
+          {/* Aeronave y tripulación */}
+          {/* <FormField
+            control={form.control}
+            name="aircraft_id"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Aeronave</FormLabel>
+                {isLoadingAircrafts ? (
+                  <div className="flex items-center gap-2 p-2 border rounded-md bg-muted">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <span className="text-sm">Cargando aeronaves...</span>
+                  </div>
+                ) : (
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Seleccionar matrícula" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {aircrafts?.map((aircraft) => (
+                        <SelectItem key={aircraft.id} value={aircraft.id.toString()}>
+                          <span className="font-bold">Matrícula: {aircraft.acronym}</span>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+                <FormMessage />
               </FormItem>
-              {showOtherInput && (
-                <FormItem className="mt-2">
-                  <FormControl>
-                    <Input
-                      type="text"
-                      placeholder="Detalles del incidente"
-                      {...form.register("other_incidents")}
-                      onChange={handleOtherInputChange}
-                    />
-                  </FormControl>
+            )}
+          />
+
+          <div className="flex gap-2">
+            <FormField
+              control={form.control}
+              name="pilot_id"
+              render={({ field }) => (
+                <FormItem className="w-full">
+                  <FormLabel>Piloto (Capitán)</FormLabel>
+                  {isLoadingPilots ? (
+                    <div className="flex items-center gap-2 p-2 border rounded-md bg-muted">
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <span className="text-sm">Cargando pilotos...</span>
+                    </div>
+                  ) : (
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Seleccionar piloto" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {pilots?.map((pilot) => (
+                          <SelectItem key={pilot.id} value={pilot.id.toString()}>
+                            {pilot.employee.first_name} {pilot.employee.last_name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+                  <FormMessage />
                 </FormItem>
               )}
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+            />
+            <FormField
+              control={form.control}
+              name="copilot_id"
+              render={({ field }) => (
+                <FormItem className="w-full">
+                  <FormLabel>Piloto (Primer Oficial)</FormLabel>
+                  {isLoadingPilots ? (
+                    <div className="flex items-center gap-2 p-2 border rounded-md bg-muted">
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <span className="text-sm">Cargando pilotos...</span>
+                    </div>
+                  ) : (
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Seleccionar copiloto" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {pilots?.map((pilot) => (
+                          <SelectItem key={pilot.id} value={pilot.id.toString()}>
+                            {pilot.employee.first_name} {pilot.employee.last_name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div> */}
 
-        <div className="flex justify-center items-center gap-2">
-          <FormField
-            control={form.control}
-            name="image"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Imagen General</FormLabel>
-                <div className="flex flex-col gap-4">
-                  {/* Vista previa de imagen — solo si hay una fuente válida */}
-                  {(field.value instanceof File || initialData?.image) && (
-                    <div className="relative w-24 h-24 border rounded-md overflow-hidden">
-                      <Image
-                        src={
-                          field.value instanceof File
-                            ? URL.createObjectURL(field.value)
-                            : `${process.env.NEXT_PUBLIC_STORAGE_BASE_URL}${initialData?.image}` || ""
-                        }
-                        alt="Preview"
-                        fill
-                        className="object-contain"
+          {/* Información del reportero */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <FormField
+              control={form.control}
+              name="reporter_name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Nombre del Reportero</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Nombre" {...field} />
+                  </FormControl>
+                  <FormMessage className="text-xs" />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="reporter_email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Correo del Reportero</FormLabel>
+                  <FormControl>
+                    <Input placeholder="correo@ejemplo.com" {...field} />
+                  </FormControl>
+                  <FormMessage className="text-xs" />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="reporter_phone"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Teléfono del Reportero</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Teléfono" {...field} />
+                  </FormControl>
+                  <FormMessage className="text-xs" />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="reporter_area"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Área del Reportero</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Área" {...field} />
+                  </FormControl>
+                  <FormMessage className="text-xs" />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="reporter_position"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Cargo del Reportero</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Cargo" {...field} />
+                  </FormControl>
+                  <FormMessage className="text-xs" />
+                </FormItem>
+              )}
+            />
+           
+          </div>
+
+          {/* Archivos adjuntos */}
+          <div className="flex justify-center items-center gap-2">
+            <FormField
+              control={form.control}
+              name="image"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Imagen del Reporte</FormLabel>
+                  <div className="flex flex-col gap-4">
+                    {(field.value instanceof File || initialData?.image) && (
+                      <div className="relative w-24 h-24 border rounded-md overflow-hidden">
+                        <Image
+                          src={
+                            field.value instanceof File
+                              ? URL.createObjectURL(field.value)
+                              : `${process.env.NEXT_PUBLIC_STORAGE_BASE_URL}${initialData?.image}`
+                          }
+                          alt="Preview"
+                          fill
+                          className="object-contain"
+                        />
+                      </div>
+                    )}
+                    <FormControl>
+                      <Input
+                        type="file"
+                        accept="image/jpeg, image/png, image/jpg"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) field.onChange(file);
+                        }}
                       />
-                    </div>
-                  )}
-                  <FormControl>
-                    <Input
-                      type="file"
-                      accept="image/jpeg, image/png, image/jpg"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) field.onChange(file);
-                      }}
-                    />
-                  </FormControl>
-                </div>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="document"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Documento PDF</FormLabel>
-                <div className="flex items-center gap-4">
-                  {field.value && (
-                    <div>
-                      <p className="text-sm text-gray-500">
-                        Archivo seleccionado:
-                      </p>
-                      <p className="font-semibold text-sm">
-                        {field.value.name}
-                      </p>
-                    </div>
-                  )}
-                  <FormControl>
-                    <Input
-                      type="file"
-                      accept="application/pdf"
-                      onChange={(e) => field.onChange(e.target.files?.[0])}
-                    />
-                  </FormControl>
-                </div>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
+                    </FormControl>
+                  </div>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="document"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Documento PDF</FormLabel>
+                  <div className="flex items-center gap-4">
+                    {field.value && (
+                      <div>
+                        <p className="text-sm text-gray-500">Archivo seleccionado:</p>
+                        <p className="font-semibold text-sm">{field.value.name}</p>
+                      </div>
+                    )}
+                    <FormControl>
+                      <Input
+                        type="file"
+                        accept="application/pdf"
+                        onChange={(e) => field.onChange(e.target.files?.[0])}
+                      />
+                    </FormControl>
+                  </div>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
 
-        <div className="flex justify-between items-center gap-x-4">
-          <Separator className="flex-1" />
-          <p className="text-muted-foreground">SIGEAC</p>
-          <Separator className="flex-1" />
-        </div>
-        <Button type="submit">Enviar reporte</Button>
-      </form>
+          <div className="flex justify-between items-center gap-x-4">
+            <Separator className="flex-1" />
+            <p className="text-muted-foreground">SIGEAC</p>
+            <Separator className="flex-1" />
+          </div>
+          <Button
+            type="submit"
+            disabled={createObligatoryReport.isPending || updateObligatoryReport.isPending}
+          >
+            {createObligatoryReport.isPending || updateObligatoryReport.isPending ? (
+              <Loader2 className="size-4 animate-spin" />
+            ) : (
+              "Enviar Reporte"
+            )}
+          </Button>
+        </form>
+      </ScrollArea>
     </Form>
   );
 }
