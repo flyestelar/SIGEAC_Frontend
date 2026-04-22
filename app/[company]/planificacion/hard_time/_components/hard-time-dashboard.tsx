@@ -259,6 +259,8 @@ export function HardTimeDashboard() {
         componentId={installingComponent?.id ?? null}
         aircraft={selectedAircraft}
         defaultPartNumber={installingComponentPartNumber}
+        slotLabel={installingComponent?.position}
+        componentLabel={installingComponent?.batch?.name ?? installingComponent?.description ?? undefined}
       />
 
       <UninstallComponentDialog
