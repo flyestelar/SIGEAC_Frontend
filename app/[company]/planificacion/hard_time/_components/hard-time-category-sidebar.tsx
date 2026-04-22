@@ -339,7 +339,7 @@ export function HardTimeCategorySidebar({
                     </div>
                     <div className="space-y-0.5">
                       <p className="text-sm font-medium text-foreground/90 group-hover:text-foreground">
-                        Nuevo componente
+                        Nueva posición
                       </p>
                       <p className="text-[11px] text-muted-foreground">
                         en <span className="font-mono text-foreground/80">{selectedCategory.code}</span>

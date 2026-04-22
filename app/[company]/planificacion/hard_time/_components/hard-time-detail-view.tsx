@@ -199,6 +199,7 @@ export function HardTimeDetailView({
   const intervals = component.installed_part?.intervals ?? [];
   const activeIntervals = intervals.filter((interval) => interval.is_active);
   const installation = component.active_installation;
+  const componentTitle = component.batch?.name || component.description || 'Sin nombre';
   const enrichedIntervals =
     installation != null && aircraftFlightHours != null && aircraftFlightCycles != null
       ? activeIntervals.map((interval) =>
@@ -248,12 +249,17 @@ export function HardTimeDetailView({
                 </div>
                 <div className="space-y-1">
                   <div className="flex flex-wrap items-center gap-2">
-                    <p className="text-xl font-semibold tracking-tight text-foreground">{component.description}</p>
+                    <p className="text-xl font-semibold tracking-tight text-foreground">{componentTitle}</p>
                     <AlertBadge status={status} size="medium" />
                   </div>
-                  <p className="text-sm text-muted-foreground">
-                    Vista técnica de componente hard time con foco en estado, trazabilidad y acción rápida.
-                  </p>
+                  <div className="space-y-1">
+                    {component.batch?.name && component.description && component.batch.name !== component.description && (
+                      <p className="text-sm text-muted-foreground">{component.description}</p>
+                    )}
+                    <p className="text-sm text-muted-foreground">
+                      Vista técnica de componente hard time con foco en estado, trazabilidad y acción rápida.
+                    </p>
+                  </div>
                 </div>
               </div>
 

@@ -159,8 +159,8 @@ export function HardTimeDashboard() {
                 </Link>
               </Button>
               <Button className="gap-2" onClick={() => openCreateComponent(null)} disabled={!selectedAircraftId}>
-                <Plus className="size-4" /> 
-                Nuevo componente ATA
+                <Plus className="size-4" />
+                Nueva posición
               </Button>
             </div>
           </div>

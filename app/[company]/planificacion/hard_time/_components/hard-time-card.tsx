@@ -102,6 +102,7 @@ export function HardTimeCard({
   })();
 
   const category = component.category;
+  const componentTitle = component.batch?.name || component.description || 'Sin nombre';
   const hasInstalledPart = Boolean(
     component?.installed_part_id ?? component?.installed_part?.id ?? component?.active_installation,
   );
@@ -204,7 +205,7 @@ export function HardTimeCard({
             </div>
             <div className="min-w-0 space-y-0.5">
               <p className="truncate text-[15px] font-semibold leading-tight text-foreground">
-                {component.description || 'Sin nombre'}
+                {componentTitle}
               </p>
               <div className="flex flex-wrap items-center gap-1.5 text-[11px] text-muted-foreground">
                 <MapPinned className="h-3 w-3" />
@@ -216,6 +217,9 @@ export function HardTimeCard({
                   </>
                 )}
               </div>
+              {component.batch?.name && component.description && component.batch.name !== component.description && (
+                <p className="truncate text-[11px] text-muted-foreground">{component.description}</p>
+              )}
             </div>
           </div>
           <AlertBadge status={componentStatus} size="small" />

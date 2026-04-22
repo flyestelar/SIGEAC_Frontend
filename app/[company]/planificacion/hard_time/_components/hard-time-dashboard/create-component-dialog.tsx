@@ -90,8 +90,8 @@ export function CreateComponentDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Nuevo componente ATA</DialogTitle>
-          <DialogDescription>Registra un componente controlado dentro del capítulo ATA seleccionado.</DialogDescription>
+          <DialogTitle>Nueva Posición</DialogTitle>
+          <DialogDescription>Registre una nueva posición controlada dentro del capítulo ATA seleccionado.</DialogDescription>
         </DialogHeader>
 
         <form className="space-y-4" onSubmit={handleSubmit}>
