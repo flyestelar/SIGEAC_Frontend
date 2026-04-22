@@ -1246,15 +1246,6 @@ export type HardTimeIntervalWithMetrics = HardTimeIntervalResource & {
   metrics: HardTimeMetric[];
 };
 
-export type HardTimeIntervalDetail = HardTimeIntervalResource & {
-  last_compliance: HardTimeCompliance | null;
-  next_due_hours: number | null;
-  next_due_cycles: number | null;
-  next_due_date: string | null;
-  status?: HardTimeAlertLevel;
-  metrics?: HardTimeMetric[];
-};
-
 export type HardTimeActiveInstallation = {
   id: number;
   serial_number: string;
@@ -1316,22 +1307,6 @@ export type HardTimeCompliance = {
     id: number;
     order_number: string;
   };
-};
-
-export type HardTimeComponentDetail = {
-  id: number;
-  aircraft_id: number;
-  category_code: string;
-  part_number: string;
-  description: string;
-  position: string;
-  ata_chapter: string | null;
-  is_active: boolean;
-  active_installation: HardTimeInstallation | null;
-  intervals: HardTimeIntervalDetail[];
-  compliances: HardTimeCompliance[];
-  installations: HardTimeInstallation[];
-  status: HardTimeAlertLevel;
 };
 
 export type HardTimeTraceabilityRecord = {

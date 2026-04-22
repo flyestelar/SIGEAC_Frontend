@@ -1,13 +1,21 @@
+import { HardTimeAlertLevel, HardTimeMetricType } from '@/types';
 import {
   AircraftComponentSlotResource,
   AircraftResource,
   HardTimeInstallationResource,
-  HardTimeIntervalResource
+  HardTimeIntervalResource,
 } from '@api/types';
 import { differenceInDays } from 'date-fns';
 import { maxBy, round } from 'lodash-es';
 
-type Status = 'OK' | 'WARNING' | 'OVERDUE' | null;
+export interface IntervalMetric {
+  type: HardTimeMetricType;
+  consumed: number;
+  interval: number;
+  remaining: number;
+  percentage: number;
+  status: HardTimeAlertLevel;
+}
 
 function toNumber(v: unknown): number {
   if (v === null || v === undefined) return 0;
@@ -37,21 +45,23 @@ export function getAircraftComponentSlotMetrics(data: AircraftComponentSlotResou
   const component_cycles_current = installCompCycles + (aircraftFlightCycles - installAircraftCyclesAtInstall);
 
   // evaluate each interval and compute overall worst status
-  let worstStatus: Status = 'OK';
+  let worstStatus: HardTimeAlertLevel = 'OK';
 
   const intervals = data.installed_part?.intervals ?? [];
+  const intervalMetricsDict: Record<number, ReturnType<typeof getIntervalMetrics>> = {};
   for (const interval of intervals) {
     if (!interval || interval.is_active === false) continue;
     const intervalMetrics = getIntervalMetrics(interval, aircraft, activeInstallation);
     const intervalStatus = intervalMetrics.status ?? 'OK';
 
+    intervalMetricsDict[interval.id] = intervalMetrics;
     worstStatus = maxBy([worstStatus, intervalStatus], statusSeverityOrder)!;
   }
 
-  return { computed_status: worstStatus, component_hours_current, component_cycles_current };
+  return { status: worstStatus, component_hours_current, component_cycles_current, intervalMetricsDict };
 }
 
-function statusSeverityOrder(status: Status) {
+function statusSeverityOrder(status: HardTimeAlertLevel) {
   switch (status) {
     case 'OK':
       return 1;
@@ -70,14 +80,14 @@ function statusSeverityOrder(status: Status) {
  * Compute metrics for this interval given aircraft state and active installation.
  * Populates $this.metrics with an array of metric objects and sets $this.status.
  */
-function getIntervalMetrics(
+export function getIntervalMetrics(
   interval: HardTimeIntervalResource,
   aircraft: AircraftResource,
   installation: HardTimeInstallationResource,
 ) {
   const lastCompliance = interval.last_compliance;
   const today = new Date();
-  const metrics: Metric[] = [];
+  const metrics: IntervalMetric[] = [];
 
   let consumed: number;
 
@@ -115,7 +125,7 @@ function getIntervalMetrics(
   return { metrics, status };
 }
 
-function buildIntervalMetric(type: string, consumed: number, interval: number): Metric {
+function buildIntervalMetric(type: HardTimeMetricType, consumed: number, interval: number): IntervalMetric {
   return {
     type: type,
     consumed: consumed,
@@ -126,7 +136,7 @@ function buildIntervalMetric(type: string, consumed: number, interval: number): 
   };
 }
 
-function resolveStatus($percentage: number): Status {
+function resolveStatus($percentage: number): HardTimeAlertLevel {
   if ($percentage >= 100) {
     return 'OVERDUE';
   }
@@ -136,15 +146,6 @@ function resolveStatus($percentage: number): Status {
   return 'OK';
 }
 
-interface Metric {
-  type: string;
-  consumed: number;
-  interval: number;
-  remaining: number;
-  percentage: number;
-  status: Status;
-}
-
-function resolveWorstStatus(metrics: Metric[]): Status {
+function resolveWorstStatus(metrics: IntervalMetric[]): HardTimeAlertLevel {
   return maxBy(metrics, (m) => statusSeverityOrder(m.status))?.status ?? 'OK';
 }

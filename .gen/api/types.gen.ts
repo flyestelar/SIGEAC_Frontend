@@ -60,6 +60,22 @@ export type AircraftAverageMetric = {
 };
 
 /**
+ * AircraftComponentSlot
+ */
+export type AircraftComponentSlot = {
+  id: number;
+  aircraft_id: number;
+  category_code: string;
+  part_number: string;
+  description: string;
+  position: string;
+  is_active: boolean;
+  created_at: string | null;
+  updated_at: string | null;
+  batch_id: number | null;
+};
+
+/**
  * AircraftComponentSlotResource
  */
 export type AircraftComponentSlotResource = {
@@ -78,27 +94,6 @@ export type AircraftComponentSlotResource = {
   installed_part_id?: number;
   installed_part?: AircraftPartResource;
   batch?: Batch;
-};
-
-/**
- * AircraftPart
- */
-export type AircraftPart = {
-  id: number;
-  part_number: string;
-  part_name: string;
-  total_flight_hours: number;
-  total_flight_cycles: number;
-  condition_type: string | null;
-  parent_part_id: number | null;
-  created_at: string | null;
-  updated_at: string | null;
-  registered_by: string | null;
-  updated_by: string | null;
-  type: string | null;
-  serial: string | null;
-  document: string | null;
-  description: string | null;
 };
 
 /**
@@ -147,7 +142,7 @@ export type AircraftResource = {
   updated_by: string | null;
   created_at: string;
   updated_at: string;
-  aircraft_parts?: Array<AircraftPart>;
+  component_slots?: Array<AircraftComponentSlot>;
   flight?: Array<FlightResource>;
   last_average_metric?: AircraftAverageMetric;
 };

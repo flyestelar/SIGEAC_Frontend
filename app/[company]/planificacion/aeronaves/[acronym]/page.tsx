@@ -199,7 +199,7 @@ export default function AircraftDetailsPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           {/* Árbol + historial */}
           <div className="lg:col-span-2 space-y-4">
-            <HardTimeComponentsCard aircraftId={aircraft.id} />
+            <HardTimeComponentsCard aircraft={aircraft} />
 
             <InstallationHistoryCard aircraftId={aircraft.id} />
           </div>

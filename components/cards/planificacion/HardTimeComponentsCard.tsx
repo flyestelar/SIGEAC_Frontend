@@ -1,19 +1,22 @@
 'use client';
 
-import { useGetHardTimeComponents } from '@/hooks/planificacion/hard_time/useGetHardTimeComponents';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useGetHardTimeComponents } from '@/hooks/planificacion/hard_time/useGetHardTimeComponents';
+import { AircraftResource } from '@api/types';
 import { Puzzle } from 'lucide-react';
 
 type HardTimeComponentsCardProps = {
-  aircraftId: number | null;
+  aircraft: AircraftResource;
 };
 
-export function HardTimeComponentsCard({ aircraftId }: HardTimeComponentsCardProps) {
+export function HardTimeComponentsCard({ aircraft }: HardTimeComponentsCardProps) {
+  const aircraftId = aircraft.id;
   const { data, isLoading } = useGetHardTimeComponents(aircraftId);
   const slots = data?.data ?? [];
+  const groups = Object.groupBy(slots, (s) => s.category?.code ?? s.category_code ?? 'uncategorized');
 
   return (
     <Card>
@@ -45,49 +48,73 @@ export function HardTimeComponentsCard({ aircraftId }: HardTimeComponentsCardPro
             </div>
           ) : slots.length ? (
             <div className="space-y-3">
-              {slots.map((slot) => {
-                const category = slot.category!;
+              {Object.values(groups).map((group) => {
+                if (!group?.length) return null;
+                const category = group[0]?.category;
+                const key = category?.code ?? group[0]?.category_code ?? 'uncategorized';
+
                 return (
-                  <div key={category.code} className="space-y-2">
+                  <div key={key} className="space-y-2">
                     <div className="flex items-center justify-between gap-3 text-xs font-semibold text-muted-foreground">
                       <span>
-                        {category.name} <span className="ml-2 font-mono text-[11px]">{category.code}</span>
+                        {category?.name ?? '—'}{' '}
+                        <span className="ml-2 font-mono text-[11px]">{category?.code ?? key}</span>
                       </span>
                       <Badge variant="outline" className="text-[11px]">
-                        {slot.components.length} posiciones
+                        {group.length} posiciones
                       </Badge>
                     </div>
                     <div className="grid gap-2">
-                      {slot.components.map((component) => (
-                        <div
-                          key={component.id}
-                          className="flex items-center justify-between gap-3 rounded-md border p-2"
-                        >
-                          <div className="min-w-0">
-                            <div className="flex items-center gap-2">
-                              <span className="truncate font-medium">
-                                {component.description || component.part_number}
-                              </span>
-                              <span className="font-mono text-xs text-muted-foreground">{component.part_number}</span>
-                            </div>
-                            <div className="text-xs text-muted-foreground">{component.position}</div>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            {component.active_installation ? (
-                              <div className="text-right text-xs text-muted-foreground">
-                                <div>
-                                  SN: <span className="font-mono">{component.active_installation.serial_number}</span>
-                                </div>
-                                <div>FH: {component.active_installation.component_hours_current ?? '—'}</div>
+                      {group.map((component) => {
+                        const {
+                          aircraft_hours_at_install,
+                          aircraft_cycles_at_install,
+                          component_hours_at_install,
+                          component_cycles_at_install,
+                        } = component.active_installation ?? {};
+                        const component_hours_current =
+                          component_hours_at_install != null
+                            ? component_hours_at_install +
+                              ((aircraft.flight_hours ?? 0) - (aircraft_hours_at_install ?? 0))
+                            : undefined;
+                        const component_cycles_current =
+                          component_cycles_at_install != null
+                            ? component_cycles_at_install +
+                              ((aircraft.flight_cycles ?? 0) - (aircraft_cycles_at_install ?? 0))
+                            : undefined;
+
+                        return (
+                          <div
+                            key={component.id}
+                            className="flex items-center justify-between gap-3 rounded-md border p-2"
+                          >
+                            <div className="min-w-0">
+                              <div className="flex items-center gap-2">
+                                <span className="truncate font-medium">
+                                  {component.description || component.part_number}
+                                </span>
+                                <span className="font-mono text-xs text-muted-foreground">{component.part_number}</span>
                               </div>
-                            ) : (
-                              <Badge variant="secondary" className="text-[11px]">
-                                Sin instalación
-                              </Badge>
-                            )}
+                              <div className="text-xs text-muted-foreground">{component.position}</div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              {component.active_installation ? (
+                                <div className="text-right text-xs text-muted-foreground">
+                                  <div>
+                                    SN: <span className="font-mono">{component.active_installation.serial_number}</span>
+                                  </div>
+                                  <div>FH: {component_hours_current ?? '—'}</div>
+                                  <div>FC: {component_cycles_current ?? '—'}</div>
+                                </div>
+                              ) : (
+                                <Badge variant="secondary" className="text-[11px]">
+                                  Sin instalación
+                                </Badge>
+                              )}
+                            </div>
                           </div>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   </div>
                 );
@@ -95,7 +122,7 @@ export function HardTimeComponentsCard({ aircraftId }: HardTimeComponentsCardPro
             </div>
           ) : (
             <div className="flex flex-col items-center justify-center gap-2 py-12 text-muted-foreground">
-              <Puzzle className="size-8 opacity-20" />
+              <Puzzle className="h-8 w-8 opacity-20" />
               <p className="text-sm">No hay posiciones Hard Time registradas</p>
             </div>
           )}
