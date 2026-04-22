@@ -24,7 +24,7 @@ import {
   ShieldAlert,
 } from 'lucide-react';
 import { HardTimeIntervalCard } from './hard-time-interval-card';
-import { AlertBadge, computeComponentStatus, computeIntervalMetrics, LEVEL_CONFIG, STATUS_ORDER } from './hard-time-shared';
+import { AlertBadge, computeComponentStatus, computeIntervalMetrics, LEVEL_CONFIG } from './hard-time-shared';
 
 interface HardTimeDetailViewProps {
   componentId: number;
