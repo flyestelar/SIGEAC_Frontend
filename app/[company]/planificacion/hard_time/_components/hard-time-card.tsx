@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { HardTimeAlertLevel, HardTimeIntervalWithMetrics, HardTimeMetric } from '@/types';
 import { CircleOff, ListPlus, MapPinned, PackageMinus, PackagePlus, PlusCircle, Timer } from 'lucide-react';
 import { AlertBadge, computeIntervalMetrics, LEVEL_CONFIG, METRIC_ICONS, METRIC_LABELS, METRIC_UNITS, STATUS_ORDER } from './hard-time-shared';
@@ -73,6 +74,7 @@ export function HardTimeCard({
   });
 
   const allMetricsWithTask = intervals.flatMap((i) => i.metrics);
+  const shouldScrollMetrics = intervals.length > 2;
 
   const closestMetric = (() => {
     if (allMetricsWithTask.length === 0) return null;
@@ -225,32 +227,46 @@ export function HardTimeCard({
       <CardContent className="space-y-3 px-4 pb-3 pt-0">
         {allMetricsWithTask.length > 0 ? (
           <div className="space-y-2 rounded-md border border-border/60 bg-background/70 px-3 py-2.5">
-            {allMetricsWithTask.map((metric, idx) => {
-              const mCfg = LEVEL_CONFIG[metric.status];
-              const Icon = METRIC_ICONS[metric.type];
-              return (
-                <div key={`${metric.taskDescription}-${metric.type}-${idx}`} className="space-y-1">
-                  <div className="flex items-center justify-between gap-2">
-                    <p className="flex items-center gap-1 text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
-                      <Icon className="h-3 w-3 shrink-0" />
-                      {METRIC_LABELS[metric.type]}
-                    </p>
-                    {metric.remaining <= 0 ? (
-                      <span className="text-[10px] font-semibold text-red-600 dark:text-red-400">VENCIDO</span>
-                    ) : (
-                      <span className="font-mono text-[10px] font-medium text-muted-foreground">
-                        {metric.remaining.toFixed(1)} {METRIC_UNITS[metric.type]} rest.
-                      </span>
-                    )}
+            <ScrollArea className={shouldScrollMetrics ? 'h-[170px] pr-3' : undefined}>
+              <div className="space-y-3">
+                {intervals.map((interval, intervalIdx) => (
+                  <div
+                    key={`${interval.id ?? interval.task_description}-${intervalIdx}`}
+                    className="space-y-2 border-b border-border/40 pb-2 last:border-b-0 last:pb-0"
+                  >
+                    <p className="truncate text-[11px] font-semibold text-foreground">{interval.task_description}</p>
+                    <div className="space-y-2">
+                      {interval.metrics.map((metric, metricIdx) => {
+                        const mCfg = LEVEL_CONFIG[metric.status];
+                        const Icon = METRIC_ICONS[metric.type];
+                        return (
+                          <div key={`${interval.task_description}-${metric.type}-${metricIdx}`} className="space-y-1">
+                            <div className="flex items-center justify-between gap-2">
+                              <p className="flex items-center gap-1 text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+                                <Icon className="h-3 w-3 shrink-0" />
+                                {METRIC_LABELS[metric.type]}
+                              </p>
+                              {metric.remaining <= 0 ? (
+                                <span className="text-[10px] font-semibold text-red-600 dark:text-red-400">VENCIDO</span>
+                              ) : (
+                                <span className="font-mono text-[10px] font-medium text-muted-foreground">
+                                  {metric.remaining.toFixed(1)} {METRIC_UNITS[metric.type]} rest.
+                                </span>
+                              )}
+                            </div>
+                            <Progress
+                              value={Math.min(metric.percentage, 100)}
+                              className="h-1.5"
+                              indicatorClassName={mCfg.progressIndicator}
+                            />
+                          </div>
+                        );
+                      })}
+                    </div>
                   </div>
-                  <Progress
-                    value={Math.min(metric.percentage, 100)}
-                    className="h-1.5"
-                    indicatorClassName={mCfg.progressIndicator}
-                  />
-                </div>
-              );
-            })}
+                ))}
+              </div>
+            </ScrollArea>
           </div>
         ) : canCreateInterval ? (
           <button

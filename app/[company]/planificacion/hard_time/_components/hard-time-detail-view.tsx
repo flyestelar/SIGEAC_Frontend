@@ -1,6 +1,7 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -10,14 +11,20 @@ import { es } from 'date-fns/locale';
 import {
   AlertCircle,
   ArrowLeft,
+  CalendarClock,
   ClipboardCheck,
   ClipboardPlus,
+  Component,
+  Gauge,
+  Layers3,
   Loader2,
+  PackageCheck,
   PackageMinus,
   PackagePlus,
+  ShieldAlert,
 } from 'lucide-react';
 import { HardTimeIntervalCard } from './hard-time-interval-card';
-import { AlertBadge, computeComponentStatus, LEVEL_CONFIG } from './hard-time-shared';
+import { AlertBadge, computeComponentStatus, computeIntervalMetrics, LEVEL_CONFIG, STATUS_ORDER } from './hard-time-shared';
 
 interface HardTimeDetailViewProps {
   componentId: number;
@@ -47,44 +54,72 @@ function formatNumber(value?: number | null, digits = 1) {
   });
 }
 
+function DetailStat({
+  label,
+  value,
+  icon: Icon,
+  mono = false,
+}: {
+  label: string;
+  value: string;
+  icon: typeof Gauge;
+  mono?: boolean;
+}) {
+  return (
+    <div className="rounded-lg border border-border/60 bg-background px-3 py-3">
+      <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+        <div className="flex h-6 w-6 items-center justify-center rounded-md border border-border/60 bg-muted/30">
+          <Icon className="size-3.5" />
+        </div>
+        <span>{label}</span>
+      </div>
+      <p className={`mt-2 text-sm font-medium text-foreground ${mono ? 'font-mono' : ''}`}>{value}</p>
+    </div>
+  );
+}
+
 function DetailSkeleton() {
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
       <Card className="border-border/60">
-        <CardHeader className="space-y-4">
-          <Skeleton className="h-5 w-40" />
+        <CardHeader className="space-y-5">
+          <div className="flex items-center justify-between gap-3">
+            <Skeleton className="h-8 w-40" />
+            <Skeleton className="h-8 w-32" />
+          </div>
           <div className="space-y-3">
             <div className="flex flex-wrap items-center gap-2">
-              <Skeleton className="h-8 w-32" />
+              <Skeleton className="h-9 w-36" />
               <Skeleton className="h-6 w-24" />
             </div>
-            <Skeleton className="h-6 w-64" />
-            <Skeleton className="h-4 w-80 max-w-full" />
-            <div className="flex flex-wrap gap-2">
-              <Skeleton className="h-10 w-32" />
-              <Skeleton className="h-10 w-44" />
+            <Skeleton className="h-7 w-72" />
+            <Skeleton className="h-4 w-96 max-w-full" />
+            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+              {Array.from({ length: 4 }).map((_, index) => (
+                <Skeleton key={index} className="h-20 w-full" />
+              ))}
             </div>
           </div>
         </CardHeader>
       </Card>
 
-      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-        {Array.from({ length: 3 }).map((_, index) => (
-          <Card key={index} className="border-border/60">
-            <CardContent className="space-y-3 p-4">
-              <Skeleton className="h-5 w-32" />
-              <Skeleton className="h-4 w-full" />
-              <Skeleton className="h-2 w-full" />
-              <Skeleton className="h-4 w-24" />
-              <Skeleton className="h-4 w-full" />
-              <Skeleton className="h-2 w-full" />
-              <Skeleton className="h-4 w-20" />
-              <Skeleton className="h-px w-full" />
-              <Skeleton className="h-4 w-28" />
-              <Skeleton className="h-4 w-24" />
+      <div className="grid gap-5 lg:grid-cols-12">
+        <div className="space-y-4 lg:col-span-8">
+          <Card className="border-border/60">
+            <CardHeader className="border-b border-border/60 py-3">
+              <Skeleton className="h-5 w-48" />
+            </CardHeader>
+            <CardContent className="grid gap-4 p-4 sm:grid-cols-2">
+              {Array.from({ length: 4 }).map((_, index) => (
+                <Skeleton key={index} className="h-48 w-full" />
+              ))}
             </CardContent>
           </Card>
-        ))}
+        </div>
+        <div className="space-y-4 lg:col-span-4">
+          <Skeleton className="h-52 w-full" />
+          <Skeleton className="h-44 w-full" />
+        </div>
       </div>
     </div>
   );
@@ -164,104 +199,219 @@ export function HardTimeDetailView({
   const intervals = component.installed_part?.intervals ?? [];
   const activeIntervals = intervals.filter((interval) => interval.is_active);
   const installation = component.active_installation;
-
+  const enrichedIntervals =
+    installation != null && aircraftFlightHours != null && aircraftFlightCycles != null
+      ? activeIntervals.map((interval) =>
+          computeIntervalMetrics(interval, installation, aircraftFlightHours, aircraftFlightCycles),
+        )
+      : [];
+  const overdueCount = enrichedIntervals.filter((interval) => interval.status === 'OVERDUE').length;
+  const warningCount = enrichedIntervals.filter((interval) => interval.status === 'WARNING').length;
+  const healthyCount = enrichedIntervals.filter((interval) => interval.status === 'OK').length;
   return (
-    <div className="space-y-4">
-      <div className="space-y-3">
-        <Button variant="ghost" className="gap-2 px-0 text-muted-foreground hover:bg-transparent" onClick={onBack}>
-          <ArrowLeft className="size-4" />
-          Volver a componentes
-        </Button>
+    <div className="mx-auto max-w-7xl space-y-5">
+      <Card className={`overflow-hidden border-border/60 ${cfg.cardBorder} ${cfg.cardBg}`}>
+        <div className="flex flex-col gap-3 border-b border-border/60 bg-background/60 px-5 py-3 lg:flex-row lg:items-center lg:justify-between">
+          <Button
+            variant="ghost"
+            className="h-8 w-fit gap-2 rounded-md border border-transparent px-2 text-muted-foreground hover:border-border/60 hover:bg-background"
+            onClick={onBack}
+          >
+            <ArrowLeft className="size-4" />
+            Volver a componentes
+          </Button>
+          <div className="flex flex-wrap items-center gap-2 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+            <Badge variant="outline" className="h-6 gap-1 rounded-md border-border/60 bg-background px-2 font-mono">
+              <Component className="size-3.5" />
+              {component.position}
+            </Badge>
+            {component.category?.ata_chapter && (
+              <Badge variant="outline" className="h-6 rounded-md border-border/60 bg-background px-2 font-mono">
+                ATA {component.category.ata_chapter}
+              </Badge>
+            )}
+            {isFetching && (
+              <span className="inline-flex h-6 items-center gap-1 rounded-md border border-border/60 bg-background px-2">
+                <Loader2 className="size-3 animate-spin" />
+                Actualizando
+              </span>
+            )}
+          </div>
+        </div>
 
-        <Card className={`overflow-hidden border-border/60 ${cfg.cardBorder} ${cfg.cardBg}`}>
-          <CardHeader className="gap-4">
-            <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-              <div className="space-y-3">
-                <div className="flex flex-wrap items-center gap-2">
-                  <div className={`flex h-8 w-8 items-center justify-center rounded-lg ${cfg.iconBg}`}>
-                    <StatusIcon className={`h-4 w-4 ${cfg.iconText}`} />
-                  </div>
-                  <p className="text-lg font-semibold tracking-tight text-foreground">{component.position}</p>
-                  <AlertBadge status={status} size="medium" />
-                  {isFetching && (
-                    <span className="inline-flex h-6 items-center gap-1 rounded-md border border-border/60 px-2 text-[11px] text-muted-foreground">
-                      <Loader2 className="size-3 animate-spin" />
-                      Actualizando
-                    </span>
-                  )}
+        <CardHeader className="gap-5 px-5 py-5">
+          <div className="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
+            <div className="space-y-4">
+              <div className="flex flex-wrap items-center gap-3">
+                <div className={`flex h-10 w-10 items-center justify-center rounded-lg border ${cfg.iconBg}`}>
+                  <StatusIcon className={`h-5 w-5 ${cfg.iconText}`} />
                 </div>
-
                 <div className="space-y-1">
-                  <p className="text-sm text-muted-foreground">{component.description}</p>
-                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
-                    <span className="font-mono">P/N: {installation?.part_number ?? component.part_number}</span>
-                    <span className="font-mono">S/N: {installation?.serial_number ?? '—'}</span>
-                    {component.category?.ata_chapter && <span>ATA {component.category.ata_chapter}</span>}
+                  <div className="flex flex-wrap items-center gap-2">
+                    <p className="text-xl font-semibold tracking-tight text-foreground">{component.description}</p>
+                    <AlertBadge status={status} size="medium" />
                   </div>
-                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
-                    <span>Instalado: {formatDate(installation?.installed_at)}</span>
-                    <span>FH install: {formatNumber(installation?.aircraft_hours_at_install, 2)}</span>
-                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    Vista técnica de componente hard time con foco en estado, trazabilidad y acción rápida.
+                  </p>
                 </div>
               </div>
 
-              <div className="flex flex-wrap items-center gap-2">
-                {installation ? (
-                  <Button variant="outline" className="gap-2" onClick={onCreateInterval}>
-                    <ClipboardPlus className="size-4" />
-                    Nuevo intervalo
-                  </Button>
-                ) : (
-                  <TooltipProvider>
-                    <Tooltip delayDuration={80}>
-                      <TooltipTrigger asChild>
-                        <span>
-                          <Button variant="outline" className="gap-2" disabled>
-                            <ClipboardPlus className="size-4" />
-                            Nuevo intervalo
-                          </Button>
-                        </span>
-                      </TooltipTrigger>
-                      <TooltipContent side="bottom">Monta una parte antes de crear intervalos</TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                )}
-                <Button variant="outline" className="gap-2" onClick={installation ? onUninstall : onInstall}>
-                  {installation ? <PackageMinus className="size-4" /> : <PackagePlus className="size-4" />}
-                  {installation ? 'Desmontar' : 'Montar'}
-                </Button>
-                <Button variant="outline" className="gap-2" onClick={onRegisterCompliance} disabled={!installation}>
-                  <ClipboardCheck className="size-4" />
-                  Registrar cumplimiento
-                </Button>
+              <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                <DetailStat label="Parte" value={installation?.part_number ?? component.part_number ?? '—'} icon={PackageCheck} mono />
+                <DetailStat label="Serial" value={installation?.serial_number ?? '—'} icon={Layers3} mono />
+                <DetailStat label="Instalado" value={formatDate(installation?.installed_at)} icon={CalendarClock} />
+                <DetailStat label="FH instalación" value={formatNumber(installation?.aircraft_hours_at_install, 2)} icon={Gauge} mono />
               </div>
             </div>
-          </CardHeader>
-        </Card>
-      </div>
 
-      {activeIntervals.length === 0 ? (
-        <Card className="border-dashed border-border/70">
-          <CardContent className="flex min-h-40 flex-col items-center justify-center gap-2 py-10 text-center">
-            <p className="text-sm font-semibold">Sin intervalos configurados</p>
-            <p className="text-sm text-muted-foreground">Componente no tiene intervalos activos para mostrar.</p>
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {activeIntervals.map((interval) => (
-            <HardTimeIntervalCard
-              key={interval.id}
-              interval={interval}
-              installation={installation}
-              aircraftFlightHours={aircraftFlightHours}
-              aircraftFlightCycles={aircraftFlightCycles}
-              averageDailyFH={averageDailyFH}
-              averageDailyFC={averageDailyFC}
-            />
-          ))}
+            <div className="xl:max-w-[320px] xl:min-w-[320px]">
+              <div className="space-y-2 rounded-lg border border-border/50 bg-muted/10 p-2.5">
+                <div className="px-2 pb-1">
+                  <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+                    Comandos rápidos
+                  </p>
+                </div>
+
+                <div className="grid gap-1.5">
+                  {installation ? (
+                    <Button
+                      variant="ghost"
+                      className="h-11 justify-start gap-3 rounded-md border border-transparent px-3 hover:border-border/60 hover:bg-background"
+                      onClick={onCreateInterval}
+                    >
+                      <span className="flex h-7 w-7 items-center justify-center rounded-md border border-border/60 bg-background">
+                        <ClipboardPlus className="size-4 text-muted-foreground" />
+                      </span>
+                      <span className="flex flex-col items-start leading-none">
+                        <span className="text-sm font-medium text-foreground">Nuevo intervalo</span>
+                        <span className="text-[11px] text-muted-foreground">Agregar control hard time</span>
+                      </span>
+                    </Button>
+                  ) : (
+                    <TooltipProvider>
+                      <Tooltip delayDuration={80}>
+                        <TooltipTrigger asChild>
+                          <span className="block">
+                            <Button
+                              variant="ghost"
+                              className="h-11 w-full justify-start gap-3 rounded-md border border-transparent px-3"
+                              disabled
+                            >
+                              <span className="flex h-7 w-7 items-center justify-center rounded-md border border-border/60 bg-background">
+                                <ClipboardPlus className="size-4 text-muted-foreground" />
+                              </span>
+                              <span className="flex flex-col items-start leading-none">
+                                <span className="text-sm font-medium text-foreground">Nuevo intervalo</span>
+                                <span className="text-[11px] text-muted-foreground">Requiere parte montada</span>
+                              </span>
+                            </Button>
+                          </span>
+                        </TooltipTrigger>
+                        <TooltipContent side="left">Monta una parte antes de crear intervalos</TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  )}
+
+                  <Button
+                    variant="ghost"
+                    className="h-11 justify-start gap-3 rounded-md border border-transparent px-3 hover:border-border/60 hover:bg-background"
+                    onClick={installation ? onUninstall : onInstall}
+                  >
+                    <span className="flex h-7 w-7 items-center justify-center rounded-md border border-border/60 bg-background">
+                      {installation ? (
+                        <PackageMinus className="size-4 text-muted-foreground" />
+                      ) : (
+                        <PackagePlus className="size-4 text-muted-foreground" />
+                      )}
+                    </span>
+                    <span className="flex flex-col items-start leading-none">
+                      <span className="text-sm font-medium text-foreground">
+                        {installation ? 'Desmontar componente' : 'Montar componente'}
+                      </span>
+                      <span className="text-[11px] text-muted-foreground">
+                        {installation ? 'Retirar instalación actual' : 'Asignar parte a posición'}
+                      </span>
+                    </span>
+                  </Button>
+
+                  <Button
+                    variant="ghost"
+                    className="h-11 justify-start gap-3 rounded-md border border-transparent px-3 hover:border-border/60 hover:bg-background"
+                    onClick={onRegisterCompliance}
+                    disabled={!installation}
+                  >
+                    <span className="flex h-7 w-7 items-center justify-center rounded-md border border-border/60 bg-background">
+                      <ClipboardCheck className="size-4 text-muted-foreground" />
+                    </span>
+                    <span className="flex flex-col items-start leading-none">
+                      <span className="text-sm font-medium text-foreground">Registrar cumplimiento</span>
+                      <span className="text-[11px] text-muted-foreground">Actualizar último cumplimiento</span>
+                    </span>
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </CardHeader>
+      </Card>
+
+      <div className="space-y-5">
+        <div className="space-y-5">
+          <Card className="overflow-hidden border-border/60 bg-background">
+            <div className="flex flex-col gap-3 border-b border-border/60 px-5 py-3 md:flex-row md:items-center md:justify-between">
+              <div className="space-y-1">
+                <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+                  Plataforma de intervalos
+                </p>
+                <p className="text-sm font-medium text-foreground">
+                  {activeIntervals.length} intervalo{activeIntervals.length !== 1 && 's'} activo
+                  {activeIntervals.length !== 1 && 's'}
+                </p>
+              </div>
+              <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                <span className="inline-flex items-center gap-1 rounded-md border border-border/60 bg-muted/20 px-2 py-1">
+                  <ShieldAlert className="size-3.5" />
+                  {overdueCount} vencido{overdueCount !== 1 && 's'}
+                </span>
+                <span className="inline-flex items-center gap-1 rounded-md border border-border/60 bg-muted/20 px-2 py-1">
+                  <CalendarClock className="size-3.5" />
+                  {warningCount} próximo{warningCount !== 1 && 's'}
+                </span>
+                <span className="inline-flex items-center gap-1 rounded-md border border-border/60 bg-muted/20 px-2 py-1">
+                  <PackageCheck className="size-3.5" />
+                  {healthyCount} en tiempo
+                </span>
+              </div>
+            </div>
+
+            <CardContent className="p-4">
+              {activeIntervals.length === 0 ? (
+                <div className="flex min-h-40 flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-border/70 bg-muted/10 py-10 text-center">
+                  <p className="text-sm font-semibold">Sin intervalos configurados</p>
+                  <p className="text-sm text-muted-foreground">
+                    Componente no tiene intervalos activos para mostrar.
+                  </p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
+                  {activeIntervals.map((interval) => (
+                    <HardTimeIntervalCard
+                      key={interval.id}
+                      interval={interval}
+                      installation={installation}
+                      aircraftFlightHours={aircraftFlightHours}
+                      aircraftFlightCycles={aircraftFlightCycles}
+                      averageDailyFH={averageDailyFH}
+                      averageDailyFC={averageDailyFC}
+                    />
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </div>
-      )}
+      </div>
     </div>
   );
 }
