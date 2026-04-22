@@ -11,7 +11,6 @@ interface VoluntaryReportData {
     identification_date: string;
     report_date: string;
     station: string;
-    danger_area: string;
     finding_location: string;
     finding_location_other: string;
     danger_type: string;
@@ -36,7 +35,6 @@ interface UpdateVoluntaryReportData {
     report_date: Date | string;
     identification_date: Date | string;
     station: string;
-    danger_area: string;
     finding_location: string;
     finding_location_other: string;
     danger_type: string;

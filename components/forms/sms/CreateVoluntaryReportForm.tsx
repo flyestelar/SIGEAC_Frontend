@@ -102,7 +102,6 @@ export function CreateVoluntaryReportForm({
           .optional(),
 
     station: z.string(),
-    danger_area: z.string(),
     finding_location: z.string(),
     finding_location_other: z.string(),
     danger_type: z.string(),
@@ -185,7 +184,6 @@ export function CreateVoluntaryReportForm({
     resolver: zodResolver(FormSchema),
     defaultValues: {
       report_number: initialData?.report_number || "",
-      danger_area: initialData?.danger_area || "",
       station: initialData?.station || "",
       description: initialData?.description || "",
       possible_consequences: initialData?.possible_consequences || "",
@@ -474,14 +472,14 @@ export function CreateVoluntaryReportForm({
               name="station"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Base de Localización</FormLabel>
+                  <FormLabel>Estación</FormLabel>
                   <Select
                     onValueChange={field.onChange}
                     defaultValue={field.value}
                   >
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Seleccionar localización" />
+                        <SelectValue placeholder="Seleccionar estación" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
@@ -506,120 +504,6 @@ export function CreateVoluntaryReportForm({
                       <SelectItem value="SKBO">SKBO</SelectItem>
                       <SelectItem value="N/A">NO APLICA</SelectItem>
                       
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="danger_area"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Área de Identificación</FormLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Seleccionar área" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="ANONIMO">ANONIMO</SelectItem>
-                      <SelectItem value="APTO">
-                        APTO
-                      </SelectItem>
-                      <SelectItem value="DISPATCH">
-                        DISPATCH
-                      </SelectItem>
-                      <SelectItem value="GSE">
-                        GSE
-                      </SelectItem>
-                      <SelectItem value="GTE. EST.">
-                        GTE. EST.
-                      </SelectItem>
-                      <SelectItem value="SUMINISTRO">
-                        SUMINISTRO
-                      </SelectItem>
-                      <SelectItem value="INAC">
-                        INAC
-                      </SelectItem>
-                      <SelectItem value="MTTO">
-                        MANTENIMIENTO
-                      </SelectItem>
-                      <SelectItem value="ING">
-                        INGENIERIA
-                      </SelectItem>
-                      <SelectItem value="INST. CAP">
-                        INST. CAP
-                      </SelectItem>
-                      <SelectItem value="N/A">
-                        NO APLICA
-                      </SelectItem>
-                      <SelectItem value="OMA">
-                        OMA
-                      </SelectItem>
-                      <SelectItem value="OPS">
-                        OPS
-                      </SelectItem>
-                      <SelectItem value="QMS">
-                        QMS
-                      </SelectItem>
-                      <SelectItem value="RR.HH">
-                        RECURSOS HUMANOS
-                      </SelectItem>
-                      <SelectItem value="SGC">
-                        SGC
-                      </SelectItem>
-                      <SelectItem value="SMS">
-                        SMS
-                      </SelectItem>
-                      <SelectItem value="TDC">
-                        TDC
-                      </SelectItem>
-                      <SelectItem value="TDM">
-                        TDM
-                      </SelectItem>
-                      <SelectItem value="TFC">
-                        TFC
-                      </SelectItem>
-                      <SelectItem value="CARG">
-                        CARG
-                      </SelectItem>
-                      <SelectItem value="QMS_AVSEC">
-                        QMS AVSEC
-                      </SelectItem>
-                      <SelectItem value="GTE_EQUIPAJE">
-                        GTE EQUIPAJE
-                      </SelectItem>
-                      <SelectItem value="TALLER_SUPERVIVENCIA">
-                        TALLER DE SUPERVIVENCIA
-                      </SelectItem>
-                      <SelectItem value="NDT">
-                        NDT
-                      </SelectItem>
-                      <SelectItem value="AUDITORIA_INTERNA">
-                        AUDITORIA INTERNA
-                      </SelectItem>
-                      <SelectItem value="AEROPUERTO">
-                        AEROPUERTO
-                      </SelectItem>
-
-                      <SelectItem value="SSL">
-                        SSL
-                      </SelectItem>
-                      <SelectItem value="TECNOLOGIA">
-                        TECNOLOGIA
-                      </SelectItem>
-                      <SelectItem value="INFRAESTRUCTURA">
-                        INFRAESTRUCTURA
-                      </SelectItem>
-
-
-                      <SelectItem value="AVSEC">AVSEC</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />

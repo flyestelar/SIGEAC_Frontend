@@ -41,7 +41,7 @@ export const columns: ColumnDef<VoluntaryReportResource>[] = [
     },
   },
   {
-    accessorKey: "danger_area",
+    accessorKey: "finding_location",
     header: ({ column }) => (
       <DataTableColumnHeader
         filter
@@ -51,7 +51,7 @@ export const columns: ColumnDef<VoluntaryReportResource>[] = [
     ),
     cell: ({ row }) => {
       return (
-        <p className="font-medium text-center">{row.original.danger_area || "N/A"}</p>
+        <p className="font-medium text-center">{row.original.finding_location || "N/A"}</p>
       );
     },
   },

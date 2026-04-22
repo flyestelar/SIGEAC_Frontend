@@ -1260,7 +1260,6 @@ export type UpdateVoluntaryReportRequest = {
   report_date?: string;
   identification_date?: string;
   station?: string;
-  danger_area?: string;
   airport_location?: string;
   is_anonymous?: boolean;
   description?: string;
@@ -1324,7 +1323,6 @@ export type VoluntaryReport = {
   report_date: string;
   identification_date: string;
   station: string;
-  danger_area: string;
   description: string;
   finding_location: string;
   possible_consequences: string;
@@ -1360,7 +1358,6 @@ export type VoluntaryReportRequest = {
   report_date: string;
   identification_date: string;
   station: string;
-  danger_area: string;
   danger_type?: string | null;
   finding_location: string;
   finding_location_other?: string | null;
@@ -1395,7 +1392,6 @@ export type VoluntaryReportResource = {
   station: string | null;
   finding_location: string | null;
   finding_location_other: string | null;
-  danger_area: string | null;
   danger_type: string | null;
   description: string;
   possible_consequences: string | null;
