@@ -546,8 +546,6 @@ export type HardTimeIntervalResource = {
   is_active: boolean;
   last_compliance: HardTimeComplianceResource | null;
   compliances: Array<HardTimeComplianceResource> | Array<string>;
-  metrics?: string;
-  status?: string;
   created_at: string | null;
   updated_at: string | null;
 };

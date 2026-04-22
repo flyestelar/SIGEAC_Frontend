@@ -1,23 +1,30 @@
 import { useEffect, useState } from 'react';
 import { Loader2 } from 'lucide-react';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { useUninstallHardTimeComponent } from '@/actions/planificacion/hard_time/actions';
 import { UninstallFormState } from './types';
 import { todayDate } from './utils';
-import { AircraftResource, UninstallComponentRequest } from '@api/types';
+import { AircraftComponentSlotResource, AircraftResource, UninstallComponentRequest } from '@api/types';
 
 type UninstallComponentDialogProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  componentId: number | null;
+  component: AircraftComponentSlotResource | null | undefined;
   aircraft: AircraftResource | null;
 };
 
-export function UninstallComponentDialog({ open, onOpenChange, componentId, aircraft }: UninstallComponentDialogProps) {
-  const uninstallComponent = useUninstallHardTimeComponent(componentId ?? 0, aircraft?.id ?? null);
+export function UninstallComponentDialog({ open, onOpenChange, component, aircraft }: UninstallComponentDialogProps) {
+  const uninstallComponent = useUninstallHardTimeComponent(component?.id ?? 0, aircraft?.id ?? null);
   const [form, setForm] = useState<UninstallFormState>({
     removed_at: todayDate(),
     aircraft_hours_at_removal: String(aircraft?.flight_hours ?? 0),
@@ -40,9 +47,10 @@ export function UninstallComponentDialog({ open, onOpenChange, componentId, airc
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (!componentId) return;
+    if (!component) return;
 
     const payload: UninstallComponentRequest = {
+      aircraft_part_id: component.installed_part_id!,
       removed_at: form.removed_at,
       aircraft_hours_at_removal: Number(form.aircraft_hours_at_removal),
       aircraft_cycles_at_removal: Number(form.aircraft_cycles_at_removal),

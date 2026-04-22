@@ -16,7 +16,6 @@ import { useGetHardTimeCategories } from '@/hooks/planificacion/hard_time/useGet
 import { useGetHardTimeComponentDetail } from '@/hooks/planificacion/hard_time/useGetHardTimeComponentDetail';
 import { useGetHardTimeComponents } from '@/hooks/planificacion/hard_time/useGetHardTimeComponents';
 import { useCompanyStore } from '@/stores/CompanyStore';
-import { HardTimeInterval } from '@/types';
 import { AircraftAverageSummaryCard } from '../../control_mantenimiento/_components/aircraft-average-summary-card';
 import { AircraftSelector } from '../../control_mantenimiento/_components/aircraft-selector';
 import { HardTimeCategorySidebar } from './hard-time-category-sidebar';
@@ -263,7 +262,7 @@ export function HardTimeDashboard() {
         onOpenChange={(open) => {
           if (!open) setUninstallingComponent(null);
         }}
-        componentId={uninstallingComponent?.id ?? null}
+        component={uninstallingComponent ?? null}
         aircraft={selectedAircraft}
       />
 
