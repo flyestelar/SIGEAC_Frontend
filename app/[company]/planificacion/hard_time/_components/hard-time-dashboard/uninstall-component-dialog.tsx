@@ -131,7 +131,7 @@ export function UninstallComponentDialog({ open, onOpenChange, component, aircra
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Cancelar
             </Button>
-            <Button type="submit" disabled={!componentId || uninstallComponent.isPending}>
+            <Button type="submit" disabled={!component || uninstallComponent.isPending}>
               {uninstallComponent.isPending && <Loader2 className="mr-2 size-4 animate-spin" />}
               Desmontar
             </Button>
