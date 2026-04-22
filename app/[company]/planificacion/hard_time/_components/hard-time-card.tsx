@@ -5,10 +5,18 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { ScrollArea } from '@/components/ui/scroll-area';
+import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { HardTimeAlertLevel, HardTimeIntervalWithMetrics, HardTimeMetric } from '@/types';
 import { CircleOff, ListPlus, MapPinned, PackageMinus, PackagePlus, PlusCircle } from 'lucide-react';
-import { AlertBadge, computeIntervalMetrics, LEVEL_CONFIG, METRIC_ICONS, METRIC_LABELS, METRIC_UNITS, STATUS_ORDER } from './hard-time-shared';
+import {
+  AlertBadge,
+  computeIntervalMetrics,
+  LEVEL_CONFIG,
+  METRIC_ICONS,
+  METRIC_LABELS,
+  METRIC_UNITS,
+  STATUS_ORDER,
+} from './hard-time-shared';
 import { AircraftComponentSlotResource } from '@api/types';
 
 function estimatedDaysToExpiry(
@@ -228,6 +236,7 @@ export function HardTimeCard({
         {allMetricsWithTask.length > 0 ? (
           <div className="space-y-2 rounded-md border border-border/60 bg-background/70 px-3 py-2.5">
             <ScrollArea className={shouldScrollMetrics ? 'h-[170px] pr-3' : undefined}>
+              <ScrollBar orientation="horizontal" />
               <div className="space-y-3">
                 {intervals.map((interval, intervalIdx) => (
                   <div
@@ -247,7 +256,9 @@ export function HardTimeCard({
                                 {METRIC_LABELS[metric.type]}
                               </p>
                               {metric.remaining <= 0 ? (
-                                <span className="text-[10px] font-semibold text-red-600 dark:text-red-400">VENCIDO</span>
+                                <span className="text-[10px] font-semibold text-red-600 dark:text-red-400">
+                                  VENCIDO
+                                </span>
                               ) : (
                                 <span className="font-mono text-[10px] font-medium text-muted-foreground">
                                   {metric.remaining.toFixed(1)} {METRIC_UNITS[metric.type]} rest.
@@ -283,7 +294,7 @@ export function HardTimeCard({
         ) : null}
 
         <div className="flex flex-col items-center justify-between gap-2 pt-0.5">
-          <div className='flex shrink-0 gap-1 justify-between'>
+          <div className="flex shrink-0 gap-1 justify-between">
             <div className="flex min-w-0 items-center gap-2">
               <Badge variant="outline" className="h-5 shrink-0 border-border/60 px-2 text-[10px] font-normal">
                 {intervals.length} intervalo{intervals.length !== 1 && 's'}
