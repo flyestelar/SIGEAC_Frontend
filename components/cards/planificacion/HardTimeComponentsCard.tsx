@@ -13,7 +13,7 @@ type HardTimeComponentsCardProps = {
 
 export function HardTimeComponentsCard({ aircraftId }: HardTimeComponentsCardProps) {
   const { data, isLoading } = useGetHardTimeComponents(aircraftId);
-  const groups = data?.data ?? [];
+  const slots = data?.data ?? [];
 
   return (
     <Card>
@@ -43,51 +43,55 @@ export function HardTimeComponentsCard({ aircraftId }: HardTimeComponentsCardPro
                 </div>
               ))}
             </div>
-          ) : groups.length ? (
+          ) : slots.length ? (
             <div className="space-y-3">
-              {groups.map((group) => (
-                <div key={group.category.code} className="space-y-2">
-                  <div className="flex items-center justify-between gap-3 text-xs font-semibold text-muted-foreground">
-                    <span>
-                      {group.category.name}{' '}
-                      <span className="ml-2 font-mono text-[11px]">{group.category.code}</span>
-                    </span>
-                    <Badge variant="outline" className="text-[11px]">
-                      {group.components.length} posiciones
-                    </Badge>
-                  </div>
-                  <div className="grid gap-2">
-                    {group.components.map((component) => (
-                      <div
-                        key={component.id}
-                        className="flex items-center justify-between gap-3 rounded-md border p-2"
-                      >
-                        <div className="min-w-0">
-                          <div className="flex items-center gap-2">
-                            <span className="truncate font-medium">{component.description || component.part_number}</span>
-                            <span className="font-mono text-xs text-muted-foreground">{component.part_number}</span>
-                          </div>
-                          <div className="text-xs text-muted-foreground">{component.position}</div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          {component.active_installation ? (
-                            <div className="text-right text-xs text-muted-foreground">
-                              <div>
-                                SN: <span className="font-mono">{component.active_installation.serial_number}</span>
-                              </div>
-                              <div>FH: {component.active_installation.component_hours_current ?? '—'}</div>
+              {slots.map((slot) => {
+                const category = slot.category!;
+                return (
+                  <div key={category.code} className="space-y-2">
+                    <div className="flex items-center justify-between gap-3 text-xs font-semibold text-muted-foreground">
+                      <span>
+                        {category.name} <span className="ml-2 font-mono text-[11px]">{category.code}</span>
+                      </span>
+                      <Badge variant="outline" className="text-[11px]">
+                        {slot.components.length} posiciones
+                      </Badge>
+                    </div>
+                    <div className="grid gap-2">
+                      {slot.components.map((component) => (
+                        <div
+                          key={component.id}
+                          className="flex items-center justify-between gap-3 rounded-md border p-2"
+                        >
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-2">
+                              <span className="truncate font-medium">
+                                {component.description || component.part_number}
+                              </span>
+                              <span className="font-mono text-xs text-muted-foreground">{component.part_number}</span>
                             </div>
-                          ) : (
-                            <Badge variant="secondary" className="text-[11px]">
-                              Sin instalación
-                            </Badge>
-                          )}
+                            <div className="text-xs text-muted-foreground">{component.position}</div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            {component.active_installation ? (
+                              <div className="text-right text-xs text-muted-foreground">
+                                <div>
+                                  SN: <span className="font-mono">{component.active_installation.serial_number}</span>
+                                </div>
+                                <div>FH: {component.active_installation.component_hours_current ?? '—'}</div>
+                              </div>
+                            ) : (
+                              <Badge variant="secondary" className="text-[11px]">
+                                Sin instalación
+                              </Badge>
+                            )}
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           ) : (
             <div className="flex flex-col items-center justify-center gap-2 py-12 text-muted-foreground">

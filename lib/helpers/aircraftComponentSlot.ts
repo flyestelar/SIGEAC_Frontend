@@ -1,13 +1,11 @@
 import {
-  Aircraft,
   AircraftComponentSlotResource,
   AircraftResource,
-  HardTimeComplianceResource,
   HardTimeInstallationResource,
-  HardTimeIntervalResource,
+  HardTimeIntervalResource
 } from '@api/types';
 import { differenceInDays } from 'date-fns';
-import { round, maxBy } from 'lodash-es';
+import { maxBy, round } from 'lodash-es';
 
 type Status = 'OK' | 'WARNING' | 'OVERDUE' | null;
 
@@ -79,7 +77,7 @@ function getIntervalMetrics(
 ) {
   const lastCompliance = interval.last_compliance;
   const today = new Date();
-  const metrics = [];
+  const metrics: Metric[] = [];
 
   let consumed: number;
 
@@ -117,7 +115,7 @@ function getIntervalMetrics(
   return { metrics, status };
 }
 
-function buildIntervalMetric(type: string, consumed: number, interval: number) {
+function buildIntervalMetric(type: string, consumed: number, interval: number): Metric {
   return {
     type: type,
     consumed: consumed,
@@ -128,7 +126,7 @@ function buildIntervalMetric(type: string, consumed: number, interval: number) {
   };
 }
 
-function resolveStatus($percentage: number): string {
+function resolveStatus($percentage: number): Status {
   if ($percentage >= 100) {
     return 'OVERDUE';
   }
