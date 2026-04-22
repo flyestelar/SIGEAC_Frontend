@@ -27,7 +27,7 @@ import { IntervalDialog } from './hard-time-dashboard/interval-dialog';
 import { ComplianceDialog } from './hard-time-dashboard/compliance-dialog';
 import { HardTimeImportDialog } from './hard-time-import-dialog';
 import { InstallComponentDialog } from './install-component-dialog';
-import { AircraftComponentSlotResource } from '@api/types';
+import { AircraftComponentSlotResource, HardTimeIntervalResource } from '@api/types';
 
 export function HardTimeDashboard() {
   const { selectedCompany } = useCompanyStore();
@@ -39,7 +39,7 @@ export function HardTimeDashboard() {
   const [installingComponent, setInstallingComponent] = useState<AircraftComponentSlotResource | null>(null);
   const [uninstallingComponent, setUninstallingComponent] = useState<AircraftComponentSlotResource | null>(null);
   const [isIntervalDialogOpen, setIsIntervalDialogOpen] = useState(false);
-  const [editingInterval, setEditingInterval] = useState<HardTimeInterval | null>(null);
+  const [editingInterval, setEditingInterval] = useState<HardTimeIntervalResource | null>(null);
   const [intervalTargetComponent, setIntervalTargetComponent] = useState<AircraftComponentSlotResource | null>(null);
   const [isComplianceDialogOpen, setIsComplianceDialogOpen] = useState(false);
 
@@ -159,7 +159,7 @@ export function HardTimeDashboard() {
                 </Link>
               </Button>
               <Button className="gap-2" onClick={() => openCreateComponent(null)} disabled={!selectedAircraftId}>
-                <Plus className="size-4" />
+                <Plus className="size-4" /> 
                 Nuevo componente ATA
               </Button>
             </div>
@@ -206,6 +206,8 @@ export function HardTimeDashboard() {
                   componentId={selectedComponent.id}
                   averageDailyFH={averages?.average_daily_flight_hours ?? null}
                   averageDailyFC={averages?.average_daily_flight_cycles ?? null}
+                  aircraftFlightHours={selectedAircraft?.flight_hours ?? null}
+                  aircraftFlightCycles={selectedAircraft?.flight_cycles ?? null}
                   onBack={() => setSelectedComponent(null)}
                   onInstall={() => openInstall(selectedComponent)}
                   onUninstall={() => openUninstall(selectedComponent)}
@@ -217,6 +219,8 @@ export function HardTimeDashboard() {
                   categories={categories}
                   categoryGroups={categoryGroups}
                   averages={averages}
+                  aircraftFlightHours={selectedAircraft?.flight_hours ?? null}
+                  aircraftFlightCycles={selectedAircraft?.flight_cycles ?? null}
                   onSelectComponent={handleSelectComponent}
                   onInstallComponent={openInstall}
                   onUninstallComponent={openUninstall}

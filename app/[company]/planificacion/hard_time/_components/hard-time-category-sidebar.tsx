@@ -6,11 +6,14 @@ import { AircraftComponentSlotResource, HardTimeCategoryResource } from '@api/ty
 import { AlertTriangle, Boxes, PackageOpen, PlusCircle, Search, ShieldCheck, TriangleAlert, X } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { HardTimeCard } from './hard-time-card';
+import { computeComponentStatus } from './hard-time-shared';
 
 interface HardTimeCategorySidebarProps {
   categories: HardTimeCategoryResource[];
   categoryGroups: AircraftComponentSlotResource[][];
   averages: { average_daily_flight_hours?: number | null; average_daily_flight_cycles?: number | null } | null;
+  aircraftFlightHours?: number | null;
+  aircraftFlightCycles?: number | null;
   onSelectComponent: (component: AircraftComponentSlotResource) => void;
   onInstallComponent: (component: AircraftComponentSlotResource) => void;
   onUninstallComponent: (component: AircraftComponentSlotResource) => void;
@@ -32,13 +35,20 @@ type CategoryEntry = {
   stats: CategoryStats;
 };
 
-function computeStats(components: AircraftComponentSlotResource[]): CategoryStats {
+function computeStats(
+  components: AircraftComponentSlotResource[],
+  aircraftFH: number | null,
+  aircraftFC: number | null,
+): CategoryStats {
   const stats: CategoryStats = { total: components.length, mounted: 0, vacant: 0, overdue: 0, warning: 0 };
   for (const c of components) {
     if (c.active_installation) stats.mounted++;
     else stats.vacant++;
-    if (c.status === 'OVERDUE') stats.overdue++;
-    else if (c.status === 'WARNING') stats.warning++;
+    if (aircraftFH != null && aircraftFC != null) {
+      const status = computeComponentStatus(c, aircraftFH, aircraftFC);
+      if (status === 'OVERDUE') stats.overdue++;
+      else if (status === 'WARNING') stats.warning++;
+    }
   }
   return stats;
 }
@@ -47,6 +57,8 @@ export function HardTimeCategorySidebar({
   categories,
   categoryGroups,
   averages,
+  aircraftFlightHours,
+  aircraftFlightCycles,
   onSelectComponent,
   onInstallComponent,
   onUninstallComponent,
@@ -65,13 +77,17 @@ export function HardTimeCategorySidebar({
     return categories
       .map((category) => {
         const components = componentsByCode.get(category.code) ?? [];
-        return { category, components, stats: computeStats(components) };
+        return {
+          category,
+          components,
+          stats: computeStats(components, aircraftFlightHours ?? null, aircraftFlightCycles ?? null),
+        };
       })
       .sort((a, b) => {
         if (b.stats.total !== a.stats.total) return b.stats.total - a.stats.total;
         return a.category.code.localeCompare(b.category.code, undefined, { numeric: true });
       });
-  }, [categories, categoryGroups]);
+  }, [categories, categoryGroups, aircraftFlightHours, aircraftFlightCycles]);
 
   const [selectedCategoryCode, setSelectedCategoryCode] = useState<string>(entries[0]?.category.code ?? '');
 
@@ -106,16 +122,20 @@ export function HardTimeCategorySidebar({
 
   const sortedComponents = useMemo(() => {
     const statusRank: Record<string, number> = { OVERDUE: 0, WARNING: 1, OK: 2 };
+    const fh = aircraftFlightHours ?? 0;
+    const fc = aircraftFlightCycles ?? 0;
     return [...selectedComponents].sort((a, b) => {
       const aVacant = a.active_installation ? 0 : 1;
       const bVacant = b.active_installation ? 0 : 1;
       if (aVacant !== bVacant) return aVacant - bVacant;
-      const aRank = statusRank[a.status ?? 'OK'] ?? 2;
-      const bRank = statusRank[b.status ?? 'OK'] ?? 2;
+      const aStatus = computeComponentStatus(a, fh, fc);
+      const bStatus = computeComponentStatus(b, fh, fc);
+      const aRank = statusRank[aStatus] ?? 2;
+      const bRank = statusRank[bStatus] ?? 2;
       if (aRank !== bRank) return aRank - bRank;
       return a.position.localeCompare(b.position);
     });
-  }, [selectedComponents]);
+  }, [selectedComponents, aircraftFlightHours, aircraftFlightCycles]);
 
   return (
     <div className="grid gap-4 lg:grid-cols-[300px_1fr]">
@@ -300,6 +320,8 @@ export function HardTimeCategorySidebar({
                     onSelect={() => onSelectComponent(component)}
                     averageDailyFH={averageDailyFH}
                     averageDailyFC={averageDailyFC}
+                    aircraftFlightHours={aircraftFlightHours}
+                    aircraftFlightCycles={aircraftFlightCycles}
                     onInstall={() => onInstallComponent(component)}
                     onUninstall={() => onUninstallComponent(component)}
                     onCreateInterval={() => onCreateIntervalForComponent(component)}

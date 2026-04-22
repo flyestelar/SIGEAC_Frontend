@@ -135,7 +135,7 @@ export function CreateComponentDialog({
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium">Batch</label>
+            <label className="text-sm font-medium">Descripción</label>
             <Popover open={isBatchPopoverOpen} onOpenChange={setIsBatchPopoverOpen}>
               <PopoverTrigger asChild>
                 <Button
@@ -145,7 +145,7 @@ export function CreateComponentDialog({
                   aria-expanded={isBatchPopoverOpen}
                   className={cn('w-full justify-between font-normal', !form.batch_id && 'text-muted-foreground')}
                 >
-                  <span className="truncate">{selectedBatch?.name || 'Selecciona un batch de componente'}</span>
+                  <span className="truncate">{selectedBatch?.name || 'Seleccione...'}</span>
                   {isLoadingBatches ? (
                     <Loader2 className="ml-2 h-4 w-4 shrink-0 animate-spin opacity-60" />
                   ) : (
@@ -155,7 +155,7 @@ export function CreateComponentDialog({
               </PopoverTrigger>
               <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start">
                 <Command>
-                  <CommandInput placeholder="Buscar batch..." />
+                  <CommandInput placeholder="Buscar descripción..." />
                   <CommandList>
                     <CommandEmpty className="py-6 text-center text-sm text-muted-foreground">
                       {isLoadingBatches ? 'Cargando...' : 'No se encontraron componentes.'}

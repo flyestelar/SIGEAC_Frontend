@@ -1,8 +1,8 @@
 import {
+  AircraftComponentSlotResource,
   AircraftResource,
   AircraftTypeResource,
   HardTimeCategoryResource,
-  HardTimeComponentResource,
   HardTimeIntervalResource,
 } from '@api/types';
 
@@ -1237,6 +1237,13 @@ export type HardTimeMetric = {
   remaining: number;
   percentage: number;
   status: HardTimeAlertLevel;
+  taskDescription?: string;
+};
+
+/** Interval enriched with computed metrics and status (for UI display). */
+export type HardTimeIntervalWithMetrics = HardTimeIntervalResource & {
+  status: HardTimeAlertLevel;
+  metrics: HardTimeMetric[];
 };
 
 export type HardTimeIntervalDetail = HardTimeIntervalResource & {
@@ -1245,6 +1252,7 @@ export type HardTimeIntervalDetail = HardTimeIntervalResource & {
   next_due_cycles: number | null;
   next_due_date: string | null;
   status?: HardTimeAlertLevel;
+  metrics?: HardTimeMetric[];
 };
 
 export type HardTimeActiveInstallation = {
@@ -1256,11 +1264,11 @@ export type HardTimeActiveInstallation = {
   component_cycles_current: number;
 };
 
-export type HardTimeComponentWithMetrics = HardTimeComponentResource;
+export type HardTimeComponentWithMetrics = AircraftComponentSlotResource;
 
 export type HardTimeCategoryGroup = {
   category: HardTimeCategoryResource;
-  components: Array<HardTimeComponentResource>;
+  components: Array<AircraftComponentSlotResource>;
 };
 
 export type HardTimeComponentsResponse = {

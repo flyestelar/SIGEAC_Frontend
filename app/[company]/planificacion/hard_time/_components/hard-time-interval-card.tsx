@@ -1,23 +1,39 @@
 'use client';
 
+import { useMemo } from 'react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { HardTimeIntervalDetail } from '@/types';
 import { addDays, format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { CalendarClock, FileText } from 'lucide-react';
-import { AlertBadge, LEVEL_CONFIG, METRIC_ICONS, METRIC_LABELS, METRIC_UNITS } from './hard-time-shared';
+import { HardTimeInstallationResource, HardTimeIntervalResource } from '@api/types';
+import { AlertBadge, computeIntervalMetrics, LEVEL_CONFIG, METRIC_ICONS, METRIC_LABELS, METRIC_UNITS } from './hard-time-shared';
 
 interface HardTimeIntervalCardProps {
-  interval: HardTimeIntervalDetail;
+  interval: HardTimeIntervalResource;
+  installation?: HardTimeInstallationResource | null;
+  aircraftFlightHours?: number | null;
+  aircraftFlightCycles?: number | null;
   averageDailyFH?: number | null;
   averageDailyFC?: number | null;
 }
 
-export function HardTimeIntervalCard({ interval, averageDailyFH, averageDailyFC }: HardTimeIntervalCardProps) {
-  const status = interval.status ?? 'OK';
+export function HardTimeIntervalCard({
+  interval,
+  installation,
+  aircraftFlightHours,
+  aircraftFlightCycles,
+  averageDailyFH,
+  averageDailyFC,
+}: HardTimeIntervalCardProps) {
+  const enriched = useMemo(() => {
+    if (!installation || aircraftFlightHours == null || aircraftFlightCycles == null) return null;
+    return computeIntervalMetrics(interval, installation, aircraftFlightHours, aircraftFlightCycles);
+  }, [interval, installation, aircraftFlightHours, aircraftFlightCycles]);
+
+  const status = enriched?.status ?? 'OK';
   const cfg = LEVEL_CONFIG[status];
-  const metrics = interval.metrics ?? [];
+  const metrics = enriched?.metrics ?? [];
 
   const formatMetricValue = (value: number, type: keyof typeof METRIC_UNITS) =>
     value.toLocaleString(undefined, {

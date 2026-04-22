@@ -1,7 +1,13 @@
 'use client';
 
 import { Badge } from '@/components/ui/badge';
-import { HardTimeAlertLevel, HardTimeMetricType } from '@/types';
+import { HardTimeAlertLevel, HardTimeIntervalWithMetrics, HardTimeMetric, HardTimeMetricType } from '@/types';
+import {
+  AircraftComponentSlotResource,
+  HardTimeInstallationResource,
+  HardTimeIntervalResource,
+} from '@api/types';
+import { differenceInDays } from 'date-fns';
 import { AlertTriangle, Calendar, Clock, RefreshCw, ShieldCheck, TriangleAlert } from 'lucide-react';
 
 // ── Alert level config ────────────────────────────────────────────────────────
@@ -85,4 +91,81 @@ export function AlertBadge({ status, size = 'small' }: { status: HardTimeAlertLe
       {ALERT_LABELS[status ?? 'OK']}
     </Badge>
   );
+}
+
+// ── Metric computation ───────────────────────────────────────────────────────
+
+export const STATUS_ORDER: Record<HardTimeAlertLevel, number> = { OK: 0, WARNING: 1, OVERDUE: 2 };
+
+function resolveStatus(percentage: number): HardTimeAlertLevel {
+  if (percentage >= 100) return 'OVERDUE';
+  if (percentage >= 80) return 'WARNING';
+  return 'OK';
+}
+
+function buildMetric(
+  type: HardTimeMetricType,
+  consumed: number,
+  interval: number,
+  taskDescription: string,
+): HardTimeMetric {
+  const remaining = Math.max(0, interval - consumed);
+  const pct = interval > 0 ? Math.round((consumed / interval) * 10000) / 100 : 0;
+  return { type, consumed, interval, remaining, percentage: pct, status: resolveStatus(pct), taskDescription };
+}
+
+export function computeIntervalMetrics(
+  interval: HardTimeIntervalResource,
+  installation: HardTimeInstallationResource,
+  aircraftFH: number,
+  aircraftFC: number,
+): HardTimeIntervalWithMetrics {
+  const lc = interval.last_compliance;
+  const today = new Date();
+  const metrics: HardTimeMetric[] = [];
+
+  if (interval.interval_hours !== null) {
+    const consumed = lc
+      ? Math.max(0, aircraftFH - lc.aircraft_hours_at_compliance)
+      : installation.component_hours_at_install + (aircraftFH - installation.aircraft_hours_at_install);
+    metrics.push(buildMetric('FH', consumed, interval.interval_hours, interval.task_description));
+  }
+
+  if (interval.interval_cycles !== null) {
+    const consumed = lc
+      ? Math.max(0, aircraftFC - lc.aircraft_cycles_at_compliance)
+      : installation.component_cycles_at_install + (aircraftFC - installation.aircraft_cycles_at_install);
+    metrics.push(buildMetric('FC', consumed, interval.interval_cycles, interval.task_description));
+  }
+
+  if (interval.interval_days !== null) {
+    const baseDate = lc ? new Date(lc.compliance_date) : new Date(installation.installed_at);
+    const consumed = Math.max(0, differenceInDays(today, baseDate));
+    metrics.push(buildMetric('DAYS', consumed, interval.interval_days, interval.task_description));
+  }
+
+  const worstStatus = metrics.reduce<HardTimeAlertLevel>(
+    (worst, m) => (STATUS_ORDER[m.status] > STATUS_ORDER[worst] ? m.status : worst),
+    'OK',
+  );
+
+  return { ...interval, status: worstStatus, metrics };
+}
+
+/** Compute the overall alert level for a component slot given aircraft state. */
+export function computeComponentStatus(
+  component: AircraftComponentSlotResource,
+  aircraftFH: number,
+  aircraftFC: number,
+): HardTimeAlertLevel {
+  const installation = component.active_installation;
+  if (!installation) return 'OK';
+  const intervals = component.installed_part?.intervals ?? [];
+  let worst: HardTimeAlertLevel = 'OK';
+  for (const interval of intervals) {
+    if (interval.is_active === false) continue;
+    const enriched = computeIntervalMetrics(interval, installation, aircraftFH, aircraftFC);
+    if (STATUS_ORDER[enriched.status] > STATUS_ORDER[worst]) worst = enriched.status;
+  }
+  return worst;
 }

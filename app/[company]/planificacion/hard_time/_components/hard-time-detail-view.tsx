@@ -17,12 +17,14 @@ import {
   PackagePlus,
 } from 'lucide-react';
 import { HardTimeIntervalCard } from './hard-time-interval-card';
-import { AlertBadge, LEVEL_CONFIG } from './hard-time-shared';
+import { AlertBadge, computeComponentStatus, LEVEL_CONFIG } from './hard-time-shared';
 
 interface HardTimeDetailViewProps {
   componentId: number;
   averageDailyFH?: number | null;
   averageDailyFC?: number | null;
+  aircraftFlightHours?: number | null;
+  aircraftFlightCycles?: number | null;
   onBack: () => void;
   onInstall?: () => void;
   onUninstall?: () => void;
@@ -92,6 +94,8 @@ export function HardTimeDetailView({
   componentId,
   averageDailyFH,
   averageDailyFC,
+  aircraftFlightHours,
+  aircraftFlightCycles,
   onBack,
   onInstall,
   onUninstall,
@@ -152,7 +156,9 @@ export function HardTimeDetailView({
     );
   }
 
-  const status = component.status ?? 'OK';
+  const status = aircraftFlightHours != null && aircraftFlightCycles != null
+    ? computeComponentStatus(component, aircraftFlightHours, aircraftFlightCycles)
+    : 'OK';
   const cfg = LEVEL_CONFIG[status];
   const StatusIcon = cfg.icon;
   const intervals = component.installed_part?.intervals ?? [];
@@ -247,6 +253,9 @@ export function HardTimeDetailView({
             <HardTimeIntervalCard
               key={interval.id}
               interval={interval}
+              installation={installation}
+              aircraftFlightHours={aircraftFlightHours}
+              aircraftFlightCycles={aircraftFlightCycles}
               averageDailyFH={averageDailyFH}
               averageDailyFC={averageDailyFC}
             />
