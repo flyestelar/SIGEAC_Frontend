@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { HardTimeAlertLevel, HardTimeIntervalWithMetrics, HardTimeMetric } from '@/types';
-import { CircleOff, ListPlus, MapPinned, PackageMinus, PackagePlus, PlusCircle, Timer } from 'lucide-react';
+import { CircleOff, ListPlus, MapPinned, PackageMinus, PackagePlus, PlusCircle } from 'lucide-react';
 import { AlertBadge, computeIntervalMetrics, LEVEL_CONFIG, METRIC_ICONS, METRIC_LABELS, METRIC_UNITS, STATUS_ORDER } from './hard-time-shared';
 import { AircraftComponentSlotResource } from '@api/types';
 
