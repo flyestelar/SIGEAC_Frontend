@@ -21,7 +21,6 @@ import { AlertBadge, LEVEL_CONFIG } from './hard-time-shared';
 
 interface HardTimeDetailViewProps {
   componentId: number;
-  aircraftId: number;
   averageDailyFH?: number | null;
   averageDailyFC?: number | null;
   onBack: () => void;
@@ -91,7 +90,6 @@ function DetailSkeleton() {
 
 export function HardTimeDetailView({
   componentId,
-  aircraftId,
   averageDailyFH,
   averageDailyFC,
   onBack,
@@ -106,7 +104,7 @@ export function HardTimeDetailView({
     isError,
     isFetching,
     refetch,
-  } = useGetHardTimeComponentDetail(componentId, aircraftId);
+  } = useGetHardTimeComponentDetail(componentId);
 
   if (isLoading) {
     return <DetailSkeleton />;

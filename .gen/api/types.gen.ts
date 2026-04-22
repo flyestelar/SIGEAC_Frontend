@@ -529,8 +529,6 @@ export type HardTimeInstallationResource = {
   removal_reason: string | null;
   remarks: string | null;
   is_manual_entry: boolean;
-  component_hours_current: unknown;
-  component_cycles_current: unknown;
   created_at: string | null;
   updated_at: string | null;
 };

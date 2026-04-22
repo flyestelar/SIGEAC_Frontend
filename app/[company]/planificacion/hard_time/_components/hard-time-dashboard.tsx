@@ -205,7 +205,6 @@ export function HardTimeDashboard() {
               ) : selectedComponent ? (
                 <HardTimeDetailView
                   componentId={selectedComponent.id}
-                  aircraftId={selectedAircraftId}
                   averageDailyFH={averages?.average_daily_flight_hours ?? null}
                   averageDailyFC={averages?.average_daily_flight_cycles ?? null}
                   onBack={() => setSelectedComponent(null)}
