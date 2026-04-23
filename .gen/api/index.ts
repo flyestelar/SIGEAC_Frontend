@@ -637,6 +637,7 @@ export type {
   AircraftIndexErrors,
   AircraftIndexResponse,
   AircraftIndexResponses,
+  AircraftPart,
   AircraftPartResource,
   AircraftResource,
   AircraftShowData,

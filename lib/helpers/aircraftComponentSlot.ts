@@ -6,7 +6,7 @@ import {
   HardTimeIntervalResource,
 } from '@api/types';
 import { differenceInDays } from 'date-fns';
-import { maxBy, round } from 'lodash-es';
+import { maxBy, round } from 'es-toolkit';
 
 export interface IntervalMetric {
   type: HardTimeMetricType;
@@ -55,7 +55,7 @@ export function getAircraftComponentSlotMetrics(data: AircraftComponentSlotResou
     const intervalStatus = intervalMetrics.status ?? 'OK';
 
     intervalMetricsDict[interval.id] = intervalMetrics;
-    worstStatus = maxBy([worstStatus, intervalStatus], statusSeverityOrder)!;
+    worstStatus = maxBy([worstStatus, intervalStatus], statusSeverityOrder);
   }
 
   return { status: worstStatus, component_hours_current, component_cycles_current, intervalMetricsDict };

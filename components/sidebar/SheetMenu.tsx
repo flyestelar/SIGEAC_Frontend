@@ -1,23 +1,16 @@
 'use client';
 
-import { MenuIcon } from "lucide-react";
-import Link from "next/link";
-
-import { Menu } from "@/components/sidebar/Menu";
-import { Button } from "@/components/ui/button";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTrigger,
-} from "@/components/ui/sheet";
-import Image from "next/image";
-import { useCompanyStore } from "@/stores/CompanyStore";
-import CompanySelect from "../selects/CompanySelect";
+import { Menu } from '@/components/sidebar/Menu';
+import { Button } from '@/components/ui/button';
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTrigger } from '@/components/ui/sheet';
+import { useCompanyStore } from '@/stores/CompanyStore';
+import { MenuIcon } from 'lucide-react';
+import Image from 'next/image';
+import Link from 'next/link';
+import CompanySelect from '../selects/CompanySelect';
 
 export function SheetMenu() {
-
-  const { selectedCompany, selectedStation } = useCompanyStore()
+  const { selectedCompany, selectedStation } = useCompanyStore();
 
   return (
     <Sheet>
@@ -28,22 +21,22 @@ export function SheetMenu() {
       </SheetTrigger>
       <SheetContent className="sm:w-72 px-3 h-full flex flex-col" side="left">
         <SheetHeader>
-          <Button
-            className="flex justify-center items-center pb-2 pt-[40px]"
-            variant="link"
-            asChild
-          >
-            <Link href={`/${selectedCompany?.slug}/dashboard`} className="flex items-center gap-2">
-              <Image src={'/images/logo.png'} width={150} height={150} alt="Logo" />
-            </Link>
-          </Button>
+          <SheetDescription>
+            <Button className="h-auto flex justify-center items-center pb-2 pt-[40px]" variant="link" asChild>
+              <Link href={`/${selectedCompany?.slug}/dashboard`} className="flex items-center gap-2">
+                <Image src={'/images/logo.png'} width={150} height={150} alt="Logo" />
+              </Link>
+            </Button>
+          </SheetDescription>
         </SheetHeader>
         <CompanySelect />
-        {
-          selectedCompany && selectedStation ? <Menu isOpen/> :
-
-            <p className="text-sm text-muted-foreground text-center mt-10">Por favor, seleccione una <strong>Empresa</strong> y una <strong>Estacion</strong>.</p>
-        }
+        {selectedCompany && selectedStation ? (
+          <Menu isOpen />
+        ) : (
+          <p className="text-sm text-muted-foreground text-center mt-10">
+            Por favor, seleccione una <strong>Empresa</strong> y una <strong>Estacion</strong>.
+          </p>
+        )}
       </SheetContent>
     </Sheet>
   );
