@@ -9,10 +9,12 @@ import { useGetDangerIdentificationWithAllById } from "@/hooks/sms/useGetDangerI
 import { ObligatoryReportResource } from "@/.gen/api/types.gen";
 import { PDFDownloadLink, PDFViewer } from "@react-pdf/renderer";
 import { format } from "date-fns";
+import axiosInstance from "@/lib/axios";
 import {
   CheckCheck,
   ClipboardPen,
   ClipboardPenLine,
+  Download,
   EyeIcon,
   Loader2,
   MoreHorizontal,
@@ -20,7 +22,7 @@ import {
   Trash2,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import CreateDangerIdentificationForm from "@/components/forms/sms/CreateIdentificationForm";
 import { CreateObligatoryReportForm } from "@/components/forms/sms/CreateObligatoryReportForm";
 import ObligatoryReportPdf from "@/components/pdf/sms/ObligatoryReportPdf";
@@ -44,12 +46,16 @@ const ObligatoryReportDropdownActions = ({
 }) => {
   const { selectedCompany } = useCompanyStore();
   const [openDelete, setOpenDelete] = useState<boolean>(false);
-  const [openCreateDangerIdentification, setOpenCreateDangerIdentification] =
-    useState<boolean>(false);
+  const [openCreateDangerIdentification, setOpenCreateDangerIdentification] =useState<boolean>(false);
   const [openEdit, setOpenEdit] = useState<boolean>(false);
   const [openAccept, setOpenAccept] = useState<boolean>(false);
   const [open, setOpen] = useState<boolean>(false);
   const [openPrint, setOpenPrint] = useState<boolean>(false);
+  const [pdfUrl, setPdfUrl] = useState<string | null>(null);
+  const [isLoadingPdf, setIsLoadingPdf] = useState<boolean>(false);
+  const pdfUrlRef = useRef<string | null>(null);
+  const [openPDF, setOpenPDF] = useState<boolean>(false);
+  
 
   const router = useRouter();
 
@@ -59,6 +65,29 @@ const ObligatoryReportDropdownActions = ({
     company: selectedCompany?.slug,
     id: obligatoryReport?.danger_identification?.id?.toString() ?? "",
   });
+
+  useEffect(() => {
+      if (!openPDF) return;
+      setIsLoadingPdf(true);
+      axiosInstance
+        .get(`/${selectedCompany?.slug}/sms/obligatory-reports/${obligatoryReport.id}/pdf`, {
+          responseType: "blob",
+        })
+        .then((response) => {
+          const url = URL.createObjectURL(new Blob([response.data], { type: "application/pdf" }));
+          pdfUrlRef.current = url;
+          setPdfUrl(url);
+        })
+        .catch((error) => console.error("Error al cargar el PDF:", error))
+        .finally(() => setIsLoadingPdf(false));
+  
+      return () => {
+        if (pdfUrlRef.current) {
+          URL.revokeObjectURL(pdfUrlRef.current);
+          pdfUrlRef.current = null;
+        }
+      };
+    }, [openPDF]);
 
   const handleDelete = async (id: number | string) => {
     const value = {
@@ -128,7 +157,7 @@ const ObligatoryReportDropdownActions = ({
               )}
 
             {obligatoryReport && (
-              <DropdownMenuItem onClick={() => setOpenPrint(true)}>
+              <DropdownMenuItem onClick={() => setOpenPDF(true)}>
                 <PrinterCheck className="size-5" />
                 <p className="pl-2"> Descargar PDF</p>
               </DropdownMenuItem>
@@ -220,7 +249,45 @@ const ObligatoryReportDropdownActions = ({
           </DialogContent>
         </Dialog>
 
-        <Dialog open={openPrint} onOpenChange={setOpenPrint}>
+        {/* PDF Viewer */}
+        <Dialog open={openPDF} onOpenChange={(val) => { setOpenPDF(val); if (!val) setPdfUrl(null); }}>
+          <DialogContent className="sm:max-w-[65%] max-h-[80vh]">
+            <DialogHeader>
+              <DialogTitle>Vista Previa del Reporte</DialogTitle>
+              <DialogDescription>
+                Revisa el reporte antes de descargarlo.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="w-full h-[60vh] flex items-center justify-center">
+              {isLoadingPdf ? (
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+              ) : pdfUrl ? (
+                <iframe
+                  src={pdfUrl}
+                  className="w-full h-full rounded border"
+                  title="Vista previa del reporte voluntario"
+                />
+              ) : (
+                <p className="text-sm text-muted-foreground">No se pudo cargar el PDF.</p>
+              )}
+            </div>
+            <div className="flex justify-end mt-4">
+              {pdfUrl && (
+                <a
+                  href={pdfUrl}
+                  download={`ROS-${obligatoryReport.report_number || obligatoryReport.id}.pdf`}
+                >
+                  <Button>
+                    <Download className="h-4 w-4 mr-2" />
+                    Descargar Reporte
+                  </Button>
+                </a>
+              )}
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* <Dialog open={openPrint} onOpenChange={setOpenPrint}>
           <DialogContent className="sm:max-w-[65%] max-h-[80vh]">
             <DialogHeader>
               <DialogTitle>Vista Previa del Reporte</DialogTitle>
@@ -256,7 +323,7 @@ const ObligatoryReportDropdownActions = ({
               </PDFDownloadLink>
             </div>
           </DialogContent>
-        </Dialog>
+        </Dialog> */}
       </Dialog>
     </>
   );

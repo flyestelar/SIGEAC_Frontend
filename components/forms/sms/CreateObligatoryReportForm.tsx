@@ -47,7 +47,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface FormProps {
   isEditing?: boolean;
@@ -202,11 +201,10 @@ export function CreateObligatoryReportForm({
 
   return (
     <Form {...form}>
-      <ScrollArea className={cn(isEditing && "max-h-[calc(100vh-10rem)]")}>
-        <form
-          onSubmit={form.handleSubmit(onSubmit)}
-          className="flex w-full flex-col gap-4 p-1"
-        >
+      <form
+        onSubmit={form.handleSubmit(onSubmit)}
+        className="flex w-full flex-col gap-4 p-1"
+      >
           <FormLabel className="text-lg text-center m-2">
             Reporte Obligatorio de Suceso
           </FormLabel>
@@ -551,14 +549,115 @@ export function CreateObligatoryReportForm({
                 name="reporter_area"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Área</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Área" {...field} />
-                    </FormControl>
-                    <FormMessage className="text-xs" />
-                  </FormItem>
-                )}
-              />
+                    <FormLabel>Area</FormLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Seleccionar área" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="ANONIMO">ANONIMO</SelectItem>
+                        <SelectItem value="APTO">
+                          APTO
+                        </SelectItem>
+                        <SelectItem value="DISPATCH">
+                          DISPATCH
+                        </SelectItem>
+                        <SelectItem value="GSE">
+                          GSE
+                        </SelectItem>
+                        <SelectItem value="GTE. EST.">
+                          GTE. EST.
+                        </SelectItem>
+                        <SelectItem value="SUMINISTRO">
+                          SUMINISTRO
+                        </SelectItem>
+                        <SelectItem value="INAC">
+                          INAC
+                        </SelectItem>
+                        <SelectItem value="MTTO">
+                          MANTENIMIENTO
+                        </SelectItem>
+                        <SelectItem value="ING">
+                          INGENIERIA
+                        </SelectItem>
+                        <SelectItem value="INST. CAP">
+                          INST. CAP
+                        </SelectItem>
+                        <SelectItem value="N/A">
+                          NO APLICA
+                        </SelectItem>
+                        <SelectItem value="OMA">
+                          OMA
+                        </SelectItem>
+                        <SelectItem value="OPS">
+                          OPS
+                        </SelectItem>
+                        <SelectItem value="QMS">
+                          QMS
+                        </SelectItem>
+                        <SelectItem value="RR.HH">
+                          RECURSOS HUMANOS
+                        </SelectItem>
+                        <SelectItem value="SGC">
+                          SGC
+                        </SelectItem>
+                        <SelectItem value="SMS">
+                          SMS
+                        </SelectItem>
+                        <SelectItem value="TDC">
+                          TDC
+                        </SelectItem>
+                        <SelectItem value="TDM">
+                          TDM
+                        </SelectItem>
+                        <SelectItem value="TFC">
+                          TFC
+                        </SelectItem>
+                        <SelectItem value="CARG">
+                          CARG
+                        </SelectItem>
+                        <SelectItem value="QMS_AVSEC">
+                          QMS AVSEC
+                        </SelectItem>
+                        <SelectItem value="GTE_EQUIPAJE">
+                          GTE EQUIPAJE
+                        </SelectItem>
+                        <SelectItem value="TALLER_SUPERVIVENCIA">
+                          TALLER DE SUPERVIVENCIA
+                        </SelectItem>
+                        <SelectItem value="NDT">
+                          NDT
+                        </SelectItem>
+                        <SelectItem value="AUDITORIA_INTERNA">
+                          AUDITORIA INTERNA
+                        </SelectItem>
+                        <SelectItem value="AEROPUERTO">
+                          AEROPUERTO
+                      </SelectItem>
+
+                      <SelectItem value="SSL">
+                        SSL
+                      </SelectItem>
+                      <SelectItem value="TECNOLOGIA">
+                        TECNOLOGIA
+                      </SelectItem>
+                      <SelectItem value="INFRAESTRUCTURA">
+                        INFRAESTRUCTURA
+                      </SelectItem>
+
+
+                      <SelectItem value="AVSEC">AVSEC</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
               <FormField
                 control={form.control}
                 name="reporter_position"
@@ -660,8 +759,7 @@ export function CreateObligatoryReportForm({
               "Enviar Reporte"
             )}
           </Button>
-        </form>
-      </ScrollArea>
+      </form>
     </Form>
   );
 }
