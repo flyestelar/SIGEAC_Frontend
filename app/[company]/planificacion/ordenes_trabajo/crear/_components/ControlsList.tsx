@@ -163,7 +163,8 @@ const ControlsList = ({
           </p>
         </div>
       ) : (
-        <div className="space-y-3">
+        <ScrollArea className="h-[720px] rounded-lg border bg-background">
+          <div className="space-y-3 p-3">
           {filteredControls.map((control) => {
             const taskCards = control.task_cards ?? [];
             const applicableTaskCards = taskCards.filter((tc) => tc.applicable);
@@ -394,7 +395,8 @@ const ControlsList = ({
               </div>
             );
           })}
-        </div>
+          </div>
+        </ScrollArea>
       )}
     </div>
   );

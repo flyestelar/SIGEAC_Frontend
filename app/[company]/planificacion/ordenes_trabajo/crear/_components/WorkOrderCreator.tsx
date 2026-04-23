@@ -1,20 +1,31 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { maintenanceControlsIndexOptions } from '@api/queries';
-import { AircraftResource, MaintenanceControlResource, StoreWorkOrderRequest, TaskCardResource } from '@api/types';
+import { aircraftComponentSlotIndexOptions, maintenanceControlsIndexOptions } from '@api/queries';
+import {
+  AircraftComponentSlotResource,
+  AircraftResource,
+  HardTimeIntervalResource,
+  MaintenanceControlResource,
+  StoreWorkOrderRequest,
+  TaskCardResource,
+} from '@api/types';
 import { useQuery } from '@tanstack/react-query';
-import { AlertCircle, CalendarDays, MessageSquareText } from 'lucide-react';
+import { AlertCircle, CalendarDays, ClipboardCheck, MessageSquareText, ShieldAlert } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useCreateWorkOrder } from '@/actions/planificacion/ordenes_trabajo/actions';
 import LoadingPage from '@/components/misc/LoadingPage';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import { useGetMaintenanceAircrafts } from '@/hooks/planificacion/useGetMaintenanceAircrafts';
+import { cn } from '@/lib/utils';
 import { useCompanyStore } from '@/stores/CompanyStore';
 import AircraftHeader from './AircraftHeader';
 import ControlsList from './ControlsList';
+import HardTimeControlsList from './HardTimeControlsList';
 import SelectionSummary from './SelectionSummary';
 
 export type SelectedControlItem = {
@@ -33,9 +44,11 @@ const WorkOrderCreator = () => {
 
   const [selectedAircraftId, setSelectedAircraftId] = useState<number | null>(null);
   const [selectedControls, setSelectedControls] = useState<Map<number, SelectedControlItem>>(new Map());
+  const [selectedHardTimeIntervals, setSelectedHardTimeIntervals] = useState<Set<number>>(new Set());
   const [remarks, setRemarks] = useState('');
   const [entryDate, setEntryDate] = useState('');
   const [exitDate, setExitDate] = useState('');
+  const [activeTab, setActiveTab] = useState<'maintenance' | 'hard_time'>('maintenance');
 
   const { data: controlsResponse, isLoading: isControlsLoading } = useQuery({
     ...maintenanceControlsIndexOptions({
@@ -44,7 +57,30 @@ const WorkOrderCreator = () => {
     enabled: !!selectedAircraftId,
   });
 
+  const { data: slotsResponse, isLoading: isSlotsLoading } = useQuery({
+    ...aircraftComponentSlotIndexOptions({
+      query: { aircraft_id: selectedAircraftId ?? undefined },
+    }),
+    enabled: !!selectedAircraftId,
+  });
+
   const controls = useMemo<MaintenanceControlResource[]>(() => controlsResponse?.data ?? [], [controlsResponse]);
+  const slots = useMemo<AircraftComponentSlotResource[]>(() => slotsResponse?.data ?? [], [slotsResponse]);
+
+  const hardTimeIntervalDirectory = useMemo(() => {
+    const map = new Map<
+      number,
+      { interval: HardTimeIntervalResource; slot: AircraftComponentSlotResource }
+    >();
+    for (const slot of slots) {
+      const intervals = slot.installed_part?.intervals ?? [];
+      for (const interval of intervals) {
+        if (interval.is_active === false) continue;
+        map.set(interval.id, { interval, slot });
+      }
+    }
+    return map;
+  }, [slots]);
 
   const selectedAircraft = useMemo<AircraftResource | null>(() => {
     return aircrafts?.find((a) => a.id === selectedAircraftId) ?? null;
@@ -88,20 +124,37 @@ const WorkOrderCreator = () => {
     });
   }, [controls]);
 
-  const handleSelectAircraft = (aircraft: AircraftResource) => {
-    setSelectedAircraftId(aircraft.id);
+  // Drop hard-time intervals that no longer exist for the aircraft
+  useEffect(() => {
+    setSelectedHardTimeIntervals((prev) => {
+      if (prev.size === 0) return prev;
+      let changed = false;
+      const next = new Set<number>();
+      prev.forEach((id) => {
+        if (hardTimeIntervalDirectory.has(id)) next.add(id);
+        else changed = true;
+      });
+      return changed ? next : prev;
+    });
+  }, [hardTimeIntervalDirectory]);
+
+  const resetSelection = () => {
     setSelectedControls(new Map());
+    setSelectedHardTimeIntervals(new Set());
     setRemarks('');
     setEntryDate('');
     setExitDate('');
+    setActiveTab('maintenance');
+  };
+
+  const handleSelectAircraft = (aircraft: AircraftResource) => {
+    setSelectedAircraftId(aircraft.id);
+    resetSelection();
   };
 
   const handleClearAircraft = () => {
     setSelectedAircraftId(null);
-    setSelectedControls(new Map());
-    setRemarks('');
-    setEntryDate('');
-    setExitDate('');
+    resetSelection();
   };
 
   const handleToggleTaskCard = (controlId: number, taskCardId: number) => {
@@ -143,23 +196,59 @@ const WorkOrderCreator = () => {
     });
   };
 
+  const handleToggleHardTimeInterval = (intervalId: number) => {
+    setSelectedHardTimeIntervals((prev) => {
+      const next = new Set(prev);
+      if (next.has(intervalId)) next.delete(intervalId);
+      else next.add(intervalId);
+      return next;
+    });
+  };
+
+  const handleToggleHardTimeGroup = (intervalIds: number[]) => {
+    setSelectedHardTimeIntervals((prev) => {
+      const allSelected = intervalIds.length > 0 && intervalIds.every((id) => prev.has(id));
+      const next = new Set(prev);
+      if (allSelected) intervalIds.forEach((id) => next.delete(id));
+      else intervalIds.forEach((id) => next.add(id));
+      return next;
+    });
+  };
+
   const handleSubmit = useCallback(async () => {
     if (!selectedAircraftId || !selectedCompany?.slug) return;
 
-    const payload: StoreWorkOrderRequest = {
+    const maintenanceItems = selectedControlEntries.map(({ control, item }) => ({
+      maintenance_control_id: control.id,
+      task_ids: Array.from(item.taskCardIds),
+    }));
+
+    const hardTimeItems = Array.from(selectedHardTimeIntervals).map((id) => ({
+      hard_time_interval_id: id,
+    }));
+
+    const payload = {
       aircraft_id: selectedAircraftId,
       remarks: remarks.trim() || undefined,
       entry_date: entryDate || undefined,
       exit_date: exitDate || undefined,
-      items: selectedControlEntries.map(({ control, item }) => ({
-        maintenance_control_id: control.id,
-        task_ids: Array.from(item.taskCardIds),
-      })),
-    };
+      maintenance_items: maintenanceItems,
+      hard_time_items: hardTimeItems,
+    } as unknown as StoreWorkOrderRequest;
 
     const res = await createWorkOrder.mutateAsync({ body: payload });
     router.push(`/${selectedCompany.slug}/planificacion/ordenes_trabajo/${res.data.order_number}`);
-  }, [createWorkOrder, entryDate, exitDate, remarks, router, selectedAircraftId, selectedCompany, selectedControlEntries]);
+  }, [
+    createWorkOrder,
+    entryDate,
+    exitDate,
+    remarks,
+    router,
+    selectedAircraftId,
+    selectedCompany,
+    selectedControlEntries,
+    selectedHardTimeIntervals,
+  ]);
 
   if (isAircraftsLoading) return <LoadingPage />;
 
@@ -237,14 +326,59 @@ const WorkOrderCreator = () => {
               </div>
             </div>
 
-            {/* 3. Controls selection */}
-            <ControlsList
-              controls={controls}
-              selectedControls={selectedControls}
-              isLoading={isControlsLoading}
-              onToggleTaskCard={handleToggleTaskCard}
-              onToggleAllTaskCards={handleToggleAllTaskCards}
-            />
+            {/* 3. Controls selection — tabs between maintenance and hard time */}
+            <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)} className="space-y-4">
+              <TabsList className="grid w-full grid-cols-2 bg-muted/30 p-1">
+                <TabsTrigger value="maintenance" className="gap-2 data-[state=active]:bg-background">
+                  <ClipboardCheck className="size-3.5" />
+                  Servicios Programados
+                  {selectedControlEntries.length > 0 && (
+                    <Badge
+                      variant="outline"
+                      className={cn(
+                        'ml-1 h-5 border-sky-500/30 bg-sky-500/10 px-1.5 text-[10px] tabular-nums text-sky-600 dark:text-sky-400',
+                      )}
+                    >
+                      {selectedControlEntries.length}
+                    </Badge>
+                  )}
+                </TabsTrigger>
+                <TabsTrigger value="hard_time" className="gap-2 data-[state=active]:bg-background">
+                  <ShieldAlert className="size-3.5" />
+                  Servicios - Componentes
+                  {selectedHardTimeIntervals.size > 0 && (
+                    <Badge
+                      variant="outline"
+                      className="ml-1 h-5 border-amber-500/30 bg-amber-500/10 px-1.5 text-[10px] tabular-nums text-amber-600 dark:text-amber-400"
+                    >
+                      {selectedHardTimeIntervals.size}
+                    </Badge>
+                  )}
+                </TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="maintenance" className="mt-0">
+                <ControlsList
+                  controls={controls}
+                  selectedControls={selectedControls}
+                  isLoading={isControlsLoading}
+                  onToggleTaskCard={handleToggleTaskCard}
+                  onToggleAllTaskCards={handleToggleAllTaskCards}
+                />
+              </TabsContent>
+
+              <TabsContent value="hard_time" className="mt-0">
+                <HardTimeControlsList
+                  slots={slots}
+                  aircraftFlightHours={selectedAircraft?.flight_hours ?? null}
+                  aircraftFlightCycles={selectedAircraft?.flight_cycles ?? null}
+                  selectedIntervalIds={selectedHardTimeIntervals}
+                  onToggleInterval={handleToggleHardTimeInterval}
+                  onToggleGroup={handleToggleHardTimeGroup}
+                  isLoading={isSlotsLoading}
+                />
+              </TabsContent>
+            </Tabs>
           </div>
 
           {/* Sidebar */}
@@ -253,6 +387,8 @@ const WorkOrderCreator = () => {
               controls={controls}
               selectedControls={selectedControls}
               totalTaskCards={totalSelectedTaskCards}
+              hardTimeIntervalDirectory={hardTimeIntervalDirectory}
+              selectedHardTimeIntervals={selectedHardTimeIntervals}
               onSubmit={handleSubmit}
               isSubmitting={createWorkOrder.isPending}
               onCancel={() => router.push(`/${selectedCompany!.slug}/planificacion/ordenes_trabajo`)}

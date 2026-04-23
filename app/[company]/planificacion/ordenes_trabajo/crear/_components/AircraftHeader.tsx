@@ -37,10 +37,9 @@ const AircraftHeader = ({ aircrafts, selectedAircraft, onSelect, onClear }: Airc
         <div className="flex items-stretch">
           {/* Compact image */}
           <div className="relative w-56 shrink-0">
-            <Image
+            <img
               src="https://cdn.zbordirect.com/images/airlines/ES.webp"
               alt={selectedAircraft.acronym}
-              fill
               sizes="224px"
               className="object-cover brightness-[0.55] dark:brightness-[0.35]"
             />

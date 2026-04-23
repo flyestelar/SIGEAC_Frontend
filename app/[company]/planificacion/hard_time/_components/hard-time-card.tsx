@@ -247,7 +247,9 @@ export function HardTimeCard({
                     key={`${interval.id ?? interval.task_description}-${intervalIdx}`}
                     className="space-y-2 border-b border-border/40 pb-2 last:border-b-0 last:pb-0"
                   >
-                    <p className="truncate text-[11px] font-semibold text-foreground">{interval.task_description}</p>
+                    <p className="break-words text-[11px] font-semibold leading-snug text-foreground">
+                      {interval.task_description}
+                    </p>
                     <div className="space-y-2">
                       {interval.metrics.map((metric, metricIdx) => {
                         const mCfg = LEVEL_CONFIG[metric.status];
