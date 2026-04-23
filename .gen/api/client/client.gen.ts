@@ -109,7 +109,8 @@ export const createClient = (config: Config = {}): Client => {
     }
   };
 
-  const makeMethodFn = (method: Uppercase<HttpMethod>) => (options: RequestOptions) => request({ ...options, method });
+  const makeMethodFn = (method: Uppercase<HttpMethod>) => (options: RequestOptions) =>
+    request({ ...options, method });
 
   const makeSseFn = (method: Uppercase<HttpMethod>) => async (options: RequestOptions) => {
     const { opts, url } = await beforeRequest(options);
@@ -125,7 +126,8 @@ export const createClient = (config: Config = {}): Client => {
     });
   };
 
-  const _buildUrl: Client['buildUrl'] = (options) => buildUrl({ axios: instance, ..._config, ...options });
+  const _buildUrl: Client['buildUrl'] = (options) =>
+    buildUrl({ axios: instance, ..._config, ...options });
 
   return {
     buildUrl: _buildUrl,

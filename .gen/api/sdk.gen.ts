@@ -173,6 +173,9 @@ import type {
   ArticleIndexData,
   ArticleIndexErrors,
   ArticleIndexResponses,
+  ArticleListData,
+  ArticleListErrors,
+  ArticleListResponses,
   ArticlesExportsArticlesByCategoryExportExcelData,
   ArticlesExportsArticlesByCategoryExportExcelErrors,
   ArticlesExportsArticlesByCategoryExportExcelResponses,
@@ -2295,6 +2298,14 @@ export const warehouseAeronauticalArticleIndex02 = <ThrowOnError extends boolean
     responseType: 'json',
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/{company}/{location_id}/articles',
+    ...options,
+  });
+
+export const articleList = <ThrowOnError extends boolean = false>(options?: Options<ArticleListData, ThrowOnError>) =>
+  (options?.client ?? client).get<ArticleListResponses, ArticleListErrors, ThrowOnError>({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/articles',
     ...options,
   });
 

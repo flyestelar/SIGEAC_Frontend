@@ -104,9 +104,7 @@ export type AircraftPartResource = {
   part_number: string;
   part_name: string;
   serial: string | null;
-  type: string | null;
   description: string | null;
-  condition_type: string | null;
   total_flight_hours: number | null;
   total_flight_cycles: number | null;
   parent_part?: AircraftPartResource;
@@ -114,11 +112,11 @@ export type AircraftPartResource = {
   aircraft: AircraftResource | null;
   category?: HardTimeCategoryResource;
   active_installation?: HardTimeInstallationResource;
+  last_installation?: HardTimeInstallationResource;
   installations?: Array<HardTimeInstallationResource>;
   intervals?: Array<HardTimeIntervalResource>;
   registered_by: string | null;
   updated_by: string | null;
-  document: string | null;
   created_at: string | null;
   updated_at: string | null;
 };
@@ -170,7 +168,68 @@ export type Analysis = Array<string>;
 /**
  * Article
  */
-export type Article = Array<string>;
+export type Article = {
+  id: number;
+  serial: string | null;
+  part_number: string | null;
+  alternative_part_number: Array<unknown> | null;
+  status: string;
+  description: string | null;
+  image: string | null;
+  cost: string | null;
+  zone: string | null;
+  brand: string | null;
+  certificate_8130: string | null;
+  certificate_vendor: string | null;
+  certificate_fabricant: string | null;
+  condition_id: number | null;
+  manufacturer_id: number | null;
+  batch_id: number | null;
+  aircraft_id: number | null;
+  vendor_id: number | null;
+  registered_by: string | null;
+  updated_by: string | null;
+  inspector: string | null;
+  has_documentation: string;
+  reception_date: string | null;
+  zone_id: number | null;
+  purchase_order_id: number | null;
+};
+
+/**
+ * ArticleListItemResource
+ */
+export type ArticleListItemResource = {
+  id: number;
+  serial: string | null;
+  part_number: string | null;
+  alternative_part_number: Array<unknown> | null;
+  status: string;
+  description: string | null;
+  image: string | null;
+  cost: string | null;
+  brand: string | null;
+  zone: string | null;
+  condition_id: number | null;
+  certificate_8130: string | null;
+  certificate_vendor: string | null;
+  certificate_fabricant: string | null;
+  has_documentation: string;
+  inspector: string | null;
+  registered_by: string | null;
+  updated_by: string | null;
+  manufacturer_id: number | null;
+  batch_id: number | null;
+  vendor_id: number | null;
+  purchase_order_id: number | null;
+  aircraft_id: number | null;
+  reception_date: string | null;
+  zone_id: number | null;
+  condition?: Condition;
+  manufacturer?: Manufacturer;
+  batch?: string;
+  aircraft_part?: AircraftPartResource;
+};
 
 /**
  * ArticleRequest
@@ -181,6 +240,23 @@ export type ArticleRequest = {
   certificate_8130?: string;
   certificate_fabricant?: string;
 };
+
+/**
+ * ArticleStatus
+ */
+export type ArticleStatus =
+  | 'INCOMING'
+  | 'DISPATCHED'
+  | 'TRANSIT'
+  | 'QUARENTINE'
+  | 'STORED'
+  | 'INUSE'
+  | 'SHELTERED'
+  | 'RECEPTION'
+  | 'INTOOLBOX'
+  | 'RESERVED'
+  | 'OUTOFSTOCK'
+  | 'DISMOUNTED';
 
 /**
  * AuthRequest
@@ -238,6 +314,11 @@ export type Batch = {
   updated_by: string | null;
   unit_id: number | null;
 };
+
+/**
+ * BatchCategoryCode
+ */
+export type BatchCategoryCode = 'COMPONENTE' | 'CONSUMIBLE' | 'HERRAMIENTA';
 
 /**
  * BulkCompleteWorkOrderItemTaskRequest
@@ -554,8 +635,8 @@ export type InformationSource = Array<string>;
  * InstallComponentRequest
  */
 export type InstallComponentRequest = {
-  serial_number: string;
-  part_number: string;
+  serial_number?: string | null;
+  part_number?: string | null;
   article_id?: number | null;
   installed_at: string;
   component_hours_at_install: number;
@@ -643,6 +724,11 @@ export type MaintenanceControlResource = {
   };
   in_progress?: boolean;
 };
+
+/**
+ * Manufacturer
+ */
+export type Manufacturer = Array<string>;
 
 /**
  * ManufacturerResource
@@ -1086,8 +1172,9 @@ export type ToolBox = Array<string>;
 export type UninstallComponentRequest = {
   aircraft_part_id: number;
   removed_at: string;
-  aircraft_hours_at_removal: number;
-  aircraft_cycles_at_removal: number;
+  aircraft_hours_at_removal?: number | null;
+  aircraft_cycles_at_removal?: number | null;
+  condition_id?: number | null;
   removal_reason?: string | null;
   remarks?: string | null;
   warehouse_condition?: string | null;
@@ -3718,6 +3805,96 @@ export type WarehouseAeronauticalArticleIndex02Responses = {
 
 export type WarehouseAeronauticalArticleIndex02Response =
   WarehouseAeronauticalArticleIndex02Responses[keyof WarehouseAeronauticalArticleIndex02Responses];
+
+export type ArticleListData = {
+  body?: never;
+  path?: never;
+  query?: {
+    status?: ArticleStatus;
+    category?: BatchCategoryCode;
+    part_number?: string | null;
+    serial?: string | null;
+    page?: number | null;
+    per_page?: number | null;
+    search?: string | null;
+  };
+  url: '/articles';
+};
+
+export type ArticleListErrors = {
+  /**
+   * Unauthenticated
+   */
+  401: {
+    /**
+     * Error overview.
+     */
+    message: string;
+  };
+  /**
+   * Validation error
+   */
+  422: {
+    /**
+     * Errors overview.
+     */
+    message: string;
+    /**
+     * A detailed description of each field that failed validation.
+     */
+    errors: {
+      [key: string]: Array<string>;
+    };
+  };
+};
+
+export type ArticleListError = ArticleListErrors[keyof ArticleListErrors];
+
+export type ArticleListResponses = {
+  /**
+   * Paginated set of `ArticleListItemResource`
+   */
+  200: {
+    data: Array<ArticleListItemResource>;
+    links: {
+      first: string | null;
+      last: string | null;
+      prev: string | null;
+      next: string | null;
+    };
+    meta: {
+      current_page: number;
+      from: number | null;
+      last_page: number;
+      /**
+       * Generated paginator links.
+       */
+      links: Array<{
+        url: string | null;
+        label: string;
+        active: boolean;
+      }>;
+      /**
+       * Base path for paginator generated URLs.
+       */
+      path: string | null;
+      /**
+       * Number of items shown per page.
+       */
+      per_page: number;
+      /**
+       * Number of the last item in the slice.
+       */
+      to: number | null;
+      /**
+       * Total number of items being paginated.
+       */
+      total: number;
+    };
+  };
+};
+
+export type ArticleListResponse = ArticleListResponses[keyof ArticleListResponses];
 
 export type ArticleUpdateConsumableArticleQuantitiesAndZonesData = {
   body?: never;

@@ -12,6 +12,7 @@ export type UninstallFormState = {
   aircraft_cycles_at_removal: string;
   removal_reason: string;
   remarks: string;
+  condition_id: string;
 };
 
 export type IntervalFormState = {

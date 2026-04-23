@@ -62,6 +62,7 @@ import {
   articleDestroy,
   articleDownloadFile,
   articleIndex,
+  articleList,
   articlesExportsArticlesByCategoryExportExcel,
   articlesExportsArticlesByCategoryExportPdf,
   articleShow,
@@ -630,6 +631,9 @@ import type {
   ArticleIndexData,
   ArticleIndexError,
   ArticleIndexResponse,
+  ArticleListData,
+  ArticleListError,
+  ArticleListResponse,
   ArticlesExportsArticlesByCategoryExportExcelData,
   ArticlesExportsArticlesByCategoryExportExcelError,
   ArticlesExportsArticlesByCategoryExportExcelResponse,
@@ -3360,6 +3364,95 @@ export const warehouseAeronauticalArticleIndex02Options = (options: Options<Ware
     },
     queryKey: warehouseAeronauticalArticleIndex02QueryKey(options),
   });
+
+export const articleListQueryKey = (options?: Options<ArticleListData>) => createQueryKey('articleList', options);
+
+export const articleListOptions = (options?: Options<ArticleListData>) =>
+  queryOptions<
+    ArticleListResponse,
+    AxiosError<ArticleListError>,
+    ArticleListResponse,
+    ReturnType<typeof articleListQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await articleList({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: articleListQueryKey(options),
+  });
+
+const createInfiniteParams = <K extends Pick<QueryKey<Options>[0], 'body' | 'headers' | 'path' | 'query'>>(
+  queryKey: QueryKey<Options>,
+  page: K,
+) => {
+  const params = { ...queryKey[0] };
+  if (page.body) {
+    params.body = {
+      ...(queryKey[0].body as any),
+      ...(page.body as any),
+    };
+  }
+  if (page.headers) {
+    params.headers = {
+      ...queryKey[0].headers,
+      ...page.headers,
+    };
+  }
+  if (page.path) {
+    params.path = {
+      ...(queryKey[0].path as any),
+      ...(page.path as any),
+    };
+  }
+  if (page.query) {
+    params.query = {
+      ...(queryKey[0].query as any),
+      ...(page.query as any),
+    };
+  }
+  return params as unknown as typeof page;
+};
+
+export const articleListInfiniteQueryKey = (options?: Options<ArticleListData>): QueryKey<Options<ArticleListData>> =>
+  createQueryKey('articleList', options, true);
+
+export const articleListInfiniteOptions = (options?: Options<ArticleListData>) =>
+  infiniteQueryOptions<
+    ArticleListResponse,
+    AxiosError<ArticleListError>,
+    InfiniteData<ArticleListResponse>,
+    QueryKey<Options<ArticleListData>>,
+    number | null | Pick<QueryKey<Options<ArticleListData>>[0], 'body' | 'headers' | 'path' | 'query'>
+  >(
+    // @ts-ignore
+    {
+      queryFn: async ({ pageParam, queryKey, signal }) => {
+        // @ts-ignore
+        const page: Pick<QueryKey<Options<ArticleListData>>[0], 'body' | 'headers' | 'path' | 'query'> =
+          typeof pageParam === 'object'
+            ? pageParam
+            : {
+                query: {
+                  page: pageParam,
+                },
+              };
+        const params = createInfiniteParams(queryKey, page);
+        const { data } = await articleList({
+          ...options,
+          ...params,
+          signal,
+          throwOnError: true,
+        });
+        return data;
+      },
+      queryKey: articleListInfiniteQueryKey(options),
+    },
+  );
 
 export const articleUpdateConsumableArticleQuantitiesAndZonesMutation = (
   options?: Partial<Options<ArticleUpdateConsumableArticleQuantitiesAndZonesData>>,
@@ -8401,38 +8494,6 @@ export const maintenanceControlExecutionsIndexOptions = (options?: Options<Maint
     },
     queryKey: maintenanceControlExecutionsIndexQueryKey(options),
   });
-
-const createInfiniteParams = <K extends Pick<QueryKey<Options>[0], 'body' | 'headers' | 'path' | 'query'>>(
-  queryKey: QueryKey<Options>,
-  page: K,
-) => {
-  const params = { ...queryKey[0] };
-  if (page.body) {
-    params.body = {
-      ...(queryKey[0].body as any),
-      ...(page.body as any),
-    };
-  }
-  if (page.headers) {
-    params.headers = {
-      ...queryKey[0].headers,
-      ...page.headers,
-    };
-  }
-  if (page.path) {
-    params.path = {
-      ...(queryKey[0].path as any),
-      ...(page.path as any),
-    };
-  }
-  if (page.query) {
-    params.query = {
-      ...(queryKey[0].query as any),
-      ...(page.query as any),
-    };
-  }
-  return params as unknown as typeof page;
-};
 
 export const maintenanceControlExecutionsIndexInfiniteQueryKey = (
   options?: Options<MaintenanceControlExecutionsIndexData>,
