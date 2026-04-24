@@ -312,7 +312,7 @@ export function HardTimeCategorySidebar({
                 )}
               </div>
             ) : (
-              <div className="grid gap-3 md:grid-cols-2 2xl:grid-cols-3">
+              <div className="grid gap-3 sm:grid-cols-1 md:grid-cols-2 2xl:grid-cols-3">
                 {sortedComponents.map((component) => (
                   <HardTimeCard
                     key={component.id}
