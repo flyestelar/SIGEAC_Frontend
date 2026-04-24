@@ -2812,6 +2812,7 @@ export type {
   WorkOrderCompleteItemTaskErrors,
   WorkOrderCompleteItemTaskResponse,
   WorkOrderCompleteItemTaskResponses,
+  WorkOrderComponentItemResource,
   WorkOrderItemResource,
   WorkOrderItemTaskResource,
   WorkOrderResource,

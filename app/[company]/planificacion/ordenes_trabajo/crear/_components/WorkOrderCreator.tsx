@@ -1,6 +1,16 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCreateWorkOrder } from '@/actions/planificacion/ordenes_trabajo/actions';
+import LoadingPage from '@/components/misc/LoadingPage';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Textarea } from '@/components/ui/textarea';
+import { useGetMaintenanceAircrafts } from '@/hooks/planificacion/useGetMaintenanceAircrafts';
+import { cn } from '@/lib/utils';
+import { useCompanyStore } from '@/stores/CompanyStore';
 import { aircraftComponentSlotIndexOptions, maintenanceControlsIndexOptions } from '@api/queries';
 import {
   AircraftComponentSlotResource,
@@ -10,23 +20,25 @@ import {
   StoreWorkOrderRequest,
   TaskCardResource,
 } from '@api/types';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { useQuery } from '@tanstack/react-query';
 import { AlertCircle, CalendarDays, ClipboardCheck, MessageSquareText, ShieldAlert } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useCreateWorkOrder } from '@/actions/planificacion/ordenes_trabajo/actions';
-import LoadingPage from '@/components/misc/LoadingPage';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Textarea } from '@/components/ui/textarea';
-import { useGetMaintenanceAircrafts } from '@/hooks/planificacion/useGetMaintenanceAircrafts';
-import { cn } from '@/lib/utils';
-import { useCompanyStore } from '@/stores/CompanyStore';
+import { useEffect, useMemo, useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
 import AircraftHeader from './AircraftHeader';
 import ControlsList from './ControlsList';
 import HardTimeControlsList from './HardTimeControlsList';
 import SelectionSummary from './SelectionSummary';
+
+const workOrderSchema = z.object({
+  entry_date: z.string().optional(),
+  exit_date: z.string().optional(),
+  remarks: z.string().trim().optional(),
+});
+
+type WorkOrderFormValues = z.infer<typeof workOrderSchema>;
 
 export type SelectedControlItem = {
   taskCardIds: Set<number>;
@@ -45,10 +57,16 @@ const WorkOrderCreator = () => {
   const [selectedAircraftId, setSelectedAircraftId] = useState<number | null>(null);
   const [selectedControls, setSelectedControls] = useState<Map<number, SelectedControlItem>>(new Map());
   const [selectedHardTimeIntervals, setSelectedHardTimeIntervals] = useState<Set<number>>(new Set());
-  const [remarks, setRemarks] = useState('');
-  const [entryDate, setEntryDate] = useState('');
-  const [exitDate, setExitDate] = useState('');
   const [activeTab, setActiveTab] = useState<'maintenance' | 'hard_time'>('maintenance');
+
+  const form = useForm<WorkOrderFormValues>({
+    resolver: zodResolver(workOrderSchema),
+    defaultValues: {
+      entry_date: '',
+      exit_date: '',
+      remarks: '',
+    },
+  });
 
   const { data: controlsResponse, isLoading: isControlsLoading } = useQuery({
     ...maintenanceControlsIndexOptions({
@@ -68,10 +86,7 @@ const WorkOrderCreator = () => {
   const slots = useMemo<AircraftComponentSlotResource[]>(() => slotsResponse?.data ?? [], [slotsResponse]);
 
   const hardTimeIntervalDirectory = useMemo(() => {
-    const map = new Map<
-      number,
-      { interval: HardTimeIntervalResource; slot: AircraftComponentSlotResource }
-    >();
+    const map = new Map<number, { interval: HardTimeIntervalResource; slot: AircraftComponentSlotResource }>();
     for (const slot of slots) {
       const intervals = slot.installed_part?.intervals ?? [];
       for (const interval of intervals) {
@@ -110,7 +125,10 @@ const WorkOrderCreator = () => {
       const next = new Map<number, SelectedControlItem>();
       prev.forEach((item, controlId) => {
         const control = controls.find((c) => c.id === controlId);
-        if (!control) { changed = true; return; }
+        if (!control) {
+          changed = true;
+          return;
+        }
         const applicableIds = new Set((control.task_cards ?? []).filter((tc) => tc.applicable).map((tc) => tc.id));
         const filteredIds = new Set(Array.from(item.taskCardIds).filter((id) => applicableIds.has(id)));
         if (filteredIds.size !== item.taskCardIds.size) changed = true;
@@ -141,9 +159,11 @@ const WorkOrderCreator = () => {
   const resetSelection = () => {
     setSelectedControls(new Map());
     setSelectedHardTimeIntervals(new Set());
-    setRemarks('');
-    setEntryDate('');
-    setExitDate('');
+    form.reset({
+      entry_date: '',
+      exit_date: '',
+      remarks: '',
+    });
     setActiveTab('maintenance');
   };
 
@@ -215,7 +235,7 @@ const WorkOrderCreator = () => {
     });
   };
 
-  const handleSubmit = useCallback(async () => {
+  const onSubmit = form.handleSubmit(async (values: WorkOrderFormValues) => {
     if (!selectedAircraftId || !selectedCompany?.slug) return;
 
     const maintenanceItems = selectedControlEntries.map(({ control, item }) => ({
@@ -227,28 +247,18 @@ const WorkOrderCreator = () => {
       hard_time_interval_id: id,
     }));
 
-    const payload = {
+    const payload: StoreWorkOrderRequest = {
       aircraft_id: selectedAircraftId,
-      remarks: remarks.trim() || undefined,
-      entry_date: entryDate || undefined,
-      exit_date: exitDate || undefined,
-      maintenance_items: maintenanceItems,
-      hard_time_items: hardTimeItems,
-    } as unknown as StoreWorkOrderRequest;
+      remarks: values.remarks?.trim() || undefined,
+      entry_date: values.entry_date || undefined,
+      exit_date: values.exit_date || undefined,
+      items: maintenanceItems,
+      component_items: hardTimeItems,
+    };
 
     const res = await createWorkOrder.mutateAsync({ body: payload });
     router.push(`/${selectedCompany.slug}/planificacion/ordenes_trabajo/${res.data.order_number}`);
-  }, [
-    createWorkOrder,
-    entryDate,
-    exitDate,
-    remarks,
-    router,
-    selectedAircraftId,
-    selectedCompany,
-    selectedControlEntries,
-    selectedHardTimeIntervals,
-  ]);
+  });
 
   if (isAircraftsLoading) return <LoadingPage />;
 
@@ -272,129 +282,144 @@ const WorkOrderCreator = () => {
       />
 
       {selectedAircraft && (
-        <div className="grid gap-6 lg:grid-cols-12">
-          {/* Main column */}
-          <div className="space-y-6 lg:col-span-8">
-            {/* 2. Work order data */}
-            <div className="rounded-lg border bg-background">
-              <div className="border-b px-5 py-3">
-                <span className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
-                  Datos de la Orden
-                </span>
+        <Form {...form}>
+          <form className="grid gap-6 lg:grid-cols-12" onSubmit={onSubmit}>
+            {/* Main column */}
+            <div className="space-y-6 lg:col-span-8">
+              {/* 2. Work order data */}
+              <div className="rounded-lg border bg-background">
+                <div className="border-b px-5 py-3">
+                  <span className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+                    Datos de la Orden
+                  </span>
+                </div>
+                <div className="grid gap-4 px-5 py-4 sm:grid-cols-2">
+                  <FormField
+                    control={form.control}
+                    name="entry_date"
+                    render={({ field }) => (
+                      <FormItem className="space-y-1.5">
+                        <FormLabel className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+                          <CalendarDays className="size-3" />
+                          Fecha de entrada
+                        </FormLabel>
+                        <FormControl>
+                          <Input {...field} type="date" className="bg-muted/20" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="exit_date"
+                    render={({ field }) => (
+                      <FormItem className="space-y-1.5">
+                        <FormLabel className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+                          <CalendarDays className="size-3" />
+                          Fecha de salida
+                        </FormLabel>
+                        <FormControl>
+                          <Input {...field} type="date" className="bg-muted/20" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="remarks"
+                    render={({ field }) => (
+                      <FormItem className="space-y-1.5 sm:col-span-2">
+                        <FormLabel className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+                          <MessageSquareText className="size-3" />
+                          Observaciones
+                        </FormLabel>
+                        <FormControl>
+                          <Textarea
+                            {...field}
+                            rows={2}
+                            placeholder="Observaciones operativas, restricciones o instrucciones…"
+                            className="bg-muted/20"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
               </div>
-              <div className="grid gap-4 px-5 py-4 sm:grid-cols-2">
-                <div className="space-y-1.5">
-                  <label htmlFor="wo-entry-date" className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
-                    <CalendarDays className="size-3" />
-                    Fecha de entrada
-                  </label>
-                  <Input
-                    id="wo-entry-date"
-                    type="date"
-                    value={entryDate}
-                    onChange={(e) => setEntryDate(e.target.value)}
-                    className="bg-muted/20"
+
+              {/* 3. Controls selection — tabs between maintenance and hard time */}
+              <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)} className="space-y-4">
+                <TabsList className="grid w-full grid-cols-2 bg-muted/30 p-1">
+                  <TabsTrigger value="maintenance" className="gap-2 data-[state=active]:bg-background">
+                    <ClipboardCheck className="size-3.5" />
+                    Servicios Programados
+                    {selectedControlEntries.length > 0 && (
+                      <Badge
+                        variant="outline"
+                        className={cn(
+                          'ml-1 h-5 border-sky-500/30 bg-sky-500/10 px-1.5 text-[10px] tabular-nums text-sky-600 dark:text-sky-400',
+                        )}
+                      >
+                        {selectedControlEntries.length}
+                      </Badge>
+                    )}
+                  </TabsTrigger>
+                  <TabsTrigger value="hard_time" className="gap-2 data-[state=active]:bg-background">
+                    <ShieldAlert className="size-3.5" />
+                    Servicios - Componentes
+                    {selectedHardTimeIntervals.size > 0 && (
+                      <Badge
+                        variant="outline"
+                        className="ml-1 h-5 border-amber-500/30 bg-amber-500/10 px-1.5 text-[10px] tabular-nums text-amber-600 dark:text-amber-400"
+                      >
+                        {selectedHardTimeIntervals.size}
+                      </Badge>
+                    )}
+                  </TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="maintenance" className="mt-0">
+                  <ControlsList
+                    controls={controls}
+                    selectedControls={selectedControls}
+                    isLoading={isControlsLoading}
+                    onToggleTaskCard={handleToggleTaskCard}
+                    onToggleAllTaskCards={handleToggleAllTaskCards}
                   />
-                </div>
-                <div className="space-y-1.5">
-                  <label htmlFor="wo-exit-date" className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
-                    <CalendarDays className="size-3" />
-                    Fecha de salida
-                  </label>
-                  <Input
-                    id="wo-exit-date"
-                    type="date"
-                    value={exitDate}
-                    onChange={(e) => setExitDate(e.target.value)}
-                    className="bg-muted/20"
+                </TabsContent>
+
+                <TabsContent value="hard_time" className="mt-0">
+                  <HardTimeControlsList
+                    slots={slots}
+                    aircraftFlightHours={selectedAircraft?.flight_hours ?? null}
+                    aircraftFlightCycles={selectedAircraft?.flight_cycles ?? null}
+                    selectedIntervalIds={selectedHardTimeIntervals}
+                    onToggleInterval={handleToggleHardTimeInterval}
+                    onToggleGroup={handleToggleHardTimeGroup}
+                    isLoading={isSlotsLoading}
                   />
-                </div>
-                <div className="space-y-1.5 sm:col-span-2">
-                  <label htmlFor="wo-remarks" className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
-                    <MessageSquareText className="size-3" />
-                    Observaciones
-                  </label>
-                  <Textarea
-                    id="wo-remarks"
-                    rows={2}
-                    value={remarks}
-                    onChange={(e) => setRemarks(e.target.value)}
-                    placeholder="Observaciones operativas, restricciones o instrucciones…"
-                    className="bg-muted/20"
-                  />
-                </div>
-              </div>
+                </TabsContent>
+              </Tabs>
             </div>
 
-            {/* 3. Controls selection — tabs between maintenance and hard time */}
-            <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)} className="space-y-4">
-              <TabsList className="grid w-full grid-cols-2 bg-muted/30 p-1">
-                <TabsTrigger value="maintenance" className="gap-2 data-[state=active]:bg-background">
-                  <ClipboardCheck className="size-3.5" />
-                  Servicios Programados
-                  {selectedControlEntries.length > 0 && (
-                    <Badge
-                      variant="outline"
-                      className={cn(
-                        'ml-1 h-5 border-sky-500/30 bg-sky-500/10 px-1.5 text-[10px] tabular-nums text-sky-600 dark:text-sky-400',
-                      )}
-                    >
-                      {selectedControlEntries.length}
-                    </Badge>
-                  )}
-                </TabsTrigger>
-                <TabsTrigger value="hard_time" className="gap-2 data-[state=active]:bg-background">
-                  <ShieldAlert className="size-3.5" />
-                  Servicios - Componentes
-                  {selectedHardTimeIntervals.size > 0 && (
-                    <Badge
-                      variant="outline"
-                      className="ml-1 h-5 border-amber-500/30 bg-amber-500/10 px-1.5 text-[10px] tabular-nums text-amber-600 dark:text-amber-400"
-                    >
-                      {selectedHardTimeIntervals.size}
-                    </Badge>
-                  )}
-                </TabsTrigger>
-              </TabsList>
-
-              <TabsContent value="maintenance" className="mt-0">
-                <ControlsList
-                  controls={controls}
-                  selectedControls={selectedControls}
-                  isLoading={isControlsLoading}
-                  onToggleTaskCard={handleToggleTaskCard}
-                  onToggleAllTaskCards={handleToggleAllTaskCards}
-                />
-              </TabsContent>
-
-              <TabsContent value="hard_time" className="mt-0">
-                <HardTimeControlsList
-                  slots={slots}
-                  aircraftFlightHours={selectedAircraft?.flight_hours ?? null}
-                  aircraftFlightCycles={selectedAircraft?.flight_cycles ?? null}
-                  selectedIntervalIds={selectedHardTimeIntervals}
-                  onToggleInterval={handleToggleHardTimeInterval}
-                  onToggleGroup={handleToggleHardTimeGroup}
-                  isLoading={isSlotsLoading}
-                />
-              </TabsContent>
-            </Tabs>
-          </div>
-
-          {/* Sidebar */}
-          <div className="lg:col-span-4">
-            <SelectionSummary
-              controls={controls}
-              selectedControls={selectedControls}
-              totalTaskCards={totalSelectedTaskCards}
-              hardTimeIntervalDirectory={hardTimeIntervalDirectory}
-              selectedHardTimeIntervals={selectedHardTimeIntervals}
-              onSubmit={handleSubmit}
-              isSubmitting={createWorkOrder.isPending}
-              onCancel={() => router.push(`/${selectedCompany!.slug}/planificacion/ordenes_trabajo`)}
-            />
-          </div>
-        </div>
+            {/* Sidebar */}
+            <div className="lg:col-span-4">
+              <SelectionSummary
+                controls={controls}
+                selectedControls={selectedControls}
+                totalTaskCards={totalSelectedTaskCards}
+                hardTimeIntervalDirectory={hardTimeIntervalDirectory}
+                selectedHardTimeIntervals={selectedHardTimeIntervals}
+                onSubmit={onSubmit}
+                isSubmitting={createWorkOrder.isPending}
+                onCancel={() => router.push(`/${selectedCompany!.slug}/planificacion/ordenes_trabajo`)}
+              />
+            </div>
+          </form>
+        </Form>
       )}
     </div>
   );

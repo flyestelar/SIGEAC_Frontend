@@ -1106,6 +1106,9 @@ export type StoreWorkOrderRequest = {
     maintenance_control_id: number;
     task_ids: Array<number>;
   }> | null;
+  component_items?: Array<{
+    hard_time_interval_id: number;
+  }> | null;
 };
 
 /**
@@ -1520,6 +1523,19 @@ export type VoluntaryReportRequest = {
 };
 
 /**
+ * WorkOrderComponentItemResource
+ */
+export type WorkOrderComponentItemResource = {
+  id: string;
+  work_order_id: string;
+  hard_time_interval_id: string;
+  order: string;
+  interval?: HardTimeIntervalResource;
+  created_at: string;
+  updated_at: string;
+};
+
+/**
  * WorkOrderItemResource
  */
 export type WorkOrderItemResource = {
@@ -1562,6 +1578,8 @@ export type WorkOrderResource = {
   aircraft?: AircraftResource;
   items_count?: number;
   items?: Array<WorkOrderItemResource>;
+  component_items_count?: number;
+  component_items?: Array<WorkOrderComponentItemResource>;
   created_at: string | null;
   updated_at: string | null;
 };
@@ -18098,7 +18116,7 @@ export type PlanificationWorkOrderDocumentQueueDocxError =
 
 export type PlanificationWorkOrderDocumentQueueDocxResponses = {
   202: {
-    message: 'Document generation queued.';
+    message: string;
     generation_id: string;
     document_type: string;
     enqueue_state: string;
@@ -18137,7 +18155,7 @@ export type PlanificationWorkOrderDocumentQueuePdfError =
 
 export type PlanificationWorkOrderDocumentQueuePdfResponses = {
   202: {
-    message: 'PDF generation queued.';
+    message: string;
     generation_id: string;
     document_type: string;
     enqueue_state: string;
@@ -18176,7 +18194,7 @@ export type PlanificationWorkOrderTallySheetQueueDocxError =
 
 export type PlanificationWorkOrderTallySheetQueueDocxResponses = {
   202: {
-    message: 'Tally sheet generation queued.';
+    message: string;
     generation_id: string;
     document_type: string;
     enqueue_state: string;
@@ -18215,7 +18233,7 @@ export type PlanificationWorkOrderTallySheetQueuePdfError =
 
 export type PlanificationWorkOrderTallySheetQueuePdfResponses = {
   202: {
-    message: 'Tally sheet PDF generation queued.';
+    message: string;
     generation_id: string;
     document_type: string;
     enqueue_state: string;
