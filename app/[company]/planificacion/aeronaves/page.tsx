@@ -101,7 +101,7 @@ const AircraftsPage = () => {
                   <div className="relative">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
-                      src="https://cdn.zbordirect.com/images/airlines/ES.webp"
+                      src="/images/aircraft.webp"
                       alt={a.acronym}
                       className="aspect-[16/7] w-full object-cover brightness-[0.55] dark:brightness-[0.35] transition-all duration-300 group-hover:brightness-[0.8] dark:group-hover:brightness-[0.45] group-hover:scale-[1.02]"
                     />

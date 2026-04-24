@@ -24,7 +24,7 @@ const AircraftCard = ({ aircraft, onSelect, className }: AircraftCardProps) => {
       <div className="relative">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src="https://cdn.zbordirect.com/images/airlines/ES.webp"
+          src="/images/aircraft.webp"
           alt={aircraft.acronym}
           className="aspect-[16/6] w-full object-cover brightness-[0.5] dark:brightness-[0.3] transition-all duration-300 group-hover:brightness-[0.7] group-hover:scale-[1.02]"
         />

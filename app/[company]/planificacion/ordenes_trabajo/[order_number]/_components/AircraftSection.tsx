@@ -28,7 +28,7 @@ export function AircraftSection({ aircraft }: { aircraft: AircraftResource }) {
       <div className="flex items-stretch">
         <div className="relative w-56 shrink-0">
           <img
-            src={aircraft.aircraft_type?.image || 'https://cdn.zbordirect.com/images/airlines/ES.webp'}
+            src={aircraft.aircraft_type?.image || '/images/aircraft.webp'}
             alt={aircraftRegistrationLabel}
             className="h-full w-full object-cover brightness-[0.55] dark:brightness-[0.35]"
           />
