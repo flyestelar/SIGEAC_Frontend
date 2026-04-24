@@ -1,25 +1,21 @@
 'use client';
 
-import { CompleteTaskDialog } from '@/components/dialogs/mantenimiento/ordenes_trabajo/CompleteTaskDialog';
 import { CompleteTasksBulkDialog } from '@/components/dialogs/mantenimiento/ordenes_trabajo/CompleteTasksBulkDialog';
 import { CompleteWorkOrderDialog } from '@/components/dialogs/mantenimiento/ordenes_trabajo/CompleteWorkOrderDialog';
 import { ContentLayout } from '@/components/layout/ContentLayout';
 import { DocumentDownloadButton } from '@/components/misc/DocumentDownloadButton';
 import LoadingPage from '@/components/misc/LoadingPage';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { Accordion } from '@/components/ui/accordion';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import useWorkOrderDocuments from '@/hooks/planificacion/useWorkOrderDocuments';
 import { cn } from '@/lib/utils';
 import { useCompanyStore } from '@/stores/CompanyStore';
 import { workOrdersShowOptions } from '@api/queries';
-import useWorkOrderDocuments from '@/hooks/planificacion/useWorkOrderDocuments';
-import { WorkOrderItemResource, WorkOrderItemTaskResource, WorkOrderResource } from '@api/types';
+import { WorkOrderResource } from '@api/types';
 import { useQuery } from '@tanstack/react-query';
-import { format } from 'date-fns';
-import { es } from 'date-fns/locale';
 import {
   AlertCircle,
   ArrowLeft,
@@ -36,9 +32,11 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import type { ReactNode } from 'react';
 import { useState } from 'react';
 import { AircraftSection } from './_components/AircraftSection';
+import { ControlAccordionItem } from './_components/ControlAccordionItem';
+import { SummaryField } from './_components/SummaryField';
+import { formatDate, timestampEqualSecondsPrecision } from './_components/WorkOrderHelpers';
 
 /* ─── Constants ─── */
 
@@ -65,53 +63,7 @@ const STATUS_CONFIG: Record<string, { label: string; className: string }> = {
   },
 };
 
-const TASK_STATUS_CONFIG: Record<string, { label: string; className: string }> = {
-  COMPLETADO: {
-    label: 'Completado',
-    className: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400',
-  },
-  CERRADO: {
-    label: 'Cerrado',
-    className: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400',
-  },
-  PENDIENTE: {
-    label: 'Pendiente',
-    className: 'border-amber-500/30 bg-amber-500/10 text-amber-600 dark:text-amber-400',
-  },
-  ABIERTO: {
-    label: 'Abierto',
-    className: 'border-sky-500/30 bg-sky-500/10 text-sky-600 dark:text-sky-400',
-  },
-};
-
 const fallbackStatus = { label: 'Sin estado', className: 'border-border bg-muted/20 text-muted-foreground' };
-
-/* ─── Helpers ─── */
-
-function parseLocalDate(dateStr: string) {
-  const [y, m, d] = dateStr.split('-').map(Number);
-  return new Date(y, m - 1, d);
-}
-
-function formatDate(dateStr: string | null | undefined) {
-  if (!dateStr) return '—';
-  try {
-    return format(parseLocalDate(dateStr), 'dd MMM yyyy', { locale: es });
-  } catch {
-    return '—';
-  }
-}
-
-function SummaryField({ label, value, mono = false }: { label: string; value: ReactNode; mono?: boolean }) {
-  return (
-    <div className="min-h-14 bg-background px-3 py-2.5">
-      <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">{label}</p>
-      <div className={cn('mt-1 text-[13px] font-medium leading-tight text-foreground/90', mono && 'font-mono')}>
-        {value}
-      </div>
-    </div>
-  );
-}
 
 /* ─── Page ─── */
 
@@ -472,139 +424,4 @@ const WorkOrderPage = () => {
   );
 };
 
-/* ─── Control Accordion Item ─── */
-
-function ControlAccordionItem({ item, orderNumber }: { item: WorkOrderItemResource; orderNumber: string }) {
-  const control = item.maintenance_control;
-  const tasks = item.tasks ?? [];
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [activeTask, setActiveTask] = useState<WorkOrderItemTaskResource | null>(null);
-
-  const openCompleteDialog = (task: WorkOrderItemTaskResource) => {
-    setActiveTask(task);
-    setDialogOpen(true);
-  };
-
-  const closeDialog = () => {
-    setDialogOpen(false);
-    setActiveTask(null);
-  };
-
-  return (
-    <AccordionItem value={`control-${item.id}`} className="border-none">
-      <AccordionTrigger className="px-5 py-3 hover:no-underline hover:bg-muted/10 [&[data-state=open]]:bg-muted/10">
-        <div className="flex flex-1 items-center gap-3 text-left">
-          <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded border bg-muted/30">
-            <Settings2 className="size-3 text-muted-foreground" />
-          </div>
-          <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-medium">
-              {control?.title ?? `Control #${item.maintenance_control_id}`}
-            </p>
-            {control?.manual_reference && (
-              <p className="font-mono text-[11px] text-muted-foreground">{control.manual_reference}</p>
-            )}
-          </div>
-          <Badge variant="outline" className="mr-2 shrink-0 gap-1 text-[11px] tabular-nums">
-            <Layers className="size-2.5" />
-            {tasks.length}
-          </Badge>
-        </div>
-      </AccordionTrigger>
-      <AccordionContent className="pb-1 pt-0">
-        {tasks.length === 0 ? (
-          <p className="px-5 pb-3 ml-10 text-xs text-muted-foreground">Sin task cards.</p>
-        ) : (
-          <div className="ml-5 mr-5 overflow-hidden rounded-md border">
-            {tasks.map((task, idx) => {
-              const taskStatusRaw = (task.review_by ? 'COMPLETADO' : 'PENDIENTE').toUpperCase();
-              const taskStatusCfg = TASK_STATUS_CONFIG[taskStatusRaw] ?? fallbackStatus;
-
-              return (
-                <div
-                  key={task.id}
-                  className={cn(
-                    'group flex items-center gap-3 px-3 py-2 transition-colors hover:bg-muted/10',
-                    idx !== 0 && 'border-t border-border/50',
-                  )}
-                >
-                  <span className="w-5 shrink-0 text-center font-mono text-[11px] text-muted-foreground/50">
-                    {idx + 1}
-                  </span>
-
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-[13px]">{task.task?.description ?? `Task #${task.task_id}`}</p>
-                    {(task.task?.old_task || task.task?.new_task) && (
-                      <div className="mt-0.5 flex flex-wrap items-center gap-2 text-[11px] text-muted-foreground">
-                        {task.task?.old_task && <span>Old Task Card: {task.task.old_task}</span>}
-                        {task.task?.new_task && <span>New Task Card: {task.task.new_task}</span>}
-                      </div>
-                    )}
-                    <div className="flex flex-wrap items-center gap-2 text-[11px] text-muted-foreground">
-                      {task.inspection_date && <span>Inspección: {formatDate(task.inspection_date)}</span>}
-                      {task.review_by && <span>Revisado por: {task.review_by}</span>}
-                    </div>
-                  </div>
-
-                  {task.task?.manual_reference && (
-                    <span className="hidden shrink-0 font-mono text-[11px] text-muted-foreground sm:inline">
-                      {task.task.manual_reference}
-                    </span>
-                  )}
-
-                  <div className="flex shrink-0 items-center gap-1">
-                    {!task.review_by ? (
-                      <TooltipProvider>
-                        <Tooltip delayDuration={100}>
-                          <TooltipTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-6 w-6 text-muted-foreground hover:text-foreground"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                openCompleteDialog(task);
-                              }}
-                            >
-                              <Check className="size-3" />
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent side="top">Completar task</TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
-                    ) : null}
-                  </div>
-
-                  <Badge
-                    variant="outline"
-                    className={cn(
-                      'shrink-0 cursor-pointer text-[10px] transition-colors hover:opacity-80',
-                      taskStatusCfg.className,
-                    )}
-                  >
-                    {taskStatusCfg.label}
-                  </Badge>
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </AccordionContent>
-
-      <CompleteTaskDialog
-        open={dialogOpen}
-        task={activeTask}
-        orderNumber={orderNumber}
-        onOpenChange={(open) => (open ? setDialogOpen(true) : closeDialog())}
-      />
-    </AccordionItem>
-  );
-}
-
 export default WorkOrderPage;
-
-function timestampEqualSecondsPrecision(ts1: string, ts2: string) {
-  const date1 = new Date(ts1);
-  const date2 = new Date(ts2);
-  return Math.floor(date1.getTime() / 1000) === Math.floor(date2.getTime() / 1000);
-}
