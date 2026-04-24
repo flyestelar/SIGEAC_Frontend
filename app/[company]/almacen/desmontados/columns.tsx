@@ -26,8 +26,7 @@ function conditionPalette(name?: string | null) {
   if (/SERVICEABLE|NEW|NS/.test(key))
     return 'border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400';
   if (/REPAIR|OVERHAUL|OH/.test(key)) return 'border-amber-500/30 bg-amber-500/10 text-amber-600 dark:text-amber-400';
-  if (/UNSERV|BER|SCRAP|REJECT/.test(key))
-    return 'border-red-500/30 bg-red-500/10 text-red-600 dark:text-red-400';
+  if (/UNSERV|BER|SCRAP|REJECT/.test(key)) return 'border-red-500/30 bg-red-500/10 text-red-600 dark:text-red-400';
   return 'border-slate-500/30 bg-slate-500/10 text-slate-600 dark:text-slate-400';
 }
 
@@ -46,8 +45,8 @@ export const columns: ColumnDef<ArticleListItemResource>[] = [
     accessorKey: 'description',
     header: ({ column }) => <DataTableColumnHeader column={column} title="Descripción" />,
     cell: ({ row }) => {
-      const batch = row.original.batch as unknown as Batch | string | null | undefined;
-      const batchLabel = typeof batch === 'string' ? batch : batch?.name ?? null;
+      const batch = row.original.batch;
+      const batchLabel = typeof batch === 'string' ? batch : (batch?.name ?? null);
       return (
         <div className="flex max-w-[260px] flex-col">
           <span className="truncate text-sm font-medium">{batchLabel ?? '—'}</span>
@@ -62,7 +61,7 @@ export const columns: ColumnDef<ArticleListItemResource>[] = [
     id: 'condition',
     header: ({ column }) => <DataTableColumnHeader column={column} title="Condición" />,
     cell: ({ row }) => {
-      const cond = row.original.condition as unknown as { name?: string } | null;
+      const cond = row.original.condition;
       const name = cond?.name ?? '—';
       return (
         <span
@@ -80,10 +79,8 @@ export const columns: ColumnDef<ArticleListItemResource>[] = [
     id: 'aircraft',
     header: ({ column }) => <DataTableColumnHeader column={column} title="Aeronave" />,
     cell: ({ row }) => {
-      const slot = row.original.aircraft_part?.last_installation as unknown as
-        | { aircraft_slot?: { aircraft?: { acronym?: string; model?: string } } }
-        | undefined;
-      const aircraft = slot?.aircraft_slot?.aircraft;
+      const instalation = row.original.aircraft_part?.last_installation;
+      const aircraft = instalation?.aircraft_slot?.aircraft;
       if (!aircraft) return <span className="text-xs text-muted-foreground">—</span>;
       return (
         <div className="flex flex-col">

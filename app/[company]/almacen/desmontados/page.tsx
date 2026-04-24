@@ -14,14 +14,14 @@ import {
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb';
 import { Input } from '@/components/ui/input';
-import { useCompanyStore } from '@/stores/CompanyStore';
+import { useCompanySlug, useCompanyStore } from '@/stores/CompanyStore';
 import { articleListOptions } from '@api/queries';
 
 import { columns } from './columns';
 import { DataTable } from './data-table';
 
 const DismountedPage = () => {
-  const { selectedCompany } = useCompanyStore();
+  const selectedCompanySlug = useCompanySlug();
 
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
@@ -53,7 +53,7 @@ const DismountedPage = () => {
         <Breadcrumb>
           <BreadcrumbList>
             <BreadcrumbItem>
-              <BreadcrumbLink href={`/${selectedCompany?.slug}/dashboard`}>Inicio</BreadcrumbLink>
+              <BreadcrumbLink href={`/${selectedCompanySlug}/dashboard`}>Inicio</BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem>Almacén</BreadcrumbItem>

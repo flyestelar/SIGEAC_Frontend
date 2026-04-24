@@ -36,6 +36,7 @@ import { useState } from 'react';
 import { AircraftSection } from './_components/AircraftSection';
 import { ControlAccordionItem } from './_components/ControlAccordionItem';
 import { SummaryField } from './_components/SummaryField';
+import { WorkOrderComponentItemsSection } from './_components/WorkOrderComponentItemsSection';
 import { formatDate, timestampEqualSecondsPrecision } from './_components/WorkOrderHelpers';
 
 /* ─── Constants ─── */
@@ -93,6 +94,7 @@ const WorkOrderPage = () => {
   const statusCfg = STATUS_CONFIG[statusRaw] ?? fallbackStatus;
   const aircraft = wo?.aircraft;
   const items = wo?.items ?? [];
+  const componentItems = wo?.component_items ?? [];
   const aircraftLocationLabel = aircraft?.location?.address ?? aircraft?.location?.cod_iata ?? '—';
   const totalTasks = items.reduce((sum, item) => sum + (item.tasks?.length ?? 0), 0);
   const pendingTasksCount = items.reduce(
@@ -203,6 +205,10 @@ const WorkOrderPage = () => {
                   wo.updated_at &&
                   !timestampEqualSecondsPrecision(statusData.work_order_updated_at, wo.updated_at),
               );
+              console.log('isStale', doc.type, isStale, {
+                statusDataUpdatedAt: statusData?.work_order_updated_at,
+                woUpdatedAt: wo.updated_at,
+              });
               return (
                 <div
                   key={doc.label}
@@ -340,6 +346,8 @@ const WorkOrderPage = () => {
                 </div>
               )}
             </section>
+
+            <WorkOrderComponentItemsSection items={componentItems} />
           </div>
 
           {/* Sidebar */}

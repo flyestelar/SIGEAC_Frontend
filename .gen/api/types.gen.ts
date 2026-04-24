@@ -86,33 +86,15 @@ export type AircraftComponentSlotResource = {
   description: string;
   position: string;
   is_active: boolean;
+  created_at: string | null;
+  updated_at: string | null;
   category?: HardTimeCategoryResource;
   active_installation?: HardTimeInstallationResource;
   installations?: Array<HardTimeInstallationResource>;
-  created_at: string | null;
-  updated_at: string | null;
+  aircraft?: AircraftResource;
   installed_part_id?: number;
   installed_part?: AircraftPartResource;
   batch?: Batch;
-};
-
-/**
- * AircraftPart
- */
-export type AircraftPart = {
-  id: number;
-  part_number: string;
-  part_name: string;
-  total_flight_hours: number;
-  total_flight_cycles: number;
-  parent_part_id: number | null;
-  created_at: string | null;
-  updated_at: string | null;
-  registered_by: string | null;
-  updated_by: string | null;
-  serial: string | null;
-  description: string | null;
-  article_id: number | null;
 };
 
 /**
@@ -195,7 +177,7 @@ export type Article = {
   status: string;
   description: string | null;
   image: string | null;
-  cost: string | null;
+  cost: number | null;
   zone: string | null;
   brand: string | null;
   certificate_8130: string | null;
@@ -226,7 +208,7 @@ export type ArticleListItemResource = {
   status: string;
   description: string | null;
   image: string | null;
-  cost: string | null;
+  cost: number | null;
   brand: string | null;
   zone: string | null;
   condition_id: number | null;
@@ -245,9 +227,9 @@ export type ArticleListItemResource = {
   reception_date: string | null;
   zone_id: number | null;
   condition?: Condition;
-  manufacturer?: Manufacturer;
+  manufacturer?: ManufacturerResource;
   batch?: Batch;
-  aircraft_part?: AircraftPart;
+  aircraft_part?: AircraftPartResource;
 };
 
 /**
@@ -632,6 +614,8 @@ export type HardTimeInstallationResource = {
   is_manual_entry: boolean;
   created_at: string | null;
   updated_at: string | null;
+  aircraft_slot?: AircraftComponentSlotResource;
+  aircraft_part?: AircraftPartResource;
 };
 
 /**
@@ -749,11 +733,6 @@ export type MaintenanceControlResource = {
   };
   in_progress?: boolean;
 };
-
-/**
- * Manufacturer
- */
-export type Manufacturer = Array<string>;
 
 /**
  * ManufacturerResource
@@ -1526,13 +1505,13 @@ export type VoluntaryReportRequest = {
  * WorkOrderComponentItemResource
  */
 export type WorkOrderComponentItemResource = {
-  id: string;
-  work_order_id: string;
-  hard_time_interval_id: string;
-  order: string;
+  id: number;
+  work_order_id: number;
+  hard_time_interval_id: number;
+  order: number;
   interval?: HardTimeIntervalResource;
-  created_at: string;
-  updated_at: string;
+  created_at: string | null;
+  updated_at: string | null;
 };
 
 /**
