@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 
 const fetchSafetyBulletins = async (company?: string): Promise<SafetyBulletinResource[]> => {
   const { data } = await axiosInstance.get(`/${company}/sms/bulletin`);
-  return data.data;
+  return data.data ?? data ?? [];
 };
 
 export const useGetSafetyBulletins = (company?: string) => {

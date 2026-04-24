@@ -10,7 +10,7 @@ const fetchGetEnrolledStatus = async ({
   activity_id: string;
 }): Promise<EmplooyesEnrolled> => {
   const { data } = await axiosInstance.get(
-    `/${company}/sms/enrollment-status/${activity_id}`
+    `/${company}/sms/activities/${activity_id}/enrollment-status`
   );
   return data;
 };

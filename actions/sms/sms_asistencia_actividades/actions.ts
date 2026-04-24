@@ -35,7 +35,7 @@ export const useCreateSMSActivityAttendance = () => {
       activity_id,
     }: SMSActivityAttendanceData) => {
       const response = await axiosInstance.post(
-        `/${company}/sms/activities/${activity_id}/enrollements`,
+        `/${company}/sms/activities/${activity_id}/enrollments`,
         data,
         {
           headers: {
@@ -89,7 +89,7 @@ export const useMarkSMSActivityAttendance = () => {
       employees_list,
     }: SMSActivityAttendaceData) => {
       await axiosInstance.patch(
-        `/${selectedCompany?.slug}/sms/mark-sms-activity-attendance/${activity_id}`,
+        `/${selectedCompany?.slug}/sms/activities/mark-attendance/${activity_id}`,
         employees_list
       );
     },

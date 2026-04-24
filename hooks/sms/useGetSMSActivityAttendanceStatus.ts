@@ -15,7 +15,7 @@ const fetchGetActivityAttendanceStatus = async ({
   company: string | null;
 }): Promise<EnrolledEmployees> => {
   const { data } = await axiosInstance.get(
-    `/${company}/sms/activities/${activity_id}/employee-attendance-status`
+    `/${company}/sms/activities/${activity_id}/attendance-status`
   );
   return data;
 };

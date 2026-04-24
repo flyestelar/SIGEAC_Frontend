@@ -15,7 +15,7 @@ const fetchActivityAttendanceStats = async (
   company?: string
 ) => {
   const { data } = await axiosInstance.get(
-    `/${company}/sms/sms-activity/${activity_id}/attendance-stats  `
+    `/${company}/sms/activities/${activity_id}/attendance-stats  `
   );
   return data;
 };
