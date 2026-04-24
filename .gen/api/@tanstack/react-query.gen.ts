@@ -420,7 +420,9 @@ import {
   unitStore,
   unitUpdate,
   user,
+  userCompaniesModulesByUser,
   userDelete,
+  userGrantModulePermission,
   userRegister,
   usersIndex,
   usersShow,
@@ -1664,11 +1666,17 @@ import type {
   UnitUpdateData,
   UnitUpdateError,
   UnitUpdateResponse,
+  UserCompaniesModulesByUserData,
+  UserCompaniesModulesByUserError,
+  UserCompaniesModulesByUserResponse,
   UserData,
   UserDeleteData,
   UserDeleteError,
   UserDeleteResponse,
   UserError,
+  UserGrantModulePermissionData,
+  UserGrantModulePermissionError,
+  UserGrantModulePermissionResponse,
   UserRegisterData,
   UserRegisterError,
   UserRegisterResponse,
@@ -12163,6 +12171,52 @@ export const usersUpdateMutation = (
   > = {
     mutationFn: async (fnOptions) => {
       const { data } = await usersUpdate({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+export const userCompaniesModulesByUserQueryKey = (options: Options<UserCompaniesModulesByUserData>) =>
+  createQueryKey('userCompaniesModulesByUser', options);
+
+export const userCompaniesModulesByUserOptions = (options: Options<UserCompaniesModulesByUserData>) =>
+  queryOptions<
+    UserCompaniesModulesByUserResponse,
+    AxiosError<UserCompaniesModulesByUserError>,
+    UserCompaniesModulesByUserResponse,
+    ReturnType<typeof userCompaniesModulesByUserQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await userCompaniesModulesByUser({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: userCompaniesModulesByUserQueryKey(options),
+  });
+
+export const userGrantModulePermissionMutation = (
+  options?: Partial<Options<UserGrantModulePermissionData>>,
+): UseMutationOptions<
+  UserGrantModulePermissionResponse,
+  AxiosError<UserGrantModulePermissionError>,
+  Options<UserGrantModulePermissionData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    UserGrantModulePermissionResponse,
+    AxiosError<UserGrantModulePermissionError>,
+    Options<UserGrantModulePermissionData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await userGrantModulePermission({
         ...options,
         ...fnOptions,
         throwOnError: true,

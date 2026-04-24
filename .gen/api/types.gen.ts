@@ -424,7 +424,13 @@ export type CompleteWorkOrderItemTaskRequest = {
 /**
  * Condition
  */
-export type Condition = Array<string>;
+export type Condition = {
+  id: number;
+  name: string | null;
+  description: string | null;
+  registered_by: string | null;
+  updated_by: string | null;
+};
 
 /**
  * Course
@@ -16693,6 +16699,123 @@ export type UsersUpdateResponses = {
 };
 
 export type UsersUpdateResponse = UsersUpdateResponses[keyof UsersUpdateResponses];
+
+export type UserCompaniesModulesByUserData = {
+  body?: never;
+  path: {
+    id: number;
+  };
+  query?: never;
+  url: '/users/{id}/companies-modules';
+};
+
+export type UserCompaniesModulesByUserErrors = {
+  /**
+   * Unauthenticated
+   */
+  401: {
+    /**
+     * Error overview.
+     */
+    message: string;
+  };
+};
+
+export type UserCompaniesModulesByUserError = UserCompaniesModulesByUserErrors[keyof UserCompaniesModulesByUserErrors];
+
+export type UserCompaniesModulesByUserResponses = {
+  200: {
+    companies: Array<{
+      id: string;
+      name: string;
+      slug: string;
+      modules: Array<Module>;
+    }>;
+  };
+};
+
+export type UserCompaniesModulesByUserResponse =
+  UserCompaniesModulesByUserResponses[keyof UserCompaniesModulesByUserResponses];
+
+export type UserGrantModulePermissionData = {
+  body: {
+    user_id: number;
+    company_id: number;
+    module_id: number;
+    is_active: boolean;
+  };
+  path?: never;
+  query?: never;
+  url: '/users/grant-module-permission';
+};
+
+export type UserGrantModulePermissionErrors = {
+  /**
+   * Unauthenticated
+   */
+  401: {
+    /**
+     * Error overview.
+     */
+    message: string;
+  };
+  /**
+   * Not found
+   */
+  404: {
+    /**
+     * Error overview.
+     */
+    message: string;
+  };
+  /**
+   * Validation error
+   */
+  422: {
+    /**
+     * Errors overview.
+     */
+    message: string;
+    /**
+     * A detailed description of each field that failed validation.
+     */
+    errors: {
+      [key: string]: Array<string>;
+    };
+  };
+};
+
+export type UserGrantModulePermissionError = UserGrantModulePermissionErrors[keyof UserGrantModulePermissionErrors];
+
+export type UserGrantModulePermissionResponses = {
+  200:
+    | {
+        status: 'OK';
+        message: 'Permiso removido correctamente' | 'El usuario no tenia este permiso asignado';
+        data: {
+          user_id: string;
+          company_id: number;
+          module_id: number;
+          company_module_id: number;
+          is_active: boolean;
+        };
+      }
+    | {
+        status: 'OK';
+        message: 'No existe relacion compania-modulo para eliminar permiso';
+        data: {
+          user_id: string;
+          company_id: string;
+          module_id: string;
+          company_module_id: null;
+          is_active: boolean;
+        };
+      }
+    | string;
+};
+
+export type UserGrantModulePermissionResponse =
+  UserGrantModulePermissionResponses[keyof UserGrantModulePermissionResponses];
 
 export type UserDeleteData = {
   body?: never;

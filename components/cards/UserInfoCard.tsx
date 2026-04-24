@@ -1,12 +1,13 @@
 import { Card, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Trash2, UserPen } from 'lucide-react';
 import Image from 'next/image';
 import { Badge } from '../ui/badge';
-import { Button } from '../ui/button';
 import { User } from '@/types';
 import { EditUserDialog } from '../dialogs/ajustes/EditUserDialog';
+import { UserCompaniesModulesDialog } from '../dialogs/ajustes/UserCompaniesModulesDialog';
 
 const UserInfoCard = ({ user }: { user: User }) => {
+  const isSuperuser = user.roles?.some((role) => role.name === 'SUPERUSER');
+
   return (
     <Card className="w-[380px]">
       <CardHeader>
@@ -27,6 +28,7 @@ const UserInfoCard = ({ user }: { user: User }) => {
         </div>
       </CardHeader>
       <CardFooter className="flex justify-center items-center gap-4">
+        {isSuperuser ? <UserCompaniesModulesDialog userId={user.id} userName={`${user.first_name} ${user.last_name}`} /> : null}
         <EditUserDialog user={user} />
       </CardFooter>
     </Card>

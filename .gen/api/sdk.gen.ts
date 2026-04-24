@@ -1240,11 +1240,17 @@ import type {
   UnitUpdateData,
   UnitUpdateErrors,
   UnitUpdateResponses,
+  UserCompaniesModulesByUserData,
+  UserCompaniesModulesByUserErrors,
+  UserCompaniesModulesByUserResponses,
   UserData,
   UserDeleteData,
   UserDeleteErrors,
   UserDeleteResponses,
   UserErrors,
+  UserGrantModulePermissionData,
+  UserGrantModulePermissionErrors,
+  UserGrantModulePermissionResponses,
   UserRegisterData,
   UserRegisterErrors,
   UserRegisterResponses,
@@ -7200,6 +7206,30 @@ export const usersUpdate = <ThrowOnError extends boolean = false>(options: Optio
     responseType: 'json',
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/users/{id}',
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    },
+  });
+
+export const userCompaniesModulesByUser = <ThrowOnError extends boolean = false>(
+  options: Options<UserCompaniesModulesByUserData, ThrowOnError>,
+) =>
+  (options.client ?? client).get<UserCompaniesModulesByUserResponses, UserCompaniesModulesByUserErrors, ThrowOnError>({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/users/{id}/companies-modules',
+    ...options,
+  });
+
+export const userGrantModulePermission = <ThrowOnError extends boolean = false>(
+  options: Options<UserGrantModulePermissionData, ThrowOnError>,
+) =>
+  (options.client ?? client).post<UserGrantModulePermissionResponses, UserGrantModulePermissionErrors, ThrowOnError>({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/users/grant-module-permission',
     ...options,
     headers: {
       'Content-Type': 'application/json',

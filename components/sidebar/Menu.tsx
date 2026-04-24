@@ -137,9 +137,9 @@ export function Menu({ isOpen }: MenuProps) {
                 <li className="w-full" key={groupKey}>
                   <GroupHeader label={groupLabel} collapsed={collapsed && isOpen !== undefined} />
 
-                  {menus.map(({ href, label, icon: Icon, active, submenus }) =>
+                  {menus.map(({ href, label, icon: Icon, active, submenus }, index) =>
                     submenus.length === 0 ? (
-                      <div className="w-full" key={href}>
+                      <div className="w-full" key={index + href}>
                         <LeafItem
                           href={href}
                           label={label}
@@ -149,7 +149,7 @@ export function Menu({ isOpen }: MenuProps) {
                         />
                       </div>
                     ) : (
-                      <div className="w-full" key={href}>
+                      <div className="w-full" key={index + href}>
                         <CollapseMenuButton
                           icon={Icon}
                           label={label}
