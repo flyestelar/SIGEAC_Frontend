@@ -139,7 +139,7 @@ export function Menu({ isOpen }: MenuProps) {
 
                   {menus.map(({ href, label, icon: Icon, active, submenus }) =>
                     submenus.length === 0 ? (
-                      <div className="w-full" key={href}>
+                      <div className="w-full" key={`${label}-${href}`}>
                         <LeafItem
                           href={href}
                           label={label}
@@ -149,7 +149,7 @@ export function Menu({ isOpen }: MenuProps) {
                         />
                       </div>
                     ) : (
-                      <div className="w-full" key={href}>
+                      <div className="w-full" key={`${label}-${href}`}>
                         <CollapseMenuButton
                           icon={Icon}
                           label={label}

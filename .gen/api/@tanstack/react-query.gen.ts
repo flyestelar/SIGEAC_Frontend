@@ -235,7 +235,6 @@ import {
   followUpControllStore,
   followUpControllUpdate,
   generalLocationIndex0,
-  getMailable,
   informationSourcesDestroy,
   informationSourcesIndex,
   informationSourcesStore,
@@ -294,6 +293,7 @@ import {
   noRoutineTaskUpdate,
   obligatoryReportAcceptObligatoryReport,
   obligatoryReportDestroy,
+  obligatoryReportGeneratePdfReport,
   obligatoryReportGetNextReportNumber,
   obligatoryReportIndex,
   obligatoryReportShow,
@@ -322,7 +322,6 @@ import {
   planificationReportPdfWorkOrder,
   planificationReportPdfWorkOrderReport,
   planificationReportWorkOrderPreInspection,
-  postByCompanyBatches,
   preliminaryInspectionDestroy,
   preliminaryInspectionIndex,
   preliminaryInspectionShow,
@@ -342,7 +341,6 @@ import {
   purchaseQuoteOrderDestroy3,
   purchaseQuoteOrderUpdate1,
   purchaseQuoteOrderUpdate2,
-  putByCompanyUpdateToolStatusById,
   questionsDestroy,
   questionsIndex,
   questionsShow,
@@ -393,9 +391,17 @@ import {
   safetyBulletinUpdate,
   sMsActivityAttendanceGetEnrollementStatus,
   sMsActivityAttendanceStoreSmsActivityAttendance,
+  sMsActivityCalendarActivities,
+  sMsActivityCloseActivity,
+  sMsActivityGenerateReport,
+  sMsActivityGetNextActivityNumber,
   sMsActivityIndex,
+  sMsActivityOpenActivity,
   sMsActivityShow,
   sMsActivityStore,
+  sMsActivityUpdateCalendarActivity,
+  smsSMsActivityGetActivitiesStats0,
+  smsSMsActivityGetActivitiesStats02,
   surveyCreateQuestion,
   surveyDeleteQuestion,
   surveyDestroy,
@@ -1146,9 +1152,6 @@ import type {
   GeneralLocationIndex0Data,
   GeneralLocationIndex0Error,
   GeneralLocationIndex0Response,
-  GetMailableData,
-  GetMailableError,
-  GetMailableResponse,
   InformationSourcesDestroyData,
   InformationSourcesDestroyError,
   InformationSourcesDestroyResponse,
@@ -1315,6 +1318,9 @@ import type {
   ObligatoryReportDestroyData,
   ObligatoryReportDestroyError,
   ObligatoryReportDestroyResponse,
+  ObligatoryReportGeneratePdfReportData,
+  ObligatoryReportGeneratePdfReportError,
+  ObligatoryReportGeneratePdfReportResponse,
   ObligatoryReportGetNextReportNumberData,
   ObligatoryReportGetNextReportNumberError,
   ObligatoryReportGetNextReportNumberResponse,
@@ -1393,9 +1399,6 @@ import type {
   PlanificationReportWorkOrderPreInspectionData,
   PlanificationReportWorkOrderPreInspectionError,
   PlanificationReportWorkOrderPreInspectionResponse,
-  PostByCompanyBatchesData,
-  PostByCompanyBatchesError,
-  PostByCompanyBatchesResponse,
   PreliminaryInspectionDestroyData,
   PreliminaryInspectionDestroyError,
   PreliminaryInspectionIndexData,
@@ -1452,9 +1455,6 @@ import type {
   PurchaseQuoteOrderUpdate2Data,
   PurchaseQuoteOrderUpdate2Error,
   PurchaseQuoteOrderUpdate2Response,
-  PutByCompanyUpdateToolStatusByIdData,
-  PutByCompanyUpdateToolStatusByIdError,
-  PutByCompanyUpdateToolStatusByIdResponse,
   QuestionsDestroyData,
   QuestionsDestroyError,
   QuestionsIndexData,
@@ -1600,15 +1600,39 @@ import type {
   SMsActivityAttendanceStoreSmsActivityAttendanceData,
   SMsActivityAttendanceStoreSmsActivityAttendanceError,
   SMsActivityAttendanceStoreSmsActivityAttendanceResponse,
+  SMsActivityCalendarActivitiesData,
+  SMsActivityCalendarActivitiesError,
+  SMsActivityCalendarActivitiesResponse,
+  SMsActivityCloseActivityData,
+  SMsActivityCloseActivityError,
+  SMsActivityCloseActivityResponse,
+  SMsActivityGenerateReportData,
+  SMsActivityGenerateReportError,
+  SMsActivityGenerateReportResponse,
+  SMsActivityGetNextActivityNumberData,
+  SMsActivityGetNextActivityNumberError,
+  SMsActivityGetNextActivityNumberResponse,
   SMsActivityIndexData,
   SMsActivityIndexError,
   SMsActivityIndexResponse,
+  SMsActivityOpenActivityData,
+  SMsActivityOpenActivityError,
+  SMsActivityOpenActivityResponse,
   SMsActivityShowData,
   SMsActivityShowError,
   SMsActivityShowResponse,
   SMsActivityStoreData,
   SMsActivityStoreError,
   SMsActivityStoreResponse,
+  SMsActivityUpdateCalendarActivityData,
+  SMsActivityUpdateCalendarActivityError,
+  SMsActivityUpdateCalendarActivityResponse,
+  SmsSmsActivityGetActivitiesStats02Data,
+  SmsSmsActivityGetActivitiesStats02Error,
+  SmsSmsActivityGetActivitiesStats02Response,
+  SmsSmsActivityGetActivitiesStats0Data,
+  SmsSmsActivityGetActivitiesStats0Error,
+  SmsSmsActivityGetActivitiesStats0Response,
   SurveyCreateQuestionData,
   SurveyCreateQuestionError,
   SurveyCreateQuestionResponse,
@@ -1920,96 +1944,6 @@ const createQueryKey = <TOptions extends Options>(
   }
   return [params];
 };
-
-export const batchesIndexQueryKey = (options: Options<BatchesIndexData>) => createQueryKey('batchesIndex', options);
-
-export const batchesIndexOptions = (options: Options<BatchesIndexData>) =>
-  queryOptions<
-    BatchesIndexResponse,
-    AxiosError<BatchesIndexError>,
-    BatchesIndexResponse,
-    ReturnType<typeof batchesIndexQueryKey>
-  >({
-    queryFn: async ({ queryKey, signal }) => {
-      const { data } = await batchesIndex({
-        ...options,
-        ...queryKey[0],
-        signal,
-        throwOnError: true,
-      });
-      return data;
-    },
-    queryKey: batchesIndexQueryKey(options),
-  });
-
-export const postByCompanyBatchesMutation = (
-  options?: Partial<Options<PostByCompanyBatchesData>>,
-): UseMutationOptions<
-  PostByCompanyBatchesResponse,
-  AxiosError<PostByCompanyBatchesError>,
-  Options<PostByCompanyBatchesData>
-> => {
-  const mutationOptions: UseMutationOptions<
-    PostByCompanyBatchesResponse,
-    AxiosError<PostByCompanyBatchesError>,
-    Options<PostByCompanyBatchesData>
-  > = {
-    mutationFn: async (fnOptions) => {
-      const { data } = await postByCompanyBatches({
-        ...options,
-        ...fnOptions,
-        throwOnError: true,
-      });
-      return data;
-    },
-  };
-  return mutationOptions;
-};
-
-export const putByCompanyUpdateToolStatusByIdMutation = (
-  options?: Partial<Options<PutByCompanyUpdateToolStatusByIdData>>,
-): UseMutationOptions<
-  PutByCompanyUpdateToolStatusByIdResponse,
-  AxiosError<PutByCompanyUpdateToolStatusByIdError>,
-  Options<PutByCompanyUpdateToolStatusByIdData>
-> => {
-  const mutationOptions: UseMutationOptions<
-    PutByCompanyUpdateToolStatusByIdResponse,
-    AxiosError<PutByCompanyUpdateToolStatusByIdError>,
-    Options<PutByCompanyUpdateToolStatusByIdData>
-  > = {
-    mutationFn: async (fnOptions) => {
-      const { data } = await putByCompanyUpdateToolStatusById({
-        ...options,
-        ...fnOptions,
-        throwOnError: true,
-      });
-      return data;
-    },
-  };
-  return mutationOptions;
-};
-
-export const getMailableQueryKey = (options?: Options<GetMailableData>) => createQueryKey('getMailable', options);
-
-export const getMailableOptions = (options?: Options<GetMailableData>) =>
-  queryOptions<
-    GetMailableResponse,
-    AxiosError<GetMailableError>,
-    GetMailableResponse,
-    ReturnType<typeof getMailableQueryKey>
-  >({
-    queryFn: async ({ queryKey, signal }) => {
-      const { data } = await getMailable({
-        ...options,
-        ...queryKey[0],
-        signal,
-        throwOnError: true,
-      });
-      return data;
-    },
-    queryKey: getMailableQueryKey(options),
-  });
 
 export const accountantsIndexQueryKey = (options: Options<AccountantsIndexData>) =>
   createQueryKey('accountantsIndex', options);
@@ -3953,6 +3887,27 @@ export const bankAccountAccountByBankOptions = (options: Options<BankAccountAcco
       return data;
     },
     queryKey: bankAccountAccountByBankQueryKey(options),
+  });
+
+export const batchesIndexQueryKey = (options: Options<BatchesIndexData>) => createQueryKey('batchesIndex', options);
+
+export const batchesIndexOptions = (options: Options<BatchesIndexData>) =>
+  queryOptions<
+    BatchesIndexResponse,
+    AxiosError<BatchesIndexError>,
+    BatchesIndexResponse,
+    ReturnType<typeof batchesIndexQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await batchesIndex({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: batchesIndexQueryKey(options),
   });
 
 /**
@@ -9153,6 +9108,28 @@ export const obligatoryReportAcceptObligatoryReportMutation = (
   return mutationOptions;
 };
 
+export const obligatoryReportGeneratePdfReportQueryKey = (options: Options<ObligatoryReportGeneratePdfReportData>) =>
+  createQueryKey('obligatoryReportGeneratePdfReport', options);
+
+export const obligatoryReportGeneratePdfReportOptions = (options: Options<ObligatoryReportGeneratePdfReportData>) =>
+  queryOptions<
+    ObligatoryReportGeneratePdfReportResponse,
+    AxiosError<ObligatoryReportGeneratePdfReportError>,
+    ObligatoryReportGeneratePdfReportResponse,
+    ReturnType<typeof obligatoryReportGeneratePdfReportQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await obligatoryReportGeneratePdfReport({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: obligatoryReportGeneratePdfReportQueryKey(options),
+  });
+
 export const optionIndexQueryKey = (options: Options<OptionIndexData>) => createQueryKey('optionIndex', options);
 
 /**
@@ -11345,6 +11322,9 @@ export const articleUpdate2Mutation = (
 export const sMsActivityIndexQueryKey = (options: Options<SMsActivityIndexData>) =>
   createQueryKey('sMsActivityIndex', options);
 
+/**
+ * Obtener lista de actividades con filtro opcional de rango de fechas
+ */
 export const sMsActivityIndexOptions = (options: Options<SMsActivityIndexData>) =>
   queryOptions<
     SMsActivityIndexResponse,
@@ -11364,6 +11344,9 @@ export const sMsActivityIndexOptions = (options: Options<SMsActivityIndexData>) 
     queryKey: sMsActivityIndexQueryKey(options),
   });
 
+/**
+ * Almacenar actividad con generación automática de número correlativo
+ */
 export const sMsActivityStoreMutation = (
   options?: Partial<Options<SMsActivityStoreData>>,
 ): UseMutationOptions<SMsActivityStoreResponse, AxiosError<SMsActivityStoreError>, Options<SMsActivityStoreData>> => {
@@ -11383,6 +11366,72 @@ export const sMsActivityStoreMutation = (
   };
   return mutationOptions;
 };
+
+export const smsSmsActivityGetActivitiesStats0QueryKey = (options: Options<SmsSmsActivityGetActivitiesStats0Data>) =>
+  createQueryKey('smsSMsActivityGetActivitiesStats0', options);
+
+export const smsSmsActivityGetActivitiesStats0Options = (options: Options<SmsSmsActivityGetActivitiesStats0Data>) =>
+  queryOptions<
+    SmsSmsActivityGetActivitiesStats0Response,
+    AxiosError<SmsSmsActivityGetActivitiesStats0Error>,
+    SmsSmsActivityGetActivitiesStats0Response,
+    ReturnType<typeof smsSmsActivityGetActivitiesStats0QueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await smsSMsActivityGetActivitiesStats0({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: smsSmsActivityGetActivitiesStats0QueryKey(options),
+  });
+
+export const sMsActivityCalendarActivitiesQueryKey = (options: Options<SMsActivityCalendarActivitiesData>) =>
+  createQueryKey('sMsActivityCalendarActivities', options);
+
+export const sMsActivityCalendarActivitiesOptions = (options: Options<SMsActivityCalendarActivitiesData>) =>
+  queryOptions<
+    SMsActivityCalendarActivitiesResponse,
+    AxiosError<SMsActivityCalendarActivitiesError>,
+    SMsActivityCalendarActivitiesResponse,
+    ReturnType<typeof sMsActivityCalendarActivitiesQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await sMsActivityCalendarActivities({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: sMsActivityCalendarActivitiesQueryKey(options),
+  });
+
+export const sMsActivityGetNextActivityNumberQueryKey = (options: Options<SMsActivityGetNextActivityNumberData>) =>
+  createQueryKey('sMsActivityGetNextActivityNumber', options);
+
+export const sMsActivityGetNextActivityNumberOptions = (options: Options<SMsActivityGetNextActivityNumberData>) =>
+  queryOptions<
+    SMsActivityGetNextActivityNumberResponse,
+    AxiosError<SMsActivityGetNextActivityNumberError>,
+    SMsActivityGetNextActivityNumberResponse,
+    ReturnType<typeof sMsActivityGetNextActivityNumberQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await sMsActivityGetNextActivityNumber({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: sMsActivityGetNextActivityNumberQueryKey(options),
+  });
 
 export const sMsActivityShowQueryKey = (options: Options<SMsActivityShowData>) =>
   createQueryKey('sMsActivityShow', options);
@@ -11404,6 +11453,122 @@ export const sMsActivityShowOptions = (options: Options<SMsActivityShowData>) =>
       return data;
     },
     queryKey: sMsActivityShowQueryKey(options),
+  });
+
+export const sMsActivityUpdateCalendarActivityMutation = (
+  options?: Partial<Options<SMsActivityUpdateCalendarActivityData>>,
+): UseMutationOptions<
+  SMsActivityUpdateCalendarActivityResponse,
+  AxiosError<SMsActivityUpdateCalendarActivityError>,
+  Options<SMsActivityUpdateCalendarActivityData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    SMsActivityUpdateCalendarActivityResponse,
+    AxiosError<SMsActivityUpdateCalendarActivityError>,
+    Options<SMsActivityUpdateCalendarActivityData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await sMsActivityUpdateCalendarActivity({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+export const sMsActivityCloseActivityMutation = (
+  options?: Partial<Options<SMsActivityCloseActivityData>>,
+): UseMutationOptions<
+  SMsActivityCloseActivityResponse,
+  AxiosError<SMsActivityCloseActivityError>,
+  Options<SMsActivityCloseActivityData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    SMsActivityCloseActivityResponse,
+    AxiosError<SMsActivityCloseActivityError>,
+    Options<SMsActivityCloseActivityData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await sMsActivityCloseActivity({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+export const sMsActivityOpenActivityMutation = (
+  options?: Partial<Options<SMsActivityOpenActivityData>>,
+): UseMutationOptions<
+  SMsActivityOpenActivityResponse,
+  AxiosError<SMsActivityOpenActivityError>,
+  Options<SMsActivityOpenActivityData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    SMsActivityOpenActivityResponse,
+    AxiosError<SMsActivityOpenActivityError>,
+    Options<SMsActivityOpenActivityData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await sMsActivityOpenActivity({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+export const sMsActivityGenerateReportQueryKey = (options: Options<SMsActivityGenerateReportData>) =>
+  createQueryKey('sMsActivityGenerateReport', options);
+
+export const sMsActivityGenerateReportOptions = (options: Options<SMsActivityGenerateReportData>) =>
+  queryOptions<
+    SMsActivityGenerateReportResponse,
+    AxiosError<SMsActivityGenerateReportError>,
+    SMsActivityGenerateReportResponse,
+    ReturnType<typeof sMsActivityGenerateReportQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await sMsActivityGenerateReport({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: sMsActivityGenerateReportQueryKey(options),
+  });
+
+export const smsSmsActivityGetActivitiesStats02QueryKey = (options: Options<SmsSmsActivityGetActivitiesStats02Data>) =>
+  createQueryKey('smsSMsActivityGetActivitiesStats02', options);
+
+export const smsSmsActivityGetActivitiesStats02Options = (options: Options<SmsSmsActivityGetActivitiesStats02Data>) =>
+  queryOptions<
+    SmsSmsActivityGetActivitiesStats02Response,
+    AxiosError<SmsSmsActivityGetActivitiesStats02Error>,
+    SmsSmsActivityGetActivitiesStats02Response,
+    ReturnType<typeof smsSmsActivityGetActivitiesStats02QueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await smsSMsActivityGetActivitiesStats02({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: smsSmsActivityGetActivitiesStats02QueryKey(options),
   });
 
 export const sMsActivityAttendanceGetEnrollementStatusQueryKey = (

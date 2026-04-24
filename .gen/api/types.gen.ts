@@ -196,15 +196,27 @@ export type Cash = Array<string>;
 export type CashMovement = Array<string>;
 
 /**
- * Certificate
+ * CertificateResource
  */
-export type Certificate = {
+export type CertificateResource = {
   id: number;
-  name: string;
-  registered_by: string;
+  employee_dni: string;
+  course_id: number;
+  completion_date: string | null;
+  document: string | null;
+  created_by: string | null;
   updated_by: string | null;
-  created_at: string | null;
-  updated_at: string | null;
+  course?: {
+    id: number;
+    name: string;
+    start_date: string | null;
+    end_date: string | null;
+  };
+  employee?: {
+    dni: string;
+    first_name: string;
+    last_name: string;
+  };
 };
 
 /**
@@ -693,18 +705,23 @@ export type Route = Array<string>;
  */
 export type SmsActivityRequest = {
   activity_name: string;
-  activity_number: string;
-  description: string;
-  place: string;
-  objetive: string;
-  topics: string;
-  end_date: string;
+  activity_number?: string | null;
+  title?: string | null;
   start_date: string;
-  duration: string;
+  end_date: string;
+  start_time?: string | null;
+  end_time?: string | null;
+  place: string;
+  topics: string;
+  objetive: string;
+  description: string;
   authorized_by: string;
   planned_by: string;
-  executed_by: string;
-  hour: string;
+  executed_by?: string | null;
+  status?: 'ABIERTO' | 'CERRADO' | 'PROCESO';
+  image?: Blob | File | null;
+  document?: Blob | File | null;
+  bulletin_id?: number | null;
 };
 
 /**
@@ -731,6 +748,8 @@ export type SmsActivityResource = {
   updated_by: string | null;
   image: string | null;
   document: string | null;
+  bulletin_id: number | null;
+  bulletin?: string;
 };
 
 /**
@@ -1425,125 +1444,6 @@ export type VoluntaryReportResource = {
  * WorkShop
  */
 export type WorkShop = Array<string>;
-
-export type BatchesIndexData = {
-  body?: never;
-  path: {
-    company: string;
-  };
-  query?: never;
-  url: '/{company}/batches';
-};
-
-export type BatchesIndexErrors = {
-  /**
-   * Unauthenticated
-   */
-  401: {
-    /**
-     * Error overview.
-     */
-    message: string;
-  };
-};
-
-export type BatchesIndexError = BatchesIndexErrors[keyof BatchesIndexErrors];
-
-export type BatchesIndexResponses = {
-  200: Array<Batch>;
-};
-
-export type BatchesIndexResponse = BatchesIndexResponses[keyof BatchesIndexResponses];
-
-export type PostByCompanyBatchesData = {
-  body?: never;
-  path: {
-    company: string;
-  };
-  query?: never;
-  url: '/{company}/batches';
-};
-
-export type PostByCompanyBatchesErrors = {
-  /**
-   * Unauthenticated
-   */
-  401: {
-    /**
-     * Error overview.
-     */
-    message: string;
-  };
-};
-
-export type PostByCompanyBatchesError = PostByCompanyBatchesErrors[keyof PostByCompanyBatchesErrors];
-
-export type PostByCompanyBatchesResponses = {
-  200: string;
-};
-
-export type PostByCompanyBatchesResponse = PostByCompanyBatchesResponses[keyof PostByCompanyBatchesResponses];
-
-export type PutByCompanyUpdateToolStatusByIdData = {
-  body?: never;
-  path: {
-    company: string;
-    id: string;
-  };
-  query?: never;
-  url: '/{company}/update-tool-status/{id}';
-};
-
-export type PutByCompanyUpdateToolStatusByIdErrors = {
-  /**
-   * Unauthenticated
-   */
-  401: {
-    /**
-     * Error overview.
-     */
-    message: string;
-  };
-};
-
-export type PutByCompanyUpdateToolStatusByIdError =
-  PutByCompanyUpdateToolStatusByIdErrors[keyof PutByCompanyUpdateToolStatusByIdErrors];
-
-export type PutByCompanyUpdateToolStatusByIdResponses = {
-  200: string;
-};
-
-export type PutByCompanyUpdateToolStatusByIdResponse =
-  PutByCompanyUpdateToolStatusByIdResponses[keyof PutByCompanyUpdateToolStatusByIdResponses];
-
-export type GetMailableData = {
-  body?: never;
-  path?: never;
-  query?: never;
-  url: '/mailable';
-};
-
-export type GetMailableErrors = {
-  /**
-   * Unauthenticated
-   */
-  401: {
-    /**
-     * Error overview.
-     */
-    message: string;
-  };
-};
-
-export type GetMailableError = GetMailableErrors[keyof GetMailableErrors];
-
-export type GetMailableResponses = {
-  200: {
-    [key: string]: unknown;
-  };
-};
-
-export type GetMailableResponse = GetMailableResponses[keyof GetMailableResponses];
 
 export type AccountantsIndexData = {
   body?: never;
@@ -4278,6 +4178,35 @@ export type BankAccountAccountByBankResponses = {
 export type BankAccountAccountByBankResponse =
   BankAccountAccountByBankResponses[keyof BankAccountAccountByBankResponses];
 
+export type BatchesIndexData = {
+  body?: never;
+  path: {
+    company: string;
+  };
+  query?: never;
+  url: '/{company}/batches';
+};
+
+export type BatchesIndexErrors = {
+  /**
+   * Unauthenticated
+   */
+  401: {
+    /**
+     * Error overview.
+     */
+    message: string;
+  };
+};
+
+export type BatchesIndexError = BatchesIndexErrors[keyof BatchesIndexErrors];
+
+export type BatchesIndexResponses = {
+  200: Array<Batch>;
+};
+
+export type BatchesIndexResponse = BatchesIndexResponses[keyof BatchesIndexResponses];
+
 export type BatchesDestroyData = {
   body?: never;
   path: {
@@ -5357,9 +5286,11 @@ export type CertificateIndexError = CertificateIndexErrors[keyof CertificateInde
 
 export type CertificateIndexResponses = {
   /**
-   * Si no lo encuentra en esa base de datos, no tiene certificados que ver
+   * Array of `CertificateResource`
    */
-  200: Array<Certificate> | Array<string>;
+  200: {
+    data: Array<CertificateResource>;
+  };
 };
 
 export type CertificateIndexResponse = CertificateIndexResponses[keyof CertificateIndexResponses];
@@ -5388,10 +5319,6 @@ export type CertificateStoreErrors = {
      */
     message: string;
   };
-  403: {
-    message: 'No tienes permisos para cargar certificados.';
-    status: 403;
-  };
   /**
    * Validation error
    */
@@ -5407,18 +5334,14 @@ export type CertificateStoreErrors = {
       [key: string]: Array<string>;
     };
   };
-  500: {
-    error: string;
-  };
 };
 
 export type CertificateStoreError = CertificateStoreErrors[keyof CertificateStoreErrors];
 
 export type CertificateStoreResponses = {
-  /**
-   * 4. GUARDADO TRANSACCIONAL
-   */
-  200: string;
+  200: {
+    [key: string]: unknown;
+  };
 };
 
 export type CertificateStoreResponse = CertificateStoreResponses[keyof CertificateStoreResponses];
@@ -5443,21 +5366,14 @@ export type CertificateDestroyErrors = {
      */
     message: string;
   };
-  403: {
-    message: 'No tienes permisos para eliminar certificados.';
-  };
-  500: {
-    message: string;
-  };
 };
 
 export type CertificateDestroyError = CertificateDestroyErrors[keyof CertificateDestroyErrors];
 
 export type CertificateDestroyResponses = {
-  /**
-   * 4. ELIMINACIÓN TRANSACCIONAL
-   */
-  200: string;
+  200: {
+    [key: string]: unknown;
+  };
 };
 
 export type CertificateDestroyResponse = CertificateDestroyResponses[keyof CertificateDestroyResponses];
@@ -5487,9 +5403,6 @@ export type CertificateUpdateErrors = {
      */
     message: string;
   };
-  403: {
-    message: 'No autorizado';
-  };
   /**
    * Validation error
    */
@@ -5505,18 +5418,14 @@ export type CertificateUpdateErrors = {
       [key: string]: Array<string>;
     };
   };
-  500: {
-    error: string;
-  };
 };
 
 export type CertificateUpdateError = CertificateUpdateErrors[keyof CertificateUpdateErrors];
 
 export type CertificateUpdateResponses = {
-  /**
-   * 4. GUARDADO TRANSACCIONAL
-   */
-  200: string;
+  200: {
+    [key: string]: unknown;
+  };
 };
 
 export type CertificateUpdateResponse = CertificateUpdateResponses[keyof CertificateUpdateResponses];
@@ -11700,15 +11609,6 @@ export type ObligatoryReportStoreData = {
 
 export type ObligatoryReportStoreErrors = {
   /**
-   * Authorization error
-   */
-  403: {
-    /**
-     * Error overview.
-     */
-    message: string;
-  };
-  /**
    * Validation error
    */
   422: {
@@ -11952,6 +11852,38 @@ export type ObligatoryReportAcceptObligatoryReportResponses = {
 
 export type ObligatoryReportAcceptObligatoryReportResponse =
   ObligatoryReportAcceptObligatoryReportResponses[keyof ObligatoryReportAcceptObligatoryReportResponses];
+
+export type ObligatoryReportGeneratePdfReportData = {
+  body?: never;
+  path: {
+    company: string;
+    id: string;
+  };
+  query?: never;
+  url: '/{company}/sms/obligatory-reports/{id}/pdf';
+};
+
+export type ObligatoryReportGeneratePdfReportErrors = {
+  /**
+   * Unauthenticated
+   */
+  401: {
+    /**
+     * Error overview.
+     */
+    message: string;
+  };
+};
+
+export type ObligatoryReportGeneratePdfReportError =
+  ObligatoryReportGeneratePdfReportErrors[keyof ObligatoryReportGeneratePdfReportErrors];
+
+export type ObligatoryReportGeneratePdfReportResponses = {
+  200: string;
+};
+
+export type ObligatoryReportGeneratePdfReportResponse =
+  ObligatoryReportGeneratePdfReportResponses[keyof ObligatoryReportGeneratePdfReportResponses];
 
 export type OptionIndexData = {
   body?: never;
@@ -15069,7 +15001,10 @@ export type SMsActivityIndexData = {
   path: {
     company: string;
   };
-  query?: never;
+  query?: {
+    from?: string;
+    to?: string;
+  };
   url: '/{company}/sms/activities';
 };
 
@@ -15142,6 +15077,119 @@ export type SMsActivityStoreResponses = {
 
 export type SMsActivityStoreResponse = SMsActivityStoreResponses[keyof SMsActivityStoreResponses];
 
+export type SmsSmsActivityGetActivitiesStats0Data = {
+  body?: never;
+  path: {
+    company: string;
+  };
+  query?: {
+    from?: string;
+    to?: string;
+  };
+  url: '/{company}/sms/activities/stats';
+};
+
+export type SmsSmsActivityGetActivitiesStats0Errors = {
+  /**
+   * Unauthenticated
+   */
+  401: {
+    /**
+     * Error overview.
+     */
+    message: string;
+  };
+};
+
+export type SmsSmsActivityGetActivitiesStats0Error =
+  SmsSmsActivityGetActivitiesStats0Errors[keyof SmsSmsActivityGetActivitiesStats0Errors];
+
+export type SmsSmsActivityGetActivitiesStats0Responses = {
+  200: {
+    statusData: string;
+    typeData: Array<{
+      name: string;
+      value: number | 0;
+    }>;
+    responsibleData: string;
+  };
+};
+
+export type SmsSmsActivityGetActivitiesStats0Response =
+  SmsSmsActivityGetActivitiesStats0Responses[keyof SmsSmsActivityGetActivitiesStats0Responses];
+
+export type SMsActivityCalendarActivitiesData = {
+  body?: never;
+  path: {
+    company: string;
+  };
+  query?: never;
+  url: '/{company}/sms/activities/calendar';
+};
+
+export type SMsActivityCalendarActivitiesErrors = {
+  /**
+   * Unauthenticated
+   */
+  401: {
+    /**
+     * Error overview.
+     */
+    message: string;
+  };
+};
+
+export type SMsActivityCalendarActivitiesError =
+  SMsActivityCalendarActivitiesErrors[keyof SMsActivityCalendarActivitiesErrors];
+
+export type SMsActivityCalendarActivitiesResponses = {
+  200: Array<{
+    id: number;
+    title: string;
+    start: string;
+    end: string;
+    description: string;
+    calendarId: string;
+    status: string;
+  }>;
+};
+
+export type SMsActivityCalendarActivitiesResponse =
+  SMsActivityCalendarActivitiesResponses[keyof SMsActivityCalendarActivitiesResponses];
+
+export type SMsActivityGetNextActivityNumberData = {
+  body?: never;
+  path: {
+    company: string;
+  };
+  query?: never;
+  url: '/{company}/sms/activities/next-number';
+};
+
+export type SMsActivityGetNextActivityNumberErrors = {
+  /**
+   * Unauthenticated
+   */
+  401: {
+    /**
+     * Error overview.
+     */
+    message: string;
+  };
+};
+
+export type SMsActivityGetNextActivityNumberError =
+  SMsActivityGetNextActivityNumberErrors[keyof SMsActivityGetNextActivityNumberErrors];
+
+export type SMsActivityGetNextActivityNumberResponses = {
+  200: {
+    next_number: string;
+  };
+};
+
+export type SMsActivityGetNextActivityNumberResponse =
+  SMsActivityGetNextActivityNumberResponses[keyof SMsActivityGetNextActivityNumberResponses];
+
 export type SMsActivityShowData = {
   body?: never;
   path: {
@@ -15162,6 +15210,15 @@ export type SMsActivityShowErrors = {
      */
     message: string;
   };
+  /**
+   * Not found
+   */
+  404: {
+    /**
+     * Error overview.
+     */
+    message: string;
+  };
 };
 
 export type SMsActivityShowError = SMsActivityShowErrors[keyof SMsActivityShowErrors];
@@ -15176,6 +15233,221 @@ export type SMsActivityShowResponses = {
 };
 
 export type SMsActivityShowResponse = SMsActivityShowResponses[keyof SMsActivityShowResponses];
+
+export type SMsActivityUpdateCalendarActivityData = {
+  body: {
+    start_date: string;
+    end_date: string;
+    start_time: string;
+    end_time: string;
+  };
+  path: {
+    company: string;
+    id: string;
+  };
+  query?: never;
+  url: '/{company}/sms/activities/update-calendar/{id}';
+};
+
+export type SMsActivityUpdateCalendarActivityErrors = {
+  /**
+   * Unauthenticated
+   */
+  401: {
+    /**
+     * Error overview.
+     */
+    message: string;
+  };
+  403: {
+    message: 'No se puede actualizar una actividad con estatus CERRADO.';
+    status: 403;
+  };
+  /**
+   * Validation error
+   */
+  422: {
+    /**
+     * Errors overview.
+     */
+    message: string;
+    /**
+     * A detailed description of each field that failed validation.
+     */
+    errors: {
+      [key: string]: Array<string>;
+    };
+  };
+};
+
+export type SMsActivityUpdateCalendarActivityError =
+  SMsActivityUpdateCalendarActivityErrors[keyof SMsActivityUpdateCalendarActivityErrors];
+
+export type SMsActivityUpdateCalendarActivityResponses = {
+  200: {
+    message: 'Actividad actualizada';
+    status: 200;
+  };
+};
+
+export type SMsActivityUpdateCalendarActivityResponse =
+  SMsActivityUpdateCalendarActivityResponses[keyof SMsActivityUpdateCalendarActivityResponses];
+
+export type SMsActivityCloseActivityData = {
+  body?: never;
+  path: {
+    company: string;
+    id: string;
+  };
+  query?: never;
+  url: '/{company}/sms/activities/close/{id}';
+};
+
+export type SMsActivityCloseActivityErrors = {
+  /**
+   * Unauthenticated
+   */
+  401: {
+    /**
+     * Error overview.
+     */
+    message: string;
+  };
+};
+
+export type SMsActivityCloseActivityError = SMsActivityCloseActivityErrors[keyof SMsActivityCloseActivityErrors];
+
+export type SMsActivityCloseActivityResponses = {
+  200: {
+    message: 'Actividad actualizada correctamente';
+    status: 200;
+  };
+};
+
+export type SMsActivityCloseActivityResponse =
+  SMsActivityCloseActivityResponses[keyof SMsActivityCloseActivityResponses];
+
+export type SMsActivityOpenActivityData = {
+  body?: never;
+  path: {
+    company: string;
+    id: string;
+  };
+  query?: never;
+  url: '/{company}/sms/activities/open/{id}';
+};
+
+export type SMsActivityOpenActivityErrors = {
+  /**
+   * Unauthenticated
+   */
+  401: {
+    /**
+     * Error overview.
+     */
+    message: string;
+  };
+};
+
+export type SMsActivityOpenActivityError = SMsActivityOpenActivityErrors[keyof SMsActivityOpenActivityErrors];
+
+export type SMsActivityOpenActivityResponses = {
+  200: {
+    message: 'Actividad reabierta correctamente';
+    status: 200;
+  };
+};
+
+export type SMsActivityOpenActivityResponse = SMsActivityOpenActivityResponses[keyof SMsActivityOpenActivityResponses];
+
+export type SMsActivityGenerateReportData = {
+  body?: never;
+  path: {
+    company: string;
+  };
+  query: {
+    from: string;
+    to: string;
+  };
+  url: '/{company}/sms/stats/activities';
+};
+
+export type SMsActivityGenerateReportErrors = {
+  /**
+   * Unauthenticated
+   */
+  401: {
+    /**
+     * Error overview.
+     */
+    message: string;
+  };
+  404: {
+    message: 'No hay datos para estas fechas';
+  };
+  /**
+   * Validation error
+   */
+  422: {
+    /**
+     * Errors overview.
+     */
+    message: string;
+    /**
+     * A detailed description of each field that failed validation.
+     */
+    errors: {
+      [key: string]: Array<string>;
+    };
+  };
+};
+
+export type SMsActivityGenerateReportError = SMsActivityGenerateReportErrors[keyof SMsActivityGenerateReportErrors];
+
+export type SMsActivityGenerateReportResponses = {
+  200: string;
+};
+
+export type SMsActivityGenerateReportResponse =
+  SMsActivityGenerateReportResponses[keyof SMsActivityGenerateReportResponses];
+
+export type SmsSmsActivityGetActivitiesStats02Data = {
+  body?: never;
+  path: {
+    company: string;
+  };
+  query?: never;
+  url: '/{company}/sms/stats/activities-stats';
+};
+
+export type SmsSmsActivityGetActivitiesStats02Errors = {
+  /**
+   * Unauthenticated
+   */
+  401: {
+    /**
+     * Error overview.
+     */
+    message: string;
+  };
+};
+
+export type SmsSmsActivityGetActivitiesStats02Error =
+  SmsSmsActivityGetActivitiesStats02Errors[keyof SmsSmsActivityGetActivitiesStats02Errors];
+
+export type SmsSmsActivityGetActivitiesStats02Responses = {
+  200: {
+    statusData: string;
+    typeData: Array<{
+      name: string;
+      value: number | 0;
+    }>;
+    responsibleData: string;
+  };
+};
+
+export type SmsSmsActivityGetActivitiesStats02Response =
+  SmsSmsActivityGetActivitiesStats02Responses[keyof SmsSmsActivityGetActivitiesStats02Responses];
 
 export type SMsActivityAttendanceGetEnrollementStatusData = {
   body?: never;

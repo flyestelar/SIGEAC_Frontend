@@ -9,7 +9,7 @@ const fetchEmployesByDepartment = async (acronym: string, location_id: string,co
   return data;
 };
 
-export const useGetEmployesByDepartment = (acronym: string, location_id: string, company?: string) => {
+export const useGetEmployeesByDepartment = (acronym: string, location_id: string, company?: string) => {
   return useQuery<Employee[]>({
     queryKey: ["employees-by-department", acronym, location_id, company],
     queryFn: () => fetchEmployesByDepartment(acronym, location_id, company),

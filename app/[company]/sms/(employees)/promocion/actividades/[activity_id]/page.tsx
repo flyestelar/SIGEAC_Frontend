@@ -1,6 +1,6 @@
 "use client";
 import BarChartCourseComponent from "@/components/charts/BarChartCourseComponent";
-import { PieChartComponent } from "@/components/charts/PieChartComponent";
+import PieChartComponent from "@/components/charts/PieChartComponent";
 import { ContentLayout } from "@/components/layout/ContentLayout";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -617,7 +617,7 @@ const ShowSMSActivity = () => {
                           height="100%"
                           width="100%"
                           title=""
-                          data={AttendanceStats}
+                          data={AttendanceStats ? { total: AttendanceStats.total, open: AttendanceStats.attended, closed: AttendanceStats.not_attended } : { total: 0, open: 0, closed: 0 }}
                           bar_first_name="Asistente"
                           bar_second_name="Inasistente"
                         />

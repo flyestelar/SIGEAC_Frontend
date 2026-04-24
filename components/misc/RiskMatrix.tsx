@@ -1,13 +1,12 @@
-// components/RiskMatrix.tsx
 import React, { FC } from "react";
 
-interface Risk {
-  severity: string;
-  probability: string;
-  color: string;
+interface RiskMatrixProps {
+  onCellClick?: (probability: string, severity: string) => void;
+  selectedProbability?: string;
+  selectedSeverity?: string;
 }
 
-const RiskMatrix: FC = () => {
+const RiskMatrix: FC<RiskMatrixProps> = ({ onCellClick, selectedProbability, selectedSeverity }) => {
   const severities = [
     { code: "A", name: "Catastrófico" },
     { code: "B", name: "Peligroso" },
@@ -78,18 +77,24 @@ const RiskMatrix: FC = () => {
                 <p>{probability.name}</p>
                 <p>{probability.value}</p>
               </td>
-              {severities.map((severity) => (
-                <td
-                  key={`${severity.code}-${probability.value}`}
-                  className={`border border-gray-400 p-4 ${getRiskColor(
-                    severity.code,
-                    probability.value
-                  )} text-center`}
-                >
-                  {probability.value}
-                  {severity.code}
-                </td>
-              ))}
+              {severities.map((severity) => {
+                const isSelected =
+                  selectedProbability === String(probability.value) &&
+                  selectedSeverity === severity.code;
+                return (
+                  <td
+                    key={`${severity.code}-${probability.value}`}
+                    onClick={() => onCellClick?.(String(probability.value), severity.code)}
+                    className={`border border-gray-400 p-4 ${getRiskColor(
+                      severity.code,
+                      probability.value
+                    )} text-center ${onCellClick ? "cursor-pointer" : ""} ${isSelected ? "ring-4 ring-inset ring-white font-bold" : ""}`}
+                  >
+                    {probability.value}
+                    {severity.code}
+                  </td>
+                );
+              })}
             </tr>
           ))}
         </tbody>

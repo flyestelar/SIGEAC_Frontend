@@ -87,7 +87,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const token = response.headers['authorization'];
       if (!token) throw new Error('No se recibió token de autenticación');
 
-      createCookie("auth_token", token);
+      await createCookie("auth_token", token);
       await createSession(response.data.id);
 
       return response.data;

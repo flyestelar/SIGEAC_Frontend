@@ -3,9 +3,11 @@
 import { cookies } from 'next/headers'
 
 export async function createCookie(name: string, value: string) {
-  cookies().set(name, value)
+  const cookieStore = await cookies()
+  cookieStore.set(name, value)
 }
 
 export async function deleteCookie(name: string) {
-  cookies().delete(name)
+  const cookieStore = await cookies()
+  cookieStore.delete(name)
 }

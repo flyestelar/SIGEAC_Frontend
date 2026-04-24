@@ -31,6 +31,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useGetEmployeesByDepartment } from "@/hooks/sistema/useGetEmployeesByDepartament";
+import { useGetSafetyBulletins } from "@/hooks/sms/boletin/useGetSafetyBulletins";
 import { cn } from "@/lib/utils";
 import { useCompanyStore } from "@/stores/CompanyStore";
 import { SmsActivityResource } from "@/.gen/api/types.gen";
@@ -64,6 +65,7 @@ const FormSchema = z
         authorized_by: z.string(),
         planned_by: z.string(),
         executed_by: z.string().optional(),
+        bulletin_id: z.number().nullable().optional(),
         title: z.string(),
         image: z.any().optional(),
         document: z.any().optional(),
@@ -100,6 +102,7 @@ export default function CreateSMSActivityForm({
     const { selectedCompany, selectedStation } = useCompanyStore();
     const { data: employees, isLoading: isLoadingEmployees } =
         useGetEmployeesByDepartment("SMS", selectedStation, selectedCompany?.slug);
+    const { data: bulletins } = useGetSafetyBulletins(selectedCompany?.slug);
 
     const { createSMSActivity } = useCreateSMSActivity();
     const { updateSMSActivity } = useUpdateSMSActivity();
@@ -134,6 +137,7 @@ export default function CreateSMSActivityForm({
             authorized_by: initialData?.authorized_by?.dni?.toString(),
             planned_by: initialData?.planned_by?.dni?.toString(),
             executed_by: initialData?.executed_by || "",
+            bulletin_id: initialData?.bulletin_id ?? null,
         },
     });
 
@@ -165,6 +169,7 @@ export default function CreateSMSActivityForm({
                 authorized_by: initialData.authorized_by?.dni?.toString(),
                 planned_by: initialData.planned_by?.dni?.toString(),
                 executed_by: initialData.executed_by || "",
+                bulletin_id: initialData.bulletin_id ?? null,
             });
         } else if (!isEditing && nextNumberData?.next_number) {
             form.setValue("activity_number", nextNumberData.next_number);
@@ -210,7 +215,7 @@ export default function CreateSMSActivityForm({
                 id: initialData.id.toString(),
                 data: {
                     ...data,
-                    status: initialData.status ?? "",
+                    status: initialData.status ?? "ABIERTO",
                 },
             };
             await updateSMSActivity.mutateAsync(value);
@@ -232,11 +237,10 @@ export default function CreateSMSActivityForm({
         <Form {...form}>
             <form
                 onSubmit={form.handleSubmit(onSubmit)}
-                className="flex flex-col space-y-3 max-h-[80vh] overflow-y-auto p-2"
+                className="flex flex-col gap-4 max-h-[80vh] overflow-y-auto p-2"
             >
-                <FormLabel className="text-lg text-center m-2"></FormLabel>
-                {/* ... (el resto del JSX no necesita cambios) ... */}
-                <div className="flex gap-9 items-center justify-between">
+                {/* Fila 1: Número | Título | Nombre */}
+                <div className="grid grid-cols-3 gap-4">
                     <FormField
                         control={form.control}
                         name="activity_number"
@@ -257,13 +261,12 @@ export default function CreateSMSActivityForm({
                             </FormItem>
                         )}
                     />
-
                     <FormField
                         control={form.control}
                         name="title"
                         render={({ field }) => (
                             <FormItem>
-                                <FormLabel>Titulo de la Actividad</FormLabel>
+                                <FormLabel>Título de la Actividad</FormLabel>
                                 <FormControl>
                                     <Input {...field} maxLength={100} />
                                 </FormControl>
@@ -271,7 +274,6 @@ export default function CreateSMSActivityForm({
                             </FormItem>
                         )}
                     />
-
                     <FormField
                         control={form.control}
                         name="activity_name"
@@ -286,30 +288,28 @@ export default function CreateSMSActivityForm({
                         )}
                     />
                 </div>
-                <div className="flex gap-2 items-center justify-center">
+
+                {/* Fila 2: Fecha Inicio | Fecha Final | Hora Inicio | Hora Final */}
+                <div className="grid grid-cols-4 gap-4">
                     <FormField
                         control={form.control}
                         name="start_date"
                         render={({ field }) => (
-                            <FormItem className="flex flex-col mt-2.5 w-full">
+                            <FormItem className="flex flex-col">
                                 <FormLabel>Fecha de Inicio</FormLabel>
                                 <Popover>
                                     <PopoverTrigger asChild>
                                         <FormControl>
                                             <Button
-                                                variant={"outline"}
+                                                variant="outline"
                                                 className={cn(
                                                     "w-full pl-3 text-left font-normal",
                                                     !field.value && "text-muted-foreground",
                                                 )}
                                             >
-                                                {field.value ? (
-                                                    format(field.value, "PPP", {
-                                                        locale: es,
-                                                    })
-                                                ) : (
-                                                    <span>Seleccionar Fecha de Inicio</span>
-                                                )}
+                                                {field.value
+                                                    ? format(field.value, "PPP", { locale: es })
+                                                    : <span>Seleccionar fecha</span>}
                                                 <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                                             </Button>
                                         </FormControl>
@@ -326,10 +326,7 @@ export default function CreateSMSActivityForm({
                                             captionLayout="dropdown-buttons"
                                             components={{
                                                 Dropdown: (props) => (
-                                                    <select
-                                                        {...props}
-                                                        className="bg-popover text-popover-foreground"
-                                                    >
+                                                    <select {...props} className="bg-popover text-popover-foreground">
                                                         {props.children}
                                                     </select>
                                                 ),
@@ -341,30 +338,25 @@ export default function CreateSMSActivityForm({
                             </FormItem>
                         )}
                     />
-
                     <FormField
                         control={form.control}
                         name="end_date"
                         render={({ field }) => (
-                            <FormItem className="flex flex-col mt-2.5 w-full">
+                            <FormItem className="flex flex-col">
                                 <FormLabel>Fecha Final</FormLabel>
                                 <Popover>
                                     <PopoverTrigger asChild>
                                         <FormControl>
                                             <Button
-                                                variant={"outline"}
+                                                variant="outline"
                                                 className={cn(
                                                     "w-full pl-3 text-left font-normal",
                                                     !field.value && "text-muted-foreground",
                                                 )}
                                             >
-                                                {field.value ? (
-                                                    format(field.value, "PPP", {
-                                                        locale: es,
-                                                    })
-                                                ) : (
-                                                    <span>Seleccionar Fecha de Inicio</span>
-                                                )}
+                                                {field.value
+                                                    ? format(field.value, "PPP", { locale: es })
+                                                    : <span>Seleccionar fecha</span>}
                                                 <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                                             </Button>
                                         </FormControl>
@@ -381,10 +373,7 @@ export default function CreateSMSActivityForm({
                                             captionLayout="dropdown-buttons"
                                             components={{
                                                 Dropdown: (props) => (
-                                                    <select
-                                                        {...props}
-                                                        className="bg-popover text-popover-foreground"
-                                                    >
+                                                    <select {...props} className="bg-popover text-popover-foreground">
                                                         {props.children}
                                                     </select>
                                                 ),
@@ -396,22 +385,18 @@ export default function CreateSMSActivityForm({
                             </FormItem>
                         )}
                     />
-                </div>
-                <div className="flex gap-4 justify-center items-center">
                     <FormField
                         control={form.control}
                         name="start_time"
                         render={({ field }) => (
-                            <FormItem className="w-full">
+                            <FormItem className="flex flex-col">
                                 <FormLabel>Hora de Inicio</FormLabel>
                                 <FormControl>
                                     <Input
                                         type="time"
                                         {...field}
                                         onChange={(e) => {
-                                            if (
-                                                e.target.value.match(/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/)
-                                            ) {
+                                            if (e.target.value.match(/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/)) {
                                                 field.onChange(e.target.value);
                                             }
                                         }}
@@ -421,21 +406,18 @@ export default function CreateSMSActivityForm({
                             </FormItem>
                         )}
                     />
-
                     <FormField
                         control={form.control}
                         name="end_time"
                         render={({ field }) => (
-                            <FormItem className="w-full">
+                            <FormItem className="flex flex-col">
                                 <FormLabel>Hora Final</FormLabel>
                                 <FormControl>
                                     <Input
                                         type="time"
                                         {...field}
                                         onChange={(e) => {
-                                            if (
-                                                e.target.value.match(/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/)
-                                            ) {
+                                            if (e.target.value.match(/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/)) {
                                                 field.onChange(e.target.value);
                                             }
                                         }}
@@ -446,12 +428,14 @@ export default function CreateSMSActivityForm({
                         )}
                     />
                 </div>
-                <div className="flex gap-4 justify-center items-center">
+
+                {/* Fila 3: Lugar | Objetivo | Boletín */}
+                <div className="grid grid-cols-3 gap-4">
                     <FormField
                         control={form.control}
                         name="place"
                         render={({ field }) => (
-                            <FormItem className="w-full">
+                            <FormItem>
                                 <FormLabel>Lugar de Actividad</FormLabel>
                                 <FormControl>
                                     <Input {...field} maxLength={500} />
@@ -460,13 +444,12 @@ export default function CreateSMSActivityForm({
                             </FormItem>
                         )}
                     />
-
                     <FormField
                         control={form.control}
                         name="objetive"
                         render={({ field }) => (
-                            <FormItem className="w-full">
-                                <FormLabel>Objetivo de la Acividad</FormLabel>
+                            <FormItem>
+                                <FormLabel>Objetivo de la Actividad</FormLabel>
                                 <FormControl>
                                     <Input {...field} maxLength={500} />
                                 </FormControl>
@@ -474,7 +457,39 @@ export default function CreateSMSActivityForm({
                             </FormItem>
                         )}
                     />
+                    <FormField
+                        control={form.control}
+                        name="bulletin_id"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Boletín de Seguridad</FormLabel>
+                                <Select
+                                    onValueChange={(val) =>
+                                        field.onChange(val === "none" ? null : Number(val))
+                                    }
+                                    value={field.value != null ? field.value.toString() : "none"}
+                                >
+                                    <FormControl>
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Sin boletín" />
+                                        </SelectTrigger>
+                                    </FormControl>
+                                    <SelectContent>
+                                        <SelectItem value="none">Sin boletín</SelectItem>
+                                        {bulletins?.map((bulletin) => (
+                                            <SelectItem key={bulletin.id} value={bulletin.id.toString()}>
+                                                {bulletin.title}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                                <FormMessage className="text-xs" />
+                            </FormItem>
+                        )}
+                    />
                 </div>
+
+                {/* Fila 4: Temas Abordados */}
                 <FormItem>
                     <FormLabel>Temas Abordados</FormLabel>
                     <div className="space-y-2">
@@ -489,11 +504,11 @@ export default function CreateSMSActivityForm({
                                 <Plus className="h-4 w-4" />
                             </Button>
                         </div>
-                        <div className="flex flex-wrap gap-2 p-2 border rounded-md max-h-48 overflow-y-auto">
+                        <div className="flex flex-wrap gap-2 p-2 border rounded-md min-h-10 max-h-32 overflow-y-auto">
                             {topics.map((item, index) => (
                                 <div
                                     key={index}
-                                    className="flex items-center gap-2 bg-muted/40 border rounded-full px-3 py-1.5"
+                                    className="flex items-center gap-1 bg-muted/40 border rounded-full px-3 py-1"
                                 >
                                     <span className="text-sm">{item}</span>
                                     <Button
@@ -518,52 +533,48 @@ export default function CreateSMSActivityForm({
                             <FormControl>
                                 <Input type="hidden" {...field} />
                             </FormControl>
-                            <FormMessage />
                         </FormItem>
                     )}
                 />
+
+                {/* Fila 5: Observaciones */}
                 <FormField
                     control={form.control}
                     name="description"
                     render={({ field }) => (
-                        <FormItem className="w-full">
+                        <FormItem>
                             <FormLabel>Observaciones</FormLabel>
                             <FormControl>
-                                <Textarea {...field} maxLength={2000} />
+                                <Textarea {...field} maxLength={2000} rows={3} />
                             </FormControl>
                             <FormMessage className="text-xs" />
                         </FormItem>
                     )}
                 />
-                <div className="flex gap-4 justify-center items-center">
+
+                {/* Fila 6: Autorizado | Elaborado | Realizado */}
+                <div className="grid grid-cols-3 gap-4">
                     <FormField
                         control={form.control}
                         name="authorized_by"
                         render={({ field }) => (
-                            <FormItem className="w-full">
-                                <FormLabel>Autorizado por..</FormLabel>
+                            <FormItem>
+                                <FormLabel>Autorizado por</FormLabel>
                                 {isLoadingEmployees ? (
                                     <div className="flex items-center gap-2 p-2 border rounded-md bg-muted">
-                                        <Loader2 className="h-4 w-4 animate-spin" />{" "}
+                                        <Loader2 className="h-4 w-4 animate-spin" />
                                         <span className="text-sm">Cargando...</span>
                                     </div>
                                 ) : (
-                                    <Select
-                                        onValueChange={field.onChange}
-                                        value={field.value} // Cambiar defaultValue por value para un control completo
-                                        disabled={isLoadingEmployees}
-                                    >
+                                    <Select onValueChange={field.onChange} value={field.value} disabled={isLoadingEmployees}>
                                         <FormControl>
                                             <SelectTrigger>
-                                                <SelectValue placeholder="Autorizador por.." />
+                                                <SelectValue placeholder="Seleccionar..." />
                                             </SelectTrigger>
                                         </FormControl>
                                         <SelectContent>
                                             {employees?.map((employee) => (
-                                                <SelectItem
-                                                    key={employee.dni}
-                                                    value={employee.dni.toString()}
-                                                >
+                                                <SelectItem key={employee.dni} value={employee.dni.toString()}>
                                                     {employee.first_name} {employee.last_name}
                                                 </SelectItem>
                                             ))}
@@ -574,35 +585,27 @@ export default function CreateSMSActivityForm({
                             </FormItem>
                         )}
                     />
-
                     <FormField
                         control={form.control}
                         name="planned_by"
                         render={({ field }) => (
-                            <FormItem className="w-full">
-                                <FormLabel>Elaborado por..</FormLabel>
+                            <FormItem>
+                                <FormLabel>Elaborado por</FormLabel>
                                 {isLoadingEmployees ? (
                                     <div className="flex items-center gap-2 p-2 border rounded-md bg-muted">
-                                        <Loader2 className="h-4 w-4 animate-spin" />{" "}
+                                        <Loader2 className="h-4 w-4 animate-spin" />
                                         <span className="text-sm">Cargando...</span>
                                     </div>
                                 ) : (
-                                    <Select
-                                        onValueChange={field.onChange}
-                                        value={field.value} // Cambiar defaultValue por value
-                                        disabled={isLoadingEmployees}
-                                    >
+                                    <Select onValueChange={field.onChange} value={field.value} disabled={isLoadingEmployees}>
                                         <FormControl>
                                             <SelectTrigger>
-                                                <SelectValue placeholder="Elaborado por.." />
+                                                <SelectValue placeholder="Seleccionar..." />
                                             </SelectTrigger>
                                         </FormControl>
                                         <SelectContent>
                                             {employees?.map((employee) => (
-                                                <SelectItem
-                                                    key={employee.id}
-                                                    value={employee.dni.toString()}
-                                                >
+                                                <SelectItem key={employee.id} value={employee.dni.toString()}>
                                                     {employee.first_name} {employee.last_name}
                                                 </SelectItem>
                                             ))}
@@ -617,8 +620,8 @@ export default function CreateSMSActivityForm({
                         control={form.control}
                         name="executed_by"
                         render={({ field }) => (
-                            <FormItem className="w-full">
-                                <FormLabel>Realizado por..</FormLabel>
+                            <FormItem>
+                                <FormLabel>Realizado por</FormLabel>
                                 <FormControl>
                                     <Input {...field} maxLength={100} />
                                 </FormControl>
@@ -627,16 +630,16 @@ export default function CreateSMSActivityForm({
                         )}
                     />
                 </div>
-                {/* Sección de Carga de Archivos */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+                {/* Fila 7: Imagen | Documento */}
+                <div className="grid grid-cols-2 gap-4">
                     <FormField
                         control={form.control}
                         name="image"
                         render={({ field }) => (
                             <FormItem>
                                 <FormLabel>Imagen de la Actividad</FormLabel>
-                                <div className="flex flex-col gap-4">
-                                    {/* Vista previa de la imagen */}
+                                <div className="flex flex-col gap-3">
                                     {(field.value instanceof File || initialData?.image) && (
                                         <div className="relative w-24 h-24 border rounded-md overflow-hidden">
                                             <Image
@@ -672,24 +675,16 @@ export default function CreateSMSActivityForm({
                         render={({ field }) => (
                             <FormItem>
                                 <FormLabel>Documento PDF</FormLabel>
-                                <div className="flex flex-col gap-4">
+                                <div className="flex flex-col gap-3">
                                     {field.value instanceof File && (
                                         <div>
-                                            <p className="text-sm text-gray-500">
-                                                Archivo seleccionado:
-                                            </p>
-                                            <p className="font-semibold text-sm">
-                                                {field.value.name}
-                                            </p>
+                                            <p className="text-sm text-muted-foreground">Archivo seleccionado:</p>
+                                            <p className="font-semibold text-sm">{field.value.name}</p>
                                         </div>
                                     )}
-                                    {!(field.value instanceof File) &&
-                                        initialData?.document &&
-                                        typeof initialData.document === "string" && (
-                                            <p className="text-sm text-green-600">
-                                                ✓ Documento existente cargado
-                                            </p>
-                                        )}
+                                    {!(field.value instanceof File) && initialData?.document && typeof initialData.document === "string" && (
+                                        <p className="text-sm text-green-600">✓ Documento existente cargado</p>
+                                    )}
                                     <FormControl>
                                         <Input
                                             type="file"
@@ -707,7 +702,7 @@ export default function CreateSMSActivityForm({
                     />
                 </div>
 
-                <Button type="submit">Enviar</Button>
+                <Button type="submit" className="w-full">Enviar</Button>
             </form>
         </Form>
     );

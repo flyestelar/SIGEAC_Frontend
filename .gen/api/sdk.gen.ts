@@ -692,9 +692,6 @@ import type {
   GeneralLocationIndex0Data,
   GeneralLocationIndex0Errors,
   GeneralLocationIndex0Responses,
-  GetMailableData,
-  GetMailableErrors,
-  GetMailableResponses,
   InformationSourcesDestroyData,
   InformationSourcesDestroyErrors,
   InformationSourcesDestroyResponses,
@@ -869,6 +866,9 @@ import type {
   ObligatoryReportDestroyData,
   ObligatoryReportDestroyErrors,
   ObligatoryReportDestroyResponses,
+  ObligatoryReportGeneratePdfReportData,
+  ObligatoryReportGeneratePdfReportErrors,
+  ObligatoryReportGeneratePdfReportResponses,
   ObligatoryReportGetNextReportNumberData,
   ObligatoryReportGetNextReportNumberErrors,
   ObligatoryReportGetNextReportNumberResponses,
@@ -950,9 +950,6 @@ import type {
   PlanificationReportWorkOrderPreInspectionData,
   PlanificationReportWorkOrderPreInspectionErrors,
   PlanificationReportWorkOrderPreInspectionResponses,
-  PostByCompanyBatchesData,
-  PostByCompanyBatchesErrors,
-  PostByCompanyBatchesResponses,
   PreliminaryInspectionDestroyData,
   PreliminaryInspectionDestroyErrors,
   PreliminaryInspectionDestroyResponses,
@@ -1010,9 +1007,6 @@ import type {
   PurchaseQuoteOrderUpdate2Data,
   PurchaseQuoteOrderUpdate2Errors,
   PurchaseQuoteOrderUpdate2Responses,
-  PutByCompanyUpdateToolStatusByIdData,
-  PutByCompanyUpdateToolStatusByIdErrors,
-  PutByCompanyUpdateToolStatusByIdResponses,
   QuestionsDestroyData,
   QuestionsDestroyErrors,
   QuestionsDestroyResponses,
@@ -1162,15 +1156,39 @@ import type {
   SMsActivityAttendanceStoreSmsActivityAttendanceData,
   SMsActivityAttendanceStoreSmsActivityAttendanceErrors,
   SMsActivityAttendanceStoreSmsActivityAttendanceResponses,
+  SMsActivityCalendarActivitiesData,
+  SMsActivityCalendarActivitiesErrors,
+  SMsActivityCalendarActivitiesResponses,
+  SMsActivityCloseActivityData,
+  SMsActivityCloseActivityErrors,
+  SMsActivityCloseActivityResponses,
+  SMsActivityGenerateReportData,
+  SMsActivityGenerateReportErrors,
+  SMsActivityGenerateReportResponses,
+  SMsActivityGetNextActivityNumberData,
+  SMsActivityGetNextActivityNumberErrors,
+  SMsActivityGetNextActivityNumberResponses,
   SMsActivityIndexData,
   SMsActivityIndexErrors,
   SMsActivityIndexResponses,
+  SMsActivityOpenActivityData,
+  SMsActivityOpenActivityErrors,
+  SMsActivityOpenActivityResponses,
   SMsActivityShowData,
   SMsActivityShowErrors,
   SMsActivityShowResponses,
   SMsActivityStoreData,
   SMsActivityStoreErrors,
   SMsActivityStoreResponses,
+  SMsActivityUpdateCalendarActivityData,
+  SMsActivityUpdateCalendarActivityErrors,
+  SMsActivityUpdateCalendarActivityResponses,
+  SmsSmsActivityGetActivitiesStats02Data,
+  SmsSmsActivityGetActivitiesStats02Errors,
+  SmsSmsActivityGetActivitiesStats02Responses,
+  SmsSmsActivityGetActivitiesStats0Data,
+  SmsSmsActivityGetActivitiesStats0Errors,
+  SmsSmsActivityGetActivitiesStats0Responses,
   SurveyCreateQuestionData,
   SurveyCreateQuestionErrors,
   SurveyCreateQuestionResponses,
@@ -1466,46 +1484,6 @@ export type Options<
    */
   meta?: Record<string, unknown>;
 };
-
-export const batchesIndex = <ThrowOnError extends boolean = false>(options: Options<BatchesIndexData, ThrowOnError>) =>
-  (options.client ?? client).get<BatchesIndexResponses, BatchesIndexErrors, ThrowOnError>({
-    responseType: 'json',
-    security: [{ scheme: 'bearer', type: 'http' }],
-    url: '/{company}/batches',
-    ...options,
-  });
-
-export const postByCompanyBatches = <ThrowOnError extends boolean = false>(
-  options: Options<PostByCompanyBatchesData, ThrowOnError>,
-) =>
-  (options.client ?? client).post<PostByCompanyBatchesResponses, PostByCompanyBatchesErrors, ThrowOnError>({
-    responseType: 'json',
-    security: [{ scheme: 'bearer', type: 'http' }],
-    url: '/{company}/batches',
-    ...options,
-  });
-
-export const putByCompanyUpdateToolStatusById = <ThrowOnError extends boolean = false>(
-  options: Options<PutByCompanyUpdateToolStatusByIdData, ThrowOnError>,
-) =>
-  (options.client ?? client).put<
-    PutByCompanyUpdateToolStatusByIdResponses,
-    PutByCompanyUpdateToolStatusByIdErrors,
-    ThrowOnError
-  >({
-    responseType: 'json',
-    security: [{ scheme: 'bearer', type: 'http' }],
-    url: '/{company}/update-tool-status/{id}',
-    ...options,
-  });
-
-export const getMailable = <ThrowOnError extends boolean = false>(options?: Options<GetMailableData, ThrowOnError>) =>
-  (options?.client ?? client).get<GetMailableResponses, GetMailableErrors, ThrowOnError>({
-    responseType: 'json',
-    security: [{ scheme: 'bearer', type: 'http' }],
-    url: '/mailable',
-    ...options,
-  });
 
 /**
  * Method: Get
@@ -2619,6 +2597,14 @@ export const bankAccountAccountByBank = <ThrowOnError extends boolean = false>(
     responseType: 'json',
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/bank-accounts-by-bank/{bank_id}',
+    ...options,
+  });
+
+export const batchesIndex = <ThrowOnError extends boolean = false>(options: Options<BatchesIndexData, ThrowOnError>) =>
+  (options.client ?? client).get<BatchesIndexResponses, BatchesIndexErrors, ThrowOnError>({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/{company}/batches',
     ...options,
   });
 
@@ -5544,6 +5530,20 @@ export const obligatoryReportAcceptObligatoryReport = <ThrowOnError extends bool
     },
   });
 
+export const obligatoryReportGeneratePdfReport = <ThrowOnError extends boolean = false>(
+  options: Options<ObligatoryReportGeneratePdfReportData, ThrowOnError>,
+) =>
+  (options.client ?? client).get<
+    ObligatoryReportGeneratePdfReportResponses,
+    ObligatoryReportGeneratePdfReportErrors,
+    ThrowOnError
+  >({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/{company}/sms/obligatory-reports/{id}/pdf',
+    ...options,
+  });
+
 /**
  * Display a listing of the resource
  */
@@ -6833,6 +6833,9 @@ export const articleUpdate2 = <ThrowOnError extends boolean = false>(
     },
   });
 
+/**
+ * Obtener lista de actividades con filtro opcional de rango de fechas
+ */
 export const sMsActivityIndex = <ThrowOnError extends boolean = false>(
   options: Options<SMsActivityIndexData, ThrowOnError>,
 ) =>
@@ -6843,18 +6846,64 @@ export const sMsActivityIndex = <ThrowOnError extends boolean = false>(
     ...options,
   });
 
+/**
+ * Almacenar actividad con generación automática de número correlativo
+ */
 export const sMsActivityStore = <ThrowOnError extends boolean = false>(
   options: Options<SMsActivityStoreData, ThrowOnError>,
 ) =>
   (options.client ?? client).post<SMsActivityStoreResponses, SMsActivityStoreErrors, ThrowOnError>({
+    ...formDataBodySerializer,
     responseType: 'json',
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/{company}/sms/activities',
     ...options,
     headers: {
-      'Content-Type': 'application/json',
+      'Content-Type': null,
       ...options.headers,
     },
+  });
+
+export const smsSMsActivityGetActivitiesStats0 = <ThrowOnError extends boolean = false>(
+  options: Options<SmsSmsActivityGetActivitiesStats0Data, ThrowOnError>,
+) =>
+  (options.client ?? client).get<
+    SmsSmsActivityGetActivitiesStats0Responses,
+    SmsSmsActivityGetActivitiesStats0Errors,
+    ThrowOnError
+  >({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/{company}/sms/activities/stats',
+    ...options,
+  });
+
+export const sMsActivityCalendarActivities = <ThrowOnError extends boolean = false>(
+  options: Options<SMsActivityCalendarActivitiesData, ThrowOnError>,
+) =>
+  (options.client ?? client).get<
+    SMsActivityCalendarActivitiesResponses,
+    SMsActivityCalendarActivitiesErrors,
+    ThrowOnError
+  >({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/{company}/sms/activities/calendar',
+    ...options,
+  });
+
+export const sMsActivityGetNextActivityNumber = <ThrowOnError extends boolean = false>(
+  options: Options<SMsActivityGetNextActivityNumberData, ThrowOnError>,
+) =>
+  (options.client ?? client).get<
+    SMsActivityGetNextActivityNumberResponses,
+    SMsActivityGetNextActivityNumberErrors,
+    ThrowOnError
+  >({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/{company}/sms/activities/next-number',
+    ...options,
   });
 
 export const sMsActivityShow = <ThrowOnError extends boolean = false>(
@@ -6864,6 +6913,68 @@ export const sMsActivityShow = <ThrowOnError extends boolean = false>(
     responseType: 'json',
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/{company}/sms/activities/{id}',
+    ...options,
+  });
+
+export const sMsActivityUpdateCalendarActivity = <ThrowOnError extends boolean = false>(
+  options: Options<SMsActivityUpdateCalendarActivityData, ThrowOnError>,
+) =>
+  (options.client ?? client).patch<
+    SMsActivityUpdateCalendarActivityResponses,
+    SMsActivityUpdateCalendarActivityErrors,
+    ThrowOnError
+  >({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/{company}/sms/activities/update-calendar/{id}',
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    },
+  });
+
+export const sMsActivityCloseActivity = <ThrowOnError extends boolean = false>(
+  options: Options<SMsActivityCloseActivityData, ThrowOnError>,
+) =>
+  (options.client ?? client).patch<SMsActivityCloseActivityResponses, SMsActivityCloseActivityErrors, ThrowOnError>({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/{company}/sms/activities/close/{id}',
+    ...options,
+  });
+
+export const sMsActivityOpenActivity = <ThrowOnError extends boolean = false>(
+  options: Options<SMsActivityOpenActivityData, ThrowOnError>,
+) =>
+  (options.client ?? client).patch<SMsActivityOpenActivityResponses, SMsActivityOpenActivityErrors, ThrowOnError>({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/{company}/sms/activities/open/{id}',
+    ...options,
+  });
+
+export const sMsActivityGenerateReport = <ThrowOnError extends boolean = false>(
+  options: Options<SMsActivityGenerateReportData, ThrowOnError>,
+) =>
+  (options.client ?? client).get<SMsActivityGenerateReportResponses, SMsActivityGenerateReportErrors, ThrowOnError>({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/{company}/sms/stats/activities',
+    ...options,
+  });
+
+export const smsSMsActivityGetActivitiesStats02 = <ThrowOnError extends boolean = false>(
+  options: Options<SmsSmsActivityGetActivitiesStats02Data, ThrowOnError>,
+) =>
+  (options.client ?? client).get<
+    SmsSmsActivityGetActivitiesStats02Responses,
+    SmsSmsActivityGetActivitiesStats02Errors,
+    ThrowOnError
+  >({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/{company}/sms/stats/activities-stats',
     ...options,
   });
 

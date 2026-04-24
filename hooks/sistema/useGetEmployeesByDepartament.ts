@@ -1,27 +1,20 @@
-import axios from "@/lib/axios";
+import axiosInstance from "@/lib/axios";
 import { useCompanyStore } from "@/stores/CompanyStore";
 import { Employee } from "@/types";
 import { useQuery } from "@tanstack/react-query";
 
-const fetchEmployeesByDepartment = async (
-  department_acronym: string,
-  location?: string | null,
-  company?: string
-): Promise<Employee[]> => {
-  const { data } = await axios.get(
-    `/${company}/${location}/employees-by-department/${department_acronym}`
+const fetchEmployesByDepartment = async (acronym: string, location_id: string, company?: string) => {
+  const { data } = await axiosInstance.get(
+    `/${company}/${location_id}/employees-by-department/${acronym}`
   );
   return data;
 };
 
-export const useGetEmployeesByDepartment = (
-  department_acronym: string,
-) => {
-  const { selectedCompany, selectedStation } = useCompanyStore();
-  return useQuery<Employee[], Error>({
-    queryKey: ["employees-by-department", department_acronym, selectedCompany, selectedStation],
-    queryFn: () =>
-      fetchEmployeesByDepartment(department_acronym, selectedStation, selectedCompany?.slug),
-    enabled: !!department_acronym && !!selectedCompany && !!selectedStation,
+export const useGetEmployeesByDepartment = (acronym: string, location_id: string | null, company?: string) => {
+  return useQuery<Employee[]>({
+    queryKey: ["employees-by-department", acronym, location_id, company],
+    queryFn: () => fetchEmployesByDepartment(acronym, location_id!, company),
+    staleTime: 1000 * 60 * 5, // 5 minutos
+    enabled: !!acronym && !!company && !!location_id,
   });
 };

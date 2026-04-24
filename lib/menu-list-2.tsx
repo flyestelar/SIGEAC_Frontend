@@ -326,7 +326,7 @@ export function getMenuList(pathname: string, currentCompany: Company | null, us
                     submenus: [],
                 },
                 {
-                    href: `/${currentCompany?.slug}/sms`,
+                    href: `/${currentCompany?.slug}/sms/gestion_reportes`,
                     label: "Gestion de Reportes",
                     active: pathname.includes(
                         `/${currentCompany?.slug}/sms/gestion_reportes`,
@@ -353,7 +353,7 @@ export function getMenuList(pathname: string, currentCompany: Company | null, us
                     ],
                 },
                 {
-                    href: `/${currentCompany?.slug}/sms`,
+                    href: `/${currentCompany?.slug}/sms/estadisticas`,
                     label: "Estadisticas",
                     icon: AreaChartIcon,
                     active: pathname.includes(

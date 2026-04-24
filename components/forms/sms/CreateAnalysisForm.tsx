@@ -28,10 +28,11 @@ import {
 } from "@/components/ui/select";
 import { Analysis } from "@/types";
 import { Separator } from "@radix-ui/react-select";
-import RiskMatrix from "../../../misc/RiskMatrix";
+
 import { useRouter } from "next/navigation";
 import { useCompanyStore } from "@/stores/CompanyStore";
 import { useEffect, useState } from "react";
+import RiskMatrix from "@/components/misc/RiskMatrix";
 
 const FormSchema = z.object({
   severity: z.string(),

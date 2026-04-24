@@ -20,7 +20,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body className={inter.className} suppressHydrationWarning>
         <link rel="icon" href="/logo.png" sizes="any" />
         <QueryClientProvider>

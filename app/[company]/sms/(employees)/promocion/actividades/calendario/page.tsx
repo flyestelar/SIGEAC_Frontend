@@ -2,9 +2,10 @@
 import { ContentLayout } from "@/components/layout/ContentLayout";
 import LoadingPage from "@/components/misc/LoadingPage";
 import { useTheme } from "next-themes";
-import { Calendar } from "../../../../../[company]/sms/(employees)/promocion/actividades/calendario/_components/calendar";
+
 import { useEffect } from "react";
 import { useGetSMSActivitiesForCalendar } from "@/hooks/sms/useGetSMSActivitiesForCalendar";
+import { Calendar } from "./_components/calendar";
 
 const CalendarServicesPage = () => {
   const { theme } = useTheme();

@@ -23,7 +23,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { useGetSMSActivityAttendanceStatus } from "@/hooks/sms/useGetSMSActivityAttendanceStatus";
+
 import { cn } from "@/lib/utils";
 import { useCompanyStore } from "@/stores/CompanyStore";
 import { SmsActivityResource } from "@/.gen/api/types.gen";
@@ -32,6 +32,7 @@ import { Check, ChevronsUpDown } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import { useGetSMSActivityAttendanceStatus } from "@/hooks/sms/useGetSMSActivityAttendanceStatus";
 
 interface FormProps {
   onClose: () => void;

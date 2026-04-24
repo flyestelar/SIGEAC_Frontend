@@ -31,7 +31,7 @@ interface PieChartComponentProps {
   title?: string;
   height?: string;
   width?: string;
-  radius: number;
+  radius?: number;
 }
 
 const PieChartComponent = ({
@@ -39,7 +39,7 @@ const PieChartComponent = ({
   title,
   height,
   width,
-  radius,
+  radius = 80,
 }: PieChartComponentProps) => {
   const [activeIndex, setActiveIndex] = useState<number>(0);
   const { theme } = useTheme();
