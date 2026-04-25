@@ -29,9 +29,10 @@ import {
   workOrdersShowQueryKey,
 } from '@api/queries';
 import { WorkOrderItemTaskResource, WorkOrderResource } from '@api/types';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
 import { AlertCircle, FileUp, Loader2, Trash2 } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 
 type CompleteWorkOrderDialogProps = {
@@ -51,26 +52,32 @@ type PendingTaskFormValues = {
   inspection_date: string;
 };
 
+type CompleteWorkOrderFormValues = {
+  entry_date: string;
+  exit_date: string;
+  bulk_review_by: string;
+  bulk_inspection_date: string;
+};
+
 const todayDate = () => new Date().toISOString().slice(0, 10);
 
 const hasCompleteValues = (values?: PendingTaskFormValues) =>
   Boolean(values?.review_by?.trim() && values?.inspection_date);
 
 export function CompleteWorkOrderDialog({ open, workOrder, orderNumber, onOpenChange }: CompleteWorkOrderDialogProps) {
-  const queryClient = useQueryClient();
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [taskValues, setTaskValues] = useState<Record<number, PendingTaskFormValues>>({});
   const [selectedTaskIds, setSelectedTaskIds] = useState<number[]>([]);
-  const [bulkValues, setBulkValues] = useState<PendingTaskFormValues>({
-    review_by: '',
-    inspection_date: todayDate(),
-  });
   const [csmFile, setCsmFile] = useState<File | null>(null);
-  const [dates, setDates] = useState({
-    entry_date: workOrder?.entry_date ?? todayDate(),
-    exit_date: workOrder?.exit_date ?? todayDate(),
-  });
   const csmInputRef = useRef<HTMLInputElement>(null);
+  const { register, reset, handleSubmit, getValues } = useForm<CompleteWorkOrderFormValues>({
+    defaultValues: {
+      entry_date: workOrder?.entry_date ?? todayDate(),
+      exit_date: workOrder?.exit_date ?? todayDate(),
+      bulk_review_by: '',
+      bulk_inspection_date: todayDate(),
+    },
+  });
 
   const csmPreviewUrl = useMemo(() => {
     if (!csmFile) return null;
@@ -165,18 +172,16 @@ export function CompleteWorkOrderDialog({ open, workOrder, orderNumber, onOpenCh
 
     setTaskValues(nextValues);
     setSelectedTaskIds([]);
-    setBulkValues({
-      review_by: '',
-      inspection_date: todayDate(),
-    });
-    setDates({
+    reset({
       entry_date: workOrder?.entry_date ?? todayDate(),
       exit_date: workOrder?.exit_date ?? todayDate(),
+      bulk_review_by: '',
+      bulk_inspection_date: todayDate(),
     });
     setCsmFile(null);
     if (csmInputRef.current) csmInputRef.current.value = '';
     setConfirmOpen(false);
-  }, [open, pendingTasks]);
+  }, [open, pendingTasks, reset, workOrder?.entry_date, workOrder?.exit_date]);
 
   useEffect(() => {
     const unfilledIds = new Set(unfilledPendingTasks.map((task) => task.id));
@@ -221,17 +226,17 @@ export function CompleteWorkOrderDialog({ open, workOrder, orderNumber, onOpenCh
     },
   });
 
-  const handleConfirmComplete = async () => {
+  const handleConfirmComplete = handleSubmit(async (values) => {
     await closeWorkOrderMutation.mutateAsync({
       path: {
         order_number: orderNumber,
       },
       body: {
-        entry_date: dates.entry_date,
-        exit_date: dates.exit_date,
+        entry_date: values.entry_date,
+        exit_date: values.exit_date,
       },
     });
-  };
+  });
 
   const isSubmitting = closeWorkOrderMutation.isPending;
   const isBulkApplying = bulkCompleteMutation.isPending;
@@ -256,12 +261,14 @@ export function CompleteWorkOrderDialog({ open, workOrder, orderNumber, onOpenCh
   };
 
   const applyBulkToSelected = async () => {
+    const values = getValues();
+
     if (selectedTaskIds.length === 0) {
       toast.error('Seleccione al menos una task card para aplicar el llenado.');
       return;
     }
 
-    if (!bulkValues.review_by.trim() || !bulkValues.inspection_date) {
+    if (!values.bulk_review_by.trim() || !values.bulk_inspection_date) {
       toast.error('Indique revisado por y fecha para aplicar en lote.');
       return;
     }
@@ -269,8 +276,8 @@ export function CompleteWorkOrderDialog({ open, workOrder, orderNumber, onOpenCh
     await bulkCompleteMutation.mutateAsync({
       path: { order_number: orderNumber },
       body: {
-        review_by: bulkValues.review_by,
-        inspection_date: bulkValues.inspection_date,
+        review_by: values.bulk_review_by,
+        inspection_date: values.bulk_inspection_date,
         items: selectedTaskIds,
       },
     });
@@ -320,19 +327,11 @@ export function CompleteWorkOrderDialog({ open, workOrder, orderNumber, onOpenCh
                 <div className="grid gap-3 sm:grid-cols-2">
                   <Field>
                     <FieldLabel>Fecha de Entrada</FieldLabel>
-                    <Input
-                      type="date"
-                      value={dates.entry_date}
-                      onChange={(e) => setDates((prev) => ({ ...prev, entry_date: e.target.value }))}
-                    />
+                    <Input type="date" {...register('entry_date')} />
                   </Field>
                   <Field>
                     <FieldLabel>Fecha de Salida</FieldLabel>
-                    <Input
-                      type="date"
-                      value={dates.exit_date}
-                      onChange={(e) => setDates((prev) => ({ ...prev, exit_date: e.target.value }))}
-                    />
+                    <Input type="date" {...register('exit_date')} />
                   </Field>
                 </div>
 
@@ -391,20 +390,12 @@ export function CompleteWorkOrderDialog({ open, workOrder, orderNumber, onOpenCh
                 <div className="grid gap-3 sm:grid-cols-2">
                   <Field>
                     <FieldLabel>Revisado por</FieldLabel>
-                    <Input
-                      value={bulkValues.review_by}
-                      onChange={(e) => setBulkValues((prev) => ({ ...prev, review_by: e.target.value }))}
-                      placeholder="Nombre del revisor"
-                    />
+                    <Input {...register('bulk_review_by')} placeholder="Nombre del revisor" />
                   </Field>
 
                   <Field>
                     <FieldLabel>Fecha</FieldLabel>
-                    <Input
-                      type="date"
-                      value={bulkValues.inspection_date}
-                      onChange={(e) => setBulkValues((prev) => ({ ...prev, inspection_date: e.target.value }))}
-                    />
+                    <Input type="date" {...register('bulk_inspection_date')} />
                   </Field>
                 </div>
 
