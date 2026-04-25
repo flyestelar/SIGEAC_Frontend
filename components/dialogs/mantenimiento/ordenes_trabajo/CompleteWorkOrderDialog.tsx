@@ -66,6 +66,10 @@ export function CompleteWorkOrderDialog({ open, workOrder, orderNumber, onOpenCh
     inspection_date: todayDate(),
   });
   const [csmFile, setCsmFile] = useState<File | null>(null);
+  const [dates, setDates] = useState({
+    entry_date: workOrder?.entry_date ?? todayDate(),
+    exit_date: workOrder?.exit_date ?? todayDate(),
+  });
   const csmInputRef = useRef<HTMLInputElement>(null);
 
   const csmPreviewUrl = useMemo(() => {
@@ -165,6 +169,10 @@ export function CompleteWorkOrderDialog({ open, workOrder, orderNumber, onOpenCh
       review_by: '',
       inspection_date: todayDate(),
     });
+    setDates({
+      entry_date: workOrder?.entry_date ?? todayDate(),
+      exit_date: workOrder?.exit_date ?? todayDate(),
+    });
     setCsmFile(null);
     if (csmInputRef.current) csmInputRef.current.value = '';
     setConfirmOpen(false);
@@ -217,6 +225,10 @@ export function CompleteWorkOrderDialog({ open, workOrder, orderNumber, onOpenCh
     await closeWorkOrderMutation.mutateAsync({
       path: {
         order_number: orderNumber,
+      },
+      body: {
+        entry_date: dates.entry_date,
+        exit_date: dates.exit_date,
       },
     });
   };
@@ -305,6 +317,25 @@ export function CompleteWorkOrderDialog({ open, workOrder, orderNumber, onOpenCh
                   Documento CSM
                 </p>
 
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <Field>
+                    <FieldLabel>Fecha de Entrada</FieldLabel>
+                    <Input
+                      type="date"
+                      value={dates.entry_date}
+                      onChange={(e) => setDates((prev) => ({ ...prev, entry_date: e.target.value }))}
+                    />
+                  </Field>
+                  <Field>
+                    <FieldLabel>Fecha de Salida</FieldLabel>
+                    <Input
+                      type="date"
+                      value={dates.exit_date}
+                      onChange={(e) => setDates((prev) => ({ ...prev, exit_date: e.target.value }))}
+                    />
+                  </Field>
+                </div>
+
                 {!csmFile ? (
                   <label className="flex cursor-pointer flex-col items-center gap-2 rounded-md border border-dashed border-muted-foreground/30 p-6 transition-colors hover:border-muted-foreground/50 hover:bg-muted/30">
                     <FileUp className="size-8 text-muted-foreground/60" />
@@ -325,9 +356,7 @@ export function CompleteWorkOrderDialog({ open, workOrder, orderNumber, onOpenCh
                     <div className="flex items-center justify-between gap-2 rounded-md border bg-muted/20 px-3 py-2">
                       <div className="min-w-0">
                         <p className="truncate text-sm font-medium">{csmFile.name}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {(csmFile.size / (1024 * 1024)).toFixed(2)} MB
-                        </p>
+                        <p className="text-xs text-muted-foreground">{(csmFile.size / (1024 * 1024)).toFixed(2)} MB</p>
                       </div>
                       <Button type="button" variant="ghost" size="sm" className="shrink-0" onClick={removeCsmFile}>
                         <Trash2 className="size-4" />
@@ -398,7 +427,13 @@ export function CompleteWorkOrderDialog({ open, workOrder, orderNumber, onOpenCh
                   >
                     Limpiar selección
                   </Button>
-                  <Button type="button" variant="outline" size="sm" onClick={applyBulkToSelected} disabled={isBulkApplying}>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={applyBulkToSelected}
+                    disabled={isBulkApplying}
+                  >
                     {isBulkApplying ? (
                       <>
                         <Loader2 className="mr-1.5 size-3.5 animate-spin" />
