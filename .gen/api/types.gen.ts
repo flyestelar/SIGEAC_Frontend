@@ -10478,6 +10478,97 @@ export type HardTimeIntervalToggleResponses = {
 
 export type HardTimeIntervalToggleResponse = HardTimeIntervalToggleResponses[keyof HardTimeIntervalToggleResponses];
 
+export type HardTimeIntervalCompliancesData = {
+  body?: never;
+  path: {
+    id: number;
+  };
+  query?: {
+    per_page?: number;
+    page?: number;
+    start_date?: string;
+    end_date?: string;
+  };
+  url: '/hard-time-intervals/{id}/compliances';
+};
+
+export type HardTimeIntervalCompliancesErrors = {
+  /**
+   * Unauthenticated
+   */
+  401: {
+    /**
+     * Error overview.
+     */
+    message: string;
+  };
+  /**
+   * Validation error
+   */
+  422: {
+    /**
+     * Errors overview.
+     */
+    message: string;
+    /**
+     * A detailed description of each field that failed validation.
+     */
+    errors: {
+      [key: string]: Array<string>;
+    };
+  };
+};
+
+export type HardTimeIntervalCompliancesError =
+  HardTimeIntervalCompliancesErrors[keyof HardTimeIntervalCompliancesErrors];
+
+export type HardTimeIntervalCompliancesResponses = {
+  /**
+   * Paginated set of `HardTimeComplianceResource`
+   */
+  200: {
+    data: Array<HardTimeComplianceResource>;
+    links: {
+      first: string | null;
+      last: string | null;
+      prev: string | null;
+      next: string | null;
+    };
+    meta: {
+      current_page: number;
+      from: number | null;
+      last_page: number;
+      /**
+       * Generated paginator links.
+       */
+      links: Array<{
+        url: string | null;
+        label: string;
+        active: boolean;
+      }>;
+      /**
+       * Base path for paginator generated URLs.
+       */
+      path: string | null;
+      /**
+       * Number of items shown per page.
+       */
+      per_page: number;
+      /**
+       * Number of the last item in the slice.
+       */
+      to: number | null;
+      /**
+       * Total number of items being paginated.
+       */
+      total: number;
+    };
+  };
+};
+
+export type HardTimeIntervalCompliancesResponse =
+  HardTimeIntervalCompliancesResponses[keyof HardTimeIntervalCompliancesResponses];
+
 export type HardTimeTraceabilityIndexData = {
   body?: never;
   path?: never;

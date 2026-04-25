@@ -242,6 +242,7 @@ import {
   hardTimeInstallationHistoryByAircraft,
   hardTimeInstallationInstall,
   hardTimeInstallationUninstall,
+  hardTimeIntervalCompliances,
   hardTimeIntervalIndex,
   hardTimeIntervalStore,
   hardTimeIntervalToggle,
@@ -1151,6 +1152,9 @@ import type {
   HardTimeInstallationUninstallData,
   HardTimeInstallationUninstallError,
   HardTimeInstallationUninstallResponse,
+  HardTimeIntervalCompliancesData,
+  HardTimeIntervalCompliancesError,
+  HardTimeIntervalCompliancesResponse,
   HardTimeIntervalIndexData,
   HardTimeIntervalIndexError,
   HardTimeIntervalIndexResponse,
@@ -8023,6 +8027,73 @@ export const hardTimeIntervalToggleMutation = (
   };
   return mutationOptions;
 };
+
+export const hardTimeIntervalCompliancesQueryKey = (options: Options<HardTimeIntervalCompliancesData>) =>
+  createQueryKey('hardTimeIntervalCompliances', options);
+
+/**
+ * List paginated compliances for an interval.
+ * GET /hard-time-intervals/{id}/compliances
+ */
+export const hardTimeIntervalCompliancesOptions = (options: Options<HardTimeIntervalCompliancesData>) =>
+  queryOptions<
+    HardTimeIntervalCompliancesResponse,
+    AxiosError<HardTimeIntervalCompliancesError>,
+    HardTimeIntervalCompliancesResponse,
+    ReturnType<typeof hardTimeIntervalCompliancesQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await hardTimeIntervalCompliances({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: hardTimeIntervalCompliancesQueryKey(options),
+  });
+
+export const hardTimeIntervalCompliancesInfiniteQueryKey = (
+  options: Options<HardTimeIntervalCompliancesData>,
+): QueryKey<Options<HardTimeIntervalCompliancesData>> => createQueryKey('hardTimeIntervalCompliances', options, true);
+
+/**
+ * List paginated compliances for an interval.
+ * GET /hard-time-intervals/{id}/compliances
+ */
+export const hardTimeIntervalCompliancesInfiniteOptions = (options: Options<HardTimeIntervalCompliancesData>) =>
+  infiniteQueryOptions<
+    HardTimeIntervalCompliancesResponse,
+    AxiosError<HardTimeIntervalCompliancesError>,
+    InfiniteData<HardTimeIntervalCompliancesResponse>,
+    QueryKey<Options<HardTimeIntervalCompliancesData>>,
+    number | Pick<QueryKey<Options<HardTimeIntervalCompliancesData>>[0], 'body' | 'headers' | 'path' | 'query'>
+  >(
+    // @ts-ignore
+    {
+      queryFn: async ({ pageParam, queryKey, signal }) => {
+        // @ts-ignore
+        const page: Pick<QueryKey<Options<HardTimeIntervalCompliancesData>>[0], 'body' | 'headers' | 'path' | 'query'> =
+          typeof pageParam === 'object'
+            ? pageParam
+            : {
+                query: {
+                  page: pageParam,
+                },
+              };
+        const params = createInfiniteParams(queryKey, page);
+        const { data } = await hardTimeIntervalCompliances({
+          ...options,
+          ...params,
+          signal,
+          throwOnError: true,
+        });
+        return data;
+      },
+      queryKey: hardTimeIntervalCompliancesInfiniteQueryKey(options),
+    },
+  );
 
 export const hardTimeTraceabilityIndexQueryKey = (options?: Options<HardTimeTraceabilityIndexData>) =>
   createQueryKey('hardTimeTraceabilityIndex', options);

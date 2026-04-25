@@ -713,6 +713,9 @@ import type {
   HardTimeInstallationUninstallData,
   HardTimeInstallationUninstallErrors,
   HardTimeInstallationUninstallResponses,
+  HardTimeIntervalCompliancesData,
+  HardTimeIntervalCompliancesErrors,
+  HardTimeIntervalCompliancesResponses,
   HardTimeIntervalIndexData,
   HardTimeIntervalIndexErrors,
   HardTimeIntervalIndexResponses,
@@ -4899,6 +4902,22 @@ export const hardTimeIntervalToggle = <ThrowOnError extends boolean = false>(
     url: '/hard-time-intervals/{id}/toggle',
     ...options,
   });
+
+/**
+ * List paginated compliances for an interval.
+ * GET /hard-time-intervals/{id}/compliances
+ */
+export const hardTimeIntervalCompliances = <ThrowOnError extends boolean = false>(
+  options: Options<HardTimeIntervalCompliancesData, ThrowOnError>,
+) =>
+  (options.client ?? client).get<HardTimeIntervalCompliancesResponses, HardTimeIntervalCompliancesErrors, ThrowOnError>(
+    {
+      responseType: 'json',
+      security: [{ scheme: 'bearer', type: 'http' }],
+      url: '/hard-time-intervals/{id}/compliances',
+      ...options,
+    },
+  );
 
 /**
  * Search component history by serial number across all company aircraft.

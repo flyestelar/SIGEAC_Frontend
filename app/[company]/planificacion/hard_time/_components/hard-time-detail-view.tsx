@@ -6,8 +6,7 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useGetHardTimeComponentDetail } from '@/hooks/planificacion/hard_time/useGetHardTimeComponentDetail';
-import { format } from 'date-fns';
-import { es } from 'date-fns/locale';
+import { formatDate, formatNumber } from '@/lib/helpers/format';
 import {
   AlertCircle,
   ArrowLeft,
@@ -23,8 +22,11 @@ import {
   PackagePlus,
   ShieldAlert,
 } from 'lucide-react';
+import { useState } from 'react';
+import { HardTimeIntervalResource } from '@api/types';
 import { HardTimeIntervalCard } from './hard-time-interval-card';
 import { AlertBadge, computeComponentStatus, computeIntervalMetrics, LEVEL_CONFIG } from './hard-time-shared';
+import { ComplianceHistoryDialog } from './hard-time-dashboard/compliance-history-dialog';
 
 interface HardTimeDetailViewProps {
   componentId: number;
@@ -37,21 +39,6 @@ interface HardTimeDetailViewProps {
   onUninstall?: () => void;
   onCreateInterval?: () => void;
   onRegisterCompliance?: () => void;
-}
-
-function formatDate(value?: string | null) {
-  if (!value) return '—';
-  const parsed = new Date(value);
-  if (Number.isNaN(parsed.getTime())) return '—';
-  return format(parsed, 'dd MMM yy', { locale: es });
-}
-
-function formatNumber(value?: number | null, digits = 1) {
-  if (value === null || value === undefined || Number.isNaN(value)) return '—';
-  return value.toLocaleString(undefined, {
-    minimumFractionDigits: 0,
-    maximumFractionDigits: digits,
-  });
 }
 
 function DetailStat({
@@ -144,6 +131,8 @@ export function HardTimeDetailView({
     isFetching,
     refetch,
   } = useGetHardTimeComponentDetail(componentId);
+
+  const [historyInterval, setHistoryInterval] = useState<HardTimeIntervalResource | null>(null);
 
   if (isLoading) {
     return <DetailSkeleton />;
@@ -410,6 +399,7 @@ export function HardTimeDetailView({
                       aircraftFlightCycles={aircraftFlightCycles}
                       averageDailyFH={averageDailyFH}
                       averageDailyFC={averageDailyFC}
+                      onViewHistory={() => setHistoryInterval(interval)}
                     />
                   ))}
                 </div>
@@ -418,6 +408,13 @@ export function HardTimeDetailView({
           </Card>
         </div>
       </div>
+
+      <ComplianceHistoryDialog
+        open={historyInterval !== null}
+        onOpenChange={(open) => { if (!open) setHistoryInterval(null); }}
+        interval={historyInterval}
+        intervalId={historyInterval?.id ?? null}
+      />
     </div>
   );
 }

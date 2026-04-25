@@ -2,10 +2,11 @@
 
 import { useMemo } from 'react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { addDays, format } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { CalendarClock, FileText } from 'lucide-react';
+import { CalendarClock, FileText, History } from 'lucide-react';
 import { HardTimeInstallationResource, HardTimeIntervalResource } from '@api/types';
 import { AlertBadge, computeIntervalMetrics, LEVEL_CONFIG, METRIC_ICONS, METRIC_LABELS, METRIC_UNITS } from './hard-time-shared';
 
@@ -16,6 +17,7 @@ interface HardTimeIntervalCardProps {
   aircraftFlightCycles?: number | null;
   averageDailyFH?: number | null;
   averageDailyFC?: number | null;
+  onViewHistory?: () => void;
 }
 
 export function HardTimeIntervalCard({
@@ -25,6 +27,7 @@ export function HardTimeIntervalCard({
   aircraftFlightCycles,
   averageDailyFH,
   averageDailyFC,
+  onViewHistory,
 }: HardTimeIntervalCardProps) {
   const enriched = useMemo(() => {
     if (!installation || aircraftFlightHours == null || aircraftFlightCycles == null) return null;
@@ -122,20 +125,33 @@ export function HardTimeIntervalCard({
             </div>
           )}
 
-          <div className="space-y-0.5">
-            <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
-              <FileText className="h-3 w-3 shrink-0" />
-              <span>Últ. cumplimiento:</span>
-              <span className="font-mono font-medium">
-                {interval.last_compliance
-                  ? format(new Date(interval.last_compliance.compliance_date), 'dd MMM yy', { locale: es })
-                  : '—'}
-              </span>
+          <div className="flex items-start justify-between gap-2">
+            <div className="space-y-0.5">
+              <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+                <FileText className="h-3 w-3 shrink-0" />
+                <span>Últ. cumplimiento:</span>
+                <span className="font-mono font-medium">
+                  {interval.last_compliance
+                    ? format(new Date(interval.last_compliance.compliance_date), 'dd MMM yy', { locale: es })
+                    : '—'}
+                </span>
+              </div>
+              {interval.last_compliance?.work_order && (
+                <p className="pl-[18px] font-mono text-[10px] text-muted-foreground/70">
+                  WO {interval.last_compliance.work_order.order_number}
+                </p>
+              )}
             </div>
-            {interval.last_compliance?.work_order && (
-              <p className="pl-[18px] font-mono text-[10px] text-muted-foreground/70">
-                WO {interval.last_compliance.work_order.order_number}
-              </p>
+            {onViewHistory && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-7 gap-1.5 px-2 text-[11px] text-muted-foreground hover:text-foreground"
+                onClick={onViewHistory}
+              >
+                <History className="size-3" />
+                Historial
+              </Button>
             )}
           </div>
         </div>

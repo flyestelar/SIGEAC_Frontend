@@ -51,8 +51,8 @@ export function useCompanySlug() {
 
 export function useCompanyIsHydrated() {
   return useSyncExternalStore(
-    useCompanyStore.persist.onFinishHydration,
-    useCompanyStore.persist.hasHydrated,
+    useCompanyStore.persist?.onFinishHydration,
+    useCompanyStore.persist?.hasHydrated,
     () => false,
   );
 }

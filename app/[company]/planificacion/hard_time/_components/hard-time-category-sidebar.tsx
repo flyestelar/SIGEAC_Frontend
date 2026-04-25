@@ -235,7 +235,7 @@ export function HardTimeCategorySidebar({
       </aside>
       <div className="space-y-4">
         <div className="overflow-hidden rounded-xl border border-border/60 bg-background">
-          <div className="flex flex-col gap-3 border-b border-border/60 bg-sky-500/[0.04] px-5 py-3 lg:flex-row lg:items-center lg:justify-between">
+          <div className="flex flex-col gap-3 border-b border-border/60 bg-sky-500/[0.04] px-5 py-3 md:flex-row md:items-center md:justify-between">
             <div className="min-w-0">
               <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
                 Capítulo ATA
@@ -312,7 +312,7 @@ export function HardTimeCategorySidebar({
                 )}
               </div>
             ) : (
-              <div className="grid gap-3 sm:grid-cols-1 md:grid-cols-2 2xl:grid-cols-3">
+              <div className="grid gap-3 md:grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3">
                 {sortedComponents.map((component) => (
                   <HardTimeCard
                     key={component.id}
