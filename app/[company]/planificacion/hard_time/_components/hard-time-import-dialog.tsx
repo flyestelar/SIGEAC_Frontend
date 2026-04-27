@@ -121,7 +121,7 @@ function getImportPayload(
   if (issues.length > 0 || !component.part_number?.trim()) return null;
 
   return {
-    part_name: component.description,
+    description: component.description,
     part_number: component.part_number.trim(),
     position: position.trim(),
     ata_chapter: undefined,

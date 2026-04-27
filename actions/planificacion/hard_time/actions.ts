@@ -215,7 +215,7 @@ export const useImportHardTimeStructure = (aircraftId: number | null) => {
         queryKey: aircraftComponentSlotIndexQueryKey({ query: { aircraft_id: aircraftId! } }),
       });
       toast.success('Importación completada', {
-        description: `${result.imported_components} componentes y ${result.imported_intervals} intervalos creados.`,
+        description: `${result.imported_parts} componentes y ${result.imported_intervals} intervalos creados.`,
       });
     },
     onError: () =>
