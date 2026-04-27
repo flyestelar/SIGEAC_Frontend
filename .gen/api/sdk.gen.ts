@@ -1150,9 +1150,21 @@ import type {
   SafetyBulletinUpdateData,
   SafetyBulletinUpdateErrors,
   SafetyBulletinUpdateResponses,
+  SMsActivityAttendanceGetAttendanceListByActivityData,
+  SMsActivityAttendanceGetAttendanceListByActivityErrors,
+  SMsActivityAttendanceGetAttendanceListByActivityResponses,
+  SMsActivityAttendanceGetAttendanceStatsData,
+  SMsActivityAttendanceGetAttendanceStatsErrors,
+  SMsActivityAttendanceGetAttendanceStatsResponses,
+  SMsActivityAttendanceGetEmployeeAttendanceStatusData,
+  SMsActivityAttendanceGetEmployeeAttendanceStatusErrors,
+  SMsActivityAttendanceGetEmployeeAttendanceStatusResponses,
   SMsActivityAttendanceGetEnrollementStatusData,
   SMsActivityAttendanceGetEnrollementStatusErrors,
   SMsActivityAttendanceGetEnrollementStatusResponses,
+  SMsActivityAttendanceMarkAttendanceData,
+  SMsActivityAttendanceMarkAttendanceErrors,
+  SMsActivityAttendanceMarkAttendanceResponses,
   SMsActivityAttendanceStoreSmsActivityAttendanceData,
   SMsActivityAttendanceStoreSmsActivityAttendanceErrors,
   SMsActivityAttendanceStoreSmsActivityAttendanceResponses,
@@ -1162,6 +1174,9 @@ import type {
   SMsActivityCloseActivityData,
   SMsActivityCloseActivityErrors,
   SMsActivityCloseActivityResponses,
+  SMsActivityDestroyData,
+  SMsActivityDestroyErrors,
+  SMsActivityDestroyResponses,
   SMsActivityGenerateReportData,
   SMsActivityGenerateReportErrors,
   SMsActivityGenerateReportResponses,
@@ -3452,9 +3467,6 @@ export const courseGetCoursesByDeparment = <ThrowOnError extends boolean = false
     },
   );
 
-/**
- * Display the specified resource
- */
 export const courseShow = <ThrowOnError extends boolean = false>(options: Options<CourseShowData, ThrowOnError>) =>
   (options.client ?? client).get<CourseShowResponses, CourseShowErrors, ThrowOnError>({
     responseType: 'json',
@@ -3544,7 +3556,7 @@ export const courseAttendanceGetEnrollementStatus = <ThrowOnError extends boolea
   >({
     responseType: 'json',
     security: [{ scheme: 'bearer', type: 'http' }],
-    url: '/general/{company}/enrollement-status/{course_id}',
+    url: '/general/{_company}/enrollement-status/{course_id}',
     ...options,
   });
 
@@ -3572,7 +3584,7 @@ export const courseAttendanceMarkAttendance = <ThrowOnError extends boolean = fa
   >({
     responseType: 'json',
     security: [{ scheme: 'bearer', type: 'http' }],
-    url: '/general/{company}/mark-attendance/{course_id}',
+    url: '/general/{_company}/mark-attendance/{course_id}',
     ...options,
   });
 
@@ -6864,6 +6876,26 @@ export const sMsActivityStore = <ThrowOnError extends boolean = false>(
     },
   });
 
+export const sMsActivityDestroy = <ThrowOnError extends boolean = false>(
+  options: Options<SMsActivityDestroyData, ThrowOnError>,
+) =>
+  (options.client ?? client).delete<SMsActivityDestroyResponses, SMsActivityDestroyErrors, ThrowOnError>({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/{company}/sms/activities/{id}',
+    ...options,
+  });
+
+export const sMsActivityShow = <ThrowOnError extends boolean = false>(
+  options: Options<SMsActivityShowData, ThrowOnError>,
+) =>
+  (options.client ?? client).get<SMsActivityShowResponses, SMsActivityShowErrors, ThrowOnError>({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/{company}/sms/activities/{id}',
+    ...options,
+  });
+
 export const smsSMsActivityGetActivitiesStats0 = <ThrowOnError extends boolean = false>(
   options: Options<SmsSmsActivityGetActivitiesStats0Data, ThrowOnError>,
 ) =>
@@ -6903,16 +6935,6 @@ export const sMsActivityGetNextActivityNumber = <ThrowOnError extends boolean = 
     responseType: 'json',
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/{company}/sms/activities/next-number',
-    ...options,
-  });
-
-export const sMsActivityShow = <ThrowOnError extends boolean = false>(
-  options: Options<SMsActivityShowData, ThrowOnError>,
-) =>
-  (options.client ?? client).get<SMsActivityShowResponses, SMsActivityShowErrors, ThrowOnError>({
-    responseType: 'json',
-    security: [{ scheme: 'bearer', type: 'http' }],
-    url: '/{company}/sms/activities/{id}',
     ...options,
   });
 
@@ -6992,6 +7014,48 @@ export const sMsActivityAttendanceGetEnrollementStatus = <ThrowOnError extends b
     ...options,
   });
 
+export const sMsActivityAttendanceGetAttendanceListByActivity = <ThrowOnError extends boolean = false>(
+  options: Options<SMsActivityAttendanceGetAttendanceListByActivityData, ThrowOnError>,
+) =>
+  (options.client ?? client).get<
+    SMsActivityAttendanceGetAttendanceListByActivityResponses,
+    SMsActivityAttendanceGetAttendanceListByActivityErrors,
+    ThrowOnError
+  >({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/{company}/sms/activities/{activity_id}/enrolled-employees',
+    ...options,
+  });
+
+export const sMsActivityAttendanceGetEmployeeAttendanceStatus = <ThrowOnError extends boolean = false>(
+  options: Options<SMsActivityAttendanceGetEmployeeAttendanceStatusData, ThrowOnError>,
+) =>
+  (options.client ?? client).get<
+    SMsActivityAttendanceGetEmployeeAttendanceStatusResponses,
+    SMsActivityAttendanceGetEmployeeAttendanceStatusErrors,
+    ThrowOnError
+  >({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/{company}/sms/activities/{activity_id}/attendance-status',
+    ...options,
+  });
+
+export const sMsActivityAttendanceGetAttendanceStats = <ThrowOnError extends boolean = false>(
+  options: Options<SMsActivityAttendanceGetAttendanceStatsData, ThrowOnError>,
+) =>
+  (options.client ?? client).get<
+    SMsActivityAttendanceGetAttendanceStatsResponses,
+    SMsActivityAttendanceGetAttendanceStatsErrors,
+    ThrowOnError
+  >({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/{company}/sms/activities/{activity_id}/attendance-stats',
+    ...options,
+  });
+
 export const sMsActivityAttendanceStoreSmsActivityAttendance = <ThrowOnError extends boolean = false>(
   options: Options<SMsActivityAttendanceStoreSmsActivityAttendanceData, ThrowOnError>,
 ) =>
@@ -7003,6 +7067,20 @@ export const sMsActivityAttendanceStoreSmsActivityAttendance = <ThrowOnError ext
     responseType: 'json',
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/{company}/sms/activities/{activity_id}/enrollments',
+    ...options,
+  });
+
+export const sMsActivityAttendanceMarkAttendance = <ThrowOnError extends boolean = false>(
+  options: Options<SMsActivityAttendanceMarkAttendanceData, ThrowOnError>,
+) =>
+  (options.client ?? client).patch<
+    SMsActivityAttendanceMarkAttendanceResponses,
+    SMsActivityAttendanceMarkAttendanceErrors,
+    ThrowOnError
+  >({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/{company}/sms/activities/mark-attendance/{activity_id}',
     ...options,
   });
 

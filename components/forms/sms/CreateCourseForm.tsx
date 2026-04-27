@@ -25,11 +25,10 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { useCompanyStore } from "@/stores/CompanyStore";
-import { Course } from "@/types";
+import { CourseResource } from "@/.gen/api/types.gen";
 import { addDays, format } from "date-fns";
 import { es } from "date-fns/locale";
 import { CalendarIcon, Loader2 } from "lucide-react";
@@ -43,7 +42,7 @@ import {
 
 interface FormProps {
   onClose: (open: boolean) => void;
-  initialData?: Course;
+  initialData?: CourseResource;
   isEditing?: boolean;
   selectedDate?: string;
 }
@@ -84,9 +83,9 @@ export function CreateCourseForm({
     resolver: zodResolver(FormSchema),
     defaultValues: {
       name: initialData?.name,
-      course_type: initialData?.course_type || "",
-      description: initialData?.description,
-      instructor: initialData?.instructor,
+      course_type: initialData?.course_type ?? "",
+      description: initialData?.description ?? undefined,
+      instructor: initialData?.instructor ?? undefined,
 
       start_date: initialData?.start_date
         ? addDays(new Date(initialData.start_date), 1)
@@ -99,13 +98,13 @@ export function CreateCourseForm({
         : undefined,
 
       start_time: initialData
-        ? initialData.start_time
+        ? (initialData.start_time ?? undefined)
         : selectedDate
           ? selectedDate.split(" ")[1]
           : undefined,
 
       end_time: initialData
-        ? initialData.end_time
+        ? (initialData.end_time ?? undefined)
         : selectedDate
           ? selectedDate.split(" ")[1]
           : undefined,
@@ -115,14 +114,14 @@ export function CreateCourseForm({
   const onSubmit = async (data: FormSchemaType) => {
     if (initialData && isEditing) {
       const value = {
-        id: initialData.id,
+        id: initialData.id.toString(),
         company: selectedCompany!.slug,
         data: {
           name: data.name,
           description: data.description,
           instructor: data.instructor,
-          start_date: data.start_date,
-          end_date: data.end_date,
+          start_date: format(data.start_date, 'yyyy-MM-dd'),
+          end_date: format(data.end_date, 'yyyy-MM-dd'),
           start_time: data.start_time,
           end_time: data.end_time,
           course_type: data.course_type,
@@ -134,7 +133,11 @@ export function CreateCourseForm({
         await createCourse.mutateAsync({
           company: selectedCompany!.slug,
           location_id: selectedStation!,
-          course: data,
+          course: {
+            ...data,
+            start_date: format(data.start_date, 'yyyy-MM-dd'),
+            end_date: format(data.end_date, 'yyyy-MM-dd'),
+          },
         });
       } catch (error) {
         console.error("Error al crear el curso:", error);
@@ -143,48 +146,53 @@ export function CreateCourseForm({
     onClose(false);
   };
 
+  const isPending = createCourse.isPending || updateCourse.isPending;
+
   return (
     <Form {...form}>
-      <form
-        onSubmit={form.handleSubmit(onSubmit)}
-        className="flex flex-col space-y-3"
-      >
-        <FormLabel className="text-lg text-center">Formulario Curso</FormLabel>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-5">
 
-        <div className="flex flex-col gap-2 items-center justify-center  ">
-          <div className="flex  justify-center items-center w-full gap-10">
+        {/* SECCIÓN: IDENTIFICACIÓN */}
+        <div className="flex flex-col gap-3">
+          <div className="flex items-center gap-2">
+            <span className="border-l-2 border-amber-500 pl-2 text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
+              Identificación
+            </span>
+            <div className="flex-1 border-t border-dashed border-border" />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
             <FormField
               control={form.control}
               name="name"
               render={({ field }) => (
-                <FormItem className="w-full">
-                  <FormLabel>Nombre del Curso</FormLabel>
+                <FormItem>
+                  <FormLabel className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+                    Nombre del Curso
+                  </FormLabel>
                   <FormControl>
-                    <Input placeholder="" {...field} />
+                    <Input className="font-medium" {...field} />
                   </FormControl>
                   <FormMessage className="text-xs" />
                 </FormItem>
               )}
             />
-
             <FormField
               control={form.control}
               name="course_type"
               render={({ field }) => (
-                <FormItem className="w-full">
-                  <FormLabel>Tipo de Curso</FormLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                  >
+                <FormItem>
+                  <FormLabel className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+                    Tipo de Curso
+                  </FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Seleccionar Curso" />
+                      <SelectTrigger className="font-mono text-sm">
+                        <SelectValue placeholder="Seleccionar tipo..." />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="RECURRENTE">RECURRENTE</SelectItem>
-                      <SelectItem value="INICIAL">INICIAL</SelectItem>
+                      <SelectItem value="RECURRENTE" className="font-mono">RECURRENTE</SelectItem>
+                      <SelectItem value="INICIAL" className="font-mono">INICIAL</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />
@@ -192,32 +200,39 @@ export function CreateCourseForm({
               )}
             />
           </div>
+        </div>
 
-          <div className="flex w-full justify-center items-center gap-10">
+        {/* SECCIÓN: PERÍODO */}
+        <div className="flex flex-col gap-3">
+          <div className="flex items-center gap-2">
+            <span className="border-l-2 border-amber-500 pl-2 text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
+              Período
+            </span>
+            <div className="flex-1 border-t border-dashed border-border" />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
             <FormField
               control={form.control}
               name="start_date"
               render={({ field }) => (
-                <FormItem className="flex flex-col mt-2.5 w-full">
-                  <FormLabel>Fecha de Inicio</FormLabel>
+                <FormItem className="flex flex-col">
+                  <FormLabel className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+                    Fecha Inicio
+                  </FormLabel>
                   <Popover>
                     <PopoverTrigger asChild>
                       <FormControl>
                         <Button
-                          variant={"outline"}
+                          variant="outline"
                           className={cn(
-                            "w-full pl-3 text-left font-normal",
-                            !field.value && "text-muted-foreground"
+                            "w-full pl-3 text-left font-medium text-sm",
+                            !field.value && "text-muted-foreground font-normal"
                           )}
                         >
-                          {field.value ? (
-                            format(field.value, "PPP", {
-                              locale: es,
-                            })
-                          ) : (
-                            <span>Seleccionar Fecha de Inicio</span>
-                          )}
-                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                          {field.value
+                            ? format(field.value, "dd MMM yyyy", { locale: es })
+                            : "dd / mm / aaaa"}
+                          <CalendarIcon className="ml-auto h-4 w-4 opacity-40" />
                         </Button>
                       </FormControl>
                     </PopoverTrigger>
@@ -226,17 +241,13 @@ export function CreateCourseForm({
                         mode="single"
                         selected={field.value}
                         onSelect={field.onChange}
-                        disabled={false} // Solo deshabilitar fechas futuras
                         initialFocus
-                        fromYear={1988} // Año mínimo que se mostrará
-                        toYear={new Date().getFullYear() + 5} // Año máximo (actual)
-                        captionLayout="dropdown-buttons" // Selectores de año/mes
+                        fromYear={1988}
+                        toYear={new Date().getFullYear() + 5}
+                        captionLayout="dropdown-buttons"
                         components={{
                           Dropdown: (props) => (
-                            <select
-                              {...props}
-                              className="bg-popover text-popover-foreground"
-                            >
+                            <select {...props} className="bg-popover text-popover-foreground">
                               {props.children}
                             </select>
                           ),
@@ -248,60 +259,28 @@ export function CreateCourseForm({
                 </FormItem>
               )}
             />
-
-            <FormField
-              control={form.control}
-              name="start_time"
-              render={({ field }) => (
-                <FormItem className="w-full">
-                  <FormLabel>Hora de Inicio</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="time"
-                      {...field}
-                      onChange={(e) => {
-                        // Validamos que el formato sea correcto
-                        if (
-                          e.target.value.match(
-                            /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/
-                          )
-                        ) {
-                          field.onChange(e.target.value);
-                        }
-                      }}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-
-          <div className="flex  justify-center items-center w-full gap-10">
             <FormField
               control={form.control}
               name="end_date"
               render={({ field }) => (
-                <FormItem className="flex flex-col mt-2.5 w-full">
-                  <FormLabel>Fecha de Finalización</FormLabel>
+                <FormItem className="flex flex-col">
+                  <FormLabel className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+                    Fecha Fin
+                  </FormLabel>
                   <Popover>
                     <PopoverTrigger asChild>
                       <FormControl>
                         <Button
-                          variant={"outline"}
+                          variant="outline"
                           className={cn(
-                            "w-full pl-3 text-left font-normal",
-                            !field.value && "text-muted-foreground"
+                            "w-full pl-3 text-left font-medium text-sm",
+                            !field.value && "text-muted-foreground font-normal"
                           )}
                         >
-                          {field.value ? (
-                            format(field.value, "PPP", {
-                              locale: es,
-                            })
-                          ) : (
-                            <span>Seleccionar Fecha</span>
-                          )}
-                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                          {field.value
+                            ? format(field.value, "dd MMM yyyy", { locale: es })
+                            : "dd / mm / aaaa"}
+                          <CalendarIcon className="ml-auto h-4 w-4 opacity-40" />
                         </Button>
                       </FormControl>
                     </PopoverTrigger>
@@ -310,17 +289,13 @@ export function CreateCourseForm({
                         mode="single"
                         selected={field.value}
                         onSelect={field.onChange}
-                        disabled={false} // Solo deshabilitar fechas futuras
                         initialFocus
-                        fromYear={1980} // Año mínimo que se mostrará
-                        toYear={new Date().getFullYear() + 5} // Año máximo (actual)
-                        captionLayout="dropdown-buttons" // Selectores de año/mes
+                        fromYear={1980}
+                        toYear={new Date().getFullYear() + 5}
+                        captionLayout="dropdown-buttons"
                         components={{
                           Dropdown: (props) => (
-                            <select
-                              {...props}
-                              className="bg-popover text-popover-foreground"
-                            >
+                            <select {...props} className="bg-popover text-popover-foreground">
                               {props.children}
                             </select>
                           ),
@@ -332,24 +307,45 @@ export function CreateCourseForm({
                 </FormItem>
               )}
             />
-
+            <FormField
+              control={form.control}
+              name="start_time"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+                    Hora Inicio
+                  </FormLabel>
+                  <FormControl>
+                    <Input
+                      type="time"
+                      className="font-mono"
+                      {...field}
+                      onChange={(e) => {
+                        if (e.target.value.match(/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/)) {
+                          field.onChange(e.target.value);
+                        }
+                      }}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
             <FormField
               control={form.control}
               name="end_time"
               render={({ field }) => (
-                <FormItem className="w-full">
-                  <FormLabel>Hora Final</FormLabel>
+                <FormItem>
+                  <FormLabel className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+                    Hora Fin
+                  </FormLabel>
                   <FormControl>
                     <Input
                       type="time"
+                      className="font-mono"
                       {...field}
                       onChange={(e) => {
-                        // Validamos que el formato sea correcto
-                        if (
-                          e.target.value.match(
-                            /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/
-                          )
-                        ) {
+                        if (e.target.value.match(/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/)) {
                           field.onChange(e.target.value);
                         }
                       }}
@@ -360,29 +356,44 @@ export function CreateCourseForm({
               )}
             />
           </div>
+        </div>
 
+        {/* SECCIÓN: CONTENIDO */}
+        <div className="flex flex-col gap-3">
+          <div className="flex items-center gap-2">
+            <span className="border-l-2 border-amber-500 pl-2 text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
+              Contenido
+            </span>
+            <div className="flex-1 border-t border-dashed border-border" />
+          </div>
           <FormField
             control={form.control}
             name="description"
             render={({ field }) => (
-              <FormItem className="w-full">
-                <FormLabel>Descripcion</FormLabel>
+              <FormItem>
+                <FormLabel className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+                  Descripción
+                </FormLabel>
                 <FormControl>
-                  <Textarea placeholder="" {...field} />
+                  <Textarea
+                    className="resize-none text-sm min-h-[80px]"
+                    {...field}
+                  />
                 </FormControl>
                 <FormMessage className="text-xs" />
               </FormItem>
             )}
           />
-
           <FormField
             control={form.control}
             name="instructor"
             render={({ field }) => (
-              <FormItem className="w-full">
-                <FormLabel>Instructor</FormLabel>
+              <FormItem>
+                <FormLabel className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+                  Instructor
+                </FormLabel>
                 <FormControl>
-                  <Input placeholder="" {...field} />
+                  <Input className="font-medium" {...field} />
                 </FormControl>
                 <FormMessage className="text-xs" />
               </FormItem>
@@ -390,16 +401,14 @@ export function CreateCourseForm({
           />
         </div>
 
-        <div className="flex justify-between items-center gap-x-4">
-          <Separator className="flex-1" />
-          <p className="text-muted-foreground">SIGEAC</p>
-          <Separator className="flex-1" />
-        </div>
-        <Button disabled={createCourse.isPending}>
-          {createCourse.isPending ? (
+        <Button
+          disabled={isPending}
+          className="w-full bg-amber-500 hover:bg-amber-600 text-white font-semibold tracking-wide transition-colors"
+        >
+          {isPending ? (
             <Loader2 className="size-4 animate-spin" />
           ) : (
-            "Enviar"
+            isEditing ? "Guardar cambios" : "Registrar curso"
           )}
         </Button>
       </form>

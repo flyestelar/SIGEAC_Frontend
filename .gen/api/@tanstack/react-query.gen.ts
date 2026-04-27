@@ -389,10 +389,15 @@ import {
   safetyBulletinShow,
   safetyBulletinStore,
   safetyBulletinUpdate,
+  sMsActivityAttendanceGetAttendanceListByActivity,
+  sMsActivityAttendanceGetAttendanceStats,
+  sMsActivityAttendanceGetEmployeeAttendanceStatus,
   sMsActivityAttendanceGetEnrollementStatus,
+  sMsActivityAttendanceMarkAttendance,
   sMsActivityAttendanceStoreSmsActivityAttendance,
   sMsActivityCalendarActivities,
   sMsActivityCloseActivity,
+  sMsActivityDestroy,
   sMsActivityGenerateReport,
   sMsActivityGetNextActivityNumber,
   sMsActivityIndex,
@@ -1594,9 +1599,21 @@ import type {
   SafetyBulletinUpdateData,
   SafetyBulletinUpdateError,
   SafetyBulletinUpdateResponse,
+  SMsActivityAttendanceGetAttendanceListByActivityData,
+  SMsActivityAttendanceGetAttendanceListByActivityError,
+  SMsActivityAttendanceGetAttendanceListByActivityResponse,
+  SMsActivityAttendanceGetAttendanceStatsData,
+  SMsActivityAttendanceGetAttendanceStatsError,
+  SMsActivityAttendanceGetAttendanceStatsResponse,
+  SMsActivityAttendanceGetEmployeeAttendanceStatusData,
+  SMsActivityAttendanceGetEmployeeAttendanceStatusError,
+  SMsActivityAttendanceGetEmployeeAttendanceStatusResponse,
   SMsActivityAttendanceGetEnrollementStatusData,
   SMsActivityAttendanceGetEnrollementStatusError,
   SMsActivityAttendanceGetEnrollementStatusResponse,
+  SMsActivityAttendanceMarkAttendanceData,
+  SMsActivityAttendanceMarkAttendanceError,
+  SMsActivityAttendanceMarkAttendanceResponse,
   SMsActivityAttendanceStoreSmsActivityAttendanceData,
   SMsActivityAttendanceStoreSmsActivityAttendanceError,
   SMsActivityAttendanceStoreSmsActivityAttendanceResponse,
@@ -1606,6 +1623,9 @@ import type {
   SMsActivityCloseActivityData,
   SMsActivityCloseActivityError,
   SMsActivityCloseActivityResponse,
+  SMsActivityDestroyData,
+  SMsActivityDestroyError,
+  SMsActivityDestroyResponse,
   SMsActivityGenerateReportData,
   SMsActivityGenerateReportError,
   SMsActivityGenerateReportResponse,
@@ -5452,9 +5472,6 @@ export const courseGetCoursesByDeparmentOptions = (options: Options<CourseGetCou
 
 export const courseShowQueryKey = (options: Options<CourseShowData>) => createQueryKey('courseShow', options);
 
-/**
- * Display the specified resource
- */
 export const courseShowOptions = (options: Options<CourseShowData>) =>
   queryOptions<
     CourseShowResponse,
@@ -11367,6 +11384,52 @@ export const sMsActivityStoreMutation = (
   return mutationOptions;
 };
 
+export const sMsActivityDestroyMutation = (
+  options?: Partial<Options<SMsActivityDestroyData>>,
+): UseMutationOptions<
+  SMsActivityDestroyResponse,
+  AxiosError<SMsActivityDestroyError>,
+  Options<SMsActivityDestroyData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    SMsActivityDestroyResponse,
+    AxiosError<SMsActivityDestroyError>,
+    Options<SMsActivityDestroyData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await sMsActivityDestroy({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+export const sMsActivityShowQueryKey = (options: Options<SMsActivityShowData>) =>
+  createQueryKey('sMsActivityShow', options);
+
+export const sMsActivityShowOptions = (options: Options<SMsActivityShowData>) =>
+  queryOptions<
+    SMsActivityShowResponse,
+    AxiosError<SMsActivityShowError>,
+    SMsActivityShowResponse,
+    ReturnType<typeof sMsActivityShowQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await sMsActivityShow({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: sMsActivityShowQueryKey(options),
+  });
+
 export const smsSmsActivityGetActivitiesStats0QueryKey = (options: Options<SmsSmsActivityGetActivitiesStats0Data>) =>
   createQueryKey('smsSMsActivityGetActivitiesStats0', options);
 
@@ -11431,28 +11494,6 @@ export const sMsActivityGetNextActivityNumberOptions = (options: Options<SMsActi
       return data;
     },
     queryKey: sMsActivityGetNextActivityNumberQueryKey(options),
-  });
-
-export const sMsActivityShowQueryKey = (options: Options<SMsActivityShowData>) =>
-  createQueryKey('sMsActivityShow', options);
-
-export const sMsActivityShowOptions = (options: Options<SMsActivityShowData>) =>
-  queryOptions<
-    SMsActivityShowResponse,
-    AxiosError<SMsActivityShowError>,
-    SMsActivityShowResponse,
-    ReturnType<typeof sMsActivityShowQueryKey>
-  >({
-    queryFn: async ({ queryKey, signal }) => {
-      const { data } = await sMsActivityShow({
-        ...options,
-        ...queryKey[0],
-        signal,
-        throwOnError: true,
-      });
-      return data;
-    },
-    queryKey: sMsActivityShowQueryKey(options),
   });
 
 export const sMsActivityUpdateCalendarActivityMutation = (
@@ -11596,6 +11637,81 @@ export const sMsActivityAttendanceGetEnrollementStatusOptions = (
     queryKey: sMsActivityAttendanceGetEnrollementStatusQueryKey(options),
   });
 
+export const sMsActivityAttendanceGetAttendanceListByActivityQueryKey = (
+  options: Options<SMsActivityAttendanceGetAttendanceListByActivityData>,
+) => createQueryKey('sMsActivityAttendanceGetAttendanceListByActivity', options);
+
+export const sMsActivityAttendanceGetAttendanceListByActivityOptions = (
+  options: Options<SMsActivityAttendanceGetAttendanceListByActivityData>,
+) =>
+  queryOptions<
+    SMsActivityAttendanceGetAttendanceListByActivityResponse,
+    AxiosError<SMsActivityAttendanceGetAttendanceListByActivityError>,
+    SMsActivityAttendanceGetAttendanceListByActivityResponse,
+    ReturnType<typeof sMsActivityAttendanceGetAttendanceListByActivityQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await sMsActivityAttendanceGetAttendanceListByActivity({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: sMsActivityAttendanceGetAttendanceListByActivityQueryKey(options),
+  });
+
+export const sMsActivityAttendanceGetEmployeeAttendanceStatusQueryKey = (
+  options: Options<SMsActivityAttendanceGetEmployeeAttendanceStatusData>,
+) => createQueryKey('sMsActivityAttendanceGetEmployeeAttendanceStatus', options);
+
+export const sMsActivityAttendanceGetEmployeeAttendanceStatusOptions = (
+  options: Options<SMsActivityAttendanceGetEmployeeAttendanceStatusData>,
+) =>
+  queryOptions<
+    SMsActivityAttendanceGetEmployeeAttendanceStatusResponse,
+    AxiosError<SMsActivityAttendanceGetEmployeeAttendanceStatusError>,
+    SMsActivityAttendanceGetEmployeeAttendanceStatusResponse,
+    ReturnType<typeof sMsActivityAttendanceGetEmployeeAttendanceStatusQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await sMsActivityAttendanceGetEmployeeAttendanceStatus({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: sMsActivityAttendanceGetEmployeeAttendanceStatusQueryKey(options),
+  });
+
+export const sMsActivityAttendanceGetAttendanceStatsQueryKey = (
+  options: Options<SMsActivityAttendanceGetAttendanceStatsData>,
+) => createQueryKey('sMsActivityAttendanceGetAttendanceStats', options);
+
+export const sMsActivityAttendanceGetAttendanceStatsOptions = (
+  options: Options<SMsActivityAttendanceGetAttendanceStatsData>,
+) =>
+  queryOptions<
+    SMsActivityAttendanceGetAttendanceStatsResponse,
+    AxiosError<SMsActivityAttendanceGetAttendanceStatsError>,
+    SMsActivityAttendanceGetAttendanceStatsResponse,
+    ReturnType<typeof sMsActivityAttendanceGetAttendanceStatsQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await sMsActivityAttendanceGetAttendanceStats({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: sMsActivityAttendanceGetAttendanceStatsQueryKey(options),
+  });
+
 export const sMsActivityAttendanceStoreSmsActivityAttendanceMutation = (
   options?: Partial<Options<SMsActivityAttendanceStoreSmsActivityAttendanceData>>,
 ): UseMutationOptions<
@@ -11610,6 +11726,30 @@ export const sMsActivityAttendanceStoreSmsActivityAttendanceMutation = (
   > = {
     mutationFn: async (fnOptions) => {
       const { data } = await sMsActivityAttendanceStoreSmsActivityAttendance({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+export const sMsActivityAttendanceMarkAttendanceMutation = (
+  options?: Partial<Options<SMsActivityAttendanceMarkAttendanceData>>,
+): UseMutationOptions<
+  SMsActivityAttendanceMarkAttendanceResponse,
+  AxiosError<SMsActivityAttendanceMarkAttendanceError>,
+  Options<SMsActivityAttendanceMarkAttendanceData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    SMsActivityAttendanceMarkAttendanceResponse,
+    AxiosError<SMsActivityAttendanceMarkAttendanceError>,
+    Options<SMsActivityAttendanceMarkAttendanceData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await sMsActivityAttendanceMarkAttendance({
         ...options,
         ...fnOptions,
         throwOnError: true,

@@ -13,7 +13,7 @@ import {
 import { useGetCourseEnrolledEmployees } from "@/hooks/sms/useGetCourseEnrolledEmployees";
 import { cn } from "@/lib/utils";
 import { useCompanyStore } from "@/stores/CompanyStore";
-import { Course } from "@/types";
+import { CourseResource } from "@/.gen/api/types.gen";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Check, ChevronsUpDown } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
@@ -35,7 +35,7 @@ import {
 
 interface FormProps {
   onClose: () => void;
-  initialData: Course;
+  initialData: CourseResource;
 }
 
 interface EmployeeSelection {

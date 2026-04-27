@@ -31,9 +31,18 @@ export const useCreateCourseAttendance = () => {
         }
       );
     },
-    onSuccess: () => {
+    onSuccess: (_, data) => {
+      queryClient.invalidateQueries({
+        queryKey: ["course-attendance-stats", data.course_id],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["course-by-id", data.course_id],
+      });
+
       queryClient.invalidateQueries({ queryKey: ["department-courses"] });
-      queryClient.invalidateQueries({ queryKey: ["enrollment-status"] });
+
+      queryClient.invalidateQueries({ queryKey: ["enrollment-status-by-course",data.course_id] });
+
       toast.success("Modificado!", {
         description: `La lista de personas ha sido modificada`,
       });
@@ -50,7 +59,7 @@ export const useCreateCourseAttendance = () => {
   };
 };
 
-export const useMarkAttendance = () => {
+export const useMarkCourseAttendance = () => {
   const queryClient = useQueryClient();
   const markAttendanceMutation = useMutation({
     mutationFn: async ({
@@ -59,25 +68,38 @@ export const useMarkAttendance = () => {
       employees_list,
     }: CourseAttendaceData) => {
       await axiosInstance.patch(
-        `/general/${company}/mark-attendance/${course_id}`,
+        `/general/${company}/course/${course_id}/mark-attendance`,
         employees_list
       );
     },
-    onSuccess: () => {
+    onSuccess: (_, data) => {
+      queryClient.invalidateQueries({
+        queryKey: ["course-attendance-stats", data.course_id],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["sms-course-attendance-list", data.course_id],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["course-by-id", data.course_id],
+      });
+
       queryClient.invalidateQueries({ queryKey: ["department-courses"] });
-      queryClient.invalidateQueries({ queryKey: ["employees-course"] });
+      queryClient.invalidateQueries({
+        queryKey: ["employees-course", data.course_id],
+      });
+      queryClient.invalidateQueries({ queryKey: ["sms-training"] });
       toast.success("¡Actualizado!", {
-        description: `El analisis ha sido actualizada correctamente.`,
+        description: `La asistancia ha sido actualizada correctamente.`,
       });
     },
     onError: (error) => {
       toast.error("Oops!", {
-        description: "No se pudo actualizar el analisis...",
+        description: "No se pudo actualizar la asistencia...",
       });
       console.log(error);
     },
   });
   return {
-    markAttendance: markAttendanceMutation,
+    markCourseAttendance: markAttendanceMutation,
   };
 };

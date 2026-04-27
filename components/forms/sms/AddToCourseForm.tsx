@@ -12,7 +12,7 @@ import {
 import { useGetCourseEnrollementStatus } from "@/hooks/curso/useGetCourseEnrollementStatus";
 import { cn } from "@/lib/utils";
 import { useCompanyStore } from "@/stores/CompanyStore";
-import { Course } from "@/types";
+import { CourseResource } from "@/.gen/api/types.gen";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Check, ChevronsUpDown, Loader2 } from "lucide-react";
 import { useEffect, useState, useCallback } from "react";
@@ -35,7 +35,7 @@ import { useCreateCourseAttendance } from "@/actions/general/asistencia_curso/ac
 
 interface FormProps {
   onClose: () => void;
-  initialData: Course;
+  initialData: CourseResource;
 }
 
 interface EmployeeSelection {
@@ -124,8 +124,8 @@ export function AddToCourseForm({ onClose, initialData }: FormProps) {
           dni: e.dni,
           first_name: e.first_name,
           last_name: e.last_name,
-          job_title: e.job_title.name,
-          department: e.department.name,
+          job_title: e.job_title?.name ?? '',
+          department: e.department?.name ?? '',
           isSelected: true,
           wasEnrolled: true,
         })) || []),
@@ -133,8 +133,8 @@ export function AddToCourseForm({ onClose, initialData }: FormProps) {
           dni: e.dni,
           first_name: e.first_name,
           last_name: e.last_name,
-          job_title: e.job_title.name,
-          department: e.department.name,
+          job_title: e.job_title?.name ?? '',
+          department: e.department?.name ?? '',
           isSelected: false,
           wasEnrolled: false,
         })) || []),

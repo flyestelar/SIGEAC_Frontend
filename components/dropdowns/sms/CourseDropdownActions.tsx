@@ -22,7 +22,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useCompanyStore } from "@/stores/CompanyStore";
-import { Course } from "@/types";
+import { CourseResource } from "@/.gen/api/types.gen";
 import { startOfDay } from "date-fns";
 import {
   ClipboardPenLine,
@@ -37,7 +37,7 @@ import {
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-const CourseDropdownActions = ({ course }: { course: Course }) => {
+const CourseDropdownActions = ({ course }: { course: CourseResource }) => {
   const [open, setOpen] = useState<boolean>(false);
   const [openEdit, setOpenEdit] = useState<boolean>(false);
   const { selectedCompany } = useCompanyStore();
@@ -66,7 +66,7 @@ const CourseDropdownActions = ({ course }: { course: Course }) => {
   };
 
   const realNow = startOfDay(new Date());
-  const CourseDate = startOfDay(course.end_date);
+  const CourseDate = startOfDay(course.end_date ?? new Date(0));
 
   return (
     <>

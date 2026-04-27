@@ -1,35 +1,18 @@
 import axiosInstance from "@/lib/axios";
+import { StoreCourseRequest, UpdateCourseRequest } from "@/.gen/api/types.gen";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 interface CourseData {
   company: string;
   location_id: string;
-  course: {
-    name: string;
-    description: string;
-    duration: string;
-    time: string;
-    start_date: Date;
-    end_date: Date;
-    course_type: string;
-    instructor?: string;
-  };
+  course: StoreCourseRequest;
 }
 
 interface updateCourseData {
   company: string;
   id: string;
-  data: {
-    name: string;
-    description: string;
-    duration: string;
-    time: string;
-    instructor?: string;
-    course_type: string;
-    start_date: Date;
-    end_date: Date;
-  };
+  data: UpdateCourseRequest;
 }
 
 export const useCreateCourse = () => {

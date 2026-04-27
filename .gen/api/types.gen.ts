@@ -270,6 +270,28 @@ export type Condition = Array<string>;
 export type Course = Array<string>;
 
 /**
+ * CourseResource
+ */
+export type CourseResource = {
+  id: number;
+  name: string;
+  description: string | null;
+  duration: string | null;
+  start_date: string | null;
+  end_date: string | null;
+  start_time: string | null;
+  end_time: string | null;
+  instructor: string | null;
+  course_type: string | null;
+  status: string | null;
+  location_id: number | null;
+  department_id: number | null;
+  registered_by: string | null;
+  updated_by: string | null;
+  department?: Department;
+};
+
+/**
  * Credit
  */
 export type Credit = Array<string>;
@@ -701,6 +723,11 @@ export type RoleRequest = {
 export type Route = Array<string>;
 
 /**
+ * SMSActivityAttendance
+ */
+export type SmsActivityAttendance = Array<string>;
+
+/**
  * SMSActivityRequest
  */
 export type SmsActivityRequest = {
@@ -740,8 +767,8 @@ export type SmsActivityResource = {
   topics: string;
   objetive: string;
   description: string;
-  authorized_by?: EmployeeResource;
-  planned_by?: EmployeeResource;
+  authorized_by?: EmployeeResource | null;
+  planned_by?: EmployeeResource | null;
   executed_by: string;
   status: string | null;
   registered_by: string;
@@ -804,13 +831,15 @@ export type StoreAnalysesRequest = {
  */
 export type StoreCourseRequest = {
   name: string;
-  description: string;
-  duration: string;
-  time: string;
-  course_type: string;
-  instructor?: string;
+  description?: string | null;
+  duration?: string | null;
   start_date: string;
   end_date: string;
+  start_time?: string | null;
+  end_time?: string | null;
+  instructor?: string | null;
+  course_type: string;
+  status?: 'ABIERTO' | 'CERRADO' | 'PROCESO';
 };
 
 /**
@@ -6294,7 +6323,12 @@ export type CourseGetCoursesByDeparmentError =
   CourseGetCoursesByDeparmentErrors[keyof CourseGetCoursesByDeparmentErrors];
 
 export type CourseGetCoursesByDeparmentResponses = {
-  200: Array<Course>;
+  /**
+   * Array of `CourseResource`
+   */
+  200: {
+    data: Array<CourseResource>;
+  };
 };
 
 export type CourseGetCoursesByDeparmentResponse =
@@ -6320,12 +6354,26 @@ export type CourseShowErrors = {
      */
     message: string;
   };
+  /**
+   * Not found
+   */
+  404: {
+    /**
+     * Error overview.
+     */
+    message: string;
+  };
 };
 
 export type CourseShowError = CourseShowErrors[keyof CourseShowErrors];
 
 export type CourseShowResponses = {
-  200: string;
+  /**
+   * `CourseResource`
+   */
+  200: {
+    data: CourseResource;
+  };
 };
 
 export type CourseShowResponse = CourseShowResponses[keyof CourseShowResponses];
@@ -6341,6 +6389,19 @@ export type CourseStoreData = {
 };
 
 export type CourseStoreErrors = {
+  400:
+    | {
+        message: 'La fecha de fin no puede ser menor a la fecha actual.';
+        status: 400;
+      }
+    | {
+        message: 'La fecha de inicio no puede ser mayor a la fecha de fin.';
+        status: 400;
+      }
+    | {
+        message: 'El usuario no tiene un departamento asignado.';
+        status: 400;
+      };
   /**
    * Unauthenticated
    */
@@ -6414,15 +6475,6 @@ export type CourseUpdateErrors = {
     message: string;
   };
   /**
-   * Not found
-   */
-  404: {
-    /**
-     * Error overview.
-     */
-    message: string;
-  };
-  /**
    * Validation error
    */
   422: {
@@ -6470,15 +6522,6 @@ export type CourseDeleteErrors = {
      */
     message: string;
   };
-  /**
-   * Not found
-   */
-  404: {
-    /**
-     * Error overview.
-     */
-    message: string;
-  };
 };
 
 export type CourseDeleteError = CourseDeleteErrors[keyof CourseDeleteErrors];
@@ -6507,15 +6550,6 @@ export type CourseFinishCourseErrors = {
    * Unauthenticated
    */
   401: {
-    /**
-     * Error overview.
-     */
-    message: string;
-  };
-  /**
-   * Not found
-   */
-  404: {
     /**
      * Error overview.
      */
@@ -6609,11 +6643,11 @@ export type CourseCoursesByRangeDateResponse =
 export type CourseAttendanceGetEnrollementStatusData = {
   body?: never;
   path: {
-    company: string;
+    _company: string;
     course_id: string;
   };
   query?: never;
-  url: '/general/{company}/enrollement-status/{course_id}';
+  url: '/general/{_company}/enrollement-status/{course_id}';
 };
 
 export type CourseAttendanceGetEnrollementStatusErrors = {
@@ -6679,11 +6713,11 @@ export type CourseAttendanceGetEnrolledEmployeesResponse =
 export type CourseAttendanceMarkAttendanceData = {
   body?: never;
   path: {
-    company: string;
+    _company: string;
     course_id: string;
   };
   query?: never;
-  url: '/general/{company}/mark-attendance/{course_id}';
+  url: '/general/{_company}/mark-attendance/{course_id}';
 };
 
 export type CourseAttendanceMarkAttendanceErrors = {
@@ -15077,6 +15111,83 @@ export type SMsActivityStoreResponses = {
 
 export type SMsActivityStoreResponse = SMsActivityStoreResponses[keyof SMsActivityStoreResponses];
 
+export type SMsActivityDestroyData = {
+  body?: never;
+  path: {
+    company: string;
+    id: string;
+  };
+  query?: never;
+  url: '/{company}/sms/activities/{id}';
+};
+
+export type SMsActivityDestroyErrors = {
+  /**
+   * Unauthenticated
+   */
+  401: {
+    /**
+     * Error overview.
+     */
+    message: string;
+  };
+};
+
+export type SMsActivityDestroyError = SMsActivityDestroyErrors[keyof SMsActivityDestroyErrors];
+
+export type SMsActivityDestroyResponses = {
+  200: {
+    message: 'Actividad eliminada correctamente';
+    status: 200;
+  };
+};
+
+export type SMsActivityDestroyResponse = SMsActivityDestroyResponses[keyof SMsActivityDestroyResponses];
+
+export type SMsActivityShowData = {
+  body?: never;
+  path: {
+    company: string;
+    id: string;
+  };
+  query?: never;
+  url: '/{company}/sms/activities/{id}';
+};
+
+export type SMsActivityShowErrors = {
+  /**
+   * Unauthenticated
+   */
+  401: {
+    /**
+     * Error overview.
+     */
+    message: string;
+  };
+  /**
+   * Not found
+   */
+  404: {
+    /**
+     * Error overview.
+     */
+    message: string;
+  };
+};
+
+export type SMsActivityShowError = SMsActivityShowErrors[keyof SMsActivityShowErrors];
+
+export type SMsActivityShowResponses = {
+  /**
+   * `SMSActivityResource`
+   */
+  200: {
+    data: SmsActivityResource;
+  };
+};
+
+export type SMsActivityShowResponse = SMsActivityShowResponses[keyof SMsActivityShowResponses];
+
 export type SmsSmsActivityGetActivitiesStats0Data = {
   body?: never;
   path: {
@@ -15189,50 +15300,6 @@ export type SMsActivityGetNextActivityNumberResponses = {
 
 export type SMsActivityGetNextActivityNumberResponse =
   SMsActivityGetNextActivityNumberResponses[keyof SMsActivityGetNextActivityNumberResponses];
-
-export type SMsActivityShowData = {
-  body?: never;
-  path: {
-    company: string;
-    id: string;
-  };
-  query?: never;
-  url: '/{company}/sms/activities/{id}';
-};
-
-export type SMsActivityShowErrors = {
-  /**
-   * Unauthenticated
-   */
-  401: {
-    /**
-     * Error overview.
-     */
-    message: string;
-  };
-  /**
-   * Not found
-   */
-  404: {
-    /**
-     * Error overview.
-     */
-    message: string;
-  };
-};
-
-export type SMsActivityShowError = SMsActivityShowErrors[keyof SMsActivityShowErrors];
-
-export type SMsActivityShowResponses = {
-  /**
-   * `SMSActivityResource`
-   */
-  200: {
-    data: SmsActivityResource;
-  };
-};
-
-export type SMsActivityShowResponse = SMsActivityShowResponses[keyof SMsActivityShowResponses];
 
 export type SMsActivityUpdateCalendarActivityData = {
   body: {
@@ -15484,6 +15551,111 @@ export type SMsActivityAttendanceGetEnrollementStatusResponses = {
 export type SMsActivityAttendanceGetEnrollementStatusResponse =
   SMsActivityAttendanceGetEnrollementStatusResponses[keyof SMsActivityAttendanceGetEnrollementStatusResponses];
 
+export type SMsActivityAttendanceGetAttendanceListByActivityData = {
+  body?: never;
+  path: {
+    company: string;
+    activity_id: string;
+  };
+  query?: never;
+  url: '/{company}/sms/activities/{activity_id}/enrolled-employees';
+};
+
+export type SMsActivityAttendanceGetAttendanceListByActivityErrors = {
+  /**
+   * Unauthenticated
+   */
+  401: {
+    /**
+     * Error overview.
+     */
+    message: string;
+  };
+};
+
+export type SMsActivityAttendanceGetAttendanceListByActivityError =
+  SMsActivityAttendanceGetAttendanceListByActivityErrors[keyof SMsActivityAttendanceGetAttendanceListByActivityErrors];
+
+export type SMsActivityAttendanceGetAttendanceListByActivityResponses = {
+  200: Array<SmsActivityAttendance>;
+};
+
+export type SMsActivityAttendanceGetAttendanceListByActivityResponse =
+  SMsActivityAttendanceGetAttendanceListByActivityResponses[keyof SMsActivityAttendanceGetAttendanceListByActivityResponses];
+
+export type SMsActivityAttendanceGetEmployeeAttendanceStatusData = {
+  body?: never;
+  path: {
+    company: string;
+    activity_id: string;
+  };
+  query?: never;
+  url: '/{company}/sms/activities/{activity_id}/attendance-status';
+};
+
+export type SMsActivityAttendanceGetEmployeeAttendanceStatusErrors = {
+  /**
+   * Unauthenticated
+   */
+  401: {
+    /**
+     * Error overview.
+     */
+    message: string;
+  };
+};
+
+export type SMsActivityAttendanceGetEmployeeAttendanceStatusError =
+  SMsActivityAttendanceGetEmployeeAttendanceStatusErrors[keyof SMsActivityAttendanceGetEmployeeAttendanceStatusErrors];
+
+export type SMsActivityAttendanceGetEmployeeAttendanceStatusResponses = {
+  200: {
+    attended: Array<Employee>;
+    not_attended: Array<Employee>;
+  };
+};
+
+export type SMsActivityAttendanceGetEmployeeAttendanceStatusResponse =
+  SMsActivityAttendanceGetEmployeeAttendanceStatusResponses[keyof SMsActivityAttendanceGetEmployeeAttendanceStatusResponses];
+
+export type SMsActivityAttendanceGetAttendanceStatsData = {
+  body?: never;
+  path: {
+    company: string;
+    activity_id: string;
+  };
+  query?: never;
+  url: '/{company}/sms/activities/{activity_id}/attendance-stats';
+};
+
+export type SMsActivityAttendanceGetAttendanceStatsErrors = {
+  /**
+   * Unauthenticated
+   */
+  401: {
+    /**
+     * Error overview.
+     */
+    message: string;
+  };
+};
+
+export type SMsActivityAttendanceGetAttendanceStatsError =
+  SMsActivityAttendanceGetAttendanceStatsErrors[keyof SMsActivityAttendanceGetAttendanceStatsErrors];
+
+export type SMsActivityAttendanceGetAttendanceStatsResponses = {
+  200: {
+    attended: number;
+    not_attended: number;
+    total: string;
+    attended_percentage: number | 0;
+    not_attended_percentage: number | 0;
+  };
+};
+
+export type SMsActivityAttendanceGetAttendanceStatsResponse =
+  SMsActivityAttendanceGetAttendanceStatsResponses[keyof SMsActivityAttendanceGetAttendanceStatsResponses];
+
 export type SMsActivityAttendanceStoreSmsActivityAttendanceData = {
   body?: never;
   path: {
@@ -15518,6 +15690,41 @@ export type SMsActivityAttendanceStoreSmsActivityAttendanceResponses = {
 
 export type SMsActivityAttendanceStoreSmsActivityAttendanceResponse =
   SMsActivityAttendanceStoreSmsActivityAttendanceResponses[keyof SMsActivityAttendanceStoreSmsActivityAttendanceResponses];
+
+export type SMsActivityAttendanceMarkAttendanceData = {
+  body?: never;
+  path: {
+    company: string;
+    activity_id: string;
+  };
+  query?: never;
+  url: '/{company}/sms/activities/mark-attendance/{activity_id}';
+};
+
+export type SMsActivityAttendanceMarkAttendanceErrors = {
+  /**
+   * Unauthenticated
+   */
+  401: {
+    /**
+     * Error overview.
+     */
+    message: string;
+  };
+};
+
+export type SMsActivityAttendanceMarkAttendanceError =
+  SMsActivityAttendanceMarkAttendanceErrors[keyof SMsActivityAttendanceMarkAttendanceErrors];
+
+export type SMsActivityAttendanceMarkAttendanceResponses = {
+  200: {
+    message: 'Se modificó la asistencia correctamente';
+    status: 200;
+  };
+};
+
+export type SMsActivityAttendanceMarkAttendanceResponse =
+  SMsActivityAttendanceMarkAttendanceResponses[keyof SMsActivityAttendanceMarkAttendanceResponses];
 
 export type SafetyBulletinGetBulletinsByYearData = {
   body?: never;
