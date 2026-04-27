@@ -46,7 +46,7 @@ function TaskImportField(props: TaskImportFieldProps) {
       <input {...getInputProps()} />
       <p className="text-sm font-medium">Importar tareas desde archivo</p>
       <p className="text-xs text-muted-foreground mt-1">
-        Arrastre y suelte su archivo aquí, o haga clic para seleccionar (.xlsx, .xls, .ods).
+        Arrastre y suelte su archivo aquí, o haga clic para seleccionar un archi (.xlsx, .xls, .ods).
       </p>
       <div className="mt-3 flex items-center gap-2">
         <Button type="button" variant="outline" size="sm" className="pointer-events-none">
