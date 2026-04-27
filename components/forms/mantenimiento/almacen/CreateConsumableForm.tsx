@@ -129,15 +129,15 @@ const CreateConsumableForm = ({ initialData, isEditing }: { initialData?: Editin
     initialData?.consumable?.fabrication_date ? new Date(initialData?.consumable?.fabrication_date) : undefined,
   );
   const [receptionDate, setReceptionDate] = useState<Date | undefined>(
-    (initialData as any)?.reception_date ? new Date((initialData as any).reception_date) : undefined,
+    initialData?.reception_date ? new Date(initialData.reception_date) : undefined,
   );
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       part_number: initialData?.part_number || '',
-      inspector: (initialData as any)?.inspector || '',
-      reception_date: (initialData as any)?.reception_date || '',
+      inspector: initialData?.inspector || '',
+      reception_date: initialData?.reception_date || '',
       alternative_part_number:
         typeof initialData?.alternative_part_number === 'string' ? [] : (initialData?.alternative_part_number ?? []),
       batch_id: initialData?.batches?.id?.toString() || '',
@@ -146,10 +146,8 @@ const CreateConsumableForm = ({ initialData, isEditing }: { initialData?: Editin
       description: initialData?.description || '',
       zone: initialData?.zone || '',
       lot_number: initialData?.consumable?.lot_number || '',
-      caducate_date: initialData?.consumable?.caducate_date ? initialData?.consumable?.caducate_date : undefined,
-      fabrication_date: initialData?.consumable?.fabrication_date
-        ? initialData?.consumable?.fabrication_date
-        : undefined,
+      caducate_date: initialData?.consumable?.caducate_date ?? undefined,
+      fabrication_date: initialData?.consumable?.fabrication_date ?? undefined,
       quantity: (initialData as any)?.quantity ?? 0,
       is_managed: (initialData as any)?.is_managed ?? true,
     },
@@ -158,10 +156,25 @@ const CreateConsumableForm = ({ initialData, isEditing }: { initialData?: Editin
   // reset si cambia initialData
   useEffect(() => {
     if (!initialData) return;
+
+    const fabDate = initialData.consumable?.fabrication_date
+      ? new Date(initialData.consumable.fabrication_date)
+      : undefined;
+    const cadDate = initialData.consumable?.caducate_date
+      ? new Date(initialData.consumable.caducate_date)
+      : undefined;
+    const recDate = initialData.reception_date
+      ? new Date(initialData.reception_date)
+      : undefined;
+
+    setFabricationDate(fabDate);
+    setCaducateDate(cadDate);
+    setReceptionDate(recDate);
+
     form.reset({
       part_number: initialData.part_number ?? '',
-      inspector: (initialData as any)?.inspector ?? '',
-      reception_date: (initialData as any)?.reception_date ?? '',
+      inspector: initialData.inspector ?? '',
+      reception_date: recDate ? format(recDate, 'yyyy-MM-dd') : '',
       alternative_part_number:
         typeof initialData?.alternative_part_number === 'string' ? [] : (initialData?.alternative_part_number ?? []),
       batch_id: initialData.batches?.id?.toString() ?? '',
@@ -170,10 +183,8 @@ const CreateConsumableForm = ({ initialData, isEditing }: { initialData?: Editin
       description: initialData.description ?? '',
       zone: initialData.zone ?? '',
       lot_number: initialData.consumable?.lot_number ?? '',
-      caducate_date: initialData?.consumable?.caducate_date ? initialData?.consumable?.caducate_date : undefined,
-      fabrication_date: initialData?.consumable?.fabrication_date
-        ? initialData?.consumable?.fabrication_date
-        : undefined,
+      caducate_date: cadDate ? format(cadDate, 'yyyy-MM-dd') : undefined,
+      fabrication_date: fabDate ? format(fabDate, 'yyyy-MM-dd') : undefined,
       quantity: (initialData as any)?.quantity ?? 0,
       is_managed: (initialData as any)?.is_managed ?? true,
     });
@@ -423,7 +434,13 @@ const CreateConsumableForm = ({ initialData, isEditing }: { initialData?: Editin
                         locale={es}
                         mode="single"
                         selected={fabricationDate}
-                        onSelect={setFabricationDate}
+                        onSelect={(d) => {
+                          setFabricationDate(d);
+                          form.setValue('fabrication_date', d ? format(d, 'yyyy-MM-dd') : '', {
+                            shouldDirty: true,
+                            shouldValidate: true,
+                          });
+                        }}
                         initialFocus
                         month={fabricationDate}
                       />
@@ -469,7 +486,13 @@ const CreateConsumableForm = ({ initialData, isEditing }: { initialData?: Editin
                         locale={es}
                         mode="single"
                         selected={caducateDate}
-                        onSelect={setCaducateDate}
+                        onSelect={(d) => {
+                          setCaducateDate(d);
+                          form.setValue('caducate_date', d ? format(d, 'yyyy-MM-dd') : '', {
+                            shouldDirty: true,
+                            shouldValidate: true,
+                          });
+                        }}
                         initialFocus
                         month={caducateDate}
                       />

@@ -50,7 +50,22 @@ const formSchema = z
     inspector: z.string({ message: 'Debe ingresar un inspector.' }),
     reception_date: z.string({ message: 'Debe ingresar una fecha de recepción.' }),
     part_number: z.string().min(2, 'Al menos 2 caracteres.'),
-    alternative_part_number: z.array(z.string().min(2)).optional(),
+    alternative_part_number: z
+      .preprocess(
+        (val) => {
+          if (val === '' || val == null) return [];
+          if (Array.isArray(val)) return val;
+          if (typeof val === 'string') {
+            return val
+              .split(/[\n,;]+/g)
+              .map((s) => s.trim())
+              .filter(Boolean);
+          }
+          return [];
+        },
+        z.array(z.string().min(2)),
+      )
+      .optional(),
     serial: z.string().optional(),
     model: z.string().optional(),
     description: z.string().min(2, 'Al menos 2 caracteres.'),
@@ -130,16 +145,17 @@ export default function CreateToolForm({
   const { createArticle } = useCreateArticle();
   const { confirmIncoming } = useConfirmIncomingArticle();
   const [receptionDate, setReceptionDate] = useState<Date | undefined>(
-    (initialData as any)?.reception_date ? new Date((initialData as any).reception_date) : undefined,
+    initialData?.reception_date ? new Date(initialData.reception_date) : undefined,
   );
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       part_number: initialData?.part_number || '',
-      inspector: (initialData as any)?.inspector || '',
-      reception_date: (initialData as any)?.reception_date || '',
-      alternative_part_number: initialData?.alternative_part_number || [],
+      inspector: initialData?.inspector || '',
+      reception_date: initialData?.reception_date || '',
+      alternative_part_number:
+        typeof initialData?.alternative_part_number === 'string' ? [] : (initialData?.alternative_part_number ?? []),
       serial: initialData?.serial || '',
       description: initialData?.description || '',
       zone: initialData?.zone || '',
@@ -154,10 +170,17 @@ export default function CreateToolForm({
 
   useEffect(() => {
     if (!initialData) return;
+
+    const recDate = initialData.reception_date
+      ? new Date(initialData.reception_date)
+      : undefined;
+
+    setReceptionDate(recDate);
+
     form.reset({
       part_number: initialData.part_number || '',
-      inspector: (initialData as any).inspector || '',
-      reception_date: (initialData as any).reception_date || '',
+      inspector: initialData.inspector || '',
+      reception_date: recDate ? format(recDate, 'yyyy-MM-dd') : '',
       alternative_part_number: initialData.alternative_part_number || [],
       serial: initialData.serial || '',
       description: initialData.description || '',

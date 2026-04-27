@@ -61,6 +61,9 @@ export type Article = {
   status?: string;
   description?: string;
   zone?: string;
+  cost?: string | null;
+  inspector?: string;
+  reception_date?: string | null;
   manufacturer?: Manufacturer;
   condition?: Condition;
   batch?: Batch;
@@ -650,24 +653,32 @@ export type PurchaseOrder = {
   company: string;
 };
 
+export type ArticleQuoteOrder = {
+  id?: number;
+  batch: {
+    name: string;
+  };
+  article_part_number: string;
+  quantity: number;
+  unit_price: string;
+  condition: 'NE' | 'NS' | 'OH' | 'SV';
+  unit?: Convertion;
+  image: string;
+  vendor_id?: number | null;
+  vendor?: { id: number; name: string };
+};
+
 export type Quote = {
   id: number;
   quote_number: string;
   justification: string;
-  article_quote_order: {
-    batch: {
-      name: string;
-    };
-    article_part_number: string;
-    quantity: number;
-    unit_price: string;
-    condition: 'NE' | 'NS' | 'OH' | 'SV';
-    unit?: Convertion;
-    image: string;
-  }[];
+  article_quote_order: ArticleQuoteOrder[];
   sub_total: number;
   total: number;
-  vendor: Vendor;
+  vendor_id?: number | null;
+  vendor?: Vendor;
+  unique_vendors?: { id: number; name: string }[];
+  vendors_count?: number;
   requisition_order: Requisition;
   quote_date: Date;
   created_by: string;

@@ -19,17 +19,16 @@ export interface EditingArticle extends Article {
     article_id: number;
   };
   component?: {
-    serial: string;
-    hard_time: {
-      hour_date: string;
-      cycle_date: string;
-      calendar_date: string;
-    };
-    shell_time: {
-      caducate_date: string;
-      fabrication_date: string;
-      calendar_date: string;
-    };
+    id: number;
+    isFather: string | null;
+    article_id: string;
+    component_id: string | null;
+    caducate_date: string | null;
+    fabrication_date: string | null;
+    hour_date: string | null;
+    cycle_date: string | null;
+    calendary_date: string | null;
+    quantity: string;
   };
   consumable?: {
     lot_number?: string;

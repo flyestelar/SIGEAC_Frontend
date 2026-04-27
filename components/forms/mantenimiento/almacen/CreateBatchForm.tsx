@@ -43,6 +43,8 @@ interface FormProps {
   onClose: () => void;
 }
 
+const normalizeBatchName = (value?: string) => value?.trim().toLowerCase() ?? '';
+
 export function CreateBatchForm({ onClose }: FormProps) {
   const { selectedCompany, selectedStation } = useCompanyStore();
 
@@ -68,18 +70,23 @@ export function CreateBatchForm({ onClose }: FormProps) {
   const { control, setError, clearErrors } = form;
 
   const name = useWatch({ control, name: 'name' });
+  const category = useWatch({ control, name: 'category' });
 
   useEffect(() => {
-    const existingBatch = batches?.some((batch) => batch.name === name);
+    const normalizedName = normalizeBatchName(name);
+    const existingBatch = batches?.some(
+      (batch) => normalizeBatchName(batch.name) === normalizedName && batch.category === category,
+    );
+
     if (existingBatch) {
       setError('name', {
         type: 'manual',
-        message: 'El renglón ya existe.',
+        message: 'El renglón ya existe en esta categoría.',
       });
     } else {
       clearErrors('name');
     }
-  }, [name, batches, clearErrors, setError]);
+  }, [name, category, batches, clearErrors, setError]);
 
   const onSubmit = async (data: FormSchemaType) => {
     const company = selectedCompany?.slug;
@@ -90,9 +97,27 @@ export function CreateBatchForm({ onClose }: FormProps) {
       });
       return;
     }
+
+    const normalizedName = normalizeBatchName(data.name);
+    const existingBatchInCategory = batches?.some(
+      (batch) => normalizeBatchName(batch.name) === normalizedName && batch.category === data.category,
+    );
+
+    if (existingBatchInCategory) {
+      setError('name', {
+        type: 'manual',
+        message: 'El renglón ya existe en esta categoría.',
+      });
+      return;
+    }
+
+    const existsInOtherCategory = batches?.some(
+      (batch) => normalizeBatchName(batch.name) === normalizedName && batch.category !== data.category,
+    );
+
     const formattedData = {
       ...data,
-      slug: generateSlug(data.name),
+      slug: generateSlug(existsInOtherCategory ? `${data.name}-${data.category}` : data.name),
       min_quantity: Number(data.min_quantity),
       warehouse_id: Number(data.warehouse_id),
     };
