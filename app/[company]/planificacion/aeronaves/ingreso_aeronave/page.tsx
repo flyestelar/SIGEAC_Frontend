@@ -1,7 +1,8 @@
 "use client";
 
-import { useCreateMaintenanceAircraft } from "@/actions/mantenimiento/planificacion/aeronaves/actions";
+import { useCreateMaintenanceAircraft } from "@/actions/planificacion/aeronaves/actions";
 import { AircraftPartsInfoForm } from "@/components/forms/mantenimiento/aeronaves/AircraftPartsForm";
+import AircraftInfoForm, { type AircraftInfoType } from "@/components/forms/mantenimiento/aeronaves/AircraftInfoForm";
 import { ContentLayout } from "@/components/layout/ContentLayout";
 import { Button } from "@/components/ui/button";
 import {
@@ -12,6 +13,7 @@ import {
 } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useGetAircraftTypes } from "@/hooks/planificacion/useGetAircraftTypes";
 import { useCompanyStore } from "@/stores/CompanyStore";
 import { TabsContent } from "@radix-ui/react-tabs";
 import {
@@ -24,7 +26,6 @@ import {
 import { useState } from "react";
 import { InfoItem } from "./_components/InfoItem";
 import { PartSummaryCard } from "./_components/PartSummaryCard";
-import AircraftInfoForm from "@/components/forms/mantenimiento/aeronaves/AircraftInfoForm";
 import { useRouter } from "next/navigation";
 
 interface AircraftPart {
@@ -33,17 +34,6 @@ interface AircraftPart {
     total_flight_hours: number;
     total_flight_cycles: number;
     condition_type: "NEW" | "OVERHAULED";
-}
-
-interface AircraftInfoType {
-    manufacturer_id: string;
-    serial: string;
-    acronym: string;
-    flight_hours: string;
-    flight_cycles: string;
-    fabricant_date: Date;
-    location_id: string;
-    comments?: string | undefined;
 }
 
 interface PartsData {
@@ -56,7 +46,12 @@ export default function NewAircraftPage() {
     const [partsData, setPartsData] = useState<PartsData>({ parts: [] });
     const { createMaintenanceAircraft } = useCreateMaintenanceAircraft();
     const { selectedCompany } = useCompanyStore();
+    const { data: aircraftTypesData } = useGetAircraftTypes(selectedCompany?.slug);
     const router = useRouter()
+    const selectedAircraftType = aircraftTypesData?.data.find(
+        (type) => type.id === aircraftData?.aircraft_type_id,
+    );
+
     const handleSubmit = async () => {
         if (aircraftData && partsData) {
             try {
@@ -64,6 +59,7 @@ export default function NewAircraftPage() {
                     data: {
                         aircraft: {
                             ...aircraftData,
+                            aircraft_type_id: Number(aircraftData.aircraft_type_id),
                             flight_hours: Number(aircraftData.flight_hours),
                             flight_cycles: Number(aircraftData.flight_cycles),
                         },
@@ -146,6 +142,10 @@ export default function NewAircraftPage() {
                                         <CardContent className="p-4 space-y-3">
                                             <div className="grid grid-cols-2 gap-3">
                                                 <InfoItem label="Fabricante" value={aircraftData?.manufacturer_id} />
+                                                <InfoItem
+                                                    label="Tipo de Aeronave"
+                                                    value={selectedAircraftType ? `${selectedAircraftType.family} · ${selectedAircraftType.series}` : aircraftData?.aircraft_type_id}
+                                                />
                                                 <InfoItem label="Serial" value={aircraftData?.serial} />
                                                 <InfoItem label="Acrónimo" value={aircraftData?.acronym} />
                                                 <InfoItem label="Horas de Vuelo" value={aircraftData?.flight_hours} />

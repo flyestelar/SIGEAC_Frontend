@@ -35,7 +35,7 @@ import { useGetBatchesByCategory } from '@/hooks/mantenimiento/almacen/renglones
 import { useCompanyStore } from '@/stores/CompanyStore';
 
 import { cn } from '@/lib/utils';
-import loadingGif from '@/public/loading2.gif';
+import loadingGif from '@/public/images/loading2.gif';
 
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { MultiInputField } from '../../../misc/MultiInputField';

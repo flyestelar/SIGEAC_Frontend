@@ -68,8 +68,8 @@ export function CollapseMenuButton({
           className="w-full justify-start h-10"
         >
           <div className="w-full items-center flex justify-between">
-            <div className="flex items-center">
-              <span className="mr-4">
+            <div className="flex items-center gap-4">
+              <span >
                 <Icon size={18} />
               </span>
               <p

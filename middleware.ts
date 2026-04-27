@@ -5,13 +5,10 @@ const PUBLIC_ROUTES = ['/', '/login'];
 export default function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
-  // Permitir rutas públicas
-  if (PUBLIC_ROUTES.includes(pathname)) {
-    return NextResponse.next();
-  }
-
-  // Ignorar archivos estáticos y assets internos
   if (
+    // Permitir rutas públicas
+    PUBLIC_ROUTES.includes(pathname) ||
+    // Ignorar archivos estáticos y assets internos
     pathname.startsWith('/_next') ||
     pathname.startsWith('/favicon.ico') ||
     pathname.startsWith('/images') ||
@@ -32,7 +29,6 @@ export default function middleware(req: NextRequest) {
 
   return NextResponse.next();
 }
-
 
 export const config = {
   matcher: [

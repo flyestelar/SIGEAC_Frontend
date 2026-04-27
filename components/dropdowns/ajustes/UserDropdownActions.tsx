@@ -7,7 +7,8 @@ import {
 
 import { useDeleteUser } from '@/actions/aerolinea/usuarios/actions';
 import { EditUserDialog } from '@/components/dialogs/ajustes/EditUserDialog';
-import { User } from '@/types';
+import { UserCompaniesModulesDialog } from '@/components/dialogs/ajustes/UserCompaniesModulesDialog';
+import { Company, User } from '@/types';
 import { Loader2, MoreHorizontal, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '../../ui/button';
@@ -21,10 +22,10 @@ import {
   DialogTrigger,
 } from '../../ui/dialog';
 
-const UserDropdownActions = ({ user, companies }: { user: User; companies: { id: number; name: string }[] }) => {
+const UserDropdownActions = ({ user, companies }: { user: User; companies: Company[] }) => {
   const [open, setOpen] = useState<boolean>(false);
   const { deleteUser } = useDeleteUser();
-  const handleDelete = async (id: number | string, companies: { id: number; name: string }[]) => {
+  const handleDelete = async (companies: Company[]) => {
     await deleteUser.mutateAsync({ id: user.id, companies });
     setOpen(false);
   };
@@ -37,7 +38,11 @@ const UserDropdownActions = ({ user, companies }: { user: User; companies: { id:
             <MoreHorizontal className="h-4 w-4" />
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="center" className="flex gap-2 justify-center">
+        <DropdownMenuContent align="center" className="flex gap-2 justify-center items-center">
+          <UserCompaniesModulesDialog
+            userId={user.id}
+            userName={`${user.first_name} ${user.last_name}`}
+          />
           <DialogTrigger asChild>
             <DropdownMenuItem>
               <Trash2 className="size-5 text-red-500" />
@@ -64,7 +69,7 @@ const UserDropdownActions = ({ user, companies }: { user: User; companies: { id:
           <Button
             disabled={deleteUser.isPending}
             className="hover:bg-white hover:text-black hover:border hover:border-black transition-all"
-            onClick={() => handleDelete(user.id, companies)}
+            onClick={() => handleDelete(companies)}
           >
             {deleteUser.isPending ? <Loader2 className="size-4 animate-spin" /> : <p>Confirmar</p>}
           </Button>

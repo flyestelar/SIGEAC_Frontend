@@ -34,7 +34,7 @@ const CompanyInfoCard = ({ user }: { user: User }) => {
             Resumen general de la empresa.
           </CardDescription>
         </div>
-        <Image src={'/LOGO_TRD.png'} width={100} height={100} alt="Logo" />
+        <Image src={'/images/LOGO_TRD.png'} width={100} height={100} alt="Logo" />
       </CardHeader>
 
       <CardContent className="space-y-2">

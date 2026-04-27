@@ -8,20 +8,17 @@ import { useCompanyStore } from '@/stores/CompanyStore';
 import { User } from '@/types';
 import { useMutation, UseMutationResult, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
-import { createContext, ReactNode, useContext, useEffect, useMemo, useState } from 'react';
+import { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
+import { login } from '@api/sdk.gen';
+import { LoginData, LoginResponse } from '@api/types';
 
 interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
   loading: boolean;
   error: string | null;
-  loginMutation: UseMutationResult<
-    User,
-    Error,
-    { login: string; password: string },
-    unknown
-  >;
+  loginMutation: UseMutationResult<LoginResponse, Error, LoginData['body'], unknown>;
   logout: () => Promise<void>;
 }
 
@@ -33,9 +30,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { reset } = useCompanyStore();
+  const reset = useCompanyStore((state) => state.reset);
 
-  const isAuthenticated = useMemo(() => !!user, [user]);
+  const isAuthenticated = !!user;
 
   const fetchUser = async (): Promise<User | null> => {
     try {
@@ -46,7 +43,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       return data;
     } catch (err) {
       setUser(null);
-      setError(err as any || 'Error al cargar usuario');
+      setError((err as any) || 'Error al cargar usuario');
       return null;
     } finally {
       setIsLoading(false);
@@ -68,8 +65,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           await fetchUser();
         }
       } catch (error) {
-        console.error("Error checking auth:", error);
-        setError("Error al verificar autenticación");
+        console.error('Error checking auth:', error);
+        setError('Error al verificar autenticación');
       } finally {
         setIsLoading(false);
       }
@@ -79,75 +76,74 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const loginMutation = useMutation({
-    mutationFn: async (credentials: { login: string; password: string }) => {
-      const response = await axiosInstance.post<User>('/login', credentials, {
-        headers: { 'Content-Type': 'application/json' },
-      });
+    mutationFn: async (credentials: LoginData['body']) => {
+      const { data } = await login({ body: credentials });
 
-      const token = response.headers['authorization'];
+      const token = data?.token;
       if (!token) throw new Error('No se recibió token de autenticación');
 
-      createCookie("auth_token", token);
-      await createSession(response.data.id);
+      createCookie('auth_token', token);
+      await createSession(data.userId);
 
-      return response.data;
+      return data;
     },
-    onSuccess: async (userData) => {
+    onSuccess: async () => {
       // Después de login exitoso, hacemos fetch del usuario
       await fetchUser();
       queryClient.invalidateQueries({ queryKey: ['user'] });
-      router.push('/inicio');
       toast.success('¡Inicio correcto!', {
         description: 'Redirigiendo...',
-        position: "bottom-center"
+        position: 'bottom-center',
       });
     },
     onError: (err) => {
       const axiosError = err as AxiosError<{ message?: string }>;
       const status = axiosError.response?.status;
 
-      const errorMessage = status === 401 ? 'Credenciales incorrectas' : axiosError.response?.data?.message || axiosError.message || 'Ocurrió un error inesperado';
+      const errorMessage =
+        status === 401
+          ? 'Credenciales incorrectas'
+          : axiosError.response?.data?.message || axiosError.message || 'Ocurrió un error inesperado';
 
       setError(errorMessage);
-      toast.error('Error al iniciar sesión', {  description: errorMessage,  position: 'bottom-center' });
+      toast.error('Error al iniciar sesión', { description: errorMessage, position: 'bottom-center' });
     },
   });
 
-  const logout = async () => {
+  const logout = useCallback(async () => {
     try {
       setUser(null);
       setError(null);
       await deleteSession();
-      await reset();
+      reset();
       queryClient.clear();
       router.push('/login');
       router.refresh();
       toast.success('Sesión cerrada correctamente', {
-        position: "bottom-center"
+        position: 'bottom-center',
       });
     } catch (err) {
       console.error('Error durante logout:', err);
       toast.error('Error al cerrar sesión', {
         description: 'Inténtalo de nuevo más tarde',
-        position: 'bottom-center'
+        position: 'bottom-center',
       });
     }
-  };
+  }, [queryClient, reset, router]);
 
-  const contextValue = useMemo(() => ({
-    user,
-    isAuthenticated,
-    loading,
-    error,
-    loginMutation,
-    logout,
-  }), [user, isAuthenticated, loading, error, loginMutation]);
-
-  return (
-    <AuthContext.Provider value={contextValue}>
-      {children}
-    </AuthContext.Provider>
+  const contextValue = useMemo(
+    () => ({
+      user,
+      isAuthenticated,
+      loading,
+      error,
+      loginMutation,
+      logout,
+    }),
+    [user, isAuthenticated, loading, error, loginMutation, logout],
   );
+
+  return <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>;
 };
 
 export const useAuth = (): AuthContextType => {

@@ -49,7 +49,7 @@ const PermissionsDialog = ({ permissions, roleName }: DialogProps) => {
               <DialogTitle>Permisos para: {roleName}</DialogTitle>
               <DialogDescription>Aquí puede ver los permisos asignados al rol.</DialogDescription>
             </div>
-            <Image src={'/LOGO_TRD.png'} className="w-[70px] h-[70px]" width={70} height={70} alt="logo" />
+            <Image src={'/images/LOGO_TRD.png'} className="w-[70px] h-[70px]" width={70} height={70} alt="logo" />
           </DialogHeader>
           <div className="p-4 pb-0">
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">

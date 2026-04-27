@@ -1,3 +1,11 @@
+import {
+  AircraftComponentSlotResource,
+  AircraftResource,
+  AircraftTypeResource,
+  HardTimeCategoryResource,
+  HardTimeIntervalResource,
+} from '@api/types';
+
 export type Accountant = {
   id: number;
   name: string;
@@ -273,7 +281,7 @@ export type MaintenanceClient = {
   phone_number: string;
 };
 
-export type MaintenanceAircraft = {
+export interface MaintenanceAircraft extends Omit<AircraftResource, 'aircraft_assignments'> {
   id: number;
   client: MaintenanceClient;
   manufacturer: Manufacturer;
@@ -285,7 +293,7 @@ export type MaintenanceAircraft = {
   aircraft_assignments: AircraftAssigment[];
   location: Location;
   comments: string;
-};
+}
 
 export type AircraftAssigment = {
   id: number;
@@ -335,11 +343,14 @@ export type WorkOrderTaskEvent = {
 };
 
 export type FlightControl = {
+  id: string;
   flight_number: string;
   aircraft_operator: string;
   origin: string;
   destination: string;
   flight_date: string;
+  departure_time?: string;
+  arrival_time?: string;
   flight_hours: number;
   flight_cycles: string;
   aircraft: MaintenanceAircraft;
@@ -522,6 +533,52 @@ export type Manufacturer = {
   name: string;
   type: 'AIRCRAFT' | 'PART';
   description: string;
+};
+
+export type PaginatedResponse<T> = {
+  data: T[];
+  links: {
+    first: string | null;
+    last: string | null;
+    prev: string | null;
+    next: string | null;
+  };
+  meta: {
+    current_page: number;
+    from: number | null;
+    last_page: number;
+    links: {
+      url: string | null;
+      label: string;
+      active: boolean;
+    }[];
+    path: string;
+    per_page: number;
+    to: number | null;
+    total: number;
+  };
+};
+
+export interface AircraftType extends AircraftTypeResource {}
+
+export type MaintenanceControl = {
+  id: number;
+  manual_reference: string;
+  title: string;
+  description: string;
+  aircrafts: MaintenanceAircraft[];
+  task_cards: TaskCard[];
+};
+
+export type TaskCard = {
+  id: number;
+  manual_reference: string;
+  description: string;
+  old_task: string;
+  new_task: string;
+  interval_fh: number;
+  interval_fc: number;
+  interval_days: number;
 };
 
 export type Vendor = {
@@ -1169,4 +1226,165 @@ export type ThirdPartyRole = {
   id: number;
   value: string;
   label: string;
+};
+
+// ── Hard Time ─────────────────────────────────────────────────────────────────
+
+export type HardTimeCategory = {
+  code: string;
+  name: string;
+  description: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type HardTimeMetricType = 'FH' | 'FC' | 'DAYS';
+export type HardTimeAlertLevel = 'OK' | 'WARNING' | 'OVERDUE';
+
+export type HardTimeMetric = {
+  type: HardTimeMetricType;
+  consumed: number;
+  interval: number;
+  remaining: number;
+  percentage: number;
+  status: HardTimeAlertLevel;
+  taskDescription?: string;
+};
+
+/** Interval enriched with computed metrics and status (for UI display). */
+export type HardTimeIntervalWithMetrics = HardTimeIntervalResource & {
+  status: HardTimeAlertLevel;
+  metrics: HardTimeMetric[];
+};
+
+export type HardTimeActiveInstallation = {
+  id: number;
+  serial_number: string;
+  part_number: string;
+  installed_at: string;
+  component_hours_current: number;
+  component_cycles_current: number;
+};
+
+export type HardTimeComponentWithMetrics = AircraftComponentSlotResource;
+
+export type HardTimeCategoryGroup = {
+  category: HardTimeCategoryResource;
+  components: Array<AircraftComponentSlotResource>;
+};
+
+export type HardTimeComponentsResponse = {
+  data: HardTimeCategoryGroup[];
+};
+
+export type HardTimeInstallation = {
+  id: number;
+  hard_time_component_id: number;
+  serial_number: string;
+  part_number: string;
+  article_id: number | null;
+  installed_at: string;
+  aircraft_hours_at_install: number;
+  aircraft_cycles_at_install: number;
+  component_hours_at_install: number;
+  component_cycles_at_install: number;
+  removed_at: string | null;
+  aircraft_hours_at_removal: number | null;
+  aircraft_cycles_at_removal: number | null;
+  removal_reason: string | null;
+  remarks: string | null;
+  is_manual_entry: boolean;
+  component_hours_current?: number | null;
+  component_cycles_current?: number | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type HardTimeCompliance = {
+  id: number;
+  hard_time_interval_id: number;
+  hard_time_installation_id: number;
+  work_order_id: number;
+  compliance_date: string;
+  aircraft_hours_at_compliance: number;
+  aircraft_cycles_at_compliance: number;
+  next_due_hours: number | null;
+  next_due_cycles: number | null;
+  next_due_date: string | null;
+  remarks: string | null;
+  created_at: string;
+  updated_at: string;
+  work_order?: {
+    id: number;
+    order_number: string;
+  };
+};
+
+export type HardTimeTraceabilityRecord = {
+  aircraft: {
+    id: number;
+    acronym: string;
+  } | null;
+  component: {
+    id: number;
+    description: string;
+    position: string;
+  } | null;
+  installation: HardTimeInstallation;
+  compliances_count: number;
+  compliances?: Array<{
+    id: number;
+    compliance_date: string;
+    work_order: {
+      id: number;
+      order_number: string;
+    } | null;
+  }>;
+};
+
+// Form data types for Hard Time mutations
+export type HardTimeInstallComponentData = {
+  serial_number: string;
+  part_number: string;
+  article_id?: number;
+  installed_at: string;
+  aircraft_hours_at_install: number;
+  aircraft_cycles_at_install: number;
+  component_hours_at_install: number;
+  component_cycles_at_install: number;
+  is_manual_entry: boolean;
+};
+
+export type HardTimeUninstallComponentData = {
+  removed_at: string;
+  aircraft_hours_at_removal: number;
+  aircraft_cycles_at_removal: number;
+  removal_reason: string;
+  remarks?: string;
+  warehouse_condition?: string;
+};
+
+export type HardTimeRegisterComplianceData = {
+  hard_time_interval_id: number;
+  work_order_id: number;
+  compliance_date: string;
+  aircraft_hours_at_compliance: number;
+  aircraft_cycles_at_compliance: number;
+  remarks?: string;
+};
+
+export type HardTimeCreateIntervalData = {
+  task_description: string;
+  interval_hours?: number | null;
+  interval_cycles?: number | null;
+  interval_days?: number | null;
+};
+
+export type HardTimeCreateComponentData = {
+  aircraft_id: number;
+  category_code: string;
+  part_number: string;
+  description: string;
+  position: string;
+  ata_chapter?: string;
 };

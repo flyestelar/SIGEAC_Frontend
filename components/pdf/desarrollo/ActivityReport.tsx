@@ -112,7 +112,7 @@ const ActivitiesReportPdf = ({
     <Page size="LETTER" orientation="landscape" style={styles.page}>
       {/* HEADER CON LOGO Y TÍTULO */}
       <View style={styles.headerContainer}>
-        <Image src="/tmd_nombre.png" style={styles.logo} />
+        <Image src="/images/tmd_nombre.png" style={styles.logo} />
         <View style={styles.titleContainer}>
           <Text style={styles.titleText}>REGISTRO DE</Text>
           <Text style={styles.titleText}>ACTIVIDADES DIARIAS</Text>

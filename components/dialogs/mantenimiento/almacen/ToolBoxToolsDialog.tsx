@@ -42,7 +42,7 @@ const ToolBoxToolsDialog = ({ tools, name }: DialogProps) => {
               <DialogTitle>Herramientas para: {name}</DialogTitle>
               <DialogDescription>Aquí puede ver las herramientas para: <span className="italic font-bold">{name.toLocaleLowerCase()}</span>.</DialogDescription>
             </div>
-            <Image src={'/LOGO_TRD.png'} className="w-[70px] h-[70px]" width={70} height={70} alt="logo" />
+            <Image src={'/images/LOGO_TRD.png'} className="w-[70px] h-[70px]" width={70} height={70} alt="logo" />
           </DialogHeader>
           <div className="flex flex-col gap-2">
             {
