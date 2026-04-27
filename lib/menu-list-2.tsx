@@ -578,26 +578,22 @@ export function getMenuList(pathname: string, currentCompany: Company | null, us
           roles: ['ANALISTA_PLANIFICACION', 'JEFE_PLANIFICACION', 'SUPERUSER'],
           submenus: [],
         },
-        ...(process.env.NODE_ENV === 'development'
-          ? [
-            {
-              href: companyPath('/planificacion/control_mantenimiento'),
-              label: 'Ctrl. de Mantenimiento',
-              active: isCompanyPath('/planificacion/control_mantenimiento', 'includes'),
-              icon: ClipboardList,
-              roles: ['ANALISTA_PLANIFICACION', 'JEFE_PLANIFICACION', 'SUPERUSER'],
-              submenus: [],
-            },
-            {
-              href: companyPath('/planificacion/hard_time'),
-              label: 'Ctrl. de Hard Time',
-              active: isCompanyPath('/planificacion/hard_time', 'includes'),
-              icon: Hourglass,
-              roles: ['ANALISTA_PLANIFICACION', 'JEFE_PLANIFICACION', 'SUPERUSER'],
-              submenus: [],
-            },
-          ]
-          : []),
+        {
+          href: companyPath('/planificacion/control_mantenimiento'),
+          label: 'Ctrl. de Mantenimiento',
+          active: isCompanyPath('/planificacion/control_mantenimiento', 'includes'),
+          icon: ClipboardList,
+          roles: ['ANALISTA_PLANIFICACION', 'JEFE_PLANIFICACION', 'SUPERUSER'],
+          submenus: [],
+        },
+        {
+          href: companyPath('/planificacion/hard_time'),
+          label: 'Ctrl. de Hard Time',
+          active: isCompanyPath('/planificacion/hard_time', 'includes'),
+          icon: Hourglass,
+          roles: ['ANALISTA_PLANIFICACION', 'JEFE_PLANIFICACION', 'SUPERUSER'],
+          submenus: [],
+        },
         {
           href: companyPath('/planificacion/control_vuelos'),
           label: 'Ctrl. de Hrs. de Vuelo',
