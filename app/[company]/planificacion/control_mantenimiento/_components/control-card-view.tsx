@@ -99,7 +99,7 @@ function ControlCard({
                     ) : (
                       <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground/60">
                         <CalendarClock className="h-3.5 w-3.5" />
-                        <span>Sin datos</span>
+                        <span>Sin datos...</span>
                       </div>
                     )}
                   </div>
