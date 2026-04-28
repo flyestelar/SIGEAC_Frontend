@@ -9,8 +9,8 @@ import { InformationSource } from "@/types";
 import { ClipboardPen, Loader2, MoreHorizontal, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { EditInformationSourceForm } from "../../../forms/sms/EditInformationSourceForm";
-import { Button } from "../../../ui/button";
+import { EditInformationSourceForm } from "@/components/forms/sms/EditInformationSourceForm";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -18,7 +18,8 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "../../../ui/dialog";
+} from "@/components/ui/dialog";
+import { useCompanyStore } from "@/stores/CompanyStore";
 
 const InformationSourceDropdownActions = ({
   informationSource,
@@ -30,11 +31,12 @@ const InformationSourceDropdownActions = ({
   const [openEdit, setOpenEdit] = useState<boolean>(false);
 
   const { deleteInformationSource } = useDeleteInformationSource();
+  const { selectedCompany } = useCompanyStore();
 
   const router = useRouter();
 
   const handleDelete = async (id: number | string) => {
-    await deleteInformationSource.mutateAsync(id);
+    await deleteInformationSource.mutateAsync({ company: selectedCompany!.slug, id });
     setOpenDelete(false);
   };
   return (

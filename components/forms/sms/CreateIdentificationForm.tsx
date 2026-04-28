@@ -36,9 +36,16 @@ import { useGetInformationSources } from "@/hooks/sms/useGetInformationSource";
 import { cn } from "@/lib/utils";
 import { useCompanyStore } from "@/stores/CompanyStore";
 import { DangerIdentification } from "@/types";
-import { Separator } from "@radix-ui/react-select";
 import { addDays, format } from "date-fns";
 import { es } from "date-fns/locale";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { CreateInformationSourceForm } from "@/components/forms/sms/CreateInformationSourceForm";
 import { CalendarIcon, Loader2, Plus, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -111,7 +118,7 @@ export default function CreateDangerIdentificationForm({
 }: FormProps) {
   const { selectedCompany } = useCompanyStore();
   const { data: informationSources, isLoading: isLoadingSources } =
-    useGetInformationSources();
+    useGetInformationSources(selectedCompany?.slug);
   const { createDangerIdentification } = useCreateDangerIdentification();
   const { updateDangerIdentification } = useUpdateDangerIdentification();
   const router = useRouter();
@@ -125,14 +132,40 @@ export default function CreateDangerIdentificationForm({
   const [analyses, setAnalyses] = useState<string[]>([]);
   const [newAnalysis, setNewAnalysis] = useState("");
 
+  const [openCreateSource, setOpenCreateSource] = useState(false);
+
   const AREAS = [
-    "OPERACIONES",
-    "MANTENIMIENTO",
-    "ADMINISTRACION",
-    "CONTROL_CALIDAD",
-    "IT",
+    "ANONIMO",
+    "APTO",
+    "DISPATCH",
+    "GSE",
+    "GTE. EST.",
+    "SUMINISTRO",
+    "INAC",
+    "MTTO",
+    "ING",
+    "INST. CAP",
+    "N/A",
+    "OMA",
+    "OPS",
+    "QMS",
+    "RR.HH",
+    "SGC",
+    "SMS",
+    "TDC",
+    "TDM",
+    "TFC",
+    "CARG",
+    "QMS_AVSEC",
+    "GTE_EQUIPAJE",
+    "TALLER_SUPERVIVENCIA",
+    "NDT",
+    "AUDITORIA_INTERNA",
+    "AEROPUERTO",
+    "SSL",
+    "TECNOLOGIA",
+    "INFRAESTRUCTURA",
     "AVSEC",
-    "OTROS",
   ];
   const DANGER_TYPES = ["ORGANIZACIONAL", "TECNICO", "HUMANO", "NATURAL"];
 
@@ -270,265 +303,175 @@ export default function CreateDangerIdentificationForm({
 
   };
 
-  return (
-    <Form {...form}>
-      <form
-        onSubmit={form.handleSubmit(onSubmit)}
-        className="flex flex-col space-y-4"
-      >
-        <FormLabel className="text-lg text-center m-2">
-          Identificación de Peligro
-        </FormLabel>
+  const SectionHeader = ({ title }: { title: string }) => (
+    <div className="flex items-center gap-2">
+      <span className="border-l-2 border-amber-500 pl-2 text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
+        {title}
+      </span>
+      <div className="flex-1 border-t border-dashed border-border" />
+    </div>
+  );
 
-        {/* --- CAMPOS PRINCIPALES --- */}
-        <div className="flex gap-2 justify-center items-center">
+  const fieldLabel = "text-[11px] font-semibold uppercase tracking-widest text-muted-foreground";
+
+  return (
+    <>
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-5">
+
+        {/* SECCIÓN: IDENTIFICACIÓN */}
+        <div className="flex flex-col gap-3">
+          <SectionHeader title="Identificación" />
+          <div className="grid grid-cols-2 gap-3">
+            <FormField
+              control={form.control}
+              name="danger"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className={fieldLabel}>Peligro Identificado</FormLabel>
+                  <FormControl>
+                    <Input placeholder="¿Cuál es el peligro?" {...field} />
+                  </FormControl>
+                  <FormMessage className="text-xs" />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="risk_management_start_date"
+              render={({ field }) => (
+                <FormItem className="flex flex-col">
+                  <FormLabel className={fieldLabel}>Fecha Inicio de Gestión</FormLabel>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <FormControl>
+                        <Button
+                          variant="outline"
+                          className={cn(
+                            "w-full pl-3 text-left font-medium text-sm",
+                            !field.value && "text-muted-foreground font-normal"
+                          )}
+                        >
+                          {field.value
+                            ? format(field.value, "PPP", { locale: es })
+                            : "Seleccione una fecha"}
+                          <CalendarIcon className="ml-auto h-4 w-4 opacity-40" />
+                        </Button>
+                      </FormControl>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={field.value}
+                        onSelect={field.onChange}
+                        initialFocus
+                        fromYear={2000}
+                        toYear={new Date().getFullYear()}
+                        captionLayout="dropdown-buttons"
+                      />
+                    </PopoverContent>
+                  </Popover>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
           <FormField
             control={form.control}
-            name="danger"
+            name="description"
             render={({ field }) => (
-              <FormItem className="w-full">
-                <FormLabel>Peligro Identificado</FormLabel>
+              <FormItem>
+                <FormLabel className={fieldLabel}>Descripción</FormLabel>
                 <FormControl>
-                  <Input placeholder="Cual es el peligro" {...field} />
+                  <Textarea className="resize-none text-sm min-h-[72px]" placeholder="Breve descripción del peligro identificado" {...field} />
                 </FormControl>
                 <FormMessage className="text-xs" />
               </FormItem>
             )}
           />
-          <FormField
-            control={form.control}
-            name="risk_management_start_date"
-            render={({ field }) => (
-              <FormItem className="flex flex-col mt-2.5 w-full">
-                <FormLabel>Fecha de Inicio de Gestión</FormLabel>
-                <Popover>
-                  <PopoverTrigger asChild>
+          <div className="grid grid-cols-2 gap-3">
+            <FormField
+              control={form.control}
+              name="danger_area"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className={fieldLabel}>Área</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
-                      <Button
-                        variant={"outline"}
-                        className={cn(
-                          "w-full pl-3 text-left font-normal",
-                          !field.value && "text-muted-foreground"
-                        )}
-                      >
-                        {field.value
-                          ? format(field.value, "PPP", { locale: es })
-                          : "Seleccione una fecha"}
-                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                      </Button>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Seleccionar área..." />
+                      </SelectTrigger>
                     </FormControl>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={field.value}
-                      onSelect={field.onChange}
-                      initialFocus
-                      fromYear={2000}
-                      toYear={new Date().getFullYear()}
-                      captionLayout="dropdown-buttons"
-                    />
-                  </PopoverContent>
-                </Popover>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
-
-        {/* --- DESCRIPCION --- */}
-        <FormField
-          control={form.control}
-          name="description"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Descripcion de Identificación de Peligro</FormLabel>
-              <FormControl>
-                <Textarea placeholder="Breve descripción" {...field} />
-              </FormControl>
-              <FormMessage className="text-xs" />
-            </FormItem>
-          )}
-        />
-
-        {/* --- ÁREA --- */}
-        <FormField
-          control={form.control}
-          name="danger_area"
-          render={({ field }) => (
-            <FormItem className="w-full">
-              <FormLabel>Área de identificación</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Seleccionar Área" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  {AREAS.map((area, index) => (
-                    <SelectItem key={index} value={area}>
-                      {area}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        {/* --- DEFENSAS --- */}
-        <FormItem>
-          <FormLabel>Defensas Actuales</FormLabel>
-          <div className="space-y-2">
-            <div className="flex gap-2">
-              <Input
-                placeholder="Escriba una defensa"
-                value={newDefense}
-                onChange={(e) => setNewDefense(e.target.value)}
-                onKeyPress={handleDefenseKeyPress}
-              />
-              <Button type="button" onClick={addDefense} size="icon">
-                <Plus className="h-4 w-4" />
-              </Button>
-            </div>
-            <div className="flex flex-wrap gap-2 pt-2">
-              {defenses.map((item, index) => (
-                <div
-                  key={index}
-                  className="flex items-center gap-2 bg-muted/40 border rounded-md p-2"
-                >
-                  <span className="text-sm">{item}</span>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="h-5 w-5"
-                    onClick={() => removeDefense(index)}
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
-                </div>
-              ))}
-            </div>
+                    <SelectContent>
+                      {AREAS.map((area, index) => (
+                        <SelectItem key={index} value={area}>
+                          {area}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="danger_type"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className={fieldLabel}>Tipo de Peligro</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <FormControl>
+                      <SelectTrigger className="font-medium text-sm">
+                        <SelectValue placeholder="Seleccionar tipo..." />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {DANGER_TYPES.map((type, index) => (
+                        <SelectItem key={index} value={type} className="font-medium">
+                          {type}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
           </div>
-        </FormItem>
-        <FormField
-          control={form.control}
-          name="current_defenses"
-          render={({ field }) => (
-            <FormItem className="hidden">
-              <FormControl>
-                <Input type="hidden" {...field} />
-              </FormControl>
-            </FormItem>
-          )}
-        />
-
-        {/* --- CONSECUENCIAS --- */}
-        <FormItem>
-          <FormLabel>Consecuencias</FormLabel>
-          <div className="space-y-2">
-            <div className="flex gap-2">
-              <Input
-                placeholder="Escriba una consecuencia"
-                value={newConsequence}
-                onChange={(e) => setNewConsequence(e.target.value)}
-                onKeyPress={handleConsequenceKeyPress}
-              />
-              <Button type="button" onClick={addConsequence} size="icon">
-                <Plus className="h-4 w-4" />
-              </Button>
-            </div>
-            <div className="flex flex-wrap gap-2 pt-2">
-              {consequences.map((item, index) => (
-                <div
-                  key={index}
-                  className="flex items-center gap-2 bg-muted/40 border rounded-md p-2"
-                >
-                  <span className="text-sm">{item}</span>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="h-5 w-5"
-                    onClick={() => removeConsequence(index)}
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
-                </div>
-              ))}
-            </div>
-          </div>
-        </FormItem>
-        <FormField
-          control={form.control}
-          name="possible_consequences"
-          render={({ field }) => (
-            <FormItem className="hidden">
-              <FormControl>
-                <Input type="hidden" {...field} />
-              </FormControl>
-            </FormItem>
-          )}
-        />
-
-        {/* --- CONSECUENCIA A EVALUAR --- */}
-        <FormField
-          control={form.control}
-          name="consequence_to_evaluate"
-          render={({ field }) => (
-            <FormItem className="w-full">
-              <FormLabel>Consecuencia a Evaluar</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Consecuencia a Evaluar" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  {consequences.filter(Boolean).map((c, idx) => (
-                    <SelectItem key={idx} value={c}>
-                      {c}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        {/* --- FUENTE E IDENTIFICACIÓN --- */}
-        <div className="flex gap-2 justify-center items-center">
           <FormField
             control={form.control}
             name="information_source_id"
             render={({ field }) => (
-              <FormItem className="w-full">
-                <FormLabel>Método de Identificación</FormLabel>
+              <FormItem>
+                <div className="flex items-center justify-stretch gap-2">
+                  <FormLabel className={fieldLabel}>Método de Identificación</FormLabel>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="h-6 gap-1 px-2 text-xs text-amber-600 hover:text-amber-700 hover:bg-amber-50"
+                    onClick={() => setOpenCreateSource(true)}
+                  >
+                    <Plus className="h-3 w-3" />
+                    Nueva fuente
+                  </Button>
+                </div>
                 {isLoadingSources ? (
-                  <div className="flex items-center space-x-2">
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <Loader2 className="h-4 w-4 animate-spin" />
-                    <span>Cargando...</span>
+                    <span>Cargando fuentes...</span>
                   </div>
                 ) : (
-                  <Select
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                    disabled={isLoadingSources}
-                  >
+                  <Select onValueChange={field.onChange} value={field.value} disabled={isLoadingSources}>
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder={"Seleccionar Fuente"} />
+                        <SelectValue placeholder="Seleccionar fuente..." />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
                       {informationSources?.map((source) => (
-                        <SelectItem
-                          key={source.id}
-                          value={source.id.toString()}
-                        >
+                        <SelectItem key={source.id} value={source.id.toString()}>
                           {source.name}
                         </SelectItem>
                       ))}
@@ -540,98 +483,184 @@ export default function CreateDangerIdentificationForm({
             )}
           />
 
+        </div>
+
+        {/* SECCIÓN: DEFENSAS */}
+        <div className="flex flex-col gap-3">
+          <SectionHeader title="Defensas Actuales" />
+          <FormItem>
+            <div className="flex gap-2">
+              <Input
+                className="text-sm"
+                placeholder="Escriba una defensa y presione +"
+                value={newDefense}
+                onChange={(e) => setNewDefense(e.target.value)}
+                onKeyPress={handleDefenseKeyPress}
+              />
+              <Button type="button" onClick={addDefense} size="icon" variant="outline">
+                <Plus className="h-4 w-4" />
+              </Button>
+            </div>
+            {defenses.length > 0 && (
+              <div className="flex flex-wrap gap-2 pt-2">
+                {defenses.map((item, index) => (
+                  <div key={index} className="flex items-center gap-1.5 bg-muted/50 border rounded-md px-2.5 py-1">
+                    <span className="text-xs font-medium">{item}</span>
+                    <button type="button" onClick={() => removeDefense(index)} className="text-muted-foreground hover:text-foreground transition-colors">
+                      <X className="h-3 w-3" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </FormItem>
           <FormField
             control={form.control}
-            name="danger_type"
+            name="current_defenses"
             render={({ field }) => (
-              <FormItem className="w-full">
-                <FormLabel>Tipo de peligro</FormLabel>
-                <Select
-                  onValueChange={field.onChange}
-                  defaultValue={field.value}
-                >
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Seleccionar tipo de peligro" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {DANGER_TYPES.map((type, index) => (
-                      <SelectItem key={index} value={type}>
-                        {type}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+              <FormItem className="hidden">
+                <FormControl><Input type="hidden" {...field} /></FormControl>
+              </FormItem>
+            )}
+          />
+        </div>
+
+        {/* SECCIÓN: CONSECUENCIAS */}
+        <div className="flex flex-col gap-3">
+          <SectionHeader title="Consecuencias" />
+          <FormItem>
+            <FormLabel className={fieldLabel}>Posibles Consecuencias</FormLabel>
+            <div className="flex gap-2">
+              <Input
+                className="text-sm"
+                placeholder="Escriba una consecuencia y presione +"
+                value={newConsequence}
+                onChange={(e) => setNewConsequence(e.target.value)}
+                onKeyPress={handleConsequenceKeyPress}
+              />
+              <Button type="button" onClick={addConsequence} size="icon" variant="outline">
+                <Plus className="h-4 w-4" />
+              </Button>
+            </div>
+            {consequences.length > 0 && (
+              <div className="flex flex-wrap gap-2 pt-2">
+                {consequences.map((item, index) => (
+                  <div key={index} className="flex items-center gap-1.5 bg-muted/50 border rounded-md px-2.5 py-1">
+                    <span className="text-xs font-medium">{item}</span>
+                    <button type="button" onClick={() => removeConsequence(index)} className="text-muted-foreground hover:text-foreground transition-colors">
+                      <X className="h-3 w-3" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </FormItem>
+          <FormField
+            control={form.control}
+            name="possible_consequences"
+            render={({ field }) => (
+              <FormItem className="hidden">
+                <FormControl><Input type="hidden" {...field} /></FormControl>
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="consequence_to_evaluate"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className={fieldLabel}>Consecuencia a Evaluar</FormLabel>
+                {consequences.length === 0 ? (
+                  <div className="flex h-9 w-full items-center rounded-md border border-dashed border-amber-400 bg-amber-50/50 px-3 text-xs text-amber-600 dark:bg-amber-950/20 dark:text-amber-400">
+                    Debe agregar al menos una consecuencia primero
+                  </div>
+                ) : (
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Seleccionar consecuencia a evaluar..." />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {consequences.filter(Boolean).map((c, idx) => (
+                        <SelectItem key={idx} value={c}>{c}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
                 <FormMessage />
               </FormItem>
             )}
           />
         </div>
 
-        {/* --- ANALISIS CAUSA RAÍZ --- */}
-        <FormItem>
-          <FormLabel>Análisis Causa Raíz</FormLabel>
-          <div className="space-y-2">
+        {/* SECCIÓN: ANÁLISIS CAUSA RAÍZ */}
+        <div className="flex flex-col gap-3">
+          <SectionHeader title="Análisis Causa Raíz" />
+          <FormItem>
             <div className="flex gap-2">
               <Input
-                placeholder="Escriba un 'porqué' del análisis"
+                className="text-sm"
+                placeholder="Escriba un 'porqué' del análisis y presione +"
                 value={newAnalysis}
                 onChange={(e) => setNewAnalysis(e.target.value)}
                 onKeyPress={handleAnalysisKeyPress}
               />
-              <Button type="button" onClick={addAnalysis} size="icon">
+              <Button type="button" onClick={addAnalysis} size="icon" variant="outline">
                 <Plus className="h-4 w-4" />
               </Button>
             </div>
-            <div className="flex flex-wrap gap-2 pt-2">
-              {analyses.map((item, index) => (
-                <div
-                  key={index}
-                  className="flex items-center gap-2 bg-muted/40 border rounded-md p-2"
-                >
-                  <span className="text-sm">{item}</span>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="h-5 w-5"
-                    onClick={() => removeAnalysis(index)}
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
-                </div>
-              ))}
-            </div>
-          </div>
-        </FormItem>
-        <FormField
-          control={form.control}
-          name="root_cause_analysis"
-          render={({ field }) => (
-            <FormItem className="hidden">
-              <FormControl>
-                <Input type="hidden" {...field} />
-              </FormControl>
-            </FormItem>
-          )}
-        />
-
-        {/* --- FOOTER --- */}
-        <div className="flex justify-between items-center gap-x-4 pt-4">
-          <Separator className="flex-1" />
-          <p className="text-muted-foreground text-sm">SIGEAC</p>
-          <Separator className="flex-1" />
+            {analyses.length > 0 && (
+              <div className="flex flex-col gap-1.5 pt-2">
+                {analyses.map((item, index) => (
+                  <div key={index} className="flex items-center justify-between gap-2 bg-muted/50 border rounded-md px-3 py-1.5">
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] font-bold text-muted-foreground">#{index + 1}</span>
+                      <span className="text-sm">{item}</span>
+                    </div>
+                    <button type="button" onClick={() => removeAnalysis(index)} className="text-muted-foreground hover:text-foreground transition-colors shrink-0">
+                      <X className="h-3 w-3" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </FormItem>
+          <FormField
+            control={form.control}
+            name="root_cause_analysis"
+            render={({ field }) => (
+              <FormItem className="hidden">
+                <FormControl><Input type="hidden" {...field} /></FormControl>
+              </FormItem>
+            )}
+          />
         </div>
 
-        {/* --- BOTÓN ENVIAR --- */}
-        <Button type="submit" disabled={createDangerIdentification.isPending || updateDangerIdentification.isPending}>
-          {createDangerIdentification.isPending || updateDangerIdentification.isPending ? (
+        <Button
+          type="submit"
+          disabled={createDangerIdentification.isPending || updateDangerIdentification.isPending}
+          className="w-full bg-amber-500 hover:bg-amber-600 text-white font-semibold tracking-wide transition-colors"
+        >
+          {(createDangerIdentification.isPending || updateDangerIdentification.isPending) ? (
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
           ) : null}
-          {isEditing ? "Actualizar" : "Enviar"}
+          {isEditing ? "Guardar cambios" : "Enviar"}
         </Button>
       </form>
     </Form>
+
+    <Dialog open={openCreateSource} onOpenChange={setOpenCreateSource}>
+      <DialogContent className="flex flex-col max-w-lg">
+        <DialogHeader>
+          <DialogTitle>Nueva Fuente de Identificación</DialogTitle>
+          <DialogDescription>
+            Crea una nueva fuente y aparecerá disponible en el selector.
+          </DialogDescription>
+        </DialogHeader>
+        <CreateInformationSourceForm onClose={() => setOpenCreateSource(false)} />
+      </DialogContent>
+    </Dialog>
+    </>
   );
 }

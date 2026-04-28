@@ -769,6 +769,12 @@ export function getMenuList(pathname: string, currentCompany: Company | null, us
               label: 'Condiciones',
               active: pathname === '/ajustes/globales/condiciones',
             },
+            {
+              href: "/ajustes/globales/fuentes_informacion",
+              label: "Fuentes de Informacion",
+              active: pathname === "/ajustes/globales/fuentes_informacion",
+              roles: ["JEFE_SMS", "ANALISTA_SMS", "SUPERUSER"],
+            },
           ],
         },
         {

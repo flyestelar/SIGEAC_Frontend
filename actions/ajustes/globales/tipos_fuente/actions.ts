@@ -52,8 +52,8 @@ export const useDeleteInformationSource = () => {
   const queryClient = useQueryClient();
 
   const deleteMutation = useMutation({
-    mutationFn: async (id: number | string) => {
-      await axiosInstance.delete(`/transmandu/information-sources/${id}`);
+    mutationFn: async ({ company, id }: { company: string; id: number | string }) => {
+      await axiosInstance.delete(`/${company}/information-sources/${id}`);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["information-sources"] });

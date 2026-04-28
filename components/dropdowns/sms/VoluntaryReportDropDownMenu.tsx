@@ -87,7 +87,7 @@ const VoluntaryReportDropdownActions = ({
   // ✅ Nueva función para redirigir enviando el ID del reporte
   const handleCreateIdentification = () => {
     router.push(
-      `/transmandu/sms/gestion_reportes/peligros_identificados/crear_identificacion?reporteId=${voluntaryReport.id}`
+      `/${selectedCompany?.slug}/sms/gestion_reportes/peligros_identificados/crear_identificacion?reporteId=${voluntaryReport.id}`
     );
   };
 
