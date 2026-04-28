@@ -1,27 +1,37 @@
 'use client'
 
+import { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { ContentLayout } from "@/components/layout/ContentLayout";
 import CreateDangerIdentificationForm from "@/components/forms/sms/CreateIdentificationForm";
+import LoadingPage from "@/components/misc/LoadingPage";
 
-export default function CreateDangerIdentificationPage() {
+function CreateDangerIdentificationContent() {
   const searchParams = useSearchParams();
   const reporteId = searchParams.get("reporteId");
 
   if (!reporteId) {
-    throw new Error("Falta el id del reporte en los parámetros de búsqueda");
+    return (
+      <p className="text-sm text-muted-foreground">
+        No se proporcionó el ID del reporte.
+      </p>
+    );
   }
 
   return (
+    <CreateDangerIdentificationForm
+      id={Number(reporteId)}
+      reportType="RVP"
+    />
+  );
+}
+
+export default function CreateDangerIdentificationPage() {
+  return (
     <ContentLayout title="Crear Identificación de Peligro">
-      
-        
-          <CreateDangerIdentificationForm
-            id={Number(reporteId)}
-            reportType="RVP"
-          />
-        
-      
+      <Suspense fallback={<LoadingPage />}>
+        <CreateDangerIdentificationContent />
+      </Suspense>
     </ContentLayout>
   );
 }
