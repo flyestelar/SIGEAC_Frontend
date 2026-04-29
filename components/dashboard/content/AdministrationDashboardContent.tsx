@@ -31,45 +31,37 @@ export default function AdministrationDashboardContent({
 
   return (
     <main className="max-w-7xl mt-6 mx-auto px-4">
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="flex justify-center mb-0 space-x-3 border-b rounded-t-xl bg-muted/40">
-          <TabsTrigger
-            value="REPORTES"
-            className="flex gap-2 px-3 py-2 rounded-t-lg transition-all
-              text-gray-600 dark:text-gray-400
-              data-[state=active]:border-b-2
-              data-[state=active]:border-violet-600
-              data-[state=active]:bg-white
-              data-[state=active]:text-violet-700
-              data-[state=active]:shadow-sm
-              dark:data-[state=active]:bg-slate-900
-              dark:data-[state=active]:border-violet-400
-              dark:data-[state=active]:text-violet-300
-              hover:text-violet-600 dark:hover:text-violet-300"
-          >
-            <FileBarChart2 className="size-4" />
-            Reportes
-          </TabsTrigger>
 
-          <TabsTrigger
-            value="RESUMEN DE SOLICITUDES"
-            className="flex gap-2 px-3 py-2 rounded-t-lg transition-all
-              text-gray-600 dark:text-gray-400
-              data-[state=active]:border-b-2
-              data-[state=active]:border-teal-600
-              data-[state=active]:bg-white
-              data-[state=active]:text-teal-600
-              data-[state=active]:shadow-sm
-              dark:data-[state=active]:bg-slate-900
-              dark:data-[state=active]:border-teal-400
-              dark:data-[state=active]:text-teal-400"
-          >
-            <FileBarChart2 className="size-4" />
-            Resumen de Solicitudes
-          </TabsTrigger>
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+
+        {/* ===================== TABS (MISMO SISTEMA EXACTO) ===================== */}
+        <TabsList className="w-full flex justify-center mb-6 p-2 rounded-2xl bg-slate-200/50 dark:bg-slate-800/60 backdrop-blur-md border border-slate-200/40 dark:border-slate-800/60">
+
+          <div className="flex w-full max-w-md gap-2">
+
+            <TabsTrigger
+              value="REPORTES"
+              className="flex-1 flex items-center justify-center gap-2 text-xs h-7 px-3 rounded-xl transition-all duration-200 whitespace-nowrap text-slate-500 dark:text-slate-400 hover:text-violet-500 dark:hover:text-violet-300 data-[state=active]:bg-white/80 dark:data-[state=active]:bg-slate-900/50 data-[state=active]:text-violet-600 dark:data-[state=active]:text-violet-300 data-[state=active]:shadow-[0_0_18px_rgba(167,139,250,0.25)] data-[state=active]:ring-1 data-[state=active]:ring-violet-300/50"
+            >
+              <FileBarChart2 className="w-3.5 h-3.5 shrink-0" />
+              Reportes
+            </TabsTrigger>
+
+            <TabsTrigger
+              value="RESUMEN DE SOLICITUDES"
+              className="flex-1 flex items-center justify-center gap-2 text-xs h-7 px-3 rounded-xl transition-all duration-200 whitespace-nowrap text-slate-500 dark:text-slate-400 hover:text-teal-500 dark:hover:text-teal-300 data-[state=active]:bg-white/80 dark:data-[state=active]:bg-slate-900/50 data-[state=active]:text-teal-600 dark:data-[state=active]:text-teal-300 data-[state=active]:shadow-[0_0_18px_rgba(45,212,191,0.25)] data-[state=active]:ring-1 data-[state=active]:ring-teal-300/50"
+            >
+              <FileBarChart2 className="w-3.5 h-3.5 shrink-0" />
+              Resumen
+            </TabsTrigger>
+
+          </div>
+
         </TabsList>
 
+        {/* ===================== CONTENT ===================== */}
         <div className="mt-8">
+
           <TabsContent value="REPORTES">
             <DispatchWarehouseReports
               companySlug={companySlug}
@@ -86,8 +78,11 @@ export default function AdministrationDashboardContent({
               isError={isError}
             />
           </TabsContent>
+
         </div>
+
       </Tabs>
+
     </main>
   );
 }

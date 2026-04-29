@@ -76,38 +76,50 @@ export default function SuperUserDashboard({
 
   return (
     <ContentLayout title={`SuperUser Dashboard / ${companySlug || ""}`}>
-      {/* Header propio del SuperUser */}
-      <header className="shadow-sm border-b">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <div className="bg-red-600 p-2 rounded-lg">
-              <Shield className="h-6 w-6 text-white" />
+      <header className="border-b bg-background/60 backdrop-blur-md shadow-sm">
+        <div className="container mx-auto px-4 py-6 flex items-center justify-between">
+
+          {/* ================= ICON + TITLE ================= */}
+          <div className="flex items-center space-x-4">
+
+            <div className="relative">
+              <div className="absolute inset-0 rounded-2xl bg-red-500/10 blur-md" />
+              <div className="relative flex h-12 w-12 items-center justify-center rounded-2xl border border-red-500/30 bg-red-500/10 text-red-500 shadow-sm">
+                <Shield className="h-6 w-6" />
+              </div>
             </div>
-            <div>
-              <h1 className="text-xl font-bold">SuperUser Panel</h1>
-              <p className="text-sm text-muted-foreground">
-                Acceso global a todos los dashboards del sistema
+
+            <div className="leading-tight">
+              <h1 className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-100">
+                SuperUser Dashboard
+              </h1>
+
+              <p className="text-sm text-slate-500 dark:text-slate-400 font-[Inter,ui-sans-serif,system-ui]">
+                Acceso global a todos los módulos del sistema
               </p>
             </div>
+
           </div>
 
-          {/* Selector de Dashboard */}
-          <div className="w-[240px]">
-            <Select
-              onValueChange={(value) =>
-                setSelectedDashboard(value as DashboardType)
-              }
-            >
-              <SelectTrigger>
+          {/* ================= SELECT ================= */}
+          <div className="w-[250px]">
+
+            <Select onValueChange={(value) => setSelectedDashboard(value as DashboardType)}>
+
+              <SelectTrigger className="h-10 px-3 rounded-xl bg-gradient-to-br from-background/70 to-background/40 backdrop-blur-md border border-slate-400/60 dark:border-slate-600/60 shadow-sm hover:shadow-md hover:shadow-red-500/10 hover:border-red-400/30 transition-all focus:ring-2 focus:ring-red-500/15 focus:border-red-400/40 text-slate-700 dark:text-slate-200">
                 <SelectValue placeholder="Seleccionar Dashboard" />
               </SelectTrigger>
-              <SelectContent>
+
+              <SelectContent className="rounded-xl border border-slate-200/60 dark:border-slate-800/60 bg-background/95 backdrop-blur-md shadow-xl">
                 <SelectItem value="WAREHOUSE">Almacén</SelectItem>
                 <SelectItem value="ADMINISTRATION">Administración</SelectItem>
                 <SelectItem value="SMS">SMS</SelectItem>
               </SelectContent>
+
             </Select>
+
           </div>
+
         </div>
       </header>
 

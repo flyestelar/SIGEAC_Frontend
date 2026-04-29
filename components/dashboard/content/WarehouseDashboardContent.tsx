@@ -1,10 +1,18 @@
 "use client";
 
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Plane, Package2, Wrench, Users, LayoutDashboard } from "lucide-react";
 import { useState } from "react";
 import { useGetWarehouseDashboard } from "@/hooks/sistema/dashboard/useWarehouseDashboard";
 import { User } from "@/types";
+
+import {
+  LayoutDashboard,
+  Package2,
+  Wrench,
+  Users,
+  Boxes,
+  ShieldCheck,
+} from "lucide-react";
 
 // Subcomponentes
 import ArticlesSummary from "@/components/dashboard/sections/warehouse/ArticlesSummary";
@@ -25,6 +33,7 @@ export default function WarehouseDashboardContent({
   roleNames,
 }: WarehouseDashboardContentProps) {
   const [activeTab, setActiveTab] = useState("DASHBOARD");
+
   const { data, isLoading, isError } = useGetWarehouseDashboard(
     companySlug,
     location_id
@@ -37,87 +46,99 @@ export default function WarehouseDashboardContent({
   return (
     <main className="max-w-7xl mt-6 mx-auto px-4">
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="flex justify-center mb-0 space-x-3 border-b rounded-t-xl bg-muted/40">
-          <TabsTrigger
-            value="DASHBOARD"
-            className="flex gap-2 px-3 py-2 rounded-t-lg transition-all
-                       text-gray-600 dark:text-gray-400
-                       data-[state=active]:border-b-2
-                       data-[state=active]:border-blue-600
-                       data-[state=active]:bg-white
-                       data-[state=active]:text-blue-600
-                       data-[state=active]:shadow-sm
-                       dark:data-[state=active]:bg-slate-900
-                       dark:data-[state=active]:border-blue-400
-                       dark:data-[state=active]:text-blue-400"
-          >
-            <LayoutDashboard className="size-4" /> Dashboard
-          </TabsTrigger>
 
-          <TabsTrigger
-            value="ARTICULOS"
-            className="flex gap-2 px-3 py-2 rounded-t-lg transition-all
-                       text-gray-600 dark:text-gray-400
-                       data-[state=active]:border-b-2
-                       data-[state=active]:border-blue-600
-                       data-[state=active]:bg-white
-                       data-[state=active]:text-blue-600
-                       data-[state=active]:shadow-sm
-                       dark:data-[state=active]:bg-slate-900
-                       dark:data-[state=active]:border-blue-400
-                       dark:data-[state=active]:text-blue-400"
-          >
-            <Package2 className="size-4" /> Artículos
-          </TabsTrigger>
+        {/* ===================== TABS BASE ===================== */}
+        <TabsList className="w-full flex justify-center mb-6 p-2 rounded-2xl bg-slate-200/50 dark:bg-slate-800/60 backdrop-blur-md border border-slate-200/40 dark:border-slate-800/60">
 
-          <TabsTrigger
-            value="HERRAMIENTAS"
-            className="flex gap-2 px-3 py-2 rounded-t-lg transition-all
-                       text-gray-600 dark:text-gray-400
-                       data-[state=active]:border-b-2
-                       data-[state=active]:border-blue-600
-                       data-[state=active]:bg-white
-                       data-[state=active]:text-blue-600
-                       data-[state=active]:shadow-sm
-                       dark:data-[state=active]:bg-slate-900
-                       dark:data-[state=active]:border-blue-400
-                       dark:data-[state=active]:text-blue-400"
-          >
-            <Wrench className="size-4" /> Herramientas
-          </TabsTrigger>
+          <div className="flex w-full max-w-md gap-2">
 
-          {canViewUsersTab && (
+            {/* DASHBOARD — azul principal */}
             <TabsTrigger
-              value="USUARIOS"
-              className="flex gap-2 px-3 py-2 rounded-t-lg transition-all
-                       text-gray-600 dark:text-gray-400
-                       data-[state=active]:border-b-2
-                       data-[state=active]:border-blue-600
-                       data-[state=active]:bg-white
-                       data-[state=active]:text-blue-600
-                       data-[state=active]:shadow-sm
-                       dark:data-[state=active]:bg-slate-900
-                       dark:data-[state=active]:border-blue-400
-                       dark:data-[state=active]:text-blue-400"
+              value="DASHBOARD"
+              className="flex-1 flex items-center justify-center gap-2 text-xs h-7 px-3 rounded-xl transition-all duration-200
+              text-slate-500 dark:text-slate-400
+              hover:text-blue-600 dark:hover:text-blue-400
+              data-[state=active]:bg-white/80 dark:data-[state=active]:bg-slate-900/50
+              data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400
+              data-[state=active]:shadow-[0_0_18px_rgba(37,99,235,0.25)]
+              data-[state=active]:ring-1 data-[state=active]:ring-blue-300/50"
             >
-              <Users className="size-4" /> Usuarios
+              <ShieldCheck className="w-3.5 h-3.5 shrink-0" />
+              Dashboard
             </TabsTrigger>
-          )}
+
+            {/* ARTÍCULOS — emerald (inventario / stock) */}
+            <TabsTrigger
+              value="ARTICULOS"
+              className="flex-1 flex items-center justify-center gap-2 text-xs h-7 px-3 rounded-xl transition-all duration-200
+              text-slate-500 dark:text-slate-400
+              hover:text-emerald-600 dark:hover:text-emerald-400
+              data-[state=active]:bg-white/80 dark:data-[state=active]:bg-slate-900/50
+              data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400
+              data-[state=active]:shadow-[0_0_18px_rgba(16,185,129,0.25)]
+              data-[state=active]:ring-1 data-[state=active]:ring-emerald-300/50"
+            >
+              <Boxes className="w-3.5 h-3.5 shrink-0" />
+              Artículos
+            </TabsTrigger>
+
+            {/* HERRAMIENTAS — amber (uso operativo / mantenimiento) */}
+            <TabsTrigger
+              value="HERRAMIENTAS"
+              className="flex-1 flex items-center justify-center gap-2 text-xs h-7 px-3 rounded-xl transition-all duration-200
+              text-slate-500 dark:text-slate-400
+              hover:text-amber-600 dark:hover:text-amber-400
+              data-[state=active]:bg-white/80 dark:data-[state=active]:bg-slate-900/50
+              data-[state=active]:text-amber-600 dark:data-[state=active]:text-amber-400
+              data-[state=active]:shadow-[0_0_18px_rgba(245,158,11,0.25)]
+              data-[state=active]:ring-1 data-[state=active]:ring-amber-300/50"
+            >
+              <Wrench className="w-3.5 h-3.5 shrink-0" />
+              Herramientas
+            </TabsTrigger>
+
+            {/* USUARIOS — violet (control / administración) */}
+            {canViewUsersTab && (
+              <TabsTrigger
+                value="USUARIOS"
+                className="flex-1 flex items-center justify-center gap-2 text-xs h-7 px-3 rounded-xl transition-all duration-200
+                text-slate-500 dark:text-slate-400
+                hover:text-violet-600 dark:hover:text-violet-400
+                data-[state=active]:bg-white/80 dark:data-[state=active]:bg-slate-900/50
+                data-[state=active]:text-violet-600 dark:data-[state=active]:text-violet-400
+                data-[state=active]:shadow-[0_0_18px_rgba(139,92,246,0.25)]
+                data-[state=active]:ring-1 data-[state=active]:ring-violet-300/50"
+              >
+                <Users className="w-3.5 h-3.5 shrink-0" />
+                Usuarios
+              </TabsTrigger>
+            )}
+
+          </div>
+
         </TabsList>
 
-        <div className="mt-10">
+        {/* ===================== CONTENT ===================== */}
+        <div className="mt-8">
+
           <TabsContent value="DASHBOARD">
-            <div className="mt-6">
-              <DashboardSummary companySlug={companySlug} />
-            </div>
+            <DashboardSummary companySlug={companySlug} />
           </TabsContent>
 
           <TabsContent value="ARTICULOS">
-            <ArticlesSummary data={data} isLoading={isLoading} isError={isError} />
+            <ArticlesSummary
+              data={data}
+              isLoading={isLoading}
+              isError={isError}
+            />
           </TabsContent>
 
           <TabsContent value="HERRAMIENTAS">
-            <ToolsSummary data={data} isLoading={isLoading} isError={isError} />
+            <ToolsSummary
+              data={data}
+              isLoading={isLoading}
+              isError={isError}
+            />
           </TabsContent>
 
           {canViewUsersTab && (
@@ -130,7 +151,9 @@ export default function WarehouseDashboardContent({
               />
             </TabsContent>
           )}
+
         </div>
+
       </Tabs>
     </main>
   );
