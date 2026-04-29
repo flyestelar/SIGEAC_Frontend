@@ -1,6 +1,6 @@
 import { defineConfig, globalIgnores } from 'eslint/config';
-// import next from 'eslint-config-next';
-// import nextCoreWebVitals from 'eslint-config-next/core-web-vitals';
+import next from 'eslint-config-next';
+import nextCoreWebVitals from 'eslint-config-next/core-web-vitals';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import js from '@eslint/js';
@@ -29,9 +29,10 @@ export default defineConfig([
     '**/*.spec.tsx',
     '**/*.test.ts',
     '**/*.test.tsx',
+    
   ]),
   {
-    extends: [...compat.extends('next', 'next/core-web-vitals'), typescriptEslint.configs.recommended],
+    extends: [next, nextCoreWebVitals, typescriptEslint.configs.recommended],
 
     rules: {
       '@typescript-eslint/no-unused-vars': 'warn',
