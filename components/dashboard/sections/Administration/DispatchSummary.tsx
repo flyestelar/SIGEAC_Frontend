@@ -7,6 +7,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
+
 import {
   Bar,
   BarChart,
@@ -16,12 +17,72 @@ import {
   XAxis,
   YAxis,
 } from 'recharts'
+
 import { WarehouseDashboard } from '@/types'
+import {
+  Plane,
+  Package,
+  Truck,
+  BarChart3,
+} from 'lucide-react'
 
 interface Props {
   data?: WarehouseDashboard
   isLoading: boolean
   isError: boolean
+}
+
+/* =========================
+   CARD CON BORDE TINTADO
+   ========================= */
+function TintedCard({
+  children,
+  tone,
+}: {
+  children: React.ReactNode
+  tone: string
+}) {
+  return (
+    <Card
+      className="relative overflow-hidden rounded-3xl border bg-background/70 backdrop-blur-xl shadow-sm"
+      style={{
+        borderColor: `rgba(${tone}, 0.22)`,
+        backgroundImage: `linear-gradient(to bottom right, rgba(${tone}, 0.06), transparent 60%)`,
+      }}
+    >
+      {children}
+    </Card>
+  )
+}
+
+/* =========================
+   CONTADOR
+   (colores complementarios suaves)
+   ========================= */
+function Metric({
+  value,
+  label,
+  tone,
+}: {
+  value: number | string
+  label: string
+  tone: string
+}) {
+  return (
+    <div className="text-center">
+      <div
+        className="text-4xl font-semibold tracking-tight bg-clip-text text-transparent"
+        style={{
+          backgroundImage: `linear-gradient(to bottom, rgba(${tone},1), rgba(${tone},0.65))`,
+        }}
+      >
+        {value}
+      </div>
+      <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+        {label}
+      </p>
+    </div>
+  )
 }
 
 export default function DispatchSummary({
@@ -31,7 +92,7 @@ export default function DispatchSummary({
 }: Props) {
   if (isLoading) {
     return (
-      <div className="py-8 text-center text-blue-600 dark:text-blue-400">
+      <div className="py-8 text-center text-slate-600 dark:text-slate-300">
         Cargando información...
       </div>
     )
@@ -45,123 +106,110 @@ export default function DispatchSummary({
     )
   }
 
+  /* =========================
+     TEAL BASE (SISTEMA)
+     ========================= */
+  const tealTone = "13,148,136"
+
   const dispatchChartData = [
-    {
-      name: 'Salidas\nTotales',
-      value: data.dispatchCount ?? 0,
-      color: '#2563eb',
-    },
-    {
-      name: 'Salidas a\nAeronaves',
-      value: data.dispatchAircraftCount ?? 0,
-      color: '#e11d48',
-    },
-    {
-      name: 'Salidas a\nTaller',
-      value: data.dispatchWorkOrderCount ?? 0,
-      color: '#f59e0b',
-    },
+    { name: 'Salidas\nTotales', value: data.dispatchCount ?? 0, color: '#0d9488' },
+    { name: 'Salidas a\nAeronaves', value: data.dispatchAircraftCount ?? 0, color: '#14b8a6' },
+    { name: 'Salidas a\nTaller', value: data.dispatchWorkOrderCount ?? 0, color: '#2dd4bf' },
   ]
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      {/* Columna izquierda */}
+
+      {/* ================= LEFT ================= */}
       <div className="flex flex-col gap-6">
-        {/* Resumen de Salidas */}
-        <Card className="rounded-xl border shadow-sm">
-          <CardHeader className="pb-2 text-center">
-            <CardTitle className="text-2xl font-semibold">
+
+        {/* SALIDAS */}
+        <TintedCard tone={tealTone}>
+
+          <CardHeader className="text-center pb-2 space-y-2">
+
+            <div className="flex justify-center">
+              <div className="p-2 rounded-xl bg-teal-500/10 text-teal-600">
+                <Plane className="size-5" />
+              </div>
+            </div>
+
+            <CardTitle className="text-xl font-semibold tracking-tight text-slate-900 dark:text-slate-100">
               Resumen de Solicitudes de Salidas
             </CardTitle>
-            <CardDescription className="text-muted-foreground">
+
+            <CardDescription className="text-slate-500 dark:text-slate-400">
               Resumen semanal basado en registros creados en el sistema
             </CardDescription>
           </CardHeader>
 
           <CardContent className="py-8">
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 text-center">
-              <div>
-                <div className="text-4xl font-bold text-emerald-600">
-                  {data.dispatchCount ?? 0}
-                </div>
-                <p className="mt-2 text-sm text-muted-foreground">
-                  Salidas Totales
-                </p>
-              </div>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-8">
 
-              <div>
-                <div className="text-4xl font-bold text-cyan-600">
-                  {data.dispatchAircraftCount ?? 0}
-                </div>
-                <p className="mt-2 text-sm text-muted-foreground">
-                  Salidas a Aeronaves
-                </p>
-              </div>
+              <Metric value={data.dispatchCount ?? 0} label="Salidas Totales" tone="245,158,11" />
+              <Metric value={data.dispatchAircraftCount ?? 0} label="Aeronaves" tone="249,115,22" />
+              <Metric value={data.dispatchWorkOrderCount ?? 0} label="Taller" tone="59,130,246" />
 
-              <div>
-                <div className="text-4xl font-bold text-amber-600">
-                  {data.dispatchWorkOrderCount ?? 0}
-                </div>
-                <p className="mt-2 text-sm text-muted-foreground">
-                  Salidas a Taller
-                </p>
-              </div>
             </div>
           </CardContent>
-        </Card>
+        </TintedCard>
 
-        {/* Resumen de Entradas */}
-        <Card className="rounded-xl border shadow-sm">
-          <CardHeader className="pb-2 text-center">
-            <CardTitle className="text-2xl font-semibold">
+        {/* ENTRADAS */}
+        <TintedCard tone={tealTone}>
+
+          <CardHeader className="text-center pb-2 space-y-2">
+
+            <div className="flex justify-center">
+              <div className="p-2 rounded-xl bg-teal-500/10 text-teal-600">
+                <Package className="size-5" />
+              </div>
+            </div>
+
+            <CardTitle className="text-xl font-semibold tracking-tight text-slate-900 dark:text-slate-100">
               Resumen de Solicitudes de Entradas
             </CardTitle>
-            <CardDescription className="text-muted-foreground">
+
+            <CardDescription className="text-slate-500 dark:text-slate-400">
               Resumen semanal basado en registros creados en el sistema
             </CardDescription>
           </CardHeader>
 
           <CardContent className="py-8">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-12 text-center">
-              <div>
-                <div className="text-4xl font-bold text-blue-600">
-                  {data.storedCount ?? 0}%
-                </div>
-                <p className="mt-2 text-sm text-muted-foreground">
-                  Artículos Activos
-                </p>
-              </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-12">
 
-              <div>
-                <div className="text-4xl font-bold text-emerald-600">
-                  {data.entryCount ?? 0}
-                </div>
-                <p className="mt-2 text-sm text-muted-foreground">
-                  Entradas Totales
-                </p>
-              </div>
+              <Metric value={`${data.storedCount ?? 0}%`} label="Artículos Activos" tone="34,197,94" />
+              <Metric value={data.entryCount ?? 0} label="Entradas Totales" tone="59,130,246" />
+
             </div>
           </CardContent>
-        </Card>
+        </TintedCard>
+
       </div>
 
-      {/* Columna derecha */}
-      <Card className="rounded-xl border shadow-sm h-full">
-        <CardHeader className="pb-2 text-center">
-          <CardTitle className="text-2xl font-semibold">
+      {/* ================= RIGHT ================= */}
+      <TintedCard tone={tealTone}>
+
+        <CardHeader className="text-center pb-2 space-y-2">
+
+          <div className="flex justify-center">
+            <div className="p-2 rounded-xl bg-teal-500/10 text-teal-600">
+              <BarChart3 className="size-5" />
+            </div>
+          </div>
+
+          <CardTitle className="text-xl font-semibold tracking-tight text-slate-900 dark:text-slate-100">
             Gráfico de Salidas
           </CardTitle>
-          <CardDescription className="text-muted-foreground">
+
+          <CardDescription className="text-slate-500 dark:text-slate-400">
             Comparativa de tipos de despacho (Esta semana)
           </CardDescription>
         </CardHeader>
 
         <CardContent className="h-[380px]">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart
-              data={dispatchChartData}
-              margin={{ top: 20, right: 20, left: 0, bottom: 20 }}
-            >
+            <BarChart data={dispatchChartData}>
+
               <XAxis
                 dataKey="name"
                 tick={({ x, y, payload }) => (
@@ -170,44 +218,32 @@ export default function DispatchSummary({
                     y={y + 10}
                     textAnchor="middle"
                     fontSize={12}
-                    className="fill-muted-foreground"
+                    className="fill-slate-500"
                   >
-                    {payload.value.split('\n').map(
-                      (line: string, index: number) => (
-                        <tspan
-                          key={index}
-                          x={x}
-                          dy={index === 0 ? 0 : 14}
-                        >
-                          {line}
-                        </tspan>
-                      )
-                    )}
+                    {payload.value.split('\n').map((line: string, i: number) => (
+                      <tspan key={i} x={x} dy={i === 0 ? 0 : 14}>
+                        {line}
+                      </tspan>
+                    ))}
                   </text>
                 )}
               />
-              <YAxis
-                tick={{ fill: 'currentColor' }}
-                className="text-muted-foreground"
-              />
+
+              <YAxis className="text-slate-500" />
               <Tooltip />
 
-              <Bar
-                dataKey="value"
-                name="Cantidad"
-                radius={[6, 6, 0, 0]}
-              >
-                {dispatchChartData.map((entry, index) => (
-                  <Cell
-                    key={index}
-                    fill={entry.color}
-                  />
+              <Bar dataKey="value" radius={[6, 6, 0, 0]}>
+                {dispatchChartData.map((entry, i) => (
+                  <Cell key={i} fill={entry.color} />
                 ))}
               </Bar>
+
             </BarChart>
           </ResponsiveContainer>
         </CardContent>
-      </Card>
+
+      </TintedCard>
+
     </div>
   )
 }

@@ -38,13 +38,14 @@ export default function AdministrationDashboardContent({
             className="flex gap-2 px-3 py-2 rounded-t-lg transition-all
               text-gray-600 dark:text-gray-400
               data-[state=active]:border-b-2
-              data-[state=active]:border-indigo-600
+              data-[state=active]:border-violet-600
               data-[state=active]:bg-white
-              data-[state=active]:text-indigo-600
+              data-[state=active]:text-violet-700
               data-[state=active]:shadow-sm
               dark:data-[state=active]:bg-slate-900
-              dark:data-[state=active]:border-indigo-400
-              dark:data-[state=active]:text-indigo-400"
+              dark:data-[state=active]:border-violet-400
+              dark:data-[state=active]:text-violet-300
+              hover:text-violet-600 dark:hover:text-violet-300"
           >
             <FileBarChart2 className="size-4" />
             Reportes
@@ -55,13 +56,13 @@ export default function AdministrationDashboardContent({
             className="flex gap-2 px-3 py-2 rounded-t-lg transition-all
               text-gray-600 dark:text-gray-400
               data-[state=active]:border-b-2
-              data-[state=active]:border-orange-600
+              data-[state=active]:border-teal-600
               data-[state=active]:bg-white
-              data-[state=active]:text-orange-600
+              data-[state=active]:text-teal-600
               data-[state=active]:shadow-sm
               dark:data-[state=active]:bg-slate-900
-              dark:data-[state=active]:border-orange-400
-              dark:data-[state=active]:text-orange-400"
+              dark:data-[state=active]:border-teal-400
+              dark:data-[state=active]:text-teal-400"
           >
             <FileBarChart2 className="size-4" />
             Resumen de Solicitudes

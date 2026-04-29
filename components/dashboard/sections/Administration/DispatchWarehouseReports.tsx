@@ -1,7 +1,13 @@
 "use client";
 
 import { FileBarChart2 } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { DispatchReportDialog } from "@/components/dialogs/mantenimiento/almacen/DispatchReportDialog";
 
 interface DispatchWarehouseReportsProps {
@@ -11,33 +17,78 @@ interface DispatchWarehouseReportsProps {
   roleNames: string[];
 }
 
+/* =========================
+   TINTED CARD (PASTEL LAVANDA)
+   ========================= */
+function TintedCard({
+  children,
+  tone,
+}: {
+  children: React.ReactNode;
+  tone: string;
+}) {
+  return (
+    <Card
+      className="relative w-full max-w-lg overflow-hidden rounded-3xl border bg-background/70 backdrop-blur-xl shadow-sm shadow-black/5"
+      style={{
+        borderColor: `rgba(${tone}, 0.18)`,
+        backgroundImage: `linear-gradient(to bottom right, rgba(${tone}, 0.05), transparent 65%)`,
+      }}
+    >
+      {children}
+    </Card>
+  );
+}
+
 export default function DispatchWarehouseReports({
   companySlug,
 }: DispatchWarehouseReportsProps) {
+  // 👇 lavanda pastel (suave, desaturado)
+  const violetTone = "167,139,250"; // #a78bfa suave (más light que el original)
+
   return (
     <div className="flex justify-center items-center py-10">
-      <Card className="w-full max-w-md shadow-sm">
-        <CardHeader className="text-center space-y-2">
+
+      <TintedCard tone={violetTone}>
+
+        {/* glow superior MUY suave (sin saturación agresiva) */}
+        <div
+          className="pointer-events-none absolute inset-x-0 top-0 h-28"
+          style={{
+            background:
+              "radial-gradient(120% 80% at 50% 0%, rgba(167,139,250,0.08), transparent 72%)",
+          }}
+        />
+
+        {/* profundidad ultra sutil */}
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-violet-400/[0.02] via-transparent to-transparent" />
+
+        <CardHeader className="relative text-center space-y-5 pb-6">
+
           <div className="flex justify-center">
-            <div className="bg-indigo-600 p-2 rounded-lg">
-              <FileBarChart2 className="h-5 w-5 text-white" />
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-violet-500/10 text-violet-500 dark:text-violet-300 ring-1 ring-violet-500/10">
+              <FileBarChart2 className="h-5 w-5" />
             </div>
           </div>
 
-          <CardTitle className="text-lg">
-            Reporte de Salidas de Almacén
-          </CardTitle>
+          <div className="space-y-2">
+            <CardTitle className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-100">
+              Reporte de Salidas
+            </CardTitle>
 
-          <CardDescription>
-            Genera reportes generales o filtrados por aeronave según el rango
-            de fechas seleccionado.
-          </CardDescription>
+            <CardDescription className="mx-auto max-w-md text-sm leading-relaxed text-slate-500 dark:text-slate-400">
+              Genera reportes generales o filtrados por aeronave según el rango de fechas seleccionado.
+            </CardDescription>
+          </div>
+
         </CardHeader>
 
-        <CardContent className="flex justify-center pt-4">
+        <CardContent className="relative flex justify-center pt-2 pb-8">
           <DispatchReportDialog />
         </CardContent>
-      </Card>
+
+      </TintedCard>
+
     </div>
   );
 }
