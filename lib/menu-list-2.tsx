@@ -15,6 +15,7 @@ import {
   ClipboardPen,
   ClipboardCheck,
   Clock11,
+  ClipboardCheck,
   ClockArrowUp,
   CreditCardIcon,
   FileBadge,

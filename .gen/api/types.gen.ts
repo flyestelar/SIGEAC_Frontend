@@ -162,6 +162,18 @@ export type AircraftTypeResource = {
 };
 
 /**
+ * AirworthinessDirectiveResource
+ */
+export type AirworthinessDirectiveResource = {
+  id: string;
+  reference: string;
+  title: string;
+  description: string;
+  created_at: string;
+  updated_at: string;
+};
+
+/**
  * Analysis
  */
 export type Analysis = Array<string>;
@@ -1411,6 +1423,9 @@ export type StoreWorkOrderRequest = {
   component_items?: Array<{
     hard_time_interval_id: number;
   }> | null;
+  directive_items?: Array<{
+    airworthiness_directive_id: number;
+  }> | null;
 };
 
 /**
@@ -1948,6 +1963,19 @@ export type WorkOrderComponentItemResource = {
 };
 
 /**
+ * WorkOrderDirectiveItemResource
+ */
+export type WorkOrderDirectiveItemResource = {
+  id: string;
+  work_order_id: string;
+  airworthiness_directive_id: string;
+  directive?: AirworthinessDirectiveResource;
+  order: string;
+  created_at: string;
+  updated_at: string;
+};
+
+/**
  * WorkOrderItemResource
  */
 export type WorkOrderItemResource = {
@@ -1992,6 +2020,8 @@ export type WorkOrderResource = {
   items?: Array<WorkOrderItemResource>;
   component_items_count?: number;
   component_items?: Array<WorkOrderComponentItemResource>;
+  directive_items_count?: number;
+  directive_items?: Array<WorkOrderDirectiveItemResource>;
   created_at: string | null;
   updated_at: string | null;
 };

@@ -164,16 +164,6 @@ export function CreateCreditForm({ onClose }: FormProps) {
                         startMonth={new Date(2000, 0)}
                         toYear={new Date().getFullYear() + 1}
                         captionLayout="dropdown"
-                        components={{
-                          Dropdown: (props) => (
-                            <select
-                              {...props}
-                              className="bg-popover text-popover-foreground"
-                            >
-                              {props.children}
-                            </select>
-                          ),
-                        }}
                       />
                     </PopoverContent>
                   </Popover>

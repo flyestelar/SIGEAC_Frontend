@@ -29,6 +29,7 @@ export default defineConfig([
     '**/*.spec.tsx',
     '**/*.test.ts',
     '**/*.test.tsx',
+    "components/ui/*"
     
   ]),
   {
