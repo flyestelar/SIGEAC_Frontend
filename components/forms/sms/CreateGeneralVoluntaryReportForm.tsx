@@ -21,7 +21,6 @@ import {
 } from "@/actions/sms/reporte_voluntario/actions";
 import { Calendar } from "@/components/ui/calendar";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
 import {
   Popover,
   PopoverContent,
@@ -36,14 +35,17 @@ import {
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
+import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
 import { VoluntaryReport } from "@/types";
 import { addDays, format } from "date-fns";
 import { es } from "date-fns/locale";
 import { CalendarIcon, Loader2 } from "lucide-react";
 import Image from "next/image";
-import { useParams, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { Label } from "@/components/ui/label";
+import { useCompanyStore } from "@/stores/CompanyStore";
 
 interface FormProps {
   onClose: () => void;
@@ -52,16 +54,25 @@ interface FormProps {
 }
 // { onClose }: FormProps
 // lo de arriba va en prop
-export function CreateGeneralVoluntaryReportForm({
+export function CreateVoluntaryReportForm({
   onClose,
   isEditing,
   initialData,
 }: FormProps) {
-  const { company } = useParams<{ company: string }>();
+  console.log("initial data thattt ", initialData);
+  const { selectedCompany, selectedStation } = useCompanyStore();
   const { createVoluntaryReport } = useCreateVoluntaryReport();
   const { updateVoluntaryReport } = useUpdateVoluntaryReport();
   const [isAnonymous, setIsAnonymous] = useState(true);
   const router = useRouter();
+
+  const { user } = useAuth();
+
+  const userRoles = user?.roles?.map((role) => role.name) || [];
+
+  const shouldEnableField = userRoles.some((role) =>
+    ["SUPERUSER", "ANALISTA_SMS", "JEFE_SMS"].includes(role)
+  );
 
   const FormSchema = z.object({
     identification_date: z
@@ -70,6 +81,20 @@ export function CreateGeneralVoluntaryReportForm({
     report_date: z
       .date()
       .refine((val) => !isNaN(val.getTime()), { message: "Invalid Date" }),
+
+    report_number: shouldEnableField
+      ? z
+          .string()
+          .min(1, "El número de reporte es obligatorio")
+          .refine((val) => !isNaN(Number(val)), {
+            message: "El valor debe ser un número",
+          })
+      : z
+          .string()
+          .refine((val) => val === "" || !isNaN(Number(val)), {
+            message: "El valor debe ser un número o estar vacío",
+          })
+          .optional(),
 
     danger_location: z.string(),
     danger_area: z.string(),
@@ -157,6 +182,7 @@ export function CreateGeneralVoluntaryReportForm({
   const form = useForm<FormSchemaType>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
+      report_number: initialData?.report_number || "",
       danger_area: initialData?.danger_area || "",
       danger_location: initialData?.danger_location || "",
       description: initialData?.description || "",
@@ -188,7 +214,6 @@ export function CreateGeneralVoluntaryReportForm({
   });
 
   const onSubmit = async (data: FormSchemaType) => {
-    //console.log("DATA THIS IS THE DATA FROM SUBMIT RVP", data);
     if (isAnonymous) {
       data.reporter_name = "";
       data.reporter_last_name = "";
@@ -198,29 +223,34 @@ export function CreateGeneralVoluntaryReportForm({
 
     if (initialData && isEditing) {
       const value = {
-        company: company,
+        company: selectedCompany!.slug,
         id: initialData.id.toString(),
         data: {
           ...data,
           status: initialData.status,
           danger_identification_id: initialData?.danger_identification_id,
+          location_id: selectedStation,
         },
       };
       await updateVoluntaryReport.mutateAsync(value);
     } else {
       const value = {
-        company: company,
+        company: selectedCompany!.slug,
         reportData: {
           ...data,
-          status: "PROCESO",
+          location_id: selectedStation,
+          status: shouldEnableField ? "ABIERTO" : "PROCESO",
         },
       };
       try {
-        await createVoluntaryReport.mutateAsync(value);
-        router.push(`https://sigeac-one.vercel.app/login`);
-        // router.push(
-        //   `localhost:3000/acceso_publico/${company}}/sms/crear_reporte/voluntario`
-        // );
+        const response = await createVoluntaryReport.mutateAsync(value);
+        if (shouldEnableField) {
+          router.push(
+            `/${selectedCompany?.slug}/sms/reportes/reportes_voluntarios/${response.voluntary_report_id}`
+          );
+        } else {
+          router.push(`/${selectedCompany?.slug}/dashboard`);
+        }
       } catch (error) {
         console.error("Error al crear el reporte:", error);
       }
@@ -234,11 +264,26 @@ export function CreateGeneralVoluntaryReportForm({
         onSubmit={form.handleSubmit(onSubmit)}
         className="flex flex-col space-y-3"
       >
-        <FormLabel className="text-lg text-center font-bold">
+        <FormLabel className="text-lg text-center">
           Reporte Voluntario de Peligro
         </FormLabel>
 
-        <div className="flex flex-col sm:flex-row gap-2 items-center justify-center  ">
+        {shouldEnableField && (
+          <FormField
+            control={form.control}
+            name="report_number"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Código del Reporte Voluntario</FormLabel>
+                <FormControl>
+                  <Input placeholder="" {...field} maxLength={4} />
+                </FormControl>
+                <FormMessage className="text-xs" />
+              </FormItem>
+            )}
+          />
+        )}
+        <div className="flex gap-2 items-center justify-center  ">
           <FormField
             control={form.control}
             name="identification_date"
@@ -271,20 +316,11 @@ export function CreateGeneralVoluntaryReportForm({
                       mode="single"
                       selected={field.value}
                       onSelect={field.onChange}
+                      disabled={(date) => date > new Date()} // Solo deshabilitar fechas futuras
                       initialFocus
-                      fromYear={2000} // Año mínimo que se mostrará
-                      toYear={new Date().getFullYear()} // Año máximo (actual)
-                      captionLayout="dropdown-buttons" // Selectores de año/mes
-                      components={{
-                        Dropdown: (props) => (
-                          <select
-                            {...props}
-                            className="bg-popover text-popover-foreground"
-                          >
-                            {props.children}
-                          </select>
-                        ),
-                      }}
+                      startMonth={new Date(1980, 0)} // Año mínimo que se mostrará
+                      endMonth={new Date(new Date().getFullYear(), 11)} // Año máximo (actual)
+                      captionLayout="dropdown" // Selectores de año/mes
                     />
                   </PopoverContent>
                 </Popover>
@@ -324,20 +360,11 @@ export function CreateGeneralVoluntaryReportForm({
                       mode="single"
                       selected={field.value}
                       onSelect={field.onChange}
+                      disabled={(date) => date > new Date()} // Solo deshabilitar fechas futuras
                       initialFocus
-                      fromYear={2000} // Año mínimo que se mostrará
-                      toYear={new Date().getFullYear()} // Año máximo (actual)
-                      captionLayout="dropdown-buttons" // Selectores de año/mes
-                      components={{
-                        Dropdown: (props) => (
-                          <select
-                            {...props}
-                            className="bg-popover text-popover-foreground"
-                          >
-                            {props.children}
-                          </select>
-                        ),
-                      }}
+                      startMonth={new Date(1980, 0)} // Año mínimo que se mostrará
+                      endMonth={new Date(new Date().getFullYear(), 11)} // Año máximo (actual)
+                      captionLayout="dropdown" // Selectores de año/mes
                     />
                   </PopoverContent>
                 </Popover>
@@ -365,13 +392,13 @@ export function CreateGeneralVoluntaryReportForm({
                   </FormControl>
                   <SelectContent>
                     <SelectItem value="PZO">Puerto Ordaz</SelectItem>
+                    <SelectItem value="CBL">Ciudad Bolívar</SelectItem>
                   </SelectContent>
                 </Select>
                 <FormMessage />
               </FormItem>
             )}
           />
-
           <FormField
             control={form.control}
             name="danger_area"
