@@ -504,6 +504,21 @@ export function getMenuList(
           ],
           submenus: [],
         },
+        // {
+        //   href: `/${currentCompany?.slug}/compras/gestion_costos`,
+        //   label: "Gestión de Costos",
+        //   active: pathname.includes(
+        //     `/${currentCompany?.slug}/compras/gestion_costos`,
+        //   ),
+        //   icon: Receipt,
+        //   roles: [
+        //     "ANALISTA_COMPRAS",
+        //     "JEFE_COMPRAS",
+        //     "SUPERUSER",
+        //     "JEFE_ADMINISTRACION",
+        //   ],
+        //   submenus: [],
+        // },
       ],
     },
     {
