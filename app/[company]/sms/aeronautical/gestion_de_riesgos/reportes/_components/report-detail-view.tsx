@@ -12,6 +12,8 @@ import {
   FileText,
   Layers3,
   ShieldAlert,
+  AlertTriangle,
+  Activity,
 } from "lucide-react";
 
 import { ContentLayout } from "@/components/layout/ContentLayout";
@@ -119,13 +121,98 @@ const formatDisplayDate = (value?: string | Date | null) =>
 const formatLocationLabel = (location?: Location | null) =>
   [location?.cod_iata, location?.name, location?.address].filter(Boolean).join(" - ");
 
-const getHazardNotification = (report: ReportBaseLike | null) =>
-  (report?.hazard_notification ?? report?.danger_identification ?? null) as
-    | HazardNotificationLike
-    | null;
+// Helper: safe getter for multiple possible keys (snake_case / camelCase / no underscore)
+const getAny = (obj: any, ...keys: string[]) => {
+  if (!obj) return undefined;
+  for (const k of keys) {
+    if (obj[k] !== undefined && obj[k] !== null) return obj[k];
+  }
+  return undefined;
+};
 
-const normalizeControls = (measure?: MitigationMeasureLike | null) =>
-  measure?.follow_up_controls ?? measure?.follow_up_control ?? [];
+// Normalize controls accepting many API shapes
+const normalizeControls = (measure?: MitigationMeasureLike | null): FollowUpControlLike[] =>
+  (getAny(
+    measure,
+    "follow_up_controls",
+    "follow_up_control",
+    "followupcontrols",
+    "followup_controls",
+    "followupControl",
+    "followup_control",
+  ) ?? []) as FollowUpControlLike[];
+
+// Normalize a raw hazard notification / danger identification object coming from API
+const normalizeHazardNotification = (raw: any): HazardNotificationLike | null => {
+  if (!raw) return null;
+
+  const informationSource = getAny(raw, "information_source", "informationsource", "informationSource");
+  const location = getAny(raw, "location", "location_id") as Location | undefined;
+  const mitigation = getAny(raw, "mitigation_plan", "mitigationplan", "mitigationPlan");
+
+  // Normalize measures and follow-up controls inside mitigation plan
+  const normalizedMitigation: MitigationPlanLike | null = mitigation
+    ? {
+        ...mitigation,
+        measures: (mitigation.measures ?? mitigation.Measures ?? mitigation.measures_list ?? [])
+          .map((m: any) => ({
+            ...m,
+            // ensure follow_up_controls key variants are accessible via the expected names
+            follow_up_controls:
+              getAny(m, "follow_up_controls", "follow_up_control", "followupcontrols", "followup_controls") ?? [],
+            follow_up_control:
+              getAny(m, "follow_up_control", "follow_up_controls", "followupcontrols", "followup_controls") ?? [],
+          })) as MitigationMeasureLike[],
+      }
+    : null;
+
+  const normalized: HazardNotificationLike = {
+    id: getAny(raw, "id"),
+    report_number: getAny(raw, "report_number", "reportNumber"),
+    reception_date: getAny(raw, "reception_date", "receptionDate"),
+    location: location || null,
+    identification_area: getAny(raw, "identification_area", "identificationArea"),
+    danger_type: getAny(raw, "danger_type", "dangerType", "danger"),
+    information_source: informationSource ?? null,
+    description: getAny(raw, "description"),
+    analysis_of_root_causes: getAny(raw, "analysis_of_root_causes", "analysisOfRootCauses", "analysis_of_root_cause", "analysis"),
+    report_type: getAny(raw, "report_type", "reportType"),
+    voluntary_report: getAny(raw, "voluntary_report", "voluntaryreport", "voluntaryReport") ?? undefined,
+    obligatory_report: getAny(raw, "obligatory_report", "obligatoryreport", "obligatoryReport") ?? undefined,
+    mitigation_plan: normalizedMitigation,
+    analysis: getAny(raw, "analysis") ?? null,
+    // keep any additional fields that existing UI may reference
+    current_defenses: getAny(raw, "current_defenses", "currentDefenses", "defensas_actuales", "defensasActuales") as any,
+    possible_consequences: getAny(raw, "possible_consequences", "possibleConsequences"),
+    consequence_to_evaluate: getAny(raw, "consequence_to_evaluate", "consequenceToEvaluate"),
+  } as HazardNotificationLike;
+
+  return normalized;
+};
+
+// Extract hazard notification from report accepting multiple possible keys
+const getHazardNotification = (report: ReportBaseLike | null) => {
+  if (!report) return null;
+  const raw = getAny(report, "hazard_notification", "hazardnotification", "danger_identification", "dangeridentification", "dangerIdentification");
+  return normalizeHazardNotification(raw);
+};
+
+const getSeverityBadgeClass = (severity?: string) => {
+  const s = String(severity ?? "").toLowerCase();
+  if (s.includes("alto") || s.includes("high")) return "bg-red-600 text-white";
+  if (s.includes("medio") || s.includes("medium") || s.includes("med")) return "bg-amber-400 text-black";
+  if (s.includes("bajo") || s.includes("low")) return "bg-emerald-600 text-white";
+  return "bg-gray-200 text-gray-800";
+};
+
+const getProbabilityBadgeClass = (prob?: string | number) => {
+  const p = String(prob ?? "").toLowerCase();
+  const n = Number(p);
+  if (p.includes("alta") || p.includes("high") || (!Number.isNaN(n) && n >= 70)) return "bg-red-600 text-white";
+  if (p.includes("media") || p.includes("medium") || (!Number.isNaN(n) && n >= 40 && n < 70)) return "bg-amber-400 text-black";
+  if (p.includes("baja") || p.includes("low") || (!Number.isNaN(n) && n < 40)) return "bg-emerald-600 text-white";
+  return "bg-gray-200 text-gray-800";
+};
 
 const buildAnalysisDetails = (analysis?: RiskAnalysisLike | null): DetailItem[] => [
   { label: "Probabilidad", value: analysis?.probability || "N/A" },
@@ -397,11 +484,31 @@ export function ReportDetailView({ kind, report, backHref, title }: ReportDetail
           {reportNotification ? (
             <Card>
               <CardHeader className="space-y-2">
-                <CardTitle className="flex items-center gap-2 text-xl">
-                  <ShieldAlert className="h-5 w-5" />
-                  Notificación de peligro
-                </CardTitle>
-                <CardDescription>Detalle completo de la notificación vinculada al reporte.</CardDescription>
+                <div className="flex items-center justify-between gap-3">
+                  <CardTitle className="flex items-center gap-2 text-xl">
+                    <ShieldAlert className="h-5 w-5" />
+                    Notificación de peligro
+                  </CardTitle>
+                  <div className="flex items-center gap-2">
+                    {reportNotification.danger_type ? (
+                      <Badge className="uppercase text-xs">{String(reportNotification.danger_type)}</Badge>
+                    ) : null}
+                    {reportNotification.information_source?.type ? (
+                      <Badge variant="outline" className="text-xs">
+                        {String(reportNotification.information_source.type)}
+                      </Badge>
+                    ) : null}
+                  </div>
+                </div>
+                <CardDescription className="flex flex-wrap gap-4 text-sm">
+                  <span className="inline-flex items-center gap-2">
+                    <Calendar className="h-4 w-4" />
+                    {formatDisplayDate(reportNotification.reception_date)}
+                  </span>
+                  <span className="inline-flex items-center gap-2 text-sm text-muted-foreground">
+                    <span className="text-sm">Fuente:</span> {reportNotification.information_source?.name ?? "N/A"}
+                  </span>
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 <DetailGrid items={buildDangerIdentificationDetails(reportNotification)} />
@@ -423,9 +530,24 @@ export function ReportDetailView({ kind, report, backHref, title }: ReportDetail
 
                 {planAnalysis ? (
                   <div className="space-y-3">
-                    <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-                      Análisis de riesgo
-                    </h3>
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+                        Análisis de riesgo
+                      </h3>
+                      <div className="flex items-center gap-2">
+                        <span className={cn("inline-flex items-center gap-2 px-2 py-1 rounded-full text-xs", getProbabilityBadgeClass(String(planAnalysis.probability)))}>
+                          <Activity className="h-4 w-4" />
+                          {String(planAnalysis.probability)}
+                        </span>
+                        <span className={cn("inline-flex items-center gap-2 px-2 py-1 rounded-full text-xs", getSeverityBadgeClass(planAnalysis.severity))}>
+                          <AlertTriangle className="h-4 w-4" />
+                          {String(planAnalysis.severity ?? "N/A")}
+                        </span>
+                        {planAnalysis.result ? (
+                          <Badge className="text-xs">{String(planAnalysis.result)}</Badge>
+                        ) : null}
+                      </div>
+                    </div>
                     <DetailGrid items={buildAnalysisDetails(planAnalysis)} />
                   </div>
                 ) : null}

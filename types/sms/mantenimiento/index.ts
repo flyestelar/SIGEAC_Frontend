@@ -59,6 +59,9 @@ export type HazardNotification = {
     obligatory_report?: ObligatoryReport;
     mitigation_plan?: MitigationPlan;
     analysis?: Analysis;
+    risk_assessment?: RiskAssessment | null;
+    risk_assessments?: RiskAssessment[];
+    riskAssessment?: RiskAssessment | null;
 
 }
 
@@ -104,4 +107,47 @@ export interface Analysis {
     type: string;
     hazard_notification?: number;
     mitigation_plan_id?: number;
+}
+
+export interface RiskAssessmentQuestion {
+    id: number;
+    code: string;
+    category: 'SEVERITY' | 'PROBABILITY' | string;
+    question: string;
+    answer_type: 'yes_no' | 'select' | string;
+    options?: string[] | null;
+    order?: number;
+    sort_order?: number;
+    position?: number;
+}
+
+export interface RiskAssessmentAnswer {
+    id?: number | string;
+    question_code: string;
+    answer: string;
+    created_at?: string;
+    updated_at?: string;
+}
+
+export interface RiskAssessmentHistoryEntry {
+    id?: number | string;
+    probability?: number | string;
+    severity?: string | null;
+    result?: string | null;
+    answers?: RiskAssessmentAnswer[];
+    created_at?: string;
+    updated_at?: string;
+}
+
+export interface RiskAssessment {
+    id: number;
+    hazard_notification_id: number;
+    probability: number | string;
+    severity?: string | null;
+    result?: string | null;
+    answers?: RiskAssessmentAnswer[];
+    logs?: RiskAssessmentHistoryEntry[];
+    history?: RiskAssessmentHistoryEntry[];
+    created_at?: string;
+    updated_at?: string;
 }

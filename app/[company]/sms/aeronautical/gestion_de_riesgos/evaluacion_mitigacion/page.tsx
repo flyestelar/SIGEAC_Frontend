@@ -107,6 +107,7 @@ const EvaluationMitigationPage = () => {
                     </div>
                 ) : (
                     <EvaluationWorkflowPanel
+                        company={companySlug}
                         selectedNotification={selectedNotification}
                         currentMitigationPlan={currentMitigationPlan}
                         currentPlanAnalysis={currentPlanAnalysis}

@@ -25,8 +25,10 @@ import {
     HazardNotification,
     MitigationMeasure,
     MitigationPlan,
+    RiskAssessment,
 } from '@/types/sms/mantenimiento';
 
+import { RiskAssessmentForm } from './risk-assessment-form';
 import {
     getMeasureControls,
     getNotificationSource,
@@ -80,6 +82,18 @@ function SummaryField({ label, value }: { label: string; value?: string | null }
     );
 }
 
+const getProbabilityLabel = (value?: string | number | null) => {
+    const labelMap: Record<string, string> = {
+        '1': 'EXTREMADAMENTE IMPROBABLE',
+        '2': 'IMPROBABLE',
+        '3': 'REMOTO',
+        '4': 'OCASIONAL',
+        '5': 'FRECUENTE',
+    };
+
+    return labelMap[String(value || '')] || (value ? String(value) : null);
+};
+
 function PlanSummary({
     mitigationPlan,
     analysis,
@@ -112,6 +126,32 @@ function PlanSummary({
             <div className="md:col-span-2">
                 <SummaryField label="Descripción del plan" value={mitigationPlan.description} />
             </div>
+        </div>
+    );
+}
+
+function RiskAssessmentSummary({
+    assessment,
+}: {
+    assessment: RiskAssessment | null;
+}) {
+    if (!assessment) {
+        return (
+            <div className="rounded-lg border border-dashed p-5 text-sm text-muted-foreground">
+                Todavía no hay una evaluación estimada guardada para esta notificación.
+            </div>
+        );
+    }
+
+    return (
+        <div className="grid gap-4 md:grid-cols-2">
+            <SummaryField label="Probabilidad" value={getProbabilityLabel(assessment.probability)} />
+            <SummaryField label="Severidad" value={assessment.severity || 'Pendiente de cálculo'} />
+            <SummaryField label="Resultado" value={assessment.result || 'Pendiente de cálculo'} />
+            <SummaryField
+                label="Última actualización"
+                value={assessment.updated_at ? formatDate(assessment.updated_at) : 'Sin registro'}
+            />
         </div>
     );
 }
@@ -157,6 +197,7 @@ const toggleNumericId = (ids: number[], id: number) =>
     ids.includes(id) ? ids.filter((item) => item !== id) : [...ids, id];
 
 type EvaluationWorkflowPanelProps = {
+    company: string;
     selectedNotification: HazardNotification;
     currentMitigationPlan: MitigationPlan | null;
     currentPlanAnalysis: Analysis | null;
@@ -165,6 +206,7 @@ type EvaluationWorkflowPanelProps = {
 };
 
 export function EvaluationWorkflowPanel({
+    company,
     selectedNotification,
     currentMitigationPlan,
     currentPlanAnalysis,
@@ -185,19 +227,31 @@ export function EvaluationWorkflowPanel({
     );
 
     const [isPlanFormOpen, setIsPlanFormOpen] = useState(false);
+    const [isRiskAssessmentFormOpen, setIsRiskAssessmentFormOpen] = useState(false);
     const [isPostAnalysisFormOpen, setIsPostAnalysisFormOpen] = useState(false);
     const [measureEditorId, setMeasureEditorId] = useState<number | 'new' | null>(null);
     const [controlEditorKey, setControlEditorKey] = useState<string | null>(null);
     const [expandedMeasureIds, setExpandedMeasureIds] = useState<number[]>([]);
     const [expandedControlIds, setExpandedControlIds] = useState<number[]>([]);
+    const [assessmentDraft, setAssessmentDraft] = useState<RiskAssessment | null>(null);
+
+    const currentRiskAssessment =
+        assessmentDraft ||
+        selectedNotification.risk_assessment ||
+        selectedNotification.riskAssessment ||
+        selectedNotification.risk_assessments?.[0] ||
+        null;
+    const hasRiskAssessment = Boolean(currentRiskAssessment);
 
     useEffect(() => {
         setIsPlanFormOpen(false);
+        setIsRiskAssessmentFormOpen(false);
         setIsPostAnalysisFormOpen(false);
         setMeasureEditorId(null);
         setControlEditorKey(null);
         setExpandedMeasureIds([]);
         setExpandedControlIds([]);
+        setAssessmentDraft(null);
     }, [selectedNotification.id]);
 
     return (
@@ -321,6 +375,64 @@ export function EvaluationWorkflowPanel({
                                 <CardHeader className="gap-4 sm:flex-row sm:items-start sm:justify-between">
                                     <div className="space-y-1.5">
                                         <CardTitle className="flex items-center gap-2 text-lg">
+                                            <ClipboardCheck className="h-5 w-5" />
+                                            Estimación de riesgo
+                                        </CardTitle>
+                                        <CardDescription>
+                                            Responda el árbol de probabilidad y severidad estimada.
+                                        </CardDescription>
+                                    </div>
+
+                                    <Button
+                                        type="button"
+                                        variant={hasRiskAssessment ? 'outline' : 'default'}
+                                        className="w-full whitespace-normal sm:w-auto"
+                                        onClick={() => setIsRiskAssessmentFormOpen((value) => !value)}
+                                    >
+                                        {hasRiskAssessment ? (
+                                            <PencilLine className="mr-2 h-4 w-4" />
+                                        ) : (
+                                            <Plus className="mr-2 h-4 w-4" />
+                                        )}
+                                        {isRiskAssessmentFormOpen
+                                            ? 'Ocultar formulario'
+                                            : hasRiskAssessment
+                                                ? 'Editar evaluación estimada'
+                                                : 'Crear evaluación estimada'}
+                                    </Button>
+                                </CardHeader>
+                                <CardContent className="space-y-4">
+                                    <RiskAssessmentSummary assessment={currentRiskAssessment} />
+                                </CardContent>
+                            </Card>
+
+                            {isRiskAssessmentFormOpen && (
+                                <Card className="border-dashed">
+                                    <CardHeader>
+                                        <CardTitle className="text-base">
+                                            {hasRiskAssessment
+                                                ? 'Editar evaluación estimada'
+                                                : 'Crear evaluación estimada'}
+                                        </CardTitle>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <RiskAssessmentForm
+                                            company={company}
+                                            selectedNotification={selectedNotification}
+                                            currentAssessment={currentRiskAssessment}
+                                            onSaved={(assessment) => {
+                                                setAssessmentDraft(assessment);
+                                                setIsRiskAssessmentFormOpen(false);
+                                            }}
+                                        />
+                                    </CardContent>
+                                </Card>
+                            )}
+
+                            <Card className="border-dashed">
+                                <CardHeader className="gap-4 sm:flex-row sm:items-start sm:justify-between">
+                                    <div className="space-y-1.5">
+                                        <CardTitle className="flex items-center gap-2 text-lg">
                                             <FileText className="h-5 w-5" />
                                             Plan de mitigación y análisis
                                         </CardTitle>
@@ -373,6 +485,16 @@ export function EvaluationWorkflowPanel({
                                                 mitigationPlan: currentMitigationPlan,
                                                 analysis: currentPlanAnalysis,
                                             }}
+                                            suggestedAnalysis={
+                                                currentRiskAssessment?.severity
+                                                    ? {
+                                                        probability: String(
+                                                            currentRiskAssessment.probability
+                                                        ),
+                                                        severity: currentRiskAssessment.severity,
+                                                    }
+                                                    : null
+                                            }
                                             onSuccess={() => setIsPlanFormOpen(false)}
                                             onCancel={() => setIsPlanFormOpen(false)}
                                         />

@@ -34,6 +34,7 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { getResult } from "@/lib/utils";
 import { useCompanyStore } from "@/stores/CompanyStore";
 import {
     Analysis,
@@ -74,6 +75,7 @@ type FormValues = {
     probability: string;
     severity: string;
 };
+
 type AnalysisPayload = {
     probability: string;
     severity: string;
@@ -88,6 +90,7 @@ interface CreateMitigationPlanAnalysisProps {
         mitigationPlan?: MitigationPlan | null;
         analysis?: Analysis | null;
     };
+    suggestedAnalysis?: Pick<Analysis, "probability" | "severity"> | null;
     onSuccess?: () => void;
     onCancel?: () => void;
 }
@@ -138,16 +141,16 @@ const serializePossibleConsequences = (items: string[]) => items.join("~");
 
 const getDefaultValues = (
     mitigationPlan: MitigationPlan | null,
-    analysis: Analysis | null
+    analysis: Analysis | null,
+    suggestedAnalysis?: Pick<Analysis, "probability" | "severity"> | null
 ): FormValues => {
     const parsedConsequences = parsePossibleConsequences(
         mitigationPlan?.possible_consequences
     );
     const selectedConsequenceRaw = (mitigationPlan?.consequence_to_evaluate || "").trim();
 
-    // Prefer the exact trimmed match from parsed consequences, otherwise pick the first available
     const selectedConsequence =
-        parsedConsequences.find((c) => c.trim() === selectedConsequenceRaw) ||
+        parsedConsequences.find((consequence) => consequence.trim() === selectedConsequenceRaw) ||
         (parsedConsequences.length ? parsedConsequences[0] : "");
 
     return {
@@ -155,8 +158,8 @@ const getDefaultValues = (
         description: mitigationPlan?.description || "",
         possible_consequences: serializePossibleConsequences(parsedConsequences),
         consequence_to_evaluate: selectedConsequence,
-        probability: analysis?.probability || "",
-        severity: analysis?.severity || "",
+        probability: analysis?.probability || suggestedAnalysis?.probability || "",
+        severity: analysis?.severity || suggestedAnalysis?.severity || "",
     };
 };
 
@@ -165,6 +168,7 @@ export default function CreateMitigationPlanAnalysis({
     mode = "plan-and-analysis",
     mitigationPlanId,
     initialData,
+    suggestedAnalysis,
     onSuccess,
     onCancel,
 }: CreateMitigationPlanAnalysisProps) {
@@ -179,15 +183,15 @@ export default function CreateMitigationPlanAnalysis({
 
     const form = useForm<FormValues>({
         resolver: zodResolver(isAnalysisOnly ? ANALYSIS_ONLY_SCHEMA : FORM_SCHEMA),
-        defaultValues: getDefaultValues(mitigationPlan, analysis),
+        defaultValues: getDefaultValues(mitigationPlan, analysis, suggestedAnalysis),
     });
 
     const [consequenceInput, setConsequenceInput] = useState("");
 
     useEffect(() => {
-        form.reset(getDefaultValues(mitigationPlan, analysis));
+        form.reset(getDefaultValues(mitigationPlan, analysis, suggestedAnalysis));
         setConsequenceInput("");
-    }, [analysis, form, mitigationPlan]);
+    }, [analysis, form, mitigationPlan, suggestedAnalysis]);
 
     const watchedProbability = form.watch("probability");
     const watchedSeverity = form.watch("severity");
@@ -197,6 +201,10 @@ export default function CreateMitigationPlanAnalysis({
         () => parsePossibleConsequences(watchedPossibleConsequences),
         [watchedPossibleConsequences]
     );
+
+    const selectedResult =
+        watchedProbability && watchedSeverity ? `${watchedProbability}${watchedSeverity}` : null;
+    const selectedRiskLevel = selectedResult ? getResult(selectedResult) : null;
 
     const syncConsequences = (items: string[]) => {
         const nextSerialized = serializePossibleConsequences(items);
@@ -234,9 +242,7 @@ export default function CreateMitigationPlanAnalysis({
     };
 
     const removeConsequence = (valueToRemove: string) => {
-        syncConsequences(
-            consequenceOptions.filter((item) => item !== valueToRemove)
-        );
+        syncConsequences(consequenceOptions.filter((item) => item !== valueToRemove));
     };
 
     const handleConsequenceInputKeyDown = (
@@ -501,10 +507,7 @@ export default function CreateMitigationPlanAnalysis({
                         render={({ field }) => (
                             <FormItem>
                                 <FormLabel>Probabilidad</FormLabel>
-                                <Select
-                                    onValueChange={field.onChange}
-                                    value={field.value}
-                                >
+                                <Select onValueChange={field.onChange} value={field.value}>
                                     <FormControl>
                                         <SelectTrigger>
                                             <SelectValue placeholder="Seleccione la probabilidad" />
@@ -512,15 +515,16 @@ export default function CreateMitigationPlanAnalysis({
                                     </FormControl>
                                     <SelectContent>
                                         {PROBABILITY_OPTIONS.map((option) => (
-                                            <SelectItem
-                                                key={option.value}
-                                                value={option.value}
-                                            >
+                                            <SelectItem key={option.value} value={option.value}>
                                                 {option.label}
                                             </SelectItem>
                                         ))}
                                     </SelectContent>
                                 </Select>
+                                <FormDescription>
+                                    Puede tomar como referencia la evaluación estimada guardada para
+                                    la notificación.
+                                </FormDescription>
                                 <FormMessage />
                             </FormItem>
                         )}
@@ -532,10 +536,7 @@ export default function CreateMitigationPlanAnalysis({
                         render={({ field }) => (
                             <FormItem>
                                 <FormLabel>Severidad</FormLabel>
-                                <Select
-                                    onValueChange={field.onChange}
-                                    value={field.value}
-                                >
+                                <Select onValueChange={field.onChange} value={field.value}>
                                     <FormControl>
                                         <SelectTrigger>
                                             <SelectValue placeholder="Seleccione la severidad" />
@@ -543,10 +544,7 @@ export default function CreateMitigationPlanAnalysis({
                                     </FormControl>
                                     <SelectContent>
                                         {SEVERITY_OPTIONS.map((option) => (
-                                            <SelectItem
-                                                key={option.value}
-                                                value={option.value}
-                                            >
+                                            <SelectItem key={option.value} value={option.value}>
                                                 {option.label}
                                             </SelectItem>
                                         ))}
@@ -563,6 +561,26 @@ export default function CreateMitigationPlanAnalysis({
                     selectedProbability={watchedProbability}
                     selectedSeverity={watchedSeverity}
                 />
+
+                <div className="rounded-lg border bg-muted/20 p-4">
+                    <div className="flex flex-wrap items-center gap-2 text-sm">
+                        <span className="font-medium">Selección actual:</span>
+                        {selectedResult ? (
+                            <>
+                                <Badge variant="secondary">Probabilidad {watchedProbability}</Badge>
+                                <Badge variant="secondary">Severidad {watchedSeverity}</Badge>
+                                <Badge>{selectedResult}</Badge>
+                                {selectedRiskLevel && (
+                                    <Badge variant="outline">{selectedRiskLevel}</Badge>
+                                )}
+                            </>
+                        ) : (
+                            <span className="text-muted-foreground">
+                                Seleccione probabilidad y severidad para construir el resultado.
+                            </span>
+                        )}
+                    </div>
+                </div>
 
                 <div className="flex flex-col gap-3 sm:flex-row sm:justify-end">
                     {onCancel && (

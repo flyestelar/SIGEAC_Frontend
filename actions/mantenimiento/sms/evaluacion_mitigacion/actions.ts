@@ -51,6 +51,30 @@ interface UpdateMitigationAnalysisData {
     };
 }
 
+interface RiskAssessmentAnswerPayload {
+    question_code: string;
+    answer: string;
+}
+
+interface CreateRiskAssessmentData {
+    company: string | null;
+    data: {
+        hazard_notification_id: number;
+        probability: number;
+        answers?: RiskAssessmentAnswerPayload[];
+    };
+}
+
+interface UpdateRiskAssessmentData {
+    company: string | null;
+    id: number | string;
+    data: {
+        hazard_notification_id: number;
+        probability: number;
+        answers?: RiskAssessmentAnswerPayload[];
+    };
+}
+
 interface CreateMitigationMeasureData {
     company?: string;
     data: {
@@ -237,6 +261,68 @@ export const useUpdateMitigationAnalysis = () => {
 
     return {
         updateMitigationAnalysis: updateMutation,
+    };
+};
+
+export const useCreateRiskAssessment = () => {
+    const queryClient = useQueryClient();
+
+    const createMutation = useMutation({
+        mutationFn: async ({ company, data }: CreateRiskAssessmentData) => {
+            const response = await axiosInstance.post(
+                `/${company}/sms/aeronautical/risk-assessments`,
+                data
+            );
+
+            return response.data;
+        },
+        onSuccess: (_, variables) => {
+            invalidateWorkflowQueries(queryClient, variables.company);
+            toast.success("Evaluación registrada", {
+                description: "La estimación del riesgo fue guardada correctamente.",
+            });
+        },
+        onError: (error) => {
+            toast.error("No se pudo guardar la evaluación", {
+                description: "Revise la probabilidad y las respuestas del formulario.",
+            });
+            console.log(error);
+        },
+    });
+
+    return {
+        createRiskAssessment: createMutation,
+    };
+};
+
+export const useUpdateRiskAssessment = () => {
+    const queryClient = useQueryClient();
+
+    const updateMutation = useMutation({
+        mutationFn: async ({ company, data, id }: UpdateRiskAssessmentData) => {
+            const response = await axiosInstance.patch(
+                `/${company}/sms/aeronautical/risk-assessments/${id}`,
+                data
+            );
+
+            return response.data;
+        },
+        onSuccess: (_, variables) => {
+            invalidateWorkflowQueries(queryClient, variables.company);
+            toast.success("Evaluación actualizada", {
+                description: "La estimación del riesgo fue actualizada correctamente.",
+            });
+        },
+        onError: (error) => {
+            toast.error("No se pudo actualizar la evaluación", {
+                description: "Revise los datos enviados a la evaluación del riesgo.",
+            });
+            console.log(error);
+        },
+    });
+
+    return {
+        updateRiskAssessment: updateMutation,
     };
 };
 
