@@ -53,6 +53,14 @@ import {
   aircraftTypesStore,
   aircraftTypesUpdate,
   aircraftUpdate,
+  airworthinessDirectivesApplicabilities,
+  airworthinessDirectivesComplianceControls,
+  airworthinessDirectivesComplianceRecords,
+  airworthinessDirectivesDestroy,
+  airworthinessDirectivesIndex,
+  airworthinessDirectivesShow,
+  airworthinessDirectivesStore,
+  airworthinessDirectivesUpdate,
   analysisCloseReport,
   analysisGetPostRiskCountByDateRange,
   analysisGetRiskCountByDateRange,
@@ -648,6 +656,30 @@ import type {
   AircraftUpdateData,
   AircraftUpdateError,
   AircraftUpdateResponse,
+  AirworthinessDirectivesApplicabilitiesData,
+  AirworthinessDirectivesApplicabilitiesError,
+  AirworthinessDirectivesApplicabilitiesResponse,
+  AirworthinessDirectivesComplianceControlsData,
+  AirworthinessDirectivesComplianceControlsError,
+  AirworthinessDirectivesComplianceControlsResponse,
+  AirworthinessDirectivesComplianceRecordsData,
+  AirworthinessDirectivesComplianceRecordsError,
+  AirworthinessDirectivesComplianceRecordsResponse,
+  AirworthinessDirectivesDestroyData,
+  AirworthinessDirectivesDestroyError,
+  AirworthinessDirectivesDestroyResponse,
+  AirworthinessDirectivesIndexData,
+  AirworthinessDirectivesIndexError,
+  AirworthinessDirectivesIndexResponse,
+  AirworthinessDirectivesShowData,
+  AirworthinessDirectivesShowError,
+  AirworthinessDirectivesShowResponse,
+  AirworthinessDirectivesStoreData,
+  AirworthinessDirectivesStoreError,
+  AirworthinessDirectivesStoreResponse,
+  AirworthinessDirectivesUpdateData,
+  AirworthinessDirectivesUpdateError,
+  AirworthinessDirectivesUpdateResponse,
   AnalysisCloseReportData,
   AnalysisCloseReportError,
   AnalysisGetPostRiskCountByDateRangeData,
@@ -3255,6 +3287,290 @@ export const aircraftTypesUpdateMutation = (
 };
 
 export const analysisIndexQueryKey = (options: Options<AnalysisIndexData>) => createQueryKey('analysisIndex', options);
+export const airworthinessDirectivesApplicabilitiesQueryKey = (
+  options: Options<AirworthinessDirectivesApplicabilitiesData>,
+) => createQueryKey('airworthinessDirectivesApplicabilities', options);
+
+export const airworthinessDirectivesApplicabilitiesOptions = (
+  options: Options<AirworthinessDirectivesApplicabilitiesData>,
+) =>
+  queryOptions<
+    AirworthinessDirectivesApplicabilitiesResponse,
+    AxiosError<AirworthinessDirectivesApplicabilitiesError>,
+    AirworthinessDirectivesApplicabilitiesResponse,
+    ReturnType<typeof airworthinessDirectivesApplicabilitiesQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await airworthinessDirectivesApplicabilities({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: airworthinessDirectivesApplicabilitiesQueryKey(options),
+  });
+
+export const airworthinessDirectivesComplianceControlsQueryKey = (
+  options: Options<AirworthinessDirectivesComplianceControlsData>,
+) => createQueryKey('airworthinessDirectivesComplianceControls', options);
+
+export const airworthinessDirectivesComplianceControlsOptions = (
+  options: Options<AirworthinessDirectivesComplianceControlsData>,
+) =>
+  queryOptions<
+    AirworthinessDirectivesComplianceControlsResponse,
+    AxiosError<AirworthinessDirectivesComplianceControlsError>,
+    AirworthinessDirectivesComplianceControlsResponse,
+    ReturnType<typeof airworthinessDirectivesComplianceControlsQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await airworthinessDirectivesComplianceControls({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: airworthinessDirectivesComplianceControlsQueryKey(options),
+  });
+
+export const airworthinessDirectivesComplianceRecordsQueryKey = (
+  options: Options<AirworthinessDirectivesComplianceRecordsData>,
+) => createQueryKey('airworthinessDirectivesComplianceRecords', options);
+
+export const airworthinessDirectivesComplianceRecordsOptions = (
+  options: Options<AirworthinessDirectivesComplianceRecordsData>,
+) =>
+  queryOptions<
+    AirworthinessDirectivesComplianceRecordsResponse,
+    AxiosError<AirworthinessDirectivesComplianceRecordsError>,
+    AirworthinessDirectivesComplianceRecordsResponse,
+    ReturnType<typeof airworthinessDirectivesComplianceRecordsQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await airworthinessDirectivesComplianceRecords({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: airworthinessDirectivesComplianceRecordsQueryKey(options),
+  });
+
+export const airworthinessDirectivesIndexQueryKey = (options?: Options<AirworthinessDirectivesIndexData>) =>
+  createQueryKey('airworthinessDirectivesIndex', options);
+
+/**
+ * Display a listing of the resource
+ */
+export const airworthinessDirectivesIndexOptions = (options?: Options<AirworthinessDirectivesIndexData>) =>
+  queryOptions<
+    AirworthinessDirectivesIndexResponse,
+    AxiosError<AirworthinessDirectivesIndexError>,
+    AirworthinessDirectivesIndexResponse,
+    ReturnType<typeof airworthinessDirectivesIndexQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await airworthinessDirectivesIndex({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: airworthinessDirectivesIndexQueryKey(options),
+  });
+
+const createInfiniteParams = <K extends Pick<QueryKey<Options>[0], 'body' | 'headers' | 'path' | 'query'>>(
+  queryKey: QueryKey<Options>,
+  page: K,
+) => {
+  const params = { ...queryKey[0] };
+  if (page.body) {
+    params.body = {
+      ...(queryKey[0].body as any),
+      ...(page.body as any),
+    };
+  }
+  if (page.headers) {
+    params.headers = {
+      ...queryKey[0].headers,
+      ...page.headers,
+    };
+  }
+  if (page.path) {
+    params.path = {
+      ...(queryKey[0].path as any),
+      ...(page.path as any),
+    };
+  }
+  if (page.query) {
+    params.query = {
+      ...(queryKey[0].query as any),
+      ...(page.query as any),
+    };
+  }
+  return params as unknown as typeof page;
+};
+
+export const airworthinessDirectivesIndexInfiniteQueryKey = (
+  options?: Options<AirworthinessDirectivesIndexData>,
+): QueryKey<Options<AirworthinessDirectivesIndexData>> => createQueryKey('airworthinessDirectivesIndex', options, true);
+
+/**
+ * Display a listing of the resource
+ */
+export const airworthinessDirectivesIndexInfiniteOptions = (options?: Options<AirworthinessDirectivesIndexData>) =>
+  infiniteQueryOptions<
+    AirworthinessDirectivesIndexResponse,
+    AxiosError<AirworthinessDirectivesIndexError>,
+    InfiniteData<AirworthinessDirectivesIndexResponse>,
+    QueryKey<Options<AirworthinessDirectivesIndexData>>,
+    number | Pick<QueryKey<Options<AirworthinessDirectivesIndexData>>[0], 'body' | 'headers' | 'path' | 'query'>
+  >(
+    // @ts-ignore
+    {
+      queryFn: async ({ pageParam, queryKey, signal }) => {
+        // @ts-ignore
+        const page: Pick<
+          QueryKey<Options<AirworthinessDirectivesIndexData>>[0],
+          'body' | 'headers' | 'path' | 'query'
+        > =
+          typeof pageParam === 'object'
+            ? pageParam
+            : {
+                query: {
+                  page: pageParam,
+                },
+              };
+        const params = createInfiniteParams(queryKey, page);
+        const { data } = await airworthinessDirectivesIndex({
+          ...options,
+          ...params,
+          signal,
+          throwOnError: true,
+        });
+        return data;
+      },
+      queryKey: airworthinessDirectivesIndexInfiniteQueryKey(options),
+    },
+  );
+
+/**
+ * Store a newly created resource in storage
+ */
+export const airworthinessDirectivesStoreMutation = (
+  options?: Partial<Options<AirworthinessDirectivesStoreData>>,
+): UseMutationOptions<
+  AirworthinessDirectivesStoreResponse,
+  AxiosError<AirworthinessDirectivesStoreError>,
+  Options<AirworthinessDirectivesStoreData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    AirworthinessDirectivesStoreResponse,
+    AxiosError<AirworthinessDirectivesStoreError>,
+    Options<AirworthinessDirectivesStoreData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await airworthinessDirectivesStore({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+/**
+ * Remove the specified resource from storage
+ */
+export const airworthinessDirectivesDestroyMutation = (
+  options?: Partial<Options<AirworthinessDirectivesDestroyData>>,
+): UseMutationOptions<
+  AirworthinessDirectivesDestroyResponse,
+  AxiosError<AirworthinessDirectivesDestroyError>,
+  Options<AirworthinessDirectivesDestroyData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    AirworthinessDirectivesDestroyResponse,
+    AxiosError<AirworthinessDirectivesDestroyError>,
+    Options<AirworthinessDirectivesDestroyData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await airworthinessDirectivesDestroy({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+export const airworthinessDirectivesShowQueryKey = (options: Options<AirworthinessDirectivesShowData>) =>
+  createQueryKey('airworthinessDirectivesShow', options);
+
+/**
+ * Display the specified resource
+ */
+export const airworthinessDirectivesShowOptions = (options: Options<AirworthinessDirectivesShowData>) =>
+  queryOptions<
+    AirworthinessDirectivesShowResponse,
+    AxiosError<AirworthinessDirectivesShowError>,
+    AirworthinessDirectivesShowResponse,
+    ReturnType<typeof airworthinessDirectivesShowQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await airworthinessDirectivesShow({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: airworthinessDirectivesShowQueryKey(options),
+  });
+
+/**
+ * Update the specified resource in storage
+ */
+export const airworthinessDirectivesUpdateMutation = (
+  options?: Partial<Options<AirworthinessDirectivesUpdateData>>,
+): UseMutationOptions<
+  AirworthinessDirectivesUpdateResponse,
+  AxiosError<AirworthinessDirectivesUpdateError>,
+  Options<AirworthinessDirectivesUpdateData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    AirworthinessDirectivesUpdateResponse,
+    AxiosError<AirworthinessDirectivesUpdateError>,
+    Options<AirworthinessDirectivesUpdateData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await airworthinessDirectivesUpdate({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+export const analysisGetTotalRiskCountByDateRangeQueryKey = (
+  options: Options<AnalysisGetTotalRiskCountByDateRangeData>,
+) => createQueryKey('analysisGetTotalRiskCountByDateRange', options);
 
 export const analysisIndexOptions = (options: Options<AnalysisIndexData>) =>
   queryOptions<
@@ -3525,38 +3841,6 @@ export const articleListOptions = (options?: Options<ArticleListData>) =>
     },
     queryKey: articleListQueryKey(options),
   });
-
-const createInfiniteParams = <K extends Pick<QueryKey<Options>[0], 'body' | 'headers' | 'path' | 'query'>>(
-  queryKey: QueryKey<Options>,
-  page: K,
-) => {
-  const params = { ...queryKey[0] };
-  if (page.body) {
-    params.body = {
-      ...(queryKey[0].body as any),
-      ...(page.body as any),
-    };
-  }
-  if (page.headers) {
-    params.headers = {
-      ...queryKey[0].headers,
-      ...page.headers,
-    };
-  }
-  if (page.path) {
-    params.path = {
-      ...(queryKey[0].path as any),
-      ...(page.path as any),
-    };
-  }
-  if (page.query) {
-    params.query = {
-      ...(queryKey[0].query as any),
-      ...(page.query as any),
-    };
-  }
-  return params as unknown as typeof page;
-};
 
 export const articleListInfiniteQueryKey = (options?: Options<ArticleListData>): QueryKey<Options<ArticleListData>> =>
   createQueryKey('articleList', options, true);

@@ -703,6 +703,14 @@ export function getMenuList(pathname: string, currentCompany: Company | null, us
             },
           ],
         },
+        {
+          href: companyPath('/planificacion/directivas'),
+          label: 'Directivas de Aeronavegabilidad',
+          active: isCompanyPath('/planificacion/directivas', 'includes'),
+          icon: FileBadge,
+          roles: ['ANALISTA_PLANIFICACION', 'JEFE_PLANIFICACION', 'SUPERUSER'],
+          submenus: [],
+        },
       ],
     },
     {

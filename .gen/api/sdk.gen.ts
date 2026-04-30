@@ -129,6 +129,30 @@ import type {
   AircraftUpdateData,
   AircraftUpdateErrors,
   AircraftUpdateResponses,
+  AirworthinessDirectivesApplicabilitiesData,
+  AirworthinessDirectivesApplicabilitiesErrors,
+  AirworthinessDirectivesApplicabilitiesResponses,
+  AirworthinessDirectivesComplianceControlsData,
+  AirworthinessDirectivesComplianceControlsErrors,
+  AirworthinessDirectivesComplianceControlsResponses,
+  AirworthinessDirectivesComplianceRecordsData,
+  AirworthinessDirectivesComplianceRecordsErrors,
+  AirworthinessDirectivesComplianceRecordsResponses,
+  AirworthinessDirectivesDestroyData,
+  AirworthinessDirectivesDestroyErrors,
+  AirworthinessDirectivesDestroyResponses,
+  AirworthinessDirectivesIndexData,
+  AirworthinessDirectivesIndexErrors,
+  AirworthinessDirectivesIndexResponses,
+  AirworthinessDirectivesShowData,
+  AirworthinessDirectivesShowErrors,
+  AirworthinessDirectivesShowResponses,
+  AirworthinessDirectivesStoreData,
+  AirworthinessDirectivesStoreErrors,
+  AirworthinessDirectivesStoreResponses,
+  AirworthinessDirectivesUpdateData,
+  AirworthinessDirectivesUpdateErrors,
+  AirworthinessDirectivesUpdateResponses,
   AnalysisCloseReportData,
   AnalysisCloseReportErrors,
   AnalysisCloseReportResponses,
@@ -2263,13 +2287,144 @@ export const aircraftTypesUpdate = <ThrowOnError extends boolean = false>(
   });
 
 export const analysisIndex = <ThrowOnError extends boolean = false>(
-  options: Options<AnalysisIndexData, ThrowOnError>,
-) =>
+  options: Options<AnalysisIndexData, ThrowOnError>,) =>
   (options.client ?? client).get<AnalysisIndexResponses, AnalysisIndexErrors, ThrowOnError>({
     responseType: 'json',
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/{company}/sms/analysis',
     ...options,
+  });
+export const airworthinessDirectivesApplicabilities = <ThrowOnError extends boolean = false>(
+  options: Options<AirworthinessDirectivesApplicabilitiesData, ThrowOnError>,
+) =>
+  (options.client ?? client).get<
+    AirworthinessDirectivesApplicabilitiesResponses,
+    AirworthinessDirectivesApplicabilitiesErrors,
+    ThrowOnError
+  >({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/airworthiness-directives/{id}/applicabilities',
+    ...options,
+  });
+
+export const airworthinessDirectivesComplianceControls = <ThrowOnError extends boolean = false>(
+  options: Options<AirworthinessDirectivesComplianceControlsData, ThrowOnError>,
+) =>
+  (options.client ?? client).get<
+    AirworthinessDirectivesComplianceControlsResponses,
+    AirworthinessDirectivesComplianceControlsErrors,
+    ThrowOnError
+  >({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/airworthiness-directives/{id}/compliance-controls',
+    ...options,
+  });
+
+export const airworthinessDirectivesComplianceRecords = <ThrowOnError extends boolean = false>(
+  options: Options<AirworthinessDirectivesComplianceRecordsData, ThrowOnError>,
+) =>
+  (options.client ?? client).get<
+    AirworthinessDirectivesComplianceRecordsResponses,
+    AirworthinessDirectivesComplianceRecordsErrors,
+    ThrowOnError
+  >({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/airworthiness-directives/{id}/compliance-records',
+    ...options,
+  });
+
+/**
+ * Display a listing of the resource
+ */
+export const airworthinessDirectivesIndex = <ThrowOnError extends boolean = false>(
+  options?: Options<AirworthinessDirectivesIndexData, ThrowOnError>,
+) =>
+  (options?.client ?? client).get<
+    AirworthinessDirectivesIndexResponses,
+    AirworthinessDirectivesIndexErrors,
+    ThrowOnError
+  >({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/airworthiness-directives',
+    ...options,
+  });
+
+/**
+ * Store a newly created resource in storage
+ */
+export const airworthinessDirectivesStore = <ThrowOnError extends boolean = false>(
+  options: Options<AirworthinessDirectivesStoreData, ThrowOnError>,
+) =>
+  (options.client ?? client).post<
+    AirworthinessDirectivesStoreResponses,
+    AirworthinessDirectivesStoreErrors,
+    ThrowOnError
+  >({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/airworthiness-directives',
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    },
+  });
+
+/**
+ * Remove the specified resource from storage
+ */
+export const airworthinessDirectivesDestroy = <ThrowOnError extends boolean = false>(
+  options: Options<AirworthinessDirectivesDestroyData, ThrowOnError>,
+) =>
+  (options.client ?? client).delete<
+    AirworthinessDirectivesDestroyResponses,
+    AirworthinessDirectivesDestroyErrors,
+    ThrowOnError
+  >({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/airworthiness-directives/{id}',
+    ...options,
+  });
+
+/**
+ * Display the specified resource
+ */
+export const airworthinessDirectivesShow = <ThrowOnError extends boolean = false>(
+  options: Options<AirworthinessDirectivesShowData, ThrowOnError>,
+) =>
+  (options.client ?? client).get<AirworthinessDirectivesShowResponses, AirworthinessDirectivesShowErrors, ThrowOnError>(
+    {
+      responseType: 'json',
+      security: [{ scheme: 'bearer', type: 'http' }],
+      url: '/airworthiness-directives/{id}',
+      ...options,
+    },
+  );
+
+/**
+ * Update the specified resource in storage
+ */
+export const airworthinessDirectivesUpdate = <ThrowOnError extends boolean = false>(
+  options: Options<AirworthinessDirectivesUpdateData, ThrowOnError>,
+) =>
+  (options.client ?? client).put<
+    AirworthinessDirectivesUpdateResponses,
+    AirworthinessDirectivesUpdateErrors,
+    ThrowOnError
+  >({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/airworthiness-directives/{id}',
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    },
   });
 
 export const analysisStore = <ThrowOnError extends boolean = false>(

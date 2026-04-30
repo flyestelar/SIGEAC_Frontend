@@ -162,15 +162,96 @@ export type AircraftTypeResource = {
 };
 
 /**
+ * AirworthinessDirectiveApplicabilityResource
+ */
+export type AirworthinessDirectiveApplicabilityResource = {
+  id: number;
+  aircraft_id: number;
+  aircraft?: AircraftResource;
+  aircraft_part_id: number | null;
+  aircraft_part?: AircraftPartResource;
+  is_applicable: boolean;
+  non_applicability_reason: string | null;
+  amoc_approved_method: string | null;
+  created_at: string | null;
+  updated_at: string | null;
+};
+
+/**
+ * AirworthinessDirectiveComplianceControlResource
+ */
+export type AirworthinessDirectiveComplianceControlResource = {
+  id: string;
+  applicability_id: string;
+  aircraft_id: string;
+  aircraft: AircraftResource;
+  calendar_due_date: string | null;
+  flight_hours_due: number | null;
+  cycles_due: number | null;
+  recurrence_interval_days: number | null;
+  recurrence_interval_hours: number | null;
+  recurrence_interval_cycles: number | null;
+  compliance_status: string;
+  urgency?: string;
+  created_at: string;
+  updated_at: string;
+};
+
+/**
+ * AirworthinessDirectiveComplianceRecordResource
+ */
+export type AirworthinessDirectiveComplianceRecordResource = {
+  id: string;
+  applicability_id: string;
+  aircraft_id: string;
+  aircraft: AircraftResource;
+  work_order_number: string;
+  execution_date: string | null;
+  flight_hours_at_execution: number | null;
+  cycles_at_execution: number | null;
+  inspector_license_signature: string;
+  remarks: string;
+  created_at: string;
+  updated_at: string;
+};
+
+/**
  * AirworthinessDirectiveResource
  */
 export type AirworthinessDirectiveResource = {
-  id: string;
-  reference: string;
-  title: string;
-  description: string;
-  created_at: string;
-  updated_at: string;
+  id: number;
+  ad_number: string;
+  authority: string;
+  subject_description: string | null;
+  issue_date: string | null;
+  effective_date: string | null;
+  is_recurring: boolean;
+  pdf_document: string | null;
+  created_at: string | null;
+  updated_at: string | null;
+  summary?: AirworthinessDirectiveSummaryResource;
+};
+
+/**
+ * AirworthinessDirectiveSummaryResource
+ */
+export type AirworthinessDirectiveSummaryResource = {
+  applicable_aircraft_count: number;
+  open_controls_count: number;
+  upcoming_count: number;
+  overdue_count: number;
+  latest_execution_date: string;
+  aggregated_status: string;
+  total_aircraft_evaluated: number;
+  total_applicable_aircraft: number;
+  total_non_applicable_aircraft: number;
+  total_open_controls: number;
+  total_closed_controls: number;
+  total_recurrent_controls: number;
+  upcoming_due_count: number;
+  last_execution_date: string;
+  has_pdf_document: boolean;
+  pending_configuration_count: number;
 };
 
 /**
@@ -1966,11 +2047,11 @@ export type WorkOrderComponentItemResource = {
  * WorkOrderDirectiveItemResource
  */
 export type WorkOrderDirectiveItemResource = {
-  id: string;
-  work_order_id: string;
-  airworthiness_directive_id: string;
+  id: number;
+  work_order_id: number;
+  airworthiness_directive_id: number;
   directive?: AirworthinessDirectiveResource;
-  order: string;
+  order: number;
   created_at: string;
   updated_at: string;
 };
@@ -3743,6 +3824,608 @@ export type AircraftTypesUpdateResponses = {
 };
 
 export type AircraftTypesUpdateResponse = AircraftTypesUpdateResponses[keyof AircraftTypesUpdateResponses];
+
+export type AirworthinessDirectivesApplicabilitiesData = {
+  body?: never;
+  path: {
+    id: number;
+  };
+  query?: never;
+  url: '/airworthiness-directives/{id}/applicabilities';
+};
+
+export type AirworthinessDirectivesApplicabilitiesErrors = {
+  /**
+   * Unauthenticated
+   */
+  401: {
+    /**
+     * Error overview.
+     */
+    message: string;
+  };
+};
+
+export type AirworthinessDirectivesApplicabilitiesError =
+  AirworthinessDirectivesApplicabilitiesErrors[keyof AirworthinessDirectivesApplicabilitiesErrors];
+
+export type AirworthinessDirectivesApplicabilitiesResponses = {
+  /**
+   * Array of `AirworthinessDirectiveApplicabilityResource`
+   */
+  200: {
+    data: Array<AirworthinessDirectiveApplicabilityResource>;
+  };
+};
+
+export type AirworthinessDirectivesApplicabilitiesResponse =
+  AirworthinessDirectivesApplicabilitiesResponses[keyof AirworthinessDirectivesApplicabilitiesResponses];
+
+export type AirworthinessDirectivesComplianceControlsData = {
+  body?: never;
+  path: {
+    id: number;
+  };
+  query?: never;
+  url: '/airworthiness-directives/{id}/compliance-controls';
+};
+
+export type AirworthinessDirectivesComplianceControlsErrors = {
+  /**
+   * Unauthenticated
+   */
+  401: {
+    /**
+     * Error overview.
+     */
+    message: string;
+  };
+  /**
+   * Not found
+   */
+  404: {
+    /**
+     * Error overview.
+     */
+    message: string;
+  };
+};
+
+export type AirworthinessDirectivesComplianceControlsError =
+  AirworthinessDirectivesComplianceControlsErrors[keyof AirworthinessDirectivesComplianceControlsErrors];
+
+export type AirworthinessDirectivesComplianceControlsResponses = {
+  200: {
+    data: Array<AirworthinessDirectiveComplianceControlResource>;
+  };
+};
+
+export type AirworthinessDirectivesComplianceControlsResponse =
+  AirworthinessDirectivesComplianceControlsResponses[keyof AirworthinessDirectivesComplianceControlsResponses];
+
+export type AirworthinessDirectivesComplianceRecordsData = {
+  body?: never;
+  path: {
+    id: number;
+  };
+  query?: never;
+  url: '/airworthiness-directives/{id}/compliance-records';
+};
+
+export type AirworthinessDirectivesComplianceRecordsErrors = {
+  /**
+   * Unauthenticated
+   */
+  401: {
+    /**
+     * Error overview.
+     */
+    message: string;
+  };
+  /**
+   * Not found
+   */
+  404: {
+    /**
+     * Error overview.
+     */
+    message: string;
+  };
+};
+
+export type AirworthinessDirectivesComplianceRecordsError =
+  AirworthinessDirectivesComplianceRecordsErrors[keyof AirworthinessDirectivesComplianceRecordsErrors];
+
+export type AirworthinessDirectivesComplianceRecordsResponses = {
+  /**
+   * Array of `AirworthinessDirectiveComplianceRecordResource`
+   */
+  200: {
+    data: Array<AirworthinessDirectiveComplianceRecordResource>;
+  };
+};
+
+export type AirworthinessDirectivesComplianceRecordsResponse =
+  AirworthinessDirectivesComplianceRecordsResponses[keyof AirworthinessDirectivesComplianceRecordsResponses];
+
+export type AirworthinessDirectivesIndexData = {
+  body?: never;
+  path?: never;
+  query?: {
+    search?: string | null;
+    page?: number;
+    per_page?: number;
+  };
+  url: '/airworthiness-directives';
+};
+
+export type AirworthinessDirectivesIndexErrors = {
+  /**
+   * Unauthenticated
+   */
+  401: {
+    /**
+     * Error overview.
+     */
+    message: string;
+  };
+  /**
+   * Validation error
+   */
+  422: {
+    /**
+     * Errors overview.
+     */
+    message: string;
+    /**
+     * A detailed description of each field that failed validation.
+     */
+    errors: {
+      [key: string]: Array<string>;
+    };
+  };
+};
+
+export type AirworthinessDirectivesIndexError =
+  AirworthinessDirectivesIndexErrors[keyof AirworthinessDirectivesIndexErrors];
+
+export type AirworthinessDirectivesIndexResponses = {
+  /**
+   * Paginated set of `AirworthinessDirectiveResource`
+   */
+  200: {
+    data: Array<AirworthinessDirectiveResource>;
+    links: {
+      first: string | null;
+      last: string | null;
+      prev: string | null;
+      next: string | null;
+    };
+    meta: {
+      current_page: number;
+      from: number | null;
+      last_page: number;
+      /**
+       * Generated paginator links.
+       */
+      links: Array<{
+        url: string | null;
+        label: string;
+        active: boolean;
+      }>;
+      /**
+       * Base path for paginator generated URLs.
+       */
+      path: string | null;
+      /**
+       * Number of items shown per page.
+       */
+      per_page: number;
+      /**
+       * Number of the last item in the slice.
+       */
+      to: number | null;
+      /**
+       * Total number of items being paginated.
+       */
+      total: number;
+    };
+  };
+};
+
+export type AirworthinessDirectivesIndexResponse =
+  AirworthinessDirectivesIndexResponses[keyof AirworthinessDirectivesIndexResponses];
+
+export type AirworthinessDirectivesStoreData = {
+  body: {
+    ad_number: string;
+    authority: string;
+    subject_description?: string | null;
+    issue_date?: string | null;
+    effective_date?: string | null;
+    is_recurring?: boolean;
+    pdf_document?: string | null;
+  };
+  path?: never;
+  query?: never;
+  url: '/airworthiness-directives';
+};
+
+export type AirworthinessDirectivesStoreErrors = {
+  /**
+   * Unauthenticated
+   */
+  401: {
+    /**
+     * Error overview.
+     */
+    message: string;
+  };
+  /**
+   * Validation error
+   */
+  422: {
+    /**
+     * Errors overview.
+     */
+    message: string;
+    /**
+     * A detailed description of each field that failed validation.
+     */
+    errors: {
+      [key: string]: Array<string>;
+    };
+  };
+};
+
+export type AirworthinessDirectivesStoreError =
+  AirworthinessDirectivesStoreErrors[keyof AirworthinessDirectivesStoreErrors];
+
+export type AirworthinessDirectivesStoreResponses = {
+  /**
+   * `AirworthinessDirectiveResource`
+   */
+  201: {
+    data: AirworthinessDirectiveResource;
+  };
+};
+
+export type AirworthinessDirectivesStoreResponse =
+  AirworthinessDirectivesStoreResponses[keyof AirworthinessDirectivesStoreResponses];
+
+export type AirworthinessDirectivesDestroyData = {
+  body?: never;
+  path: {
+    id: string;
+  };
+  query?: never;
+  url: '/airworthiness-directives/{id}';
+};
+
+export type AirworthinessDirectivesDestroyErrors = {
+  /**
+   * Unauthenticated
+   */
+  401: {
+    /**
+     * Error overview.
+     */
+    message: string;
+  };
+};
+
+export type AirworthinessDirectivesDestroyError =
+  AirworthinessDirectivesDestroyErrors[keyof AirworthinessDirectivesDestroyErrors];
+
+export type AirworthinessDirectivesDestroyResponses = {
+  200: {
+    message: 'Airworthiness directive deleted successfully';
+  };
+};
+
+export type AirworthinessDirectivesDestroyResponse =
+  AirworthinessDirectivesDestroyResponses[keyof AirworthinessDirectivesDestroyResponses];
+
+export type AirworthinessDirectivesShowData = {
+  body?: never;
+  path: {
+    id: number;
+  };
+  query?: never;
+  url: '/airworthiness-directives/{id}';
+};
+
+export type AirworthinessDirectivesShowErrors = {
+  /**
+   * Unauthenticated
+   */
+  401: {
+    /**
+     * Error overview.
+     */
+    message: string;
+  };
+};
+
+export type AirworthinessDirectivesShowError =
+  AirworthinessDirectivesShowErrors[keyof AirworthinessDirectivesShowErrors];
+
+export type AirworthinessDirectivesShowResponses = {
+  /**
+   * `AirworthinessDirectiveResource`
+   */
+  200: {
+    data: AirworthinessDirectiveResource;
+  };
+};
+
+export type AirworthinessDirectivesShowResponse =
+  AirworthinessDirectivesShowResponses[keyof AirworthinessDirectivesShowResponses];
+
+export type AirworthinessDirectivesUpdateData = {
+  body?: {
+    ad_number?: string;
+    authority?: string;
+    subject_description?: string | null;
+    issue_date?: string | null;
+    effective_date?: string | null;
+    is_recurring?: boolean;
+    pdf_document?: string | null;
+  };
+  path: {
+    id: string;
+  };
+  query?: never;
+  url: '/airworthiness-directives/{id}';
+};
+
+export type AirworthinessDirectivesUpdateErrors = {
+  /**
+   * Unauthenticated
+   */
+  401: {
+    /**
+     * Error overview.
+     */
+    message: string;
+  };
+  /**
+   * Validation error
+   */
+  422: {
+    /**
+     * Errors overview.
+     */
+    message: string;
+    /**
+     * A detailed description of each field that failed validation.
+     */
+    errors: {
+      [key: string]: Array<string>;
+    };
+  };
+};
+
+export type AirworthinessDirectivesUpdateError =
+  AirworthinessDirectivesUpdateErrors[keyof AirworthinessDirectivesUpdateErrors];
+
+export type AirworthinessDirectivesUpdateResponses = {
+  /**
+   * `AirworthinessDirectiveResource`
+   */
+  200: {
+    data: AirworthinessDirectiveResource;
+  };
+};
+
+export type AirworthinessDirectivesUpdateResponse =
+  AirworthinessDirectivesUpdateResponses[keyof AirworthinessDirectivesUpdateResponses];
+
+export type AnalysisGetTotalRiskCountByDateRangeData = {
+  body?: never;
+  path: {
+    company: string;
+  };
+  query?: never;
+  url: '/{company}/sms/total-risk-count-by-date-range';
+};
+
+export type AnalysisGetTotalRiskCountByDateRangeErrors = {
+  /**
+   * Unauthenticated
+   */
+  401: {
+    /**
+     * Error overview.
+     */
+    message: string;
+  };
+};
+
+export type AnalysisGetTotalRiskCountByDateRangeError =
+  AnalysisGetTotalRiskCountByDateRangeErrors[keyof AnalysisGetTotalRiskCountByDateRangeErrors];
+
+export type AnalysisGetTotalRiskCountByDateRangeResponses = {
+  200: Array<{
+    name: string;
+    value: string;
+  }>;
+};
+
+export type AnalysisGetTotalRiskCountByDateRangeResponse =
+  AnalysisGetTotalRiskCountByDateRangeResponses[keyof AnalysisGetTotalRiskCountByDateRangeResponses];
+
+export type AnalysisGetTotalPostRiskCountByDateRangeData = {
+  body?: never;
+  path: {
+    company: string;
+  };
+  query?: never;
+  url: '/{company}/sms/total-post-risk/count-by-date-range';
+};
+
+export type AnalysisGetTotalPostRiskCountByDateRangeErrors = {
+  /**
+   * Unauthenticated
+   */
+  401: {
+    /**
+     * Error overview.
+     */
+    message: string;
+  };
+};
+
+export type AnalysisGetTotalPostRiskCountByDateRangeError =
+  AnalysisGetTotalPostRiskCountByDateRangeErrors[keyof AnalysisGetTotalPostRiskCountByDateRangeErrors];
+
+export type AnalysisGetTotalPostRiskCountByDateRangeResponses = {
+  200: Array<{
+    name: string;
+    value: string;
+  }>;
+};
+
+export type AnalysisGetTotalPostRiskCountByDateRangeResponse =
+  AnalysisGetTotalPostRiskCountByDateRangeResponses[keyof AnalysisGetTotalPostRiskCountByDateRangeResponses];
+
+export type AnalysisShowAnalysisWithPlanData = {
+  body?: never;
+  path: {
+    company: string;
+  };
+  query?: never;
+  url: '/{company}/analysis-plan';
+};
+
+export type AnalysisShowAnalysisWithPlanErrors = {
+  /**
+   * Unauthenticated
+   */
+  401: {
+    /**
+     * Error overview.
+     */
+    message: string;
+  };
+};
+
+export type AnalysisShowAnalysisWithPlanError =
+  AnalysisShowAnalysisWithPlanErrors[keyof AnalysisShowAnalysisWithPlanErrors];
+
+export type AnalysisShowAnalysisWithPlanResponses = {
+  200: Array<Analysis>;
+};
+
+export type AnalysisShowAnalysisWithPlanResponse =
+  AnalysisShowAnalysisWithPlanResponses[keyof AnalysisShowAnalysisWithPlanResponses];
+
+export type AnalysisCloseReportData = {
+  body?: never;
+  path: {
+    company: string;
+    mitigation_id: string;
+  };
+  query?: never;
+  url: '/{company}/sms/close-report/{mitigation_id}';
+};
+
+export type AnalysisCloseReportErrors = {
+  /**
+   * Unauthenticated
+   */
+  401: {
+    /**
+     * Error overview.
+     */
+    message: string;
+  };
+};
+
+export type AnalysisCloseReportError = AnalysisCloseReportErrors[keyof AnalysisCloseReportErrors];
+
+export type AnalysisCloseReportResponses = {
+  200: unknown;
+};
+
+export type AnalysisGetRiskCountByDateRangeData = {
+  body?: never;
+  path: {
+    company: string;
+  };
+  query?: {
+    from?: string;
+    to?: string;
+    reportType?: string;
+  };
+  url: '/{company}/sms/risk/count-by-date-range';
+};
+
+export type AnalysisGetRiskCountByDateRangeErrors = {
+  400: {
+    error: 'Tipo de reporte no válido.';
+  };
+  /**
+   * Unauthenticated
+   */
+  401: {
+    /**
+     * Error overview.
+     */
+    message: string;
+  };
+};
+
+export type AnalysisGetRiskCountByDateRangeError =
+  AnalysisGetRiskCountByDateRangeErrors[keyof AnalysisGetRiskCountByDateRangeErrors];
+
+export type AnalysisGetRiskCountByDateRangeResponses = {
+  /**
+   * Resetear los índices del array y obtener el array final
+   */
+  200: string;
+};
+
+export type AnalysisGetRiskCountByDateRangeResponse =
+  AnalysisGetRiskCountByDateRangeResponses[keyof AnalysisGetRiskCountByDateRangeResponses];
+
+export type AnalysisGetPostRiskCountByDateRangeData = {
+  body?: never;
+  path: {
+    company: string;
+  };
+  query?: {
+    from?: string;
+    to?: string;
+    reportType?: string;
+  };
+  url: '/{company}/sms/post-risk-count-by-date-range';
+};
+
+export type AnalysisGetPostRiskCountByDateRangeErrors = {
+  400: {
+    error: 'Tipo de reporte no válido.';
+  };
+  /**
+   * Unauthenticated
+   */
+  401: {
+    /**
+     * Error overview.
+     */
+    message: string;
+  };
+};
+
+export type AnalysisGetPostRiskCountByDateRangeError =
+  AnalysisGetPostRiskCountByDateRangeErrors[keyof AnalysisGetPostRiskCountByDateRangeErrors];
+
+export type AnalysisGetPostRiskCountByDateRangeResponses = {
+  200: string;
+};
+
+export type AnalysisGetPostRiskCountByDateRangeResponse =
+  AnalysisGetPostRiskCountByDateRangeResponses[keyof AnalysisGetPostRiskCountByDateRangeResponses];
 
 export type AnalysisIndexData = {
   body?: never;
