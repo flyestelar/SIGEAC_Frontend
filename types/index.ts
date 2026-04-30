@@ -869,6 +869,7 @@ export type Pilot = {
     employee_dni: string;
     employee: Employee;
     license_number: string;
+    rank?: string;
 };
 
 export type InformationSource = {

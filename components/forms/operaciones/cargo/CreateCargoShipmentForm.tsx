@@ -6,6 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { format, startOfMonth, endOfMonth } from "date-fns";
 import { es } from "date-fns/locale";
 import {
+  ArrowLeft,
   CalendarIcon,
   Check,
   ChevronsUpDown,
@@ -106,6 +107,12 @@ export default function CreateCargoShipmentForm({
   const { data: externalSuggestions } =
     useGetExternalAircraftSuggestions(company);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [openCalendar, setOpenCalendar] = useState(false);
+  const [openAircraft, setOpenAircraft] = useState(false);
+  const [openCarrier, setOpenCarrier] = useState(false);
+  const [openPilot, setOpenPilot] = useState(false);
+  const [openCopilot, setOpenCopilot] = useState(false);
+  const [openClient, setOpenClient] = useState(false);
 
   // Consultas a BD
   const { data: clients, isLoading: loadingClients } = useGetClients(company);
@@ -135,7 +142,9 @@ export default function CreateCargoShipmentForm({
           carrier: initialData.carrier,
           issuer: initialData.issuer,
           pilot_id: initialData.pilot_id ? Number(initialData.pilot_id) : 0,
-          copilot_id: initialData.copilot_id ? Number(initialData.copilot_id) : 0,
+          copilot_id: initialData.copilot_id
+            ? Number(initialData.copilot_id)
+            : 0,
           client_id: initialData.client_id || initialData.client?.id || null,
           aircraft_id:
             initialData.aircraft_id || initialData.aircraft?.id || null,
@@ -259,158 +268,6 @@ export default function CreateCargoShipmentForm({
       >
         {/* === CABECERA === */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-4 gap-y-4 border border-border p-4 rounded-xl shadow-sm bg-card">
-          {/* Nº Guía (Visualización) */}
-          <div className="flex flex-col space-y-2">
-            <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-              Nº Guía
-            </label>
-            <div className="flex items-center h-9 relative">
-              <Input
-                className="h-9 bg-muted/50 font-bold tracking-widest text-primary text-center"
-                readOnly
-                value={
-                  isEditing
-                    ? initialData.guide_number
-                    : !watchedAircraftId && !watchedExternalAircraft
-                      ? "Selec. Aeronave"
-                      : loadingGuide
-                        ? "..."
-                        : guideData?.guide_number || "Cargando..."
-                }
-              />
-            </div>
-          </div>
-
-          {/* Fecha */}
-          <FormField
-            control={form.control}
-            name="registration_date"
-            render={({ field }) => (
-              <FormItem className="flex flex-col ">
-                <FormLabel className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                  Fecha
-                </FormLabel>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <FormControl>
-                      <Button
-                        variant="outline"
-                        className={cn(
-                          "w-full pl-3 text-left font-normal h-9",
-                          !field.value && "text-muted-foreground",
-                        )}
-                      >
-                        {field.value ? (
-                          format(field.value, "PP", { locale: es })
-                        ) : (
-                          <span>Seleccione fecha</span>
-                        )}
-                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                      </Button>
-                    </FormControl>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="center">
-                    <Calendar
-                      mode="single"
-                      selected={field.value}
-                      onSelect={field.onChange}
-                      disabled={[
-                        {
-                          before: startOfMonth(
-                            isEditing
-                              ? new Date(
-                                  initialData.registration_date + "T00:00:00",
-                                )
-                              : new Date(),
-                          ),
-                        },
-                        {
-                          after: endOfMonth(
-                            isEditing
-                              ? new Date(
-                                  initialData.registration_date + "T00:00:00",
-                                )
-                              : new Date(),
-                          ),
-                        },
-                      ]}
-                      initialFocus
-                    />
-                  </PopoverContent>
-                </Popover>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          {/* Cliente */}
-          <FormField
-            control={form.control}
-            name="client_id"
-            render={({ field }) => (
-              <FormItem className="flex flex-col">
-                <FormLabel className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                  Cliente
-                </FormLabel>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <FormControl>
-                      <Button
-                        variant="outline"
-                        role="combobox"
-                        disabled={loadingClients}
-                        className={cn(
-                          "w-full justify-between font-normal h-9",
-                          !field.value && "text-muted-foreground",
-                        )}
-                      >
-                        {field.value
-                          ? clients?.find(
-                              (client: any) =>
-                                String(client.id) === String(field.value),
-                            )?.name ||
-                            initialData?.client?.name ||
-                            "Seleccionar cliente..."
-                          : "Seleccionar cliente..."}
-                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                      </Button>
-                    </FormControl>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-[300px] p-0" align="start">
-                    <Command>
-                      <CommandInput placeholder="Buscar cliente..." />
-                      <CommandList>
-                        <CommandEmpty>No se encontró cliente.</CommandEmpty>
-                        <CommandGroup>
-                          {clients?.map((client: any) => (
-                            <CommandItem
-                              value={client.name}
-                              key={client.id}
-                              onSelect={() => {
-                                form.setValue("client_id", client.id);
-                              }}
-                            >
-                              <Check
-                                className={cn(
-                                  "mr-2 h-4 w-4",
-                                  String(client.id) === String(field.value)
-                                    ? "opacity-100"
-                                    : "opacity-0",
-                                )}
-                              />
-                              {client.name}
-                            </CommandItem>
-                          ))}
-                        </CommandGroup>
-                      </CommandList>
-                    </Command>
-                  </PopoverContent>
-                </Popover>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
           {/* Aeronave */}
           <div className="flex flex-col space-y-2">
             <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground leading-none mt-1">
@@ -484,7 +341,7 @@ export default function CreateCargoShipmentForm({
                 name="aircraft_id"
                 render={({ field }) => (
                   <FormItem className="space-y-0">
-                    <Popover>
+                    <Popover open={openAircraft} onOpenChange={setOpenAircraft}>
                       <PopoverTrigger asChild>
                         <FormControl>
                           <Button
@@ -543,6 +400,7 @@ export default function CreateCargoShipmentForm({
                                 value="ninguna"
                                 onSelect={() => {
                                   form.setValue("aircraft_id", null);
+                                  setOpenAircraft(false);
                                 }}
                               >
                                 <Check
@@ -566,6 +424,7 @@ export default function CreateCargoShipmentForm({
                                     key={acf.id}
                                     onSelect={() => {
                                       form.setValue("aircraft_id", acf.id);
+                                      setOpenAircraft(false);
                                     }}
                                   >
                                     <Check
@@ -592,6 +451,71 @@ export default function CreateCargoShipmentForm({
             )}
           </div>
 
+          {/* Fecha */}
+          <FormField
+            control={form.control}
+            name="registration_date"
+            render={({ field }) => (
+              <FormItem className="flex flex-col ">
+                <FormLabel className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                  Fecha
+                </FormLabel>
+                <Popover open={openCalendar} onOpenChange={setOpenCalendar}>
+                  <PopoverTrigger asChild>
+                    <FormControl>
+                      <Button
+                        variant="outline"
+                        className={cn(
+                          "w-full pl-3 text-left font-normal h-9",
+                          !field.value && "text-muted-foreground",
+                        )}
+                      >
+                        {field.value ? (
+                          format(field.value, "PP", { locale: es })
+                        ) : (
+                          <span>Seleccione fecha</span>
+                        )}
+                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                      </Button>
+                    </FormControl>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="center">
+                    <Calendar
+                      mode="single"
+                      selected={field.value}
+                      onSelect={(date) => {
+                        field.onChange(date);
+                        setOpenCalendar(false);
+                      }}
+                      disabled={[
+                        {
+                          before: startOfMonth(
+                            isEditing
+                              ? new Date(
+                                  initialData.registration_date + "T00:00:00",
+                                )
+                              : new Date(),
+                          ),
+                        },
+                        {
+                          after: endOfMonth(
+                            isEditing
+                              ? new Date(
+                                  initialData.registration_date + "T00:00:00",
+                                )
+                              : new Date(),
+                          ),
+                        },
+                      ]}
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
           {/* Transportista */}
           <FormField
             control={form.control}
@@ -601,7 +525,7 @@ export default function CreateCargoShipmentForm({
                 <FormLabel className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                   Transportista
                 </FormLabel>
-                <Popover>
+                <Popover open={openCarrier} onOpenChange={setOpenCarrier}>
                   <PopoverTrigger asChild>
                     <FormControl>
                       <Button
@@ -643,6 +567,7 @@ export default function CreateCargoShipmentForm({
                                 key={emp.id}
                                 onSelect={() => {
                                   form.setValue("carrier", fullName);
+                                  setOpenCarrier(false);
                                 }}
                               >
                                 <Check
@@ -669,6 +594,202 @@ export default function CreateCargoShipmentForm({
               </FormItem>
             )}
           />
+          {/* Piloto */}
+          <FormField
+            control={form.control}
+            name="pilot_id"
+            render={({ field }) => (
+              <FormItem className="flex flex-col">
+                <FormLabel className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                  Piloto
+                </FormLabel>
+                <Popover open={openPilot} onOpenChange={setOpenPilot}>
+                  <PopoverTrigger asChild>
+                    <FormControl>
+                      <Button
+                        variant="outline"
+                        role="combobox"
+                        disabled={loadingPilots}
+                        className={cn(
+                          "w-full justify-between font-normal h-9",
+                          !field.value && "text-muted-foreground",
+                        )}
+                      >
+                        {field.value && !loadingPilots ? (
+                          (() => {
+                            const p = pilots?.find((p) => p.id === field.value);
+                            if (!p) return <span>Piloto no encontrado</span>;
+                            return (
+                              <div className="flex items-center gap-2 overflow-hidden flex-1">
+                                <span className="truncate">
+                                  {p.employee?.first_name}{" "}
+                                  {p.employee?.last_name}
+                                </span>
+                                {p.rank && (
+                                  <span className="text-[10px] uppercase font-bold text-muted-foreground bg-muted/30 px-1.5 py-0.5 rounded shrink-0">
+                                    {p.rank.replace(/_/g, " ")}
+                                  </span>
+                                )}
+                              </div>
+                            );
+                          })()
+                        ) : (
+                          <span>
+                            {loadingPilots
+                              ? "Cargando..."
+                              : "Seleccionar piloto..."}
+                          </span>
+                        )}
+                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                      </Button>
+                    </FormControl>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-[300px] p-0" align="start">
+                    <Command>
+                      <CommandInput placeholder="Buscar Piloto..." />
+                      <CommandList>
+                        <CommandEmpty>No se encontraron pilotos</CommandEmpty>
+                        <CommandGroup>
+                          {pilots
+                            ?.filter(
+                              (p: any) =>
+                                p.id !== form.watch("copilot_id") &&
+                                p.rank === "CAPITAN",
+                            )
+                            .map((pilot: any) => {
+                              const fullName = `${pilot.employee?.first_name} ${pilot.employee?.last_name}`;
+                              const rankLabel = pilot.rank
+                                ? ` (${pilot.rank})`
+                                : "";
+                              return (
+                                <CommandItem
+                                  value={fullName}
+                                  key={pilot.id}
+                                  onSelect={() => {
+                                    form.setValue("pilot_id", pilot.id);
+                                    setOpenPilot(false);
+                                  }}
+                                >
+                                  <div className="flex flex-1 items-center justify-between gap-2 overflow-hidden">
+                                    <span className="truncate font-medium">
+                                      {fullName}
+                                    </span>
+                                    {pilot.rank && (
+                                      <span className="shrink-0 text-[10px] uppercase font-bold text-muted-foreground bg-muted/50 px-1.5 py-0.5 rounded border border-border/50">
+                                        {pilot.rank.replace(/_/g, " ")}
+                                      </span>
+                                    )}
+                                  </div>
+                                  <Check
+                                    className={cn(
+                                      "ml-2 h-4 w-4 shrink-0",
+                                      pilot.id === field.value
+                                        ? "opacity-100"
+                                        : "opacity-0",
+                                    )}
+                                  />
+                                </CommandItem>
+                              );
+                            })}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
+              </FormItem>
+            )}
+          />
+
+          {/* Nº Guía (Visualización) */}
+          <div className="flex flex-col space-y-2">
+            <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              Nº Guía
+            </label>
+            <div className="flex items-center h-9 relative">
+              <Input
+                className="h-9 bg-muted/50 font-bold tracking-widest text-primary"
+                readOnly
+                value={
+                  isEditing
+                    ? initialData.guide_number
+                    : !watchedAircraftId && !watchedExternalAircraft
+                      ? "Selec. Aeronave"
+                      : loadingGuide
+                        ? "..."
+                        : guideData?.guide_number || "Cargando..."
+                }
+              />
+            </div>
+          </div>
+
+          {/* Cliente */}
+          <FormField
+            control={form.control}
+            name="client_id"
+            render={({ field }) => (
+              <FormItem className="flex flex-col">
+                <FormLabel className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                  Cliente
+                </FormLabel>
+                <Popover open={openClient} onOpenChange={setOpenClient}>
+                  <PopoverTrigger asChild>
+                    <FormControl>
+                      <Button
+                        variant="outline"
+                        role="combobox"
+                        disabled={loadingClients}
+                        className={cn(
+                          "w-full justify-between font-normal h-9",
+                          !field.value && "text-muted-foreground",
+                        )}
+                      >
+                        {field.value
+                          ? clients?.find(
+                              (client: any) =>
+                                String(client.id) === String(field.value),
+                            )?.name ||
+                            initialData?.client?.name ||
+                            "Seleccionar cliente..."
+                          : "Seleccionar cliente..."}
+                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                      </Button>
+                    </FormControl>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-[300px] p-0" align="start">
+                    <Command>
+                      <CommandInput placeholder="Buscar cliente..." />
+                      <CommandList>
+                        <CommandEmpty>No se encontró cliente.</CommandEmpty>
+                        <CommandGroup>
+                          {clients?.map((client: any) => (
+                            <CommandItem
+                              value={client.name}
+                              key={client.id}
+                              onSelect={() => {
+                                form.setValue("client_id", client.id);
+                                setOpenClient(false);
+                              }}
+                            >
+                              <Check
+                                className={cn(
+                                  "mr-2 h-4 w-4",
+                                  String(client.id) === String(field.value)
+                                    ? "opacity-100"
+                                    : "opacity-0",
+                                )}
+                              />
+                              {client.name}
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
           {/* Emisor */}
           <FormField
@@ -681,7 +802,7 @@ export default function CreateCargoShipmentForm({
                 </FormLabel>
                 <FormControl>
                   <Input
-                    className="h-9 bg-muted/50 cursor-not-allowed text-left"
+                    className="h-9 bg-muted/50 cursor-not-allowed text-left uppercase"
                     readOnly
                     value={user ? `${user.first_name} ${user.last_name}` : ""}
                   />
@@ -691,75 +812,6 @@ export default function CreateCargoShipmentForm({
             )}
           />
 
-          {/* Tripulación */}
-          {/* Piloto */}
-          <FormField
-            control={form.control}
-            name="pilot_id"
-            render={({ field }) => (
-              <FormItem className="flex flex-col">
-                <FormLabel className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                  Piloto
-                </FormLabel>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <FormControl>
-                      <Button
-                        variant="outline"
-                        role="combobox"
-                        disabled={loadingPilots}
-                        className={cn(
-                          "w-full justify-between font-normal h-9",
-                          !field.value && "text-muted-foreground",
-                        )}
-                      >
-                        {field.value
-                          ? loadingPilots
-                            ? "Cargando..."
-                            : pilots?.find((p) => p.id === field.value)
-                              ? `${pilots.find((p) => p.id === field.value)?.employee?.first_name} ${pilots.find((p) => p.id === field.value)?.employee?.last_name}`
-                              : "Piloto no encontrado"
-                          : "Seleccionar piloto..."}
-                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                      </Button>
-                    </FormControl>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-[300px] p-0" align="start">
-                    <Command>
-                      <CommandInput placeholder="Buscar Piloto..." />
-                      <CommandList>
-                        <CommandEmpty>No se encontraron pilotos</CommandEmpty>
-                        <CommandGroup>
-                          {pilots?.filter((p: any) => p.id !== form.watch("copilot_id")).map((pilot: any) => {
-                            const fullName = `${pilot.employee?.first_name} ${pilot.employee?.last_name}`;
-                            return (
-                              <CommandItem
-                                value={fullName}
-                                key={pilot.id}
-                                onSelect={() =>
-                                  form.setValue("pilot_id", pilot.id)
-                                }
-                              >
-                                <Check
-                                  className={cn(
-                                    "mr-2 h-4 w-4",
-                                    pilot.id === field.value
-                                      ? "opacity-100"
-                                      : "opacity-0",
-                                  )}
-                                />
-                                {fullName}
-                              </CommandItem>
-                            );
-                          })}
-                        </CommandGroup>
-                      </CommandList>
-                    </Command>
-                  </PopoverContent>
-                </Popover>
-              </FormItem>
-            )}
-          />
           {/* Copiloto */}
           <FormField
             control={form.control}
@@ -769,7 +821,7 @@ export default function CreateCargoShipmentForm({
                 <FormLabel className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                   Copiloto
                 </FormLabel>
-                <Popover>
+                <Popover open={openCopilot} onOpenChange={setOpenCopilot}>
                   <PopoverTrigger asChild>
                     <FormControl>
                       <Button
@@ -781,13 +833,31 @@ export default function CreateCargoShipmentForm({
                           !field.value && "text-muted-foreground",
                         )}
                       >
-                        {field.value
-                          ? loadingPilots
-                            ? "Cargando..."
-                            : pilots?.find((p) => p.id === field.value)
-                              ? `${pilots.find((p) => p.id === field.value)?.employee?.first_name} ${pilots.find((p) => p.id === field.value)?.employee?.last_name}`
-                              : "Copiloto no encontrado"
-                          : "Seleccionar copiloto..."}
+                        {field.value && !loadingPilots ? (
+                          (() => {
+                            const p = pilots?.find((p) => p.id === field.value);
+                            if (!p) return <span>Copiloto no encontrado</span>;
+                            return (
+                              <div className="flex items-center gap-2 overflow-hidden flex-1">
+                                <span className="truncate">
+                                  {p.employee?.first_name}{" "}
+                                  {p.employee?.last_name}
+                                </span>
+                                {p.rank && (
+                                  <span className="text-[10px] uppercase font-bold text-muted-foreground bg-muted/30 px-1.5 py-0.5 rounded shrink-0">
+                                    {p.rank.replace(/_/g, " ")}
+                                  </span>
+                                )}
+                              </div>
+                            );
+                          })()
+                        ) : (
+                          <span>
+                            {loadingPilots
+                              ? "Cargando..."
+                              : "Seleccionar copiloto..."}
+                          </span>
+                        )}
                         <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                       </Button>
                     </FormControl>
@@ -798,28 +868,47 @@ export default function CreateCargoShipmentForm({
                       <CommandList>
                         <CommandEmpty>No se encontraron pilotos</CommandEmpty>
                         <CommandGroup>
-                          {pilots?.filter((p: any) => p.id !== form.watch("pilot_id")).map((pilot: any) => {
-                            const fullName = `${pilot.employee?.first_name} ${pilot.employee?.last_name}`;
-                            return (
-                              <CommandItem
-                                value={fullName}
-                                key={pilot.id}
-                                onSelect={() =>
-                                  form.setValue("copilot_id", pilot.id)
-                                }
-                              >
-                                <Check
-                                  className={cn(
-                                    "mr-2 h-4 w-4",
-                                    pilot.id === field.value
-                                      ? "opacity-100"
-                                      : "opacity-0",
-                                  )}
-                                />
-                                {fullName}
-                              </CommandItem>
-                            );
-                          })}
+                          {pilots
+                            ?.filter(
+                              (p: any) =>
+                                p.id !== form.watch("pilot_id") &&
+                                p.rank === "PRIMER_OFICIAL",
+                            )
+                            .map((pilot: any) => {
+                              const fullName = `${pilot.employee?.first_name} ${pilot.employee?.last_name}`;
+                              const rankLabel = pilot.rank
+                                ? ` (${pilot.rank})`
+                                : "";
+                              return (
+                                <CommandItem
+                                  value={fullName}
+                                  key={pilot.id}
+                                  onSelect={() => {
+                                    form.setValue("copilot_id", pilot.id);
+                                    setOpenCopilot(false);
+                                  }}
+                                >
+                                  <div className="flex flex-1 items-center justify-between gap-2 overflow-hidden">
+                                    <span className="truncate font-medium">
+                                      {fullName}
+                                    </span>
+                                    {pilot.rank && (
+                                      <span className="shrink-0 text-[10px] uppercase font-bold text-muted-foreground bg-muted/50 px-1.5 py-0.5 rounded border border-border/50">
+                                        {pilot.rank.replace(/_/g, " ")}
+                                      </span>
+                                    )}
+                                  </div>
+                                  <Check
+                                    className={cn(
+                                      "ml-2 h-4 w-4 shrink-0",
+                                      pilot.id === field.value
+                                        ? "opacity-100"
+                                        : "opacity-0",
+                                    )}
+                                  />
+                                </CommandItem>
+                              );
+                            })}
                         </CommandGroup>
                       </CommandList>
                     </Command>
