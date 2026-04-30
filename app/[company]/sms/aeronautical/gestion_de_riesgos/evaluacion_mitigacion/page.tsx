@@ -35,7 +35,8 @@ const EvaluationMitigationPage = () => {
         null;
 
     const currentMitigationPlan = selectedNotification?.mitigation_plan || null;
-    const currentAnalysis = currentMitigationPlan?.analysis || selectedNotification?.analysis || null;
+    const currentPlanAnalysis = selectedNotification?.analysis || null;
+    const currentPostMitigationAnalysis = currentMitigationPlan?.analysis || null;
     const currentMeasures = currentMitigationPlan?.measures || [];
 
     const handleSelectNotification = (notificationId: number) => {
@@ -108,7 +109,8 @@ const EvaluationMitigationPage = () => {
                     <EvaluationWorkflowPanel
                         selectedNotification={selectedNotification}
                         currentMitigationPlan={currentMitigationPlan}
-                        currentAnalysis={currentAnalysis}
+                        currentPlanAnalysis={currentPlanAnalysis}
+                        currentPostMitigationAnalysis={currentPostMitigationAnalysis}
                         currentMeasures={currentMeasures}
                     />
                 )}

@@ -44,7 +44,7 @@ const StepBadge = ({
 }) => (
     <div
         className={cn(
-            'flex items-center gap-3 rounded-lg border px-4 py-3',
+            'flex min-w-0 items-center gap-3 rounded-lg border px-4 py-3',
             completed
                 ? 'border-emerald-200 bg-emerald-50 dark:border-emerald-900/60 dark:bg-emerald-950/40'
                 : 'border-border bg-muted/30'
@@ -52,7 +52,7 @@ const StepBadge = ({
     >
         <div
             className={cn(
-                'flex h-8 w-8 items-center justify-center rounded-full text-sm font-semibold',
+                'flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-sm font-semibold',
                 completed
                     ? 'bg-emerald-600 text-white dark:bg-emerald-500'
                     : 'bg-muted text-muted-foreground'
@@ -60,9 +60,9 @@ const StepBadge = ({
         >
             {completed ? <CheckCircle2 className="h-4 w-4" /> : step}
         </div>
-        <div>
-            <p className="text-sm font-medium">{title}</p>
-            <p className="text-xs text-muted-foreground">
+        <div className="min-w-0">
+            <p className="break-words text-sm font-medium leading-tight">{title}</p>
+            <p className="break-words text-xs text-muted-foreground">
                 {completed ? 'Completado o en edición' : 'Pendiente'}
             </p>
         </div>
@@ -135,8 +135,13 @@ function MeasureDetails({ measure }: { measure: MitigationMeasure }) {
 
 const getDefaultWorkflowTab = (
     hasPlanAndAnalysis: boolean,
-    measures: MitigationMeasure[]
-): 'plan' | 'measures' | 'controls' => {
+    measures: MitigationMeasure[],
+    hasPostMitigationAnalysis: boolean
+): 'plan' | 'measures' | 'controls' | 'post-analysis' => {
+    if (hasPostMitigationAnalysis) {
+        return 'post-analysis';
+    }
+
     if (measures.some((measure) => getMeasureControls(measure).length > 0)) {
         return 'controls';
     }
@@ -154,25 +159,33 @@ const toggleNumericId = (ids: number[], id: number) =>
 type EvaluationWorkflowPanelProps = {
     selectedNotification: HazardNotification;
     currentMitigationPlan: MitigationPlan | null;
-    currentAnalysis: Analysis | null;
+    currentPlanAnalysis: Analysis | null;
+    currentPostMitigationAnalysis: Analysis | null;
     currentMeasures: MitigationMeasure[];
 };
 
 export function EvaluationWorkflowPanel({
     selectedNotification,
     currentMitigationPlan,
-    currentAnalysis,
+    currentPlanAnalysis,
+    currentPostMitigationAnalysis,
     currentMeasures,
 }: EvaluationWorkflowPanelProps) {
     const workflowStatus = getWorkflowStatus(selectedNotification);
-    const hasPlanAndAnalysis = Boolean(currentMitigationPlan && currentAnalysis);
+    const hasPlanAndAnalysis = Boolean(currentMitigationPlan && currentPlanAnalysis);
+    const hasPostMitigationAnalysis = Boolean(currentPostMitigationAnalysis);
     const totalControls = currentMeasures.reduce(
         (total, measure) => total + getMeasureControls(measure).length,
         0
     );
-    const defaultTab = getDefaultWorkflowTab(hasPlanAndAnalysis, currentMeasures);
+    const defaultTab = getDefaultWorkflowTab(
+        hasPlanAndAnalysis,
+        currentMeasures,
+        hasPostMitigationAnalysis
+    );
 
     const [isPlanFormOpen, setIsPlanFormOpen] = useState(false);
+    const [isPostAnalysisFormOpen, setIsPostAnalysisFormOpen] = useState(false);
     const [measureEditorId, setMeasureEditorId] = useState<number | 'new' | null>(null);
     const [controlEditorKey, setControlEditorKey] = useState<string | null>(null);
     const [expandedMeasureIds, setExpandedMeasureIds] = useState<number[]>([]);
@@ -180,6 +193,7 @@ export function EvaluationWorkflowPanel({
 
     useEffect(() => {
         setIsPlanFormOpen(false);
+        setIsPostAnalysisFormOpen(false);
         setMeasureEditorId(null);
         setControlEditorKey(null);
         setExpandedMeasureIds([]);
@@ -213,7 +227,7 @@ export function EvaluationWorkflowPanel({
                         </p>
                     </div>
 
-                    <div className="grid gap-3 lg:grid-cols-3">
+                    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                         <StepBadge step={1} title="Plan y análisis" completed={hasPlanAndAnalysis} />
                         <StepBadge
                             step={2}
@@ -227,6 +241,11 @@ export function EvaluationWorkflowPanel({
                                 (measure) => getMeasureControls(measure).length > 0
                             )}
                         />
+                        <StepBadge
+                            step={4}
+                            title="Análisis post mitigación"
+                            completed={hasPostMitigationAnalysis}
+                        />
                     </div>
 
                     <Tabs
@@ -234,42 +253,66 @@ export function EvaluationWorkflowPanel({
                         defaultValue={defaultTab}
                         className="space-y-6"
                     >
-                        <TabsList className="grid h-auto w-full grid-cols-1 gap-2 bg-transparent p-0 md:grid-cols-3">
+                        <TabsList className="grid h-auto w-full grid-cols-1 gap-2 bg-transparent p-0 md:grid-cols-2 xl:grid-cols-4">
                             <TabsTrigger
                                 value="plan"
-                                className="h-auto items-start justify-between rounded-lg border bg-background/70 px-4 py-3 text-left data-[state=active]:border-primary dark:bg-muted/20"
+                                className="h-auto min-w-0 items-start justify-between gap-2 rounded-lg border bg-background/70 px-4 py-3 text-left whitespace-normal data-[state=active]:border-primary dark:bg-muted/20"
                             >
-                                <span className="flex items-center gap-2">
-                                    <FileText className="h-4 w-4" />
-                                    Plan y análisis
+                                <span className="flex min-w-0 items-center gap-2">
+                                    <FileText className="h-4 w-4 shrink-0" />
+                                    <span className="break-words leading-snug">Plan y análisis</span>
                                 </span>
-                                <Badge variant="outline">
+                                <Badge variant="outline" className="shrink-0">
                                     {hasPlanAndAnalysis ? 'Listo' : 'Pendiente'}
                                 </Badge>
                             </TabsTrigger>
 
                             <TabsTrigger
                                 value="measures"
-                                className="h-auto items-start justify-between rounded-lg border bg-background/70 px-4 py-3 text-left data-[state=active]:border-primary dark:bg-muted/20"
+                                className="h-auto min-w-0 items-start justify-between gap-2 rounded-lg border bg-background/70 px-4 py-3 text-left whitespace-normal data-[state=active]:border-primary dark:bg-muted/20"
                                 disabled={!hasPlanAndAnalysis || !currentMitigationPlan}
                             >
-                                <span className="flex items-center gap-2">
-                                    <ShieldCheck className="h-4 w-4" />
-                                    Medidas de mitigación
+                                <span className="flex min-w-0 items-center gap-2">
+                                    <ShieldCheck className="h-4 w-4 shrink-0" />
+                                    <span className="break-words leading-snug">
+                                        Medidas de mitigación
+                                    </span>
                                 </span>
-                                <Badge variant="outline">{currentMeasures.length}</Badge>
+                                <Badge variant="outline" className="shrink-0">
+                                    {currentMeasures.length}
+                                </Badge>
                             </TabsTrigger>
 
                             <TabsTrigger
                                 value="controls"
-                                className="h-auto items-start justify-between rounded-lg border bg-background/70 px-4 py-3 text-left data-[state=active]:border-primary dark:bg-muted/20"
+                                className="h-auto min-w-0 items-start justify-between gap-2 rounded-lg border bg-background/70 px-4 py-3 text-left whitespace-normal data-[state=active]:border-primary dark:bg-muted/20"
                                 disabled={!hasPlanAndAnalysis || currentMeasures.length === 0}
                             >
-                                <span className="flex items-center gap-2">
-                                    <ClipboardCheck className="h-4 w-4" />
-                                    Controles de seguimiento
+                                <span className="flex min-w-0 items-center gap-2">
+                                    <ClipboardCheck className="h-4 w-4 shrink-0" />
+                                    <span className="break-words leading-snug">
+                                        Controles de seguimiento
+                                    </span>
                                 </span>
-                                <Badge variant="outline">{totalControls}</Badge>
+                                <Badge variant="outline" className="shrink-0">
+                                    {totalControls}
+                                </Badge>
+                            </TabsTrigger>
+
+                            <TabsTrigger
+                                value="post-analysis"
+                                className="h-auto min-w-0 items-start justify-between gap-2 rounded-lg border bg-background/70 px-4 py-3 text-left whitespace-normal data-[state=active]:border-primary dark:bg-muted/20"
+                                disabled={!hasPlanAndAnalysis || !currentMitigationPlan || !currentMeasures.length}
+                            >
+                                <span className="flex min-w-0 items-center gap-2">
+                                    <FileText className="h-4 w-4 shrink-0" />
+                                    <span className="break-words leading-snug">
+                                        Análisis post mitigación
+                                    </span>
+                                </span>
+                                <Badge variant="outline" className="shrink-0">
+                                    {hasPostMitigationAnalysis ? 'Listo' : 'Pendiente'}
+                                </Badge>
                             </TabsTrigger>
                         </TabsList>
 
@@ -290,6 +333,7 @@ export function EvaluationWorkflowPanel({
                                     <Button
                                         type="button"
                                         variant={hasPlanAndAnalysis ? 'outline' : 'default'}
+                                        className="w-full whitespace-normal sm:w-auto"
                                         onClick={() => setIsPlanFormOpen((value) => !value)}
                                     >
                                         {hasPlanAndAnalysis ? (
@@ -307,7 +351,7 @@ export function EvaluationWorkflowPanel({
                                 <CardContent className="space-y-4">
                                     <PlanSummary
                                         mitigationPlan={currentMitigationPlan}
-                                        analysis={currentAnalysis}
+                                        analysis={currentPlanAnalysis}
                                     />
                                 </CardContent>
                             </Card>
@@ -323,11 +367,11 @@ export function EvaluationWorkflowPanel({
                                     </CardHeader>
                                     <CardContent>
                                         <CreateMitigationPlanAnalysis
-                                            key={`plan-${selectedNotification.id}-${currentMitigationPlan?.id || 'new'}-${currentAnalysis?.id || 'new'}`}
+                                            key={`plan-${selectedNotification.id}-${currentMitigationPlan?.id || 'new'}-${currentPlanAnalysis?.id || 'new'}`}
                                             hazardNotification={selectedNotification}
                                             initialData={{
                                                 mitigationPlan: currentMitigationPlan,
-                                                analysis: currentAnalysis,
+                                                analysis: currentPlanAnalysis,
                                             }}
                                             onSuccess={() => setIsPlanFormOpen(false)}
                                             onCancel={() => setIsPlanFormOpen(false)}
@@ -764,6 +808,110 @@ export function EvaluationWorkflowPanel({
                                         </Card>
                                     );
                                 })
+                            )}
+                        </TabsContent>
+
+                        <TabsContent value="post-analysis" className="space-y-4">
+                            {!hasPlanAndAnalysis || !currentMitigationPlan ? (
+                                <div className="rounded-lg border border-dashed p-5 text-sm text-muted-foreground">
+                                    Complete primero el plan y análisis para registrar el análisis
+                                    post mitigación.
+                                </div>
+                            ) : !currentMeasures.length ? (
+                                <div className="rounded-lg border border-dashed p-5 text-sm text-muted-foreground">
+                                    Registre al menos una medida de mitigación antes del análisis
+                                    post mitigación.
+                                </div>
+                            ) : (
+                                <>
+                                    <Card className="border-dashed">
+                                        <CardHeader className="gap-4 sm:flex-row sm:items-start sm:justify-between">
+                                            <div className="space-y-1.5">
+                                                <CardTitle className="flex items-center gap-2 text-lg">
+                                                    <FileText className="h-5 w-5" />
+                                                    Análisis post mitigación
+                                                </CardTitle>
+                                                <CardDescription>
+                                                    Este análisis se guarda asociado al plan de
+                                                    mitigación.
+                                                </CardDescription>
+                                            </div>
+
+                                            <Button
+                                                type="button"
+                                                variant={hasPostMitigationAnalysis ? 'outline' : 'default'}
+                                                className="w-full whitespace-normal sm:w-auto"
+                                                onClick={() =>
+                                                    setIsPostAnalysisFormOpen((value) => !value)
+                                                }
+                                            >
+                                                {hasPostMitigationAnalysis ? (
+                                                    <PencilLine className="mr-2 h-4 w-4" />
+                                                ) : (
+                                                    <Plus className="mr-2 h-4 w-4" />
+                                                )}
+                                                {isPostAnalysisFormOpen
+                                                    ? 'Ocultar formulario'
+                                                    : hasPostMitigationAnalysis
+                                                        ? 'Editar análisis post mitigación'
+                                                        : 'Crear análisis post mitigación'}
+                                            </Button>
+                                        </CardHeader>
+                                        <CardContent className="space-y-4">
+                                            {hasPostMitigationAnalysis ? (
+                                                <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                                                    <SummaryField
+                                                        label="Resultado del análisis"
+                                                        value={currentPostMitigationAnalysis?.result}
+                                                    />
+                                                    <SummaryField
+                                                        label="Probabilidad"
+                                                        value={currentPostMitigationAnalysis?.probability}
+                                                    />
+                                                    <SummaryField
+                                                        label="Severidad"
+                                                        value={currentPostMitigationAnalysis?.severity}
+                                                    />
+                                                </div>
+                                            ) : (
+                                                <div className="rounded-lg border border-dashed p-5 text-sm text-muted-foreground">
+                                                    Todavía no hay análisis post mitigación registrado
+                                                    para este plan.
+                                                </div>
+                                            )}
+                                        </CardContent>
+                                    </Card>
+
+                                    {isPostAnalysisFormOpen && (
+                                        <Card className="border-dashed">
+                                            <CardHeader>
+                                                <CardTitle className="text-base">
+                                                    {hasPostMitigationAnalysis
+                                                        ? 'Editar análisis post mitigación'
+                                                        : 'Crear análisis post mitigación'}
+                                                </CardTitle>
+                                            </CardHeader>
+                                            <CardContent>
+                                                <CreateMitigationPlanAnalysis
+                                                    key={`post-analysis-${selectedNotification.id}-${currentMitigationPlan.id}-${currentPostMitigationAnalysis?.id || 'new'}`}
+                                                    hazardNotification={selectedNotification}
+                                                    mode="analysis-only"
+                                                    mitigationPlanId={currentMitigationPlan.id}
+                                                    initialData={{
+                                                        mitigationPlan: currentMitigationPlan,
+                                                        analysis: currentPostMitigationAnalysis,
+                                                    }}
+                                                    onSuccess={() =>
+                                                        setIsPostAnalysisFormOpen(false)
+                                                    }
+                                                    onCancel={() =>
+                                                        setIsPostAnalysisFormOpen(false)
+                                                    }
+                                                />
+                                            </CardContent>
+                                        </Card>
+                                    )}
+                                </>
                             )}
                         </TabsContent>
                     </Tabs>

@@ -57,7 +57,23 @@ const FORM_SCHEMA = z.object({
     severity: z.string().min(1, "Seleccione la severidad"),
 });
 
-type FormValues = z.infer<typeof FORM_SCHEMA>;
+const ANALYSIS_ONLY_SCHEMA = z.object({
+    area_responsible: z.string().optional(),
+    description: z.string().optional(),
+    possible_consequences: z.string().optional(),
+    consequence_to_evaluate: z.string().optional(),
+    probability: z.string().min(1, "Seleccione la probabilidad"),
+    severity: z.string().min(1, "Seleccione la severidad"),
+});
+
+type FormValues = {
+    area_responsible: string;
+    description: string;
+    possible_consequences: string;
+    consequence_to_evaluate: string;
+    probability: string;
+    severity: string;
+};
 type AnalysisPayload = {
     probability: string;
     severity: string;
@@ -66,6 +82,8 @@ type AnalysisPayload = {
 
 interface CreateMitigationPlanAnalysisProps {
     hazardNotification: HazardNotification;
+    mode?: "plan-and-analysis" | "analysis-only";
+    mitigationPlanId?: number | string;
     initialData?: {
         mitigationPlan?: MitigationPlan | null;
         analysis?: Analysis | null;
@@ -144,6 +162,8 @@ const getDefaultValues = (
 
 export default function CreateMitigationPlanAnalysis({
     hazardNotification,
+    mode = "plan-and-analysis",
+    mitigationPlanId,
     initialData,
     onSuccess,
     onCancel,
@@ -155,9 +175,10 @@ export default function CreateMitigationPlanAnalysis({
     const { updateMitigationAnalysis } = useUpdateMitigationAnalysis();
     const mitigationPlan = initialData?.mitigationPlan || null;
     const analysis = initialData?.analysis || null;
+    const isAnalysisOnly = mode === "analysis-only";
 
     const form = useForm<FormValues>({
-        resolver: zodResolver(FORM_SCHEMA),
+        resolver: zodResolver(isAnalysisOnly ? ANALYSIS_ONLY_SCHEMA : FORM_SCHEMA),
         defaultValues: getDefaultValues(mitigationPlan, analysis),
     });
 
@@ -243,6 +264,34 @@ export default function CreateMitigationPlanAnalysis({
             result: `${values.probability}${values.severity}`,
         };
 
+        if (isAnalysisOnly) {
+            const targetMitigationPlanId = mitigationPlanId || mitigationPlan?.id;
+
+            if (!targetMitigationPlanId) {
+                throw new Error("No se encontró un plan de mitigación para asociar el análisis.");
+            }
+
+            if (analysis) {
+                await updateMitigationAnalysis.mutateAsync({
+                    company,
+                    id: analysis.id,
+                    data: analysisPayload,
+                });
+                onSuccess?.();
+                return;
+            }
+
+            await createMitigationAnalysis.mutateAsync({
+                company,
+                data: {
+                    ...analysisPayload,
+                    mitigation_plan_id: targetMitigationPlanId.toString(),
+                },
+            });
+            onSuccess?.();
+            return;
+        }
+
         if (mitigationPlan) {
             await updateMitigationPlan.mutateAsync({
                 company,
@@ -300,156 +349,150 @@ export default function CreateMitigationPlanAnalysis({
     return (
         <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
-                <div className="grid gap-4 md:grid-cols-2">
-                    <FormField
-                        control={form.control}
-                        name="area_responsible"
-                        render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Área responsable</FormLabel>
-                                <Select
-                                    onValueChange={field.onChange}
-                                    value={field.value}
-                                >
+                {!isAnalysisOnly && (
+                    <>
+                        <div className="grid gap-4 md:grid-cols-2">
+                            <FormField
+                                control={form.control}
+                                name="area_responsible"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Área responsable</FormLabel>
+                                        <Select onValueChange={field.onChange} value={field.value}>
+                                            <FormControl>
+                                                <SelectTrigger>
+                                                    <SelectValue placeholder="Seleccione un área" />
+                                                </SelectTrigger>
+                                            </FormControl>
+                                            <SelectContent>
+                                                {RESPONSIBLE_AREAS.map((area) => (
+                                                    <SelectItem key={area.value} value={area.value}>
+                                                        {area.label}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                        </div>
+
+                        <FormField
+                            control={form.control}
+                            name="description"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Descripción del plan</FormLabel>
                                     <FormControl>
-                                        <SelectTrigger>
-                                            <SelectValue placeholder="Seleccione un área" />
-                                        </SelectTrigger>
+                                        <Textarea
+                                            placeholder="Describa el enfoque del plan de mitigación"
+                                            className="min-h-[120px]"
+                                            {...field}
+                                        />
                                     </FormControl>
-                                    <SelectContent>
-                                        {RESPONSIBLE_AREAS.map((area) => (
-                                            <SelectItem
-                                                key={area.value}
-                                                value={area.value}
-                                            >
-                                                {area.label}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                                <FormMessage />
-                            </FormItem>
-                        )}
-                    />
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
 
+                        <FormField
+                            control={form.control}
+                            name="possible_consequences"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Posibles consecuencias</FormLabel>
+                                    <FormControl>
+                                        <div className="space-y-3">
+                                            <input
+                                                type="hidden"
+                                                value={field.value}
+                                                onChange={field.onChange}
+                                            />
+                                            <Input
+                                                placeholder="Escriba una consecuencia y presione Enter"
+                                                value={consequenceInput}
+                                                onChange={(event) =>
+                                                    setConsequenceInput(event.target.value)
+                                                }
+                                                onKeyDown={handleConsequenceInputKeyDown}
+                                            />
 
-                </div>
+                                            {consequenceOptions.length ? (
+                                                <div className="flex flex-wrap gap-2">
+                                                    {consequenceOptions.map((consequence) => (
+                                                        <Badge
+                                                            key={consequence}
+                                                            variant="secondary"
+                                                            className="gap-1 px-3 py-1"
+                                                        >
+                                                            <span>{consequence}</span>
+                                                            <button
+                                                                type="button"
+                                                                className="rounded-full p-0.5 hover:bg-background/60"
+                                                                onClick={() =>
+                                                                    removeConsequence(consequence)
+                                                                }
+                                                            >
+                                                                <X className="h-3 w-3" />
+                                                                <span className="sr-only">
+                                                                    Eliminar consecuencia
+                                                                </span>
+                                                            </button>
+                                                        </Badge>
+                                                    ))}
+                                                </div>
+                                            ) : (
+                                                <div className="rounded-lg border border-dashed p-4 text-sm text-muted-foreground">
+                                                    Todavía no ha agregado consecuencias. Presione
+                                                    Enter para registrarlas una por una.
+                                                </div>
+                                            )}
+                                        </div>
+                                    </FormControl>
+                                    <FormDescription>
+                                        Cada consecuencia se agrega con Enter y se guarda internamente
+                                        separada por <span className="font-mono">~</span>.
+                                    </FormDescription>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
 
-                <FormField
-                    control={form.control}
-                    name="description"
-                    render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Descripción del plan</FormLabel>
-                            <FormControl>
-                                <Textarea
-                                    placeholder="Describa el enfoque del plan de mitigación"
-                                    className="min-h-[120px]"
-                                    {...field}
-                                />
-                            </FormControl>
-                            <FormMessage />
-                        </FormItem>
-                    )}
-                />
-
-                <FormField
-                    control={form.control}
-                    name="possible_consequences"
-                    render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Posibles consecuencias</FormLabel>
-                            <FormControl>
-                                <div className="space-y-3">
-                                    <input
-                                        type="hidden"
+                        <FormField
+                            control={form.control}
+                            name="consequence_to_evaluate"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Consecuencia a evaluar</FormLabel>
+                                    <Select
+                                        onValueChange={field.onChange}
                                         value={field.value}
-                                        onChange={field.onChange}
-                                    />
-                                    <Input
-                                        placeholder="Escriba una consecuencia y presione Enter"
-                                        value={consequenceInput}
-                                        onChange={(event) =>
-                                            setConsequenceInput(event.target.value)
-                                        }
-                                        onKeyDown={handleConsequenceInputKeyDown}
-                                    />
-
-                                    {consequenceOptions.length ? (
-                                        <div className="flex flex-wrap gap-2">
+                                        disabled={!consequenceOptions.length}
+                                    >
+                                        <FormControl>
+                                            <SelectTrigger>
+                                                <SelectValue placeholder="Seleccione una consecuencia" />
+                                            </SelectTrigger>
+                                        </FormControl>
+                                        <SelectContent>
                                             {consequenceOptions.map((consequence) => (
-                                                <Badge
-                                                    key={consequence}
-                                                    variant="secondary"
-                                                    className="gap-1 px-3 py-1"
-                                                >
-                                                    <span>{consequence}</span>
-                                                    <button
-                                                        type="button"
-                                                        className="rounded-full p-0.5 hover:bg-background/60"
-                                                        onClick={() =>
-                                                            removeConsequence(consequence)
-                                                        }
-                                                    >
-                                                        <X className="h-3 w-3" />
-                                                        <span className="sr-only">
-                                                            Eliminar consecuencia
-                                                        </span>
-                                                    </button>
-                                                </Badge>
+                                                <SelectItem key={consequence} value={consequence}>
+                                                    {consequence}
+                                                </SelectItem>
                                             ))}
-                                        </div>
-                                    ) : (
-                                        <div className="rounded-lg border border-dashed p-4 text-sm text-muted-foreground">
-                                            Todavía no ha agregado consecuencias. Presione Enter para
-                                            registrarlas una por una.
-                                        </div>
-                                    )}
-                                </div>
-                            </FormControl>
-                            <FormDescription>
-                                Cada consecuencia se agrega con Enter y se guarda internamente separada
-                                por <span className="font-mono">~</span>.
-                            </FormDescription>
-                            <FormMessage />
-                        </FormItem>
-                    )}
-                />
-
-                <FormField
-                    control={form.control}
-                    name="consequence_to_evaluate"
-                    render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Consecuencia a evaluar</FormLabel>
-                            <Select
-                                onValueChange={field.onChange}
-                                value={field.value}
-                                disabled={!consequenceOptions.length}
-                            >
-                                <FormControl>
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Seleccione una consecuencia" />
-                                    </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                    {consequenceOptions.map((consequence) => (
-                                        <SelectItem
-                                            key={consequence}
-                                            value={consequence}
-                                        >
-                                            {consequence}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                            <FormDescription>
-                                La consecuencia a evaluar se selecciona de la lista creada abajo.
-                            </FormDescription>
-                            <FormMessage />
-                        </FormItem>
-                    )}
-                />
+                                        </SelectContent>
+                                    </Select>
+                                    <FormDescription>
+                                        La consecuencia a evaluar se selecciona de la lista creada
+                                        abajo.
+                                    </FormDescription>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                    </>
+                )}
 
                 <div className="grid gap-4 md:grid-cols-2">
                     <FormField
@@ -534,9 +577,13 @@ export default function CreateMitigationPlanAnalysis({
                     )}
                     <Button type="submit" className="sm:min-w-60" disabled={isPending}>
                         {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                        {mitigationPlan || analysis
-                            ? "Guardar cambios"
-                            : "Guardar plan y análisis"}
+                        {isAnalysisOnly
+                            ? analysis
+                                ? "Guardar análisis post mitigación"
+                                : "Registrar análisis post mitigación"
+                            : mitigationPlan || analysis
+                                ? "Guardar cambios"
+                                : "Guardar plan y análisis"}
                     </Button>
                 </div>
             </form>
