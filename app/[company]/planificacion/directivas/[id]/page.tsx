@@ -1,8 +1,19 @@
 'use client';
 
+import CreateAirworthinessDirectiveApplicabilityDialog from '@/components/dialogs/planificacion/directivas/CreateAirworthinessDirectiveApplicabilityDialog';
 import { ContentLayout } from '@/components/layout/ContentLayout';
 import LoadingPage from '@/components/misc/LoadingPage';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -12,19 +23,15 @@ import {
   useGetAirworthinessDirectiveComplianceControls,
   useGetAirworthinessDirectiveComplianceRecords,
   useGetAirworthinessDirectiveDetail,
+  useDeleteAirworthinessDirectiveApplicability,
 } from '@/hooks/planificacion/directivas/queries';
 import { formatDate } from '@/lib/helpers/format';
 import { useCompanyStore } from '@/stores/CompanyStore';
-import {
-  AirworthinessDirectiveApplicabilityResource,
-  AirworthinessDirectiveComplianceControlResource,
-  AirworthinessDirectiveComplianceRecordResource,
-  AirworthinessDirectiveResource,
-} from '@api/types';
-import { AlertCircle, ArrowLeft, FileBadge2, FileText, ShieldCheck } from 'lucide-react';
+import { AlertCircle, ArrowLeft, FileBadge2, FileText, Pencil, ShieldCheck, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { ReactNode } from 'react';
+import { ReactNode, useMemo, useState } from 'react';
+import type { AirworthinessDirectiveApplicabilityResource } from '@api/types';
 
 const StatCard = ({ label, value }: { label: string; value: React.ReactNode }) => (
   <Card className="rounded-2xl border bg-background">
@@ -105,11 +112,62 @@ export default function AirworthinessDirectiveDetailPage() {
   const { data: recordsResponse, isLoading: isRecordsLoading } = useGetAirworthinessDirectiveComplianceRecords(
     Number.isFinite(directiveId) ? directiveId : undefined,
   );
-  const directive: AirworthinessDirectiveResource | undefined = directiveResponse?.data;
-  const applicabilities: AirworthinessDirectiveApplicabilityResource[] = applicabilitiesResponse?.data ?? [];
-  const controls: AirworthinessDirectiveComplianceControlResource[] = controlsResponse?.data ?? [];
-  const records: AirworthinessDirectiveComplianceRecordResource[] = recordsResponse?.data ?? [];
+  const directive = directiveResponse?.data;
+  const applicabilities = useMemo(() => applicabilitiesResponse?.data ?? [], [applicabilitiesResponse?.data]);
+  const controls = useMemo(() => controlsResponse?.data ?? [], [controlsResponse?.data]);
+  const records = useMemo(() => recordsResponse?.data ?? [], [recordsResponse?.data]);
   const summary = directive?.summary;
+  const [isCreateApplicabilityOpen, setIsCreateApplicabilityOpen] = useState(false);
+  const [applicabilityToEdit, setApplicabilityToEdit] = useState<AirworthinessDirectiveApplicabilityResource | undefined>();
+  const [applicabilityToDelete, setApplicabilityToDelete] = useState<AirworthinessDirectiveApplicabilityResource | undefined>();
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const deleteApplicability = useDeleteAirworthinessDirectiveApplicability(Number.isFinite(directiveId) ? directiveId : undefined);
+  const existingAircraftIds = useMemo(() => applicabilities.map((item) => item.aircraft_id), [applicabilities]);
+
+  const openCreateApplicability = () => {
+    setApplicabilityToEdit(undefined);
+    setIsCreateApplicabilityOpen(true);
+  };
+
+  const openEditApplicability = (applicability: AirworthinessDirectiveApplicabilityResource) => {
+    setApplicabilityToEdit(applicability);
+    setIsCreateApplicabilityOpen(true);
+  };
+
+  const closeApplicabilityDialog = (open: boolean) => {
+    setIsCreateApplicabilityOpen(open);
+    if (!open) {
+      setApplicabilityToEdit(undefined);
+    }
+  };
+
+  const openDeleteApplicability = (applicability: AirworthinessDirectiveApplicabilityResource) => {
+    setApplicabilityToDelete(applicability);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const closeDeleteApplicabilityDialog = (open: boolean) => {
+    setIsDeleteDialogOpen(open);
+    if (!open) {
+      setApplicabilityToDelete(undefined);
+    }
+  };
+
+  const handleDeleteApplicability = async () => {
+    if (!applicabilityToDelete) return;
+
+    await deleteApplicability.mutateAsync({
+      path: { directiveId, applicabilityId: applicabilityToDelete.id },
+    });
+
+    if (applicabilityToEdit?.id === applicabilityToDelete.id) {
+      setApplicabilityToEdit(undefined);
+      setIsCreateApplicabilityOpen(false);
+    }
+
+    setApplicabilityToDelete(undefined);
+    setIsDeleteDialogOpen(false);
+  };
 
   if (isLoading) return <LoadingPage />;
 
@@ -228,11 +286,23 @@ export default function AirworthinessDirectiveDetailPage() {
           </TabsContent>
 
           <TabsContent value="applicability">
+            <div className="mb-4 flex justify-end">
+              <Button size="sm" onClick={openCreateApplicability}>
+                Nueva aplicabilidad
+              </Button>
+            </div>
+            <CreateAirworthinessDirectiveApplicabilityDialog
+              directiveId={directiveId}
+              existingAircraftIds={existingAircraftIds}
+              applicability={applicabilityToEdit}
+              open={isCreateApplicabilityOpen}
+              onOpenChange={closeApplicabilityDialog}
+            />
             {isApplicabilitiesLoading ? (
               <LoadingPage />
             ) : (
               <TabTable
-                headers={['Aeronave', 'Aplica', 'Motivo', 'AMOC']}
+                headers={['Aeronave', 'Aplica', 'Motivo', 'AMOC', 'Acciones']}
                 rows={applicabilities.map((item) => [
                   <div key={`${item.id}-aircraft`}>
                     <p className="font-medium">{item.aircraft?.acronym ?? `#${item.aircraft_id}`}</p>
@@ -259,11 +329,43 @@ export default function AirworthinessDirectiveDetailPage() {
                   ),
                   item.non_applicability_reason || '—',
                   item.amoc_approved_method || '—',
+                  <div key={`${item.id}-actions`} className="flex items-center justify-end gap-1">
+                    <Button variant="ghost" size="icon" onClick={() => openEditApplicability(item)}>
+                      <Pencil className="h-4 w-4" />
+                      <span className="sr-only">Editar aplicabilidad</span>
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => openDeleteApplicability(item)}
+                      disabled={deleteApplicability.isPending}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                      <span className="sr-only">Eliminar aplicabilidad</span>
+                    </Button>
+                  </div>,
                 ])}
                 emptyTitle="Sin aplicabilidades"
                 emptyDescription="Esta directiva todavía no tiene aeronaves evaluadas en aplicabilidad."
               />
             )}
+            <AlertDialog open={isDeleteDialogOpen} onOpenChange={closeDeleteApplicabilityDialog}>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Eliminar aplicabilidad</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Esta acción no se puede deshacer. La aplicabilidad de{' '}
+                    {applicabilityToDelete?.aircraft?.acronym ?? applicabilityToDelete?.aircraft_id} será eliminada.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel disabled={deleteApplicability.isPending}>Cancelar</AlertDialogCancel>
+                  <AlertDialogAction onClick={handleDeleteApplicability} disabled={deleteApplicability.isPending}>
+                    {deleteApplicability.isPending ? 'Eliminando...' : 'Eliminar'}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </TabsContent>
 
           <TabsContent value="control">
