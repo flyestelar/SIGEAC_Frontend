@@ -2,27 +2,26 @@ import axiosInstance from "@/lib/axios";
 import { pieChartData } from "@/types";
 import { useQuery } from "@tanstack/react-query";
 
-const fetchPostRiskCountByDateRange = async (
+const fetchReportsNumberByMonth = async (
   company: string | null,
   from: string,
   to: string,
-  reportType: string
 ): Promise<pieChartData[]> => {
   const { data } = await axiosInstance.get(
-    `/${company}/sms/stats/post-risk-by-date-range?reportType=${reportType}&from=${from}&to=${to}`
+    `/${company}/sms/stats/reports-by-month?from=${from}&to=${to}`
   );
   return data;
 };
 
-export const useGetPostRiskCountByDateRange = (
+export const useGetReportsNumberByMonth = (
   company: string | null,
   from: string,
   to: string,
-  reportType: string
 ) => {
   return useQuery<pieChartData[]>({
-    queryKey: ["post-risk-count-by-date-range"],
-    queryFn: () => fetchPostRiskCountByDateRange(company, from, to, reportType),
+    queryKey: ["reports-number-by-month", company, from, to], // Incluye el ID en la clave de la query
+    queryFn: () => fetchReportsNumberByMonth(company, from, to), // Pasa el ID a la función fetchUser
     staleTime: 1000 * 60 * 5, // 5 minutos
+    enabled: !!company && !!from && !!to,
   });
 };

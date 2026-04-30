@@ -17,15 +17,13 @@ import { useGetTotalRiskCountByDateRange } from "@/hooks/sms/useGetTotalRiskByDa
 import { useCompanyStore } from "@/stores/CompanyStore";
 import { format, startOfMonth } from "date-fns";
 import { Loader2 } from "lucide-react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
 
 const GeneralReportStats = () => {
   const { selectedCompany } = useCompanyStore();
   const [selectedGraphics, setSelectedGraphics] = useState<string[]>(["Todos"]);
   const urlSearchParams = useSearchParams();
-  const pathname = usePathname();
-  const router = useRouter();
 
   const graphicsOptions = [
     { id: "Todos", label: "Todos los gráficos" },
@@ -123,31 +121,6 @@ const GeneralReportStats = () => {
     selectedCompany?.slug
   );
 
-  // Manejar cambio de fechas desde DateFilter
-  const handleDateChange = (
-    dateRange: { from: Date; to: Date } | undefined
-  ) => {
-    if (!dateRange?.from || !dateRange?.to) return;
-
-    const newParams = new URLSearchParams();
-    newParams.set("from", format(dateRange.from, "yyyy-MM-dd"));
-    newParams.set("to", format(dateRange.to, "yyyy-MM-dd"));
-
-    router.push(`${pathname}?${newParams.toString()}`, { scroll: false });
-  };
-
-  // Manejar reset
-  const handleReset = () => {
-    const defaultFrom = format(startOfMonth(new Date()), "yyyy-MM-dd");
-    const defaultTo = format(new Date(), "yyyy-MM-dd");
-
-    const newParams = new URLSearchParams();
-    newParams.set("from", defaultFrom);
-    newParams.set("to", defaultTo);
-
-    router.push(`${pathname}?${newParams.toString()}`, { scroll: false });
-  };
-
   const shouldShow = (id: string) =>
     selectedGraphics.includes("Todos") || selectedGraphics.includes(id);
 
@@ -159,15 +132,7 @@ const GeneralReportStats = () => {
             <Label className="text-lg font-semibold mb-2">
               Seleccionar Rango de Fechas:
             </Label>
-            {/* ✅ CORREGIDO: Pasar todas las props necesarias al DataFilter */}
-            <DataFilter
-              onDateChange={handleDateChange}
-              onReset={handleReset}
-              initialDate={{
-                from: currentParams.from,
-                to: currentParams.to,
-              }}
-            />
+            <DataFilter />
           </div>
         </div>
 

@@ -1,18 +1,18 @@
 "use client";
 
 import { ContentLayout } from "@/components/layout/ContentLayout";
-import { Plane, Shield } from "lucide-react";
+import { Shield, ShieldAlert } from "lucide-react";
 import { User } from "@/types";
-import WarehouseDashboardContent from "@/components/dashboard/content/WarehouseDashboardContent";
+import SMSDashboardContent from "@/components/dashboard/content/SMSDashboardContent";
 
-interface WarehouseDashboardProps {
+interface SMSDashboardProps {
   companySlug: string;
   location_id: string;
   user: User;
   roleNames: string[];
 }
 
-export default function WarehouseDashboard(props: WarehouseDashboardProps) {
+export default function SMSDashboard(props: SMSDashboardProps) {
   const { companySlug } = props;
 
   return (
@@ -25,19 +25,19 @@ export default function WarehouseDashboard(props: WarehouseDashboardProps) {
           <div className="flex items-center space-x-4">
 
             <div className="relative">
-              <div className="absolute inset-0 rounded-2xl bg-blue-500/10 blur-md" />
-              <div className="relative flex h-12 w-12 items-center justify-center rounded-2xl border border-blue-500/30 bg-blue-500/10 text-blue-600 shadow-sm">
-                <Plane className="h-6 w-6" />
+              <div className="absolute inset-0 rounded-2xl bg-amber-500/10 blur-md" />
+              <div className="relative flex h-12 w-12 items-center justify-center rounded-2xl border border-amber-500/30 bg-amber-500/10 text-amber-600 shadow-sm">
+                <ShieldAlert className="h-6 w-6" />
               </div>
             </div>
 
             <div className="leading-tight">
               <h1 className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-100">
-                Sistema de Gestión Aeronáutica Civil
+                Dashboard de SMS
               </h1>
 
               <p className="text-sm text-slate-500 dark:text-slate-400">
-                Plataforma oficial de administración
+                Safety Management System (Gestión de seguridad operacional)
               </p>
             </div>
 
@@ -54,7 +54,7 @@ export default function WarehouseDashboard(props: WarehouseDashboardProps) {
         </div>
       </header>
 
-      <WarehouseDashboardContent {...props} />
+      <SMSDashboardContent {...props} />
     </ContentLayout>
   );
 }

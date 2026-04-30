@@ -324,7 +324,7 @@ export type DangerIdentificationRequest = {
   danger: string;
   current_defenses: string;
   risk_management_start_date: string;
-  danger_area: 'ADMINISTRACION' | 'OPERACIONES' | 'MANTENIMIENTO' | 'IT' | 'CONTROL_CALIDAD' | 'AVSEC';
+  danger_area: string;
   description: string;
   possible_consequences: string;
   consequence_to_evaluate: string;
@@ -348,11 +348,13 @@ export type DangerIdentificationResource = {
   consequence_to_evaluate: string | null;
   root_cause_analysis: string | null;
   information_source_id: number | null;
+  voluntary_report_id: number | null;
+  obligatory_report_id: number | null;
   registered_by: string;
   updated_by: string | null;
-  information_source: {
-    [key: string]: unknown;
-  };
+  information_source?: InformationSourceResource;
+  voluntary_report?: VoluntaryReport;
+  obligatory_report?: ObligatoryReport;
   analysis?: AnalysisResource;
   mitigation_plan?: MitigationPlanResource;
 };
@@ -428,9 +430,13 @@ export type FlightResource = {
 export type FollowUpControl = Array<string>;
 
 /**
- * InformationSource
+ * InformationSourceResource
  */
-export type InformationSource = Array<string>;
+export type InformationSourceResource = {
+  id: number;
+  name: string;
+  type: string;
+};
 
 /**
  * JobTitle
@@ -559,6 +565,39 @@ export type Module = {
  * NonRoutine
  */
 export type NonRoutine = Array<string>;
+
+/**
+ * ObligatoryReport
+ */
+export type ObligatoryReport = {
+  id: number;
+  report_number: string | null;
+  incident_location: string;
+  description: string;
+  report_date: string;
+  incident_date: string;
+  status: string;
+  image: string | null;
+  document: string | null;
+  close_date: string | null;
+  aircraft_id: number | null;
+  pilot_id: number | null;
+  copilot_id: number | null;
+  registered_by: string;
+  updated_by: string | null;
+  reference_number: string | null;
+  station: string | null;
+  danger_type: string | null;
+  reporter_name: string | null;
+  reporter_email: string | null;
+  reporter_phone: string | null;
+  reporter_area: string | null;
+  reporter_position: string | null;
+  sms_coordinator: string | null;
+  incidents: Array<unknown> | null;
+  other_incidents: string | null;
+  incident_location_other: string | null;
+};
 
 /**
  * ObligatoryReportRequest
@@ -1148,7 +1187,7 @@ export type UpdateDangerIdentification = {
   danger?: string | null;
   current_defenses?: string | null;
   risk_management_start_date?: string | null;
-  danger_area?: 'ADMINISTRACION' | 'OPERACIONES' | 'MANTENIMIENTO' | 'IT' | 'CONTROL_CALIDAD';
+  danger_area?: string | null;
   description?: string | null;
   possible_consequences?: string | null;
   consequence_to_evaluate?: string | null;
@@ -3080,7 +3119,7 @@ export type AnalysisUpdateData = {
   body?: UpdateAnalysesRequest;
   path: {
     company: string;
-    id: string;
+    id: number;
   };
   query?: never;
   url: '/{company}/sms/analysis/{id}';
@@ -3162,7 +3201,7 @@ export type AnalysisCloseReportData = {
   body?: never;
   path: {
     company: string;
-    mitigation_id: string;
+    mitigation_id: number;
   };
   query?: never;
   url: '/{company}/sms/close-report/{mitigation_id}';
@@ -6338,7 +6377,7 @@ export type CourseShowData = {
   body?: never;
   path: {
     company: string;
-    id: string;
+    id: number;
   };
   query?: never;
   url: '/general/{company}/course-by/{id}';
@@ -6382,7 +6421,7 @@ export type CourseStoreData = {
   body: StoreCourseRequest;
   path: {
     company: string;
-    location_id: string;
+    location_id: number;
   };
   query?: never;
   url: '/general/{company}/{location_id}/create-course';
@@ -6391,11 +6430,7 @@ export type CourseStoreData = {
 export type CourseStoreErrors = {
   400:
     | {
-        message: 'La fecha de fin no puede ser menor a la fecha actual.';
-        status: 400;
-      }
-    | {
-        message: 'La fecha de inicio no puede ser mayor a la fecha de fin.';
+        message: 'La fecha de fin no puede ser menor a la fecha de inicio.';
         status: 400;
       }
     | {
@@ -6449,7 +6484,7 @@ export type CourseUpdateData = {
   body?: UpdateCourseRequest;
   path: {
     company: string;
-    id: string;
+    id: number;
   };
   query?: never;
   url: '/general/{company}/update-course/{id}';
@@ -6506,7 +6541,7 @@ export type CourseDeleteData = {
   body?: never;
   path: {
     company: string;
-    id: string;
+    id: number;
   };
   query?: never;
   url: '/general/{company}/delete-course/{id}';
@@ -6539,7 +6574,7 @@ export type CourseFinishCourseData = {
   body?: never;
   path: {
     company: string;
-    id: string;
+    id: number;
   };
   query?: never;
   url: '/general/{company}/finish-course/{id}';
@@ -6609,7 +6644,7 @@ export type CourseCoursesByRangeDateData = {
   body?: never;
   path: {
     company: string;
-    location_id: string;
+    location_id: number;
   };
   query?: {
     from?: string;
@@ -7248,10 +7283,10 @@ export type CreditGetVendorsCreditsstatisticsResponse =
 export type DangerIdentificationIndexData = {
   body?: never;
   path: {
-    company: string;
+    _company: string;
   };
   query?: never;
-  url: '/{company}/sms/danger-identifications';
+  url: '/{_company}/sms/danger-identifications';
 };
 
 export type DangerIdentificationIndexErrors = {
@@ -7278,11 +7313,11 @@ export type DangerIdentificationIndexResponse =
 export type DangerIdentificationDestroyData = {
   body?: never;
   path: {
-    company: string;
-    id: string;
+    _company: string;
+    id: number;
   };
   query?: never;
-  url: '/{company}/sms/danger-identifications/{id}';
+  url: '/{_company}/sms/danger-identifications/{id}';
 };
 
 export type DangerIdentificationDestroyErrors = {
@@ -7301,15 +7336,10 @@ export type DangerIdentificationDestroyError =
   DangerIdentificationDestroyErrors[keyof DangerIdentificationDestroyErrors];
 
 export type DangerIdentificationDestroyResponses = {
-  200:
-    | {
-        message: 'Identificacion no encontrado';
-        status: 200;
-      }
-    | {
-        message: 'Identificacion eliminada correctamente';
-        status: 200;
-      };
+  200: {
+    message: 'Identificacion eliminada correctamente';
+    status: 200;
+  };
 };
 
 export type DangerIdentificationDestroyResponse =
@@ -7318,11 +7348,11 @@ export type DangerIdentificationDestroyResponse =
 export type DangerIdentificationShowData = {
   body?: never;
   path: {
-    company: string;
-    id: string;
+    _company: string;
+    id: number;
   };
   query?: never;
-  url: '/{company}/sms/danger-identifications/{id}';
+  url: '/{_company}/sms/danger-identifications/{id}';
 };
 
 export type DangerIdentificationShowErrors = {
@@ -7343,7 +7373,7 @@ export type DangerIdentificationShowErrors = {
 export type DangerIdentificationShowError = DangerIdentificationShowErrors[keyof DangerIdentificationShowErrors];
 
 export type DangerIdentificationShowResponses = {
-  200: string;
+  200: Array<unknown>;
 };
 
 export type DangerIdentificationShowResponse =
@@ -7352,11 +7382,11 @@ export type DangerIdentificationShowResponse =
 export type DangerIdentificationUpdateData = {
   body?: UpdateDangerIdentification;
   path: {
-    company: string;
-    id: string;
+    _company: string;
+    id: number;
   };
   query?: never;
-  url: '/{company}/sms/danger-identifications/{id}';
+  url: '/{_company}/sms/danger-identifications/{id}';
 };
 
 export type DangerIdentificationUpdateErrors = {
@@ -7401,12 +7431,12 @@ export type DangerIdentificationUpdateResponse =
 export type DangerIdentificationStoreData = {
   body: DangerIdentificationRequest;
   path: {
-    company: string;
+    _company: string;
     reportType: string;
-    id: string;
+    id: number;
   };
   query?: never;
-  url: '/{company}/sms/danger-identifications/{reportType}/{id}';
+  url: '/{_company}/sms/danger-identifications/{reportType}/{id}';
 };
 
 export type DangerIdentificationStoreErrors = {
@@ -7429,7 +7459,7 @@ export type DangerIdentificationStoreErrors = {
     message: string;
   };
   404: {
-    message: 'Reporte voluntario no encontrado';
+    message: 'Reporte no encontrado';
   };
   /**
    * Validation error
@@ -7453,7 +7483,7 @@ export type DangerIdentificationStoreError = DangerIdentificationStoreErrors[key
 export type DangerIdentificationStoreResponses = {
   201: {
     message: 'Identificación de peligro creada y asignada al reporte';
-    danger_identification_id: string;
+    danger_identification_id: number;
   };
 };
 
@@ -7463,11 +7493,11 @@ export type DangerIdentificationStoreResponse =
 export type DangerIdentificationGetIdentificationWithAllByIdData = {
   body?: never;
   path: {
-    company: string;
-    id: string;
+    _company: string;
+    id: number;
   };
   query?: never;
-  url: '/{company}/sms/danger-identifications/with-all/{id}';
+  url: '/{_company}/sms/danger-identifications/with-all/{id}';
 };
 
 export type DangerIdentificationGetIdentificationWithAllByIdErrors = {
@@ -7489,7 +7519,7 @@ export type DangerIdentificationGetIdentificationWithAllByIdError =
   DangerIdentificationGetIdentificationWithAllByIdErrors[keyof DangerIdentificationGetIdentificationWithAllByIdErrors];
 
 export type DangerIdentificationGetIdentificationWithAllByIdResponses = {
-  200: string;
+  200: Array<unknown>;
 };
 
 export type DangerIdentificationGetIdentificationWithAllByIdResponse =
@@ -7498,14 +7528,14 @@ export type DangerIdentificationGetIdentificationWithAllByIdResponse =
 export type DangerIdentificationGetDangerIdentificationsCountedByInformationSourceNameData = {
   body?: never;
   path: {
-    company: string;
+    _company: string;
   };
   query?: {
     from?: string;
     to?: string;
     reportType?: string;
   };
-  url: '/{company}/sms/stats/danger-id-by-source-name';
+  url: '/{_company}/sms/stats/danger-id-by-source-name';
 };
 
 export type DangerIdentificationGetDangerIdentificationsCountedByInformationSourceNameErrors = {
@@ -7536,14 +7566,14 @@ export type DangerIdentificationGetDangerIdentificationsCountedByInformationSour
 export type DangerIdentificationGetDangerIdentificationsCountedByInformationSourceTypeData = {
   body?: never;
   path: {
-    company: string;
+    _company: string;
   };
   query?: {
     from?: string;
     to?: string;
     reportType?: string;
   };
-  url: '/{company}/sms/stats/danger-id-by-source-type';
+  url: '/{_company}/sms/stats/danger-id-by-source-type';
 };
 
 export type DangerIdentificationGetDangerIdentificationsCountedByInformationSourceTypeErrors = {
@@ -7574,14 +7604,14 @@ export type DangerIdentificationGetDangerIdentificationsCountedByInformationSour
 export type DangerIdentificationGetDangerIdentificationsCountedByTypeData = {
   body?: never;
   path: {
-    company: string;
+    _company: string;
   };
   query?: {
     from?: string;
     to?: string;
     reportType?: string;
   };
-  url: '/{company}/sms/stats/danger-id-counted-by-type';
+  url: '/{_company}/sms/stats/danger-id-counted-by-type';
 };
 
 export type DangerIdentificationGetDangerIdentificationsCountedByTypeErrors = {
@@ -7612,10 +7642,10 @@ export type DangerIdentificationGetDangerIdentificationsCountedByTypeResponse =
 export type DangerIdentificationGetTotalDangerIdentificationsCountedByInformationSourceNameData = {
   body?: never;
   path: {
-    company: string;
+    _company: string;
   };
   query?: never;
-  url: '/{company}/sms/stats/total-danger-id-by-source-name';
+  url: '/{_company}/sms/stats/total-danger-id-by-source-name';
 };
 
 export type DangerIdentificationGetTotalDangerIdentificationsCountedByInformationSourceNameErrors = {
@@ -7646,10 +7676,10 @@ export type DangerIdentificationGetTotalDangerIdentificationsCountedByInformatio
 export type DangerIdentificationGetTotalDangerIdentificationsCountedByInformationSourceTypeData = {
   body?: never;
   path: {
-    company: string;
+    _company: string;
   };
   query?: never;
-  url: '/{company}/sms/stats/total-danger-id-by-source-type';
+  url: '/{_company}/sms/stats/total-danger-id-by-source-type';
 };
 
 export type DangerIdentificationGetTotalDangerIdentificationsCountedByInformationSourceTypeErrors = {
@@ -7680,10 +7710,10 @@ export type DangerIdentificationGetTotalDangerIdentificationsCountedByInformatio
 export type DangerIdentificationGetTotalDangerIdentificationsCountedByTypeData = {
   body?: never;
   path: {
-    company: string;
+    _company: string;
   };
   query?: never;
-  url: '/{company}/sms/stats/total-danger-id-counted-by-type';
+  url: '/{_company}/sms/stats/total-danger-id-counted-by-type';
 };
 
 export type DangerIdentificationGetTotalDangerIdentificationsCountedByTypeErrors = {
@@ -9605,7 +9635,12 @@ export type InformationSourcesIndexErrors = {
 export type InformationSourcesIndexError = InformationSourcesIndexErrors[keyof InformationSourcesIndexErrors];
 
 export type InformationSourcesIndexResponses = {
-  200: Array<InformationSource>;
+  /**
+   * Array of `InformationSourceResource`
+   */
+  200: {
+    data: Array<InformationSourceResource>;
+  };
 };
 
 export type InformationSourcesIndexResponse = InformationSourcesIndexResponses[keyof InformationSourcesIndexResponses];
@@ -10775,7 +10810,7 @@ export type MitigationMeasureGetMitigationMeasureByPlanIdData = {
   body?: never;
   path: {
     company: string;
-    id: string;
+    id: number;
   };
   query?: never;
   url: '/{company}/sms/mitigation-plans/{id}/measures';
@@ -11038,7 +11073,7 @@ export type MitigationPlanDestroyData = {
   body?: never;
   path: {
     company: string;
-    id: string;
+    id: number;
   };
   query?: never;
   url: '/{company}/sms/mitigation-plans/{id}';

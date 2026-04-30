@@ -7641,9 +7641,6 @@ export const followUpControllGetFollowUpControlByMeasureIdOptions = (
 export const informationSourcesIndexQueryKey = (options: Options<InformationSourcesIndexData>) =>
   createQueryKey('informationSourcesIndex', options);
 
-/**
- * Display a listing of the resource
- */
 export const informationSourcesIndexOptions = (options: Options<InformationSourcesIndexData>) =>
   queryOptions<
     InformationSourcesIndexResponse,

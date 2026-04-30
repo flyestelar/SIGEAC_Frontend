@@ -3813,7 +3813,7 @@ export const dangerIdentificationIndex = <ThrowOnError extends boolean = false>(
   (options.client ?? client).get<DangerIdentificationIndexResponses, DangerIdentificationIndexErrors, ThrowOnError>({
     responseType: 'json',
     security: [{ scheme: 'bearer', type: 'http' }],
-    url: '/{company}/sms/danger-identifications',
+    url: '/{_company}/sms/danger-identifications',
     ...options,
   });
 
@@ -3827,7 +3827,7 @@ export const dangerIdentificationDestroy = <ThrowOnError extends boolean = false
   >({
     responseType: 'json',
     security: [{ scheme: 'bearer', type: 'http' }],
-    url: '/{company}/sms/danger-identifications/{id}',
+    url: '/{_company}/sms/danger-identifications/{id}',
     ...options,
   });
 
@@ -3837,7 +3837,7 @@ export const dangerIdentificationShow = <ThrowOnError extends boolean = false>(
   (options.client ?? client).get<DangerIdentificationShowResponses, DangerIdentificationShowErrors, ThrowOnError>({
     responseType: 'json',
     security: [{ scheme: 'bearer', type: 'http' }],
-    url: '/{company}/sms/danger-identifications/{id}',
+    url: '/{_company}/sms/danger-identifications/{id}',
     ...options,
   });
 
@@ -3848,7 +3848,7 @@ export const dangerIdentificationUpdate = <ThrowOnError extends boolean = false>
     {
       responseType: 'json',
       security: [{ scheme: 'bearer', type: 'http' }],
-      url: '/{company}/sms/danger-identifications/{id}',
+      url: '/{_company}/sms/danger-identifications/{id}',
       ...options,
       headers: {
         'Content-Type': 'application/json',
@@ -3863,7 +3863,7 @@ export const dangerIdentificationStore = <ThrowOnError extends boolean = false>(
   (options.client ?? client).post<DangerIdentificationStoreResponses, DangerIdentificationStoreErrors, ThrowOnError>({
     responseType: 'json',
     security: [{ scheme: 'bearer', type: 'http' }],
-    url: '/{company}/sms/danger-identifications/{reportType}/{id}',
+    url: '/{_company}/sms/danger-identifications/{reportType}/{id}',
     ...options,
     headers: {
       'Content-Type': 'application/json',
@@ -3881,7 +3881,7 @@ export const dangerIdentificationGetIdentificationWithAllById = <ThrowOnError ex
   >({
     responseType: 'json',
     security: [{ scheme: 'bearer', type: 'http' }],
-    url: '/{company}/sms/danger-identifications/with-all/{id}',
+    url: '/{_company}/sms/danger-identifications/with-all/{id}',
     ...options,
   });
 
@@ -3897,7 +3897,7 @@ export const dangerIdentificationGetDangerIdentificationsCountedByInformationSou
   >({
     responseType: 'json',
     security: [{ scheme: 'bearer', type: 'http' }],
-    url: '/{company}/sms/stats/danger-id-by-source-name',
+    url: '/{_company}/sms/stats/danger-id-by-source-name',
     ...options,
   });
 
@@ -3913,7 +3913,7 @@ export const dangerIdentificationGetDangerIdentificationsCountedByInformationSou
   >({
     responseType: 'json',
     security: [{ scheme: 'bearer', type: 'http' }],
-    url: '/{company}/sms/stats/danger-id-by-source-type',
+    url: '/{_company}/sms/stats/danger-id-by-source-type',
     ...options,
   });
 
@@ -3927,7 +3927,7 @@ export const dangerIdentificationGetDangerIdentificationsCountedByType = <ThrowO
   >({
     responseType: 'json',
     security: [{ scheme: 'bearer', type: 'http' }],
-    url: '/{company}/sms/stats/danger-id-counted-by-type',
+    url: '/{_company}/sms/stats/danger-id-counted-by-type',
     ...options,
   });
 
@@ -3943,7 +3943,7 @@ export const dangerIdentificationGetTotalDangerIdentificationsCountedByInformati
   >({
     responseType: 'json',
     security: [{ scheme: 'bearer', type: 'http' }],
-    url: '/{company}/sms/stats/total-danger-id-by-source-name',
+    url: '/{_company}/sms/stats/total-danger-id-by-source-name',
     ...options,
   });
 
@@ -3959,7 +3959,7 @@ export const dangerIdentificationGetTotalDangerIdentificationsCountedByInformati
   >({
     responseType: 'json',
     security: [{ scheme: 'bearer', type: 'http' }],
-    url: '/{company}/sms/stats/total-danger-id-by-source-type',
+    url: '/{_company}/sms/stats/total-danger-id-by-source-type',
     ...options,
   });
 
@@ -3973,7 +3973,7 @@ export const dangerIdentificationGetTotalDangerIdentificationsCountedByType = <T
   >({
     responseType: 'json',
     security: [{ scheme: 'bearer', type: 'http' }],
-    url: '/{company}/sms/stats/total-danger-id-counted-by-type',
+    url: '/{_company}/sms/stats/total-danger-id-counted-by-type',
     ...options,
   });
 
@@ -4721,9 +4721,6 @@ export const followUpControllGetFollowUpControlByMeasureId = <ThrowOnError exten
     ...options,
   });
 
-/**
- * Display a listing of the resource
- */
 export const informationSourcesIndex = <ThrowOnError extends boolean = false>(
   options: Options<InformationSourcesIndexData, ThrowOnError>,
 ) =>

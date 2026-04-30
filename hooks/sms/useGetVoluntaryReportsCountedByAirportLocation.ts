@@ -8,7 +8,7 @@ const fetcVoluntaryReportsCountedByAirportLocation = async (
   to: string
 ): Promise<pieChartData[]> => {
   const { data } = await axiosInstance.get(
-    `/${company}/sms/voluntary-reports-counted-by-airport-location?from=${from}&to=${to}`
+    `/${company}/sms/stats/voluntary-by-airport-location?from=${from}&to=${to}`
   );
   return data;
 };

@@ -134,7 +134,7 @@ const VoluntaryReportDropdownActions = ({
             <DropdownMenuItem
               onClick={() => {
                 router.push(
-                  `/transmandu/sms/reportes/reportes_voluntarios/${voluntaryReport.id}`
+                  `/${selectedCompany?.slug}/sms/reportes/reportes_voluntarios/${voluntaryReport.id}`
                 );
               }}
             >

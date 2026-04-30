@@ -9,7 +9,7 @@ const fetcReportsCountedByArea = async (
   reportType: string
 ): Promise<pieChartData[]> => {
   const { data } = await axiosInstance.get(
-    `/${company}/sms/reports/counted-by-area?reportType=${reportType}&from=${from}&to=${to}`
+    `/${company}/sms/stats/reports-counted-by-area?reportType=${reportType}&from=${from}&to=${to}`
   );
   return data;
 };
