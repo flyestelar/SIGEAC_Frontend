@@ -1,6 +1,8 @@
 'use client';
 
 import CreateAirworthinessDirectiveApplicabilityDialog from '@/components/dialogs/planificacion/directivas/CreateAirworthinessDirectiveApplicabilityDialog';
+import CreateAirworthinessDirectiveComplianceControlDialog from '@/components/dialogs/planificacion/directivas/CreateAirworthinessDirectiveComplianceControlDialog';
+import CreateAirworthinessDirectiveComplianceExecutionDialog from '@/components/dialogs/planificacion/directivas/CreateAirworthinessDirectiveComplianceExecutionDialog';
 import { ContentLayout } from '@/components/layout/ContentLayout';
 import LoadingPage from '@/components/misc/LoadingPage';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -17,6 +19,8 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   useGetAirworthinessDirectiveApplicabilities,
@@ -27,11 +31,14 @@ import {
 } from '@/hooks/planificacion/directivas/queries';
 import { formatDate } from '@/lib/helpers/format';
 import { useCompanyStore } from '@/stores/CompanyStore';
-import { AlertCircle, ArrowLeft, FileBadge2, FileText, Pencil, ShieldCheck, Trash2 } from 'lucide-react';
+import { AlertCircle, ArrowLeft, CheckCheck, FileBadge2, FileText, Pencil, Plus, RotateCcw, Search, ShieldCheck, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { ReactNode, useMemo, useState } from 'react';
-import type { AirworthinessDirectiveApplicabilityResource } from '@api/types';
+import type {
+  AirworthinessDirectiveApplicabilityResource,
+  AirworthinessDirectiveComplianceControlResource,
+} from '@api/types';
 
 const StatCard = ({ label, value }: { label: string; value: React.ReactNode }) => (
   <Card className="rounded-2xl border bg-background">
@@ -116,10 +123,138 @@ export default function AirworthinessDirectiveDetailPage() {
   const applicabilities = useMemo(() => applicabilitiesResponse?.data ?? [], [applicabilitiesResponse?.data]);
   const controls = useMemo(() => controlsResponse?.data ?? [], [controlsResponse?.data]);
   const records = useMemo(() => recordsResponse?.data ?? [], [recordsResponse?.data]);
+  const controlRows = useMemo(() => {
+    const controlsByAircraftId = new Map(controls.map((item) => [Number(item.aircraft_id), item]));
+
+    return applicabilities.filter((item) => item.is_applicable).map((item) => ({
+      applicability: item,
+      control: controlsByAircraftId.get(item.aircraft_id),
+    }));
+  }, [applicabilities, controls]);
+  const [controlSearch, setControlSearch] = useState('');
+  const [controlAircraftFilter, setControlAircraftFilter] = useState('all');
+  const [controlSort, setControlSort] = useState<'due-soonest' | 'due-latest' | 'aircraft'>('due-soonest');
+  const controlAircraftOptions = useMemo(() => {
+    const uniqueAircraft = new Map<string, { value: string; label: string }>();
+
+    controlRows.forEach(({ applicability, control }) => {
+      const value = String(applicability.aircraft_id);
+      if (!uniqueAircraft.has(value)) {
+        uniqueAircraft.set(value, {
+          value,
+          label: control?.aircraft?.acronym ?? applicability.aircraft?.acronym ?? `#${applicability.aircraft_id}`,
+        });
+      }
+    });
+
+    return Array.from(uniqueAircraft.values()).sort((left, right) => left.label.localeCompare(right.label));
+  }, [controlRows]);
+  const filteredControlRows = useMemo(() => {
+    const normalizedSearch = controlSearch.trim().toLowerCase();
+
+    return [...controlRows]
+      .filter(({ applicability, control }) => {
+        if (controlAircraftFilter !== 'all' && String(applicability.aircraft_id) !== controlAircraftFilter) {
+          return false;
+        }
+
+        if (!normalizedSearch) {
+          return true;
+        }
+
+        return [
+          control?.aircraft?.acronym,
+          control?.aircraft?.model,
+          applicability.aircraft?.acronym,
+          applicability.aircraft?.model,
+          control?.compliance_status,
+          control?.urgency,
+        ].some((field) => field?.toLowerCase().includes(normalizedSearch));
+      })
+      .sort((left, right) => {
+        if (controlSort === 'aircraft') {
+          const leftAircraft = left.control?.aircraft?.acronym ?? left.applicability.aircraft?.acronym ?? `#${left.applicability.aircraft_id}`;
+          const rightAircraft = right.control?.aircraft?.acronym ?? right.applicability.aircraft?.acronym ?? `#${right.applicability.aircraft_id}`;
+          return leftAircraft.localeCompare(rightAircraft);
+        }
+
+        const leftTime = left.control?.calendar_due_date ? new Date(left.control.calendar_due_date).getTime() : Number.MAX_SAFE_INTEGER;
+        const rightTime = right.control?.calendar_due_date ? new Date(right.control.calendar_due_date).getTime() : Number.MAX_SAFE_INTEGER;
+
+        return controlSort === 'due-latest' ? rightTime - leftTime : leftTime - rightTime;
+      });
+  }, [controlAircraftFilter, controlRows, controlSearch, controlSort]);
+  const [executionSearch, setExecutionSearch] = useState('');
+  const [executionAircraftFilter, setExecutionAircraftFilter] = useState('all');
+  const [executionSort, setExecutionSort] = useState<'newest' | 'oldest' | 'aircraft'>('newest');
+  const executionAircraftOptions = useMemo(() => {
+    const uniqueAircraft = new Map<string, { value: string; label: string }>();
+
+    records.forEach((record) => {
+      const value = String(record.aircraft_id);
+      if (!uniqueAircraft.has(value)) {
+        uniqueAircraft.set(value, {
+          value,
+          label: record.aircraft?.acronym ?? `#${record.aircraft_id}`,
+        });
+      }
+    });
+
+    return Array.from(uniqueAircraft.values()).sort((left, right) => left.label.localeCompare(right.label));
+  }, [records]);
+  const filteredExecutionRecords = useMemo(() => {
+    const normalizedSearch = executionSearch.trim().toLowerCase();
+
+    return [...records]
+      .filter((record) => {
+        if (executionAircraftFilter !== 'all' && String(record.aircraft_id) !== executionAircraftFilter) {
+          return false;
+        }
+
+        if (!normalizedSearch) {
+          return true;
+        }
+
+        return [
+          record.work_order_number,
+          record.inspector_license_signature,
+          record.remarks,
+          record.aircraft?.acronym,
+        ].some((field) => field?.toLowerCase().includes(normalizedSearch));
+      })
+      .sort((left, right) => {
+        if (executionSort === 'aircraft') {
+          return (left.aircraft?.acronym ?? `#${left.aircraft_id}`).localeCompare(
+            right.aircraft?.acronym ?? `#${right.aircraft_id}`,
+          );
+        }
+
+        const leftTime = left.execution_date ? new Date(left.execution_date).getTime() : 0;
+        const rightTime = right.execution_date ? new Date(right.execution_date).getTime() : 0;
+
+        return executionSort === 'oldest' ? leftTime - rightTime : rightTime - leftTime;
+      });
+  }, [executionAircraftFilter, executionSearch, executionSort, records]);
+  const resetControlFilters = () => {
+    setControlSearch('');
+    setControlAircraftFilter('all');
+    setControlSort('due-soonest');
+  };
+  const resetExecutionFilters = () => {
+    setExecutionSearch('');
+    setExecutionAircraftFilter('all');
+    setExecutionSort('newest');
+  };
   const summary = directive?.summary;
   const [isCreateApplicabilityOpen, setIsCreateApplicabilityOpen] = useState(false);
   const [applicabilityToEdit, setApplicabilityToEdit] = useState<AirworthinessDirectiveApplicabilityResource | undefined>();
   const [applicabilityToDelete, setApplicabilityToDelete] = useState<AirworthinessDirectiveApplicabilityResource | undefined>();
+  const [controlApplicability, setControlApplicability] = useState<AirworthinessDirectiveApplicabilityResource | undefined>();
+  const [controlToEdit, setControlToEdit] = useState<AirworthinessDirectiveComplianceControlResource | undefined>();
+  const [isControlDialogOpen, setIsControlDialogOpen] = useState(false);
+  const [executionApplicability, setExecutionApplicability] = useState<AirworthinessDirectiveApplicabilityResource | undefined>();
+  const [executionControl, setExecutionControl] = useState<AirworthinessDirectiveComplianceControlResource | undefined>();
+  const [isExecutionDialogOpen, setIsExecutionDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const deleteApplicability = useDeleteAirworthinessDirectiveApplicability(Number.isFinite(directiveId) ? directiveId : undefined);
   const existingAircraftIds = useMemo(() => applicabilities.map((item) => item.aircraft_id), [applicabilities]);
@@ -144,6 +279,40 @@ export default function AirworthinessDirectiveDetailPage() {
   const openDeleteApplicability = (applicability: AirworthinessDirectiveApplicabilityResource) => {
     setApplicabilityToDelete(applicability);
     setIsDeleteDialogOpen(true);
+  };
+
+  const openControlDialog = (
+    applicability: AirworthinessDirectiveApplicabilityResource,
+    control?: AirworthinessDirectiveComplianceControlResource,
+  ) => {
+    setControlApplicability(applicability);
+    setControlToEdit(control);
+    setIsControlDialogOpen(true);
+  };
+
+  const closeControlDialog = (open: boolean) => {
+    setIsControlDialogOpen(open);
+    if (!open) {
+      setControlApplicability(undefined);
+      setControlToEdit(undefined);
+    }
+  };
+
+  const openExecutionDialog = (
+    applicability: AirworthinessDirectiveApplicabilityResource,
+    control: AirworthinessDirectiveComplianceControlResource,
+  ) => {
+    setExecutionApplicability(applicability);
+    setExecutionControl(control);
+    setIsExecutionDialogOpen(true);
+  };
+
+  const closeExecutionDialog = (open: boolean) => {
+    setIsExecutionDialogOpen(open);
+    if (!open) {
+      setExecutionApplicability(undefined);
+      setExecutionControl(undefined);
+    }
   };
 
   const closeDeleteApplicabilityDialog = (open: boolean) => {
@@ -371,25 +540,150 @@ export default function AirworthinessDirectiveDetailPage() {
           <TabsContent value="control">
             {isControlsLoading ? (
               <LoadingPage />
+            ) : controlRows.length === 0 ? (
+              <EmptyTab
+                title="Sin aeronaves aplicables"
+                description="Primero registra aplicabilidades con estado aplica para poder configurar controles de cumplimiento."
+              />
             ) : (
-              <TabTable
-                headers={['Aeronave', 'Vence', 'FH', 'FC', 'Estado', 'Urgencia']}
-                rows={controls.map((item) => [
-                  <div key={`${item.id}-aircraft`}>
-                    <p className="font-medium">{item.aircraft?.acronym ?? `#${item.aircraft_id}`}</p>
+              <>
+                <div className="mb-4 space-y-4">
+                  <div className="grid gap-3 rounded-2xl border bg-background p-4 md:grid-cols-[minmax(0,1.5fr)_220px_220px]">
+                    <div className="relative">
+                      <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                      <Input
+                        value={controlSearch}
+                        onChange={(event) => setControlSearch(event.target.value)}
+                        placeholder="Buscar por aeronave, estado o urgencia"
+                        className="pl-10"
+                      />
+                    </div>
+
+                    <Select value={controlAircraftFilter} onValueChange={setControlAircraftFilter}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Filtrar por aeronave" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Todas las aeronaves</SelectItem>
+                        {controlAircraftOptions.map((option) => (
+                          <SelectItem key={option.value} value={option.value}>
+                            {option.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+
+                    <Select
+                      value={controlSort}
+                      onValueChange={(value) => setControlSort(value as 'due-soonest' | 'due-latest' | 'aircraft')}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Ordenar por" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="due-soonest">Vence primero</SelectItem>
+                        <SelectItem value="due-latest">Vence después</SelectItem>
+                        <SelectItem value="aircraft">Aeronave</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {(controlSearch || controlAircraftFilter !== 'all' || controlSort !== 'due-soonest') && (
+                    <div className="flex justify-end">
+                      <Button type="button" variant="outline" size="sm" className="gap-2" onClick={resetControlFilters}>
+                        <RotateCcw className="h-4 w-4" />
+                        Limpiar filtros
+                      </Button>
+                    </div>
+                  )}
+                </div>
+
+                <TabTable
+                  headers={['Aeronave', 'Vence', 'FH', 'FC', 'Rec. días', 'Rec. horas', 'Rec. ciclos', 'Estado', 'Urgencia', 'Acciones']}
+                rows={filteredControlRows.map(({ applicability, control }) => [
+                  <div key={`${applicability.id}-aircraft`}>
+                    <p className="font-medium">{control?.aircraft?.acronym ?? applicability.aircraft?.acronym ?? `#${applicability.aircraft_id}`}</p>
                     <p className="text-xs text-muted-foreground">
-                      {item.aircraft?.aircraft_type?.full_name ?? item.aircraft?.model ?? 'Sin modelo'}
+                      {control?.aircraft?.aircraft_type?.full_name ??
+                        control?.aircraft?.model ??
+                        applicability.aircraft?.aircraft_type?.full_name ??
+                        applicability.aircraft?.model ??
+                        'Sin modelo'}
                     </p>
                   </div>,
-                  formatDate(item.calendar_due_date),
-                  item.flight_hours_due ?? '—',
-                  item.cycles_due ?? '—',
-                  item.compliance_status,
-                  item.urgency ?? '—',
+                  formatDate(control?.calendar_due_date ?? null),
+                  control?.flight_hours_due ?? '—',
+                  control?.cycles_due ?? '—',
+                  control?.recurrence_interval_days ?? '—',
+                  control?.recurrence_interval_hours ?? '—',
+                  control?.recurrence_interval_cycles ?? '—',
+                  control ? (
+                    <Badge key={`${applicability.id}-status`} variant="outline">
+                      {control.compliance_status}
+                    </Badge>
+                  ) : (
+                    <Badge
+                      key={`${applicability.id}-pending-status`}
+                      variant="outline"
+                      className="border-amber-500/30 bg-amber-500/10 text-amber-700"
+                    >
+                      Pendiente de configurar
+                    </Badge>
+                  ),
+                  control?.urgency ? (
+                    <Badge key={`${applicability.id}-urgency`} variant="outline">
+                      {control.urgency}
+                    </Badge>
+                  ) : (
+                    <Badge
+                      key={`${applicability.id}-pending-urgency`}
+                      variant="outline"
+                      className="border-slate-500/30 bg-slate-500/10 text-slate-700"
+                    >
+                      Pendiente de configurar
+                    </Badge>
+                  ),
+                  <div key={`${applicability.id}-actions`} className="flex items-center justify-end gap-1">
+                    <Button variant="ghost" size="icon" onClick={() => openControlDialog(applicability, control)}>
+                      {control ? <Pencil className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
+                      <span className="sr-only">{control ? 'Editar control' : 'Crear control'}</span>
+                    </Button>
+                    {control && (
+                      <Button variant="ghost" size="icon" onClick={() => openExecutionDialog(applicability, control)}>
+                        <CheckCheck className="h-4 w-4" />
+                        <span className="sr-only">Registrar cumplimiento</span>
+                      </Button>
+                    )}
+                  </div>,
                 ])}
-                emptyTitle="Sin controles"
-                emptyDescription="No hay controles de cumplimiento registrados para esta directiva."
-              />
+                emptyTitle={controlRows.length === 0 ? 'Sin controles' : 'Sin coincidencias'}
+                emptyDescription={
+                  controlRows.length === 0
+                    ? 'No hay controles de cumplimiento registrados para esta directiva.'
+                    : 'No hay controles que coincidan con los filtros actuales.'
+                }
+                />
+
+                {controlApplicability && (
+                  <CreateAirworthinessDirectiveComplianceControlDialog
+                    directiveId={directiveId}
+                    applicability={controlApplicability}
+                    control={controlToEdit}
+                    open={isControlDialogOpen}
+                    onOpenChange={closeControlDialog}
+                  />
+                )}
+
+                {executionApplicability && executionControl && (
+                  <CreateAirworthinessDirectiveComplianceExecutionDialog
+                    directiveId={directiveId}
+                    applicability={executionApplicability}
+                    control={executionControl}
+                    open={isExecutionDialogOpen}
+                    onOpenChange={closeExecutionDialog}
+                  />
+                )}
+              </>
             )}
           </TabsContent>
 
@@ -397,22 +691,81 @@ export default function AirworthinessDirectiveDetailPage() {
             {isRecordsLoading ? (
               <LoadingPage />
             ) : (
-              <TabTable
-                headers={['Aeronave', 'OT', 'Fecha', 'FH', 'FC', 'Inspector']}
-                rows={records.map((item) => [
-                  <div key={`${item.id}-aircraft`}>
-                    <p className="font-medium">{item.aircraft?.acronym ?? `#${item.aircraft_id}`}</p>
-                    <p className="line-clamp-2 text-xs text-muted-foreground">{item.remarks || 'Sin observación'}</p>
-                  </div>,
-                  item.work_order_number,
-                  formatDate(item.execution_date),
-                  item.flight_hours_at_execution ?? '—',
-                  item.cycles_at_execution ?? '—',
-                  item.inspector_license_signature,
-                ])}
-                emptyTitle="Sin ejecuciones"
-                emptyDescription="No hay historial de cumplimiento para esta directiva todavía."
-              />
+              <div className="space-y-4">
+                {records.length > 0 && (
+                  <div className="space-y-4">
+                    <div className="grid gap-3 rounded-2xl border bg-background p-4 md:grid-cols-[minmax(0,1.5fr)_220px_220px]">
+                      <div className="relative">
+                        <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                        <Input
+                          value={executionSearch}
+                          onChange={(event) => setExecutionSearch(event.target.value)}
+                          placeholder="Buscar por OT, inspector, aeronave u observación"
+                          className="pl-10"
+                        />
+                      </div>
+
+                      <Select value={executionAircraftFilter} onValueChange={setExecutionAircraftFilter}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Filtrar por aeronave" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">Todas las aeronaves</SelectItem>
+                          {executionAircraftOptions.map((option) => (
+                            <SelectItem key={option.value} value={option.value}>
+                              {option.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+
+                      <Select
+                        value={executionSort}
+                        onValueChange={(value) => setExecutionSort(value as 'newest' | 'oldest' | 'aircraft')}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Ordenar por" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="newest">Fecha más reciente</SelectItem>
+                          <SelectItem value="oldest">Fecha más antigua</SelectItem>
+                          <SelectItem value="aircraft">Aeronave</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {(executionSearch || executionAircraftFilter !== 'all' || executionSort !== 'newest') && (
+                      <div className="flex justify-end">
+                        <Button type="button" variant="outline" size="sm" className="gap-2" onClick={resetExecutionFilters}>
+                          <RotateCcw className="h-4 w-4" />
+                          Limpiar filtros
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                <TabTable
+                  headers={['Aeronave', 'OT', 'Fecha', 'FH', 'FC', 'Inspector']}
+                  rows={filteredExecutionRecords.map((item) => [
+                    <div key={`${item.id}-aircraft`}>
+                      <p className="font-medium">{item.aircraft?.acronym ?? `#${item.aircraft_id}`}</p>
+                      <p className="line-clamp-2 text-xs text-muted-foreground">{item.remarks || 'Sin observación'}</p>
+                    </div>,
+                    item.work_order_number,
+                    formatDate(item.execution_date),
+                    item.flight_hours_at_execution ?? '—',
+                    item.cycles_at_execution ?? '—',
+                    item.inspector_license_signature,
+                  ])}
+                  emptyTitle={records.length === 0 ? 'Sin ejecuciones' : 'Sin coincidencias'}
+                  emptyDescription={
+                    records.length === 0
+                      ? 'No hay historial de cumplimiento para esta directiva todavía.'
+                      : 'No hay ejecuciones que coincidan con los filtros actuales.'
+                  }
+                />
+              </div>
             )}
           </TabsContent>
         </Tabs>

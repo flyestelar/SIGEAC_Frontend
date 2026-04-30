@@ -1,4 +1,8 @@
 import {
+  airworthinessDirectiveComplianceControlsDestroyMutation,
+  airworthinessDirectiveComplianceControlsStoreExecutionMutation,
+  airworthinessDirectiveComplianceControlsStoreMutation,
+  airworthinessDirectiveComplianceControlsUpdateMutation,
   airworthinessDirectiveApplicabilitiesIndexOptions,
   airworthinessDirectiveApplicabilitiesIndexQueryKey,
   airworthinessDirectiveApplicabilitiesDestroyMutation,
@@ -6,7 +10,9 @@ import {
   airworthinessDirectiveApplicabilitiesStoreMutation,
   airworthinessDirectiveApplicabilitiesShowQueryKey,
   airworthinessDirectivesComplianceControlsOptions,
+  airworthinessDirectivesComplianceControlsQueryKey,
   airworthinessDirectivesComplianceRecordsOptions,
+  airworthinessDirectivesComplianceRecordsQueryKey,
   airworthinessDirectivesIndexOptions,
   airworthinessDirectivesIndexQueryKey,
   airworthinessDirectivesShowOptions,
@@ -176,6 +182,127 @@ export const useDeleteAirworthinessDirectiveApplicability = (directiveId: number
     onError: (error) => {
       const message = error.response?.data?.message || 'No se pudo eliminar la aplicabilidad.';
       toast.error('Error al eliminar aplicabilidad', {
+        description: message,
+      });
+    },
+  });
+};
+
+export const useCreateAirworthinessDirectiveComplianceControl = (directiveId: number | undefined) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    ...airworthinessDirectiveComplianceControlsStoreMutation(),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: airworthinessDirectivesComplianceControlsQueryKey({
+          path: { id: directiveId ?? 0 },
+        }),
+      });
+      queryClient.invalidateQueries({
+        queryKey: airworthinessDirectivesShowOptions({
+          path: { id: directiveId ?? 0 },
+        }).queryKey,
+      });
+      toast.success('Control creado', {
+        description: 'El control de cumplimiento fue registrado correctamente.',
+      });
+    },
+    onError: (error) => {
+      const message = error.response?.data?.message || 'No se pudo registrar el control de cumplimiento.';
+      toast.error('Error al crear control', {
+        description: message,
+      });
+    },
+  });
+};
+
+export const useUpdateAirworthinessDirectiveComplianceControl = (directiveId: number | undefined) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    ...airworthinessDirectiveComplianceControlsUpdateMutation(),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: airworthinessDirectivesComplianceControlsQueryKey({
+          path: { id: directiveId ?? 0 },
+        }),
+      });
+      queryClient.invalidateQueries({
+        queryKey: airworthinessDirectivesShowOptions({
+          path: { id: directiveId ?? 0 },
+        }).queryKey,
+      });
+      toast.success('Control actualizado', {
+        description: 'El control de cumplimiento fue actualizado correctamente.',
+      });
+    },
+    onError: (error) => {
+      const message = error.response?.data?.message || 'No se pudo actualizar el control de cumplimiento.';
+      toast.error('Error al actualizar control', {
+        description: message,
+      });
+    },
+  });
+};
+
+export const useDeleteAirworthinessDirectiveComplianceControl = (directiveId: number | undefined) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    ...airworthinessDirectiveComplianceControlsDestroyMutation(),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: airworthinessDirectivesComplianceControlsQueryKey({
+          path: { id: directiveId ?? 0 },
+        }),
+      });
+      queryClient.invalidateQueries({
+        queryKey: airworthinessDirectivesShowOptions({
+          path: { id: directiveId ?? 0 },
+        }).queryKey,
+      });
+      toast.success('Control eliminado', {
+        description: 'El control de cumplimiento fue eliminado correctamente.',
+      });
+    },
+    onError: (error) => {
+      const message = error.response?.data?.message || 'No se pudo eliminar el control de cumplimiento.';
+      toast.error('Error al eliminar control', {
+        description: message,
+      });
+    },
+  });
+};
+
+export const useCreateAirworthinessDirectiveComplianceExecution = (directiveId: number | undefined) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    ...airworthinessDirectiveComplianceControlsStoreExecutionMutation(),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: airworthinessDirectivesComplianceControlsQueryKey({
+          path: { id: directiveId ?? 0 },
+        }),
+      });
+      queryClient.invalidateQueries({
+        queryKey: airworthinessDirectivesComplianceRecordsQueryKey({
+          path: { id: directiveId ?? 0 },
+        }),
+      });
+      queryClient.invalidateQueries({
+        queryKey: airworthinessDirectivesShowOptions({
+          path: { id: directiveId ?? 0 },
+        }).queryKey,
+      });
+      toast.success('Cumplimiento registrado', {
+        description: 'La ejecución fue registrada correctamente.',
+      });
+    },
+    onError: (error) => {
+      const message = error.response?.data?.message || 'No se pudo registrar la ejecución de cumplimiento.';
+      toast.error('Error al registrar cumplimiento', {
         description: message,
       });
     },

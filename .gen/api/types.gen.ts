@@ -4325,6 +4325,21 @@ export type AirworthinessDirectivesComplianceControlsErrors = {
       [key: string]: Array<string>;
     };
   };
+  /**
+   * Validation error
+   */
+  422: {
+    /**
+     * Errors overview.
+     */
+    message: string;
+    /**
+     * A detailed description of each field that failed validation.
+     */
+    errors: {
+      [key: string]: Array<string>;
+    };
+  };
 };
 
 export type AirworthinessDirectivesComplianceControlsError =
@@ -4366,6 +4381,21 @@ export type AirworthinessDirectivesComplianceRecordsErrors = {
      * Error overview.
      */
     message: string;
+  };
+  /**
+   * Validation error
+   */
+  422: {
+    /**
+     * Errors overview.
+     */
+    message: string;
+    /**
+     * A detailed description of each field that failed validation.
+     */
+    errors: {
+      [key: string]: Array<string>;
+    };
   };
   /**
    * Validation error
