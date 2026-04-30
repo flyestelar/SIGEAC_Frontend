@@ -31,16 +31,57 @@ function TintedCard({
   )
 }
 
+/* =========================
+   TOOLTIP ESTILO UNIFICADO
+   ========================= */
+function CustomTooltip({ active, payload }: any) {
+  if (!active || !payload?.length) return null
+
+  const data = payload[0]
+
+  return (
+    <div className="rounded-xl border bg-background/90 backdrop-blur-xl shadow-lg px-4 py-3 min-w-[180px]">
+      <p className="text-center font-semibold text-sm mb-2 text-slate-700 dark:text-slate-200">
+        {data?.payload?.name}
+      </p>
+
+      <div className="flex items-center justify-between text-sm">
+        <span className="font-medium text-slate-600 dark:text-slate-300">
+          En total
+        </span>
+        <span className="font-semibold text-slate-800 dark:text-slate-100">
+          {data?.value ?? 0}
+        </span>
+      </div>
+    </div>
+  )
+}
+
 export default function ArticlesSummary({ data, isLoading, isError }: Props) {
   if (isLoading) return <div className="text-center text-cyan-600 py-8">Cargando información...</div>
   if (isError || !data) return <div className="text-center text-red-500 py-8">Error al cargar información.</div>
 
   const cyanTone = "6,182,212"
 
+  /* =========================
+     COLORES ALINEADOS CON KPIs
+     ========================= */
   const chartData = [
-    { name: 'Salidas\n Totales', value: data.dispatchCount, color: 'url(#gradBlue)' },
-    { name: 'Salidas a\n Aeronaves', value: data.dispatchAircraftCount, color: 'url(#gradRose)' },
-    { name: 'Salidas a\n Taller', value: data.dispatchWorkOrderCount, color: 'url(#gradAmber)' },
+    {
+      name: 'Salidas Totales',
+      value: data.dispatchCount,
+      color: 'url(#gradEmerald)'
+    },
+    {
+      name: 'Salidas a Aeronaves',
+      value: data.dispatchAircraftCount,
+      color: 'url(#gradFuchsia)'
+    },
+    {
+      name: 'Salidas a Taller',
+      value: data.dispatchWorkOrderCount,
+      color: 'url(#gradAmber)'
+    },
   ]
 
   return (
@@ -59,29 +100,39 @@ export default function ArticlesSummary({ data, isLoading, isError }: Props) {
             </div>
 
             <CardTitle className="text-2xl font-semibold">Resumen de Artículos</CardTitle>
-            <CardDescription className="text-slate-500 dark:text-slate-400">Resumen semanal basado en registros creados en el sistema</CardDescription>
+            <CardDescription className="text-slate-500 dark:text-slate-400">
+              Resumen semanal basado en registros creados en el sistema
+            </CardDescription>
           </CardHeader>
 
           <CardContent>
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6 text-center">
 
               <div>
-                <div className="text-3xl font-bold bg-gradient-to-b from-indigo-500 to-violet-400 bg-clip-text text-transparent">{data.storedCount ?? 0}%</div>
+                <div className="text-3xl font-bold bg-gradient-to-b from-indigo-500 to-violet-400 bg-clip-text text-transparent">
+                  {data.storedCount ?? 0}%
+                </div>
                 <p className="text-sm text-slate-500">Artículos Activos</p>
               </div>
 
               <div>
-                <div className="text-3xl font-bold bg-gradient-to-b from-emerald-500 to-teal-400 bg-clip-text text-transparent">{data.dispatchCount ?? 0}</div>
+                <div className="text-3xl font-bold bg-gradient-to-b from-emerald-500 to-teal-400 bg-clip-text text-transparent">
+                  {data.dispatchCount ?? 0}
+                </div>
                 <p className="text-sm text-slate-500">Salidas Totales</p>
               </div>
 
               <div>
-                <div className="text-3xl font-bold bg-gradient-to-b from-fuchsia-500 to-pink-400 bg-clip-text text-transparent">{data.dispatchAircraftCount ?? 0}</div>
+                <div className="text-3xl font-bold bg-gradient-to-b from-fuchsia-500 to-pink-400 bg-clip-text text-transparent">
+                  {data.dispatchAircraftCount ?? 0}
+                </div>
                 <p className="text-sm text-slate-500">Salidas a Aeronaves</p>
               </div>
 
               <div>
-                <div className="text-3xl font-bold bg-gradient-to-b from-amber-500 to-orange-400 bg-clip-text text-transparent">{data.dispatchWorkOrderCount ?? 0}</div>
+                <div className="text-3xl font-bold bg-gradient-to-b from-amber-500 to-orange-400 bg-clip-text text-transparent">
+                  {data.dispatchWorkOrderCount ?? 0}
+                </div>
                 <p className="text-sm text-slate-500">Salidas a Taller</p>
               </div>
 
@@ -89,7 +140,7 @@ export default function ArticlesSummary({ data, isLoading, isError }: Props) {
           </CardContent>
         </TintedCard>
 
-        {/* TABLA */}
+        {/* TABLA (sin cambios) */}
         <TintedCard tone={cyanTone}>
           <CardHeader className="pb-2 text-center space-y-2">
             <div className="flex justify-center">
@@ -127,7 +178,9 @@ export default function ArticlesSummary({ data, isLoading, isError }: Props) {
                       </TableRow>
                     )) : (
                       <TableRow>
-                        <TableCell colSpan={3} className="text-center text-slate-500 py-4">No hay artículos fuera de stock</TableCell>
+                        <TableCell colSpan={3} className="text-center text-slate-500 py-4">
+                          No hay artículos fuera de stock
+                        </TableCell>
                       </TableRow>
                     )}
                   </TableBody>
@@ -136,9 +189,10 @@ export default function ArticlesSummary({ data, isLoading, isError }: Props) {
             </div>
           </CardContent>
         </TintedCard>
+
       </div>
 
-      {/* DERECHA */}
+      {/* GRÁFICO */}
       <TintedCard tone={cyanTone}>
         <CardHeader className="text-center pb-2 space-y-2">
           <div className="flex justify-center">
@@ -148,7 +202,9 @@ export default function ArticlesSummary({ data, isLoading, isError }: Props) {
           </div>
 
           <CardTitle className="text-2xl font-semibold">Gráfico de Salidas</CardTitle>
-          <CardDescription className="text-slate-500 dark:text-slate-400">Comparativa de tipos de despacho (Esta semana)</CardDescription>
+          <CardDescription className="text-slate-500 dark:text-slate-400 text-sm">
+            Comparativa de tipos de despacho (Esta semana)
+          </CardDescription>
         </CardHeader>
 
         <CardContent className="flex justify-center items-center h-80">
@@ -156,14 +212,14 @@ export default function ArticlesSummary({ data, isLoading, isError }: Props) {
             <BarChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
 
               <defs>
-                <linearGradient id="gradBlue" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#6366f1" stopOpacity={1} />
-                  <stop offset="100%" stopColor="#22d3ee" stopOpacity={0.6} />
+                <linearGradient id="gradEmerald" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#10b981" stopOpacity={1} />
+                  <stop offset="100%" stopColor="#34d399" stopOpacity={0.6} />
                 </linearGradient>
 
-                <linearGradient id="gradRose" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#f43f5e" stopOpacity={1} />
-                  <stop offset="100%" stopColor="#fb7185" stopOpacity={0.6} />
+                <linearGradient id="gradFuchsia" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#d946ef" stopOpacity={1} />
+                  <stop offset="100%" stopColor="#f472b6" stopOpacity={0.6} />
                 </linearGradient>
 
                 <linearGradient id="gradAmber" x1="0" y1="0" x2="0" y2="1">
@@ -172,21 +228,14 @@ export default function ArticlesSummary({ data, isLoading, isError }: Props) {
                 </linearGradient>
               </defs>
 
-              <XAxis dataKey="name"
-                tick={({ x, y, payload }) => (
-                  <text x={x} y={y + 10} textAnchor="middle" fontSize={12}>
-                    {payload.value.split('\n').map((line: string, i: number) => (
-                      <tspan key={i} x={x} dy={i === 0 ? 0 : 12}>{line}</tspan>
-                    ))}
-                  </text>
-                )}
-              />
-
+              <XAxis dataKey="name" />
               <YAxis />
-              <Tooltip />
+              <Tooltip content={<CustomTooltip />} />
 
               <Bar dataKey="value" radius={[6, 6, 0, 0]}>
-                {chartData.map((entry, idx) => <Cell key={`cell-${idx}`} fill={entry.color} />)}
+                {chartData.map((entry, idx) => (
+                  <Cell key={idx} fill={entry.color} />
+                ))}
               </Bar>
 
             </BarChart>

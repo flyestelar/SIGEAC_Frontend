@@ -28,10 +28,34 @@ import { ChevronDown } from "lucide-react"
 export function RegisterDispatchRequestDialog() {
   const [open, setOpen] = useState<boolean>(false);
   const [category, setCategory] = useState<string | null>(null);
+  const [hovered, setHovered] = useState(false)
+  const [pos, setPos] = useState({ x: 50, y: 50 })
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLButtonElement>) => {
+    if (!hovered) return
+    const rect = e.currentTarget.getBoundingClientRect()
+    const x = ((e.clientX - rect.left) / rect.width) * 100
+    const y = ((e.clientY - rect.top) / rect.height) * 100
+    setPos({ x, y })
+  }
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button onClick={() => setOpen(true)} variant="outline" className="flex items-center justify-center gap-2 border border-dashed border-cyan-400/50 dark:border-cyan-300/30 bg-background/70 backdrop-blur text-cyan-700 dark:text-cyan-300 font-medium tracking-wide shadow-sm transition-all duration-200 hover:border-cyan-500/60 dark:hover:border-cyan-300/50 hover:bg-cyan-50/40 dark:hover:bg-cyan-950/20 hover:shadow-md hover:-translate-y-[1px] active:translate-y-0 active:shadow-sm focus-visible:ring-2 focus-visible:ring-cyan-500/25 focus-visible:ring-offset-2">Registrar Salida</Button>
+        <Button
+          onClick={() => setOpen(true)}
+          onMouseEnter={() => setHovered(true)}
+          onMouseLeave={() => setHovered(false)}
+          onMouseMove={handleMouseMove}
+          variant="outline"
+          className="relative overflow-hidden flex items-center justify-center gap-2 border border-dashed border-cyan-400/50 dark:border-cyan-300/30 bg-background/70 backdrop-blur text-cyan-700 dark:text-cyan-300 font-medium tracking-wide shadow-sm transition-all duration-200 hover:border-cyan-500/60 dark:hover:border-cyan-300/50 hover:bg-cyan-50/40 dark:hover:bg-cyan-950/20 hover:shadow-md hover:-translate-y-[1px] active:translate-y-0 active:shadow-sm focus-visible:ring-2 focus-visible:ring-cyan-500/25 focus-visible:ring-offset-2 before:absolute before:inset-0 before:pointer-events-none before:transition-opacity before:duration-300"
+          style={{
+            backgroundImage: hovered
+              ? `radial-gradient(circle at ${pos.x}% ${pos.y}%, rgba(34,211,238,0.08), transparent 65%)`
+              : 'none'
+          }}
+        >
+          Registrar Salida
+        </Button>
       </DialogTrigger>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>

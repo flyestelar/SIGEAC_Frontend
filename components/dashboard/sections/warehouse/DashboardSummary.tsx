@@ -4,6 +4,7 @@ import { BarChart3 } from 'lucide-react'
 import { Card, CardHeader, CardContent, CardDescription, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { useRouter } from 'next/navigation'
+import { useState } from 'react'
 
 interface DashboardSummaryProps {
   companySlug: string
@@ -37,6 +38,17 @@ export default function DashboardSummary({ companySlug }: DashboardSummaryProps)
 
   const blueTone = "37,99,235"
 
+  const [pos, setPos] = useState<{ x: number; y: number }>({ x: 50, y: 50 })
+  const [hovered, setHovered] = useState(false)
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLButtonElement>) => {
+    if (!hovered) return
+    const rect = e.currentTarget.getBoundingClientRect()
+    const x = ((e.clientX - rect.left) / rect.width) * 100
+    const y = ((e.clientY - rect.top) / rect.height) * 100
+    setPos({ x, y })
+  }
+
   return (
     <div className='mt-16'>
       {/* Mensaje de bienvenida */}
@@ -68,8 +80,16 @@ export default function DashboardSummary({ companySlug }: DashboardSummaryProps)
 
           <CardContent className="flex justify-center pb-8">
             <Button
+              onMouseEnter={() => setHovered(true)}
+              onMouseLeave={() => setHovered(false)}
+              onMouseMove={handleMouseMove}
               onClick={() => router.push(`/${companySlug}/almacen/inventario_articulos`)}
-              className="relative overflow-hidden px-6 min-w-[220px] bg-blue-600/90 hover:bg-blue-600 text-white font-medium tracking-wide shadow-sm transition-all duration-300 hover:shadow-lg hover:shadow-blue-500/20 hover:-translate-y-[2px] active:translate-y-0 focus-visible:ring-2 focus-visible:ring-blue-500/30 focus-visible:ring-offset-2"
+              className="relative overflow-hidden px-6 min-w-[220px] border border-dashed border-blue-400/50 dark:border-blue-300/30 bg-background/70 backdrop-blur text-blue-700 dark:text-blue-300 font-medium tracking-wide shadow-sm transition-all duration-200 hover:border-blue-500/60 dark:hover:border-blue-300/50 hover:bg-blue-50/40 dark:hover:bg-blue-950/20 hover:shadow-md hover:-translate-y-[1px] active:translate-y-0 active:shadow-sm focus-visible:ring-2 focus-visible:ring-blue-500/25 focus-visible:ring-offset-2 hover:text-slate-900 dark:hover:text-white before:absolute before:inset-0 before:pointer-events-none before:transition-opacity before:duration-300"
+              style={{
+                backgroundImage: hovered
+                  ? `radial-gradient(circle at ${pos.x}% ${pos.y}%, rgba(59,130,246,0.10), transparent 65%)`
+                  : 'none'
+              }}
             >
               Ver Inventario Completo
             </Button>
