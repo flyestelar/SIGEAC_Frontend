@@ -57,7 +57,6 @@ function TintedCard({
 
 /* =========================
    CONTADOR
-   (colores complementarios suaves)
    ========================= */
 function Metric({
   value,
@@ -107,29 +106,25 @@ export default function DispatchSummary({
   }
 
   /* =========================
-     TEAL BASE (SISTEMA)
+     PURPLE BASE
      ========================= */
-  const tealTone = "13,148,136"
+  const purpleTone = "168,85,247"
 
   const dispatchChartData = [
-    { name: 'Salidas\nTotales', value: data.dispatchCount ?? 0, color: '#0d9488' },
-    { name: 'Salidas a\nAeronaves', value: data.dispatchAircraftCount ?? 0, color: '#14b8a6' },
-    { name: 'Salidas a\nTaller', value: data.dispatchWorkOrderCount ?? 0, color: '#2dd4bf' },
+    { name: 'Salidas\nTotales', value: data.dispatchCount ?? 0, color: '#a855f7' },
+    { name: 'Salidas a\nAeronaves', value: data.dispatchAircraftCount ?? 0, color: '#c084fc' },
+    { name: 'Salidas a\nTaller', value: data.dispatchWorkOrderCount ?? 0, color: '#d8b4fe' },
   ]
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-
       {/* ================= LEFT ================= */}
       <div className="flex flex-col gap-6">
-
         {/* SALIDAS */}
-        <TintedCard tone={tealTone}>
-
+        <TintedCard tone={purpleTone}>
           <CardHeader className="text-center pb-2 space-y-2">
-
             <div className="flex justify-center">
-              <div className="p-2 rounded-xl bg-teal-500/10 text-teal-600">
+              <div className="p-2 rounded-xl bg-purple-500/10 text-purple-500">
                 <Plane className="size-5" />
               </div>
             </div>
@@ -145,22 +140,18 @@ export default function DispatchSummary({
 
           <CardContent className="py-8">
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-8">
-
               <Metric value={data.dispatchCount ?? 0} label="Salidas Totales" tone="245,158,11" />
               <Metric value={data.dispatchAircraftCount ?? 0} label="Aeronaves" tone="249,115,22" />
               <Metric value={data.dispatchWorkOrderCount ?? 0} label="Taller" tone="59,130,246" />
-
             </div>
           </CardContent>
         </TintedCard>
 
         {/* ENTRADAS */}
-        <TintedCard tone={tealTone}>
-
+        <TintedCard tone={purpleTone}>
           <CardHeader className="text-center pb-2 space-y-2">
-
             <div className="flex justify-center">
-              <div className="p-2 rounded-xl bg-teal-500/10 text-teal-600">
+              <div className="p-2 rounded-xl bg-purple-500/10 text-purple-500">
                 <Package className="size-5" />
               </div>
             </div>
@@ -176,23 +167,18 @@ export default function DispatchSummary({
 
           <CardContent className="py-8">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-12">
-
               <Metric value={`${data.storedCount ?? 0}%`} label="Artículos Activos" tone="34,197,94" />
               <Metric value={data.entryCount ?? 0} label="Entradas Totales" tone="59,130,246" />
-
             </div>
           </CardContent>
         </TintedCard>
-
       </div>
 
       {/* ================= RIGHT ================= */}
-      <TintedCard tone={tealTone}>
-
+      <TintedCard tone={purpleTone}>
         <CardHeader className="text-center pb-2 space-y-2">
-
           <div className="flex justify-center">
-            <div className="p-2 rounded-xl bg-teal-500/10 text-teal-600">
+            <div className="p-2 rounded-xl bg-purple-500/10 text-purple-500">
               <BarChart3 className="size-5" />
             </div>
           </div>
@@ -209,7 +195,6 @@ export default function DispatchSummary({
         <CardContent className="h-[380px]">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={dispatchChartData}>
-
               <XAxis
                 dataKey="name"
                 tick={({ x, y, payload }) => (
@@ -237,13 +222,10 @@ export default function DispatchSummary({
                   <Cell key={i} fill={entry.color} />
                 ))}
               </Bar>
-
             </BarChart>
           </ResponsiveContainer>
         </CardContent>
-
       </TintedCard>
-
     </div>
   )
 }

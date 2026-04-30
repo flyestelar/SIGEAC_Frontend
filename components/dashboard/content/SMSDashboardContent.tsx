@@ -49,7 +49,7 @@ export default function SMSDashboardContent({
               data-[state=active]:ring-1 data-[state=active]:ring-amber-300/50"
             >
               <ShieldCheck className="w-3.5 h-3.5 shrink-0" />
-              Dashboard
+              Principal
             </TabsTrigger>
 
             {/* REPORTS */}
