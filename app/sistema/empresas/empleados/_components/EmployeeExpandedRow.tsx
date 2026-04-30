@@ -62,7 +62,7 @@ export function EmployeeExpandedRow({ employee }: Props) {
 
         <Item label="Dirección" value={employee.address} />
 
-        <Item label="Ubicación" value={employee.location?.name} />
+        <Item label="Ubicación" value={employee.location?.address} />
 
         <Item label="Cargo" value={employee.job_title?.name} />
 
