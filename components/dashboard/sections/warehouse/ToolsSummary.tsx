@@ -78,9 +78,11 @@ export default function ToolsSummary({ data, isLoading, isError }: Props) {
               </div>
             </div>
 
-            <CardTitle className="text-2xl font-semibold">Herramientas por Calibrar</CardTitle>
+            <CardTitle className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-100">
+              Herramientas por Calibrar
+            </CardTitle>
 
-            <CardDescription className="text-slate-500 dark:text-slate-400">
+            <CardDescription className="mx-auto max-w-md text-sm leading-relaxed text-slate-500 dark:text-slate-400">
               Cantidad total de herramientas pendientes por calibrar: {data.expired_tools_count}
             </CardDescription>
           </CardHeader>
@@ -125,9 +127,11 @@ export default function ToolsSummary({ data, isLoading, isError }: Props) {
               </div>
             </div>
 
-            <CardTitle className="text-2xl font-semibold">Herramientas Próximas a Calibrar</CardTitle>
+            <CardTitle className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-100">
+              Herramientas Próximas a Calibrar
+            </CardTitle>
 
-            <CardDescription className="text-slate-500 dark:text-slate-400">
+            <CardDescription className="mx-auto max-w-md text-sm leading-relaxed text-slate-500 dark:text-slate-400">
               Cantidad total de herramientas próximas a calibrar: {data.tool_need_calibration_count}
             </CardDescription>
           </CardHeader>
@@ -174,8 +178,10 @@ export default function ToolsSummary({ data, isLoading, isError }: Props) {
             </div>
           </div>
 
-          <CardTitle className="text-2xl font-semibold">Gráfico de Calibraciones</CardTitle>
-          <CardDescription className="text-slate-500 dark:text-slate-400 text-sm">
+          <CardTitle className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-100">
+            Gráfico de Calibraciones
+          </CardTitle>
+          <CardDescription className="mx-auto max-w-md text-sm leading-relaxed text-slate-500 dark:text-slate-400">
             Resumen visual de herramientas por estado
           </CardDescription>
         </CardHeader>

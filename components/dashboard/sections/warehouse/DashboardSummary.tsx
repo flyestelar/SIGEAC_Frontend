@@ -71,9 +71,9 @@ export default function DashboardSummary({ companySlug }: DashboardSummaryProps)
               </div>
             </div>
 
-            <CardTitle className="text-xl">Consulta de Inventario</CardTitle>
+            <CardTitle className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-100">Consulta de Inventario</CardTitle>
 
-            <CardDescription className="text-base pt-2">
+            <CardDescription className="mx-auto max-w-md text-sm leading-relaxed text-slate-500 dark:text-slate-400">
               Acceda al sistema completo de gestión de inventario aeronáutico
             </CardDescription>
           </CardHeader>

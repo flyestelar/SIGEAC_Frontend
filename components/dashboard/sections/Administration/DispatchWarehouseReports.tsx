@@ -16,10 +16,6 @@ interface DispatchWarehouseReportsProps {
   user: any;
   roleNames: string[];
 }
-
-/* =========================
-   TINTED CARD (PASTEL LAVANDA)
-   ========================= */
 function TintedCard({
   children,
   tone,
@@ -43,15 +39,13 @@ function TintedCard({
 export default function DispatchWarehouseReports({
   companySlug,
 }: DispatchWarehouseReportsProps) {
-  // 👇 lavanda pastel (suave, desaturado)
-  const violetTone = "167,139,250"; // #a78bfa suave (más light que el original)
+  const violetTone = "167,139,250";
 
   return (
     <div className="flex justify-center items-center py-10">
 
       <TintedCard tone={violetTone}>
 
-        {/* glow superior MUY suave (sin saturación agresiva) */}
         <div
           className="pointer-events-none absolute inset-x-0 top-0 h-28"
           style={{
@@ -60,7 +54,6 @@ export default function DispatchWarehouseReports({
           }}
         />
 
-        {/* profundidad ultra sutil */}
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-violet-400/[0.02] via-transparent to-transparent" />
 
         <CardHeader className="relative text-center space-y-5 pb-6">

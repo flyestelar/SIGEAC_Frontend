@@ -57,7 +57,7 @@ export default function SMSDashboardContent({
               value="REPORTS"
               className="flex-1 flex items-center justify-center gap-2 text-xs h-7 px-3 rounded-xl transition-all duration-200 whitespace-nowrap
               text-slate-500 dark:text-slate-400
-              hover:text-amber-500 dark:hover:text-amber-300
+              hover:text-amber-300 dark:hover:text-amber-200
               data-[state=active]:bg-white/80 dark:data-[state=active]:bg-slate-900/50
               data-[state=active]:text-amber-500 dark:data-[state=active]:text-amber-300
               data-[state=active]:shadow-[0_0_18px_rgba(245,158,11,0.20)]
@@ -72,11 +72,11 @@ export default function SMSDashboardContent({
               value="STATISTICS"
               className="flex-1 flex items-center justify-center gap-2 text-xs h-7 px-3 rounded-xl transition-all duration-200 whitespace-nowrap
               text-slate-500 dark:text-slate-400
-              hover:text-amber-700 dark:hover:text-amber-500
+              hover:text-orange-600 dark:hover:text-orange-400
               data-[state=active]:bg-white/80 dark:data-[state=active]:bg-slate-900/50
-              data-[state=active]:text-amber-700 dark:data-[state=active]:text-amber-500
-              data-[state=active]:shadow-[0_0_18px_rgba(180,83,9,0.25)]
-              data-[state=active]:ring-1 data-[state=active]:ring-amber-400/50"
+              data-[state=active]:text-orange-700 dark:data-[state=active]:text-orange-400
+              data-[state=active]:shadow-[0_0_18px_rgba(249,115,22,0.25)]
+              data-[state=active]:ring-1 data-[state=active]:ring-orange-500/50"
             >
               <TrendingUp className="w-3.5 h-3.5 shrink-0" />
               Estadísticas

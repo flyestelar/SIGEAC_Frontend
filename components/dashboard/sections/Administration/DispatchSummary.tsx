@@ -129,11 +129,11 @@ export default function DispatchSummary({
               </div>
             </div>
 
-            <CardTitle className="text-xl font-semibold tracking-tight text-slate-900 dark:text-slate-100">
+            <CardTitle className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-100">
               Resumen de Solicitudes de Salidas
             </CardTitle>
 
-            <CardDescription className="text-slate-500 dark:text-slate-400">
+            <CardDescription className="mx-auto max-w-md text-sm leading-relaxed text-slate-500 dark:text-slate-400">
               Resumen semanal basado en registros creados en el sistema
             </CardDescription>
           </CardHeader>
@@ -156,11 +156,11 @@ export default function DispatchSummary({
               </div>
             </div>
 
-            <CardTitle className="text-xl font-semibold tracking-tight text-slate-900 dark:text-slate-100">
+            <CardTitle className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-100">
               Resumen de Solicitudes de Entradas
             </CardTitle>
 
-            <CardDescription className="text-slate-500 dark:text-slate-400">
+            <CardDescription className="mx-auto max-w-md text-sm leading-relaxed text-slate-500 dark:text-slate-400">
               Resumen semanal basado en registros creados en el sistema
             </CardDescription>
           </CardHeader>
@@ -183,11 +183,11 @@ export default function DispatchSummary({
             </div>
           </div>
 
-          <CardTitle className="text-xl font-semibold tracking-tight text-slate-900 dark:text-slate-100">
+          <CardTitle className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-100">
             Gráfico de Salidas
           </CardTitle>
 
-          <CardDescription className="text-slate-500 dark:text-slate-400">
+          <CardDescription className="mx-auto max-w-md text-sm leading-relaxed text-slate-500 dark:text-slate-400">
             Comparativa de tipos de despacho (Esta semana)
           </CardDescription>
         </CardHeader>

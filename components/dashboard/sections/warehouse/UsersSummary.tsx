@@ -121,8 +121,12 @@ export default function UsersSummary({ data, isLoading, isError, currentUserRole
               </div>
             </div>
 
-            <CardTitle className="text-2xl font-semibold">Usuarios Almacén</CardTitle>
-            <CardDescription className="text-slate-500 dark:text-slate-400">Última actividad y cargo</CardDescription>
+            <CardTitle className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-100">
+              Usuarios Almacén
+            </CardTitle>
+            <CardDescription className="mx-auto max-w-md text-sm leading-relaxed text-slate-500 dark:text-slate-400">
+              Última actividad y cargo
+            </CardDescription>
           </CardHeader>
 
           <CardContent className="flex-1 flex items-center justify-center">
@@ -176,7 +180,9 @@ export default function UsersSummary({ data, isLoading, isError, currentUserRole
             </div>
 
             <CardTitle className="text-2xl font-semibold">Actividad de Usuarios</CardTitle>
-            <CardDescription className="text-slate-500 dark:text-slate-400">Despachos e ingresos por usuario</CardDescription>
+            <CardDescription className="mx-auto max-w-md text-sm leading-relaxed text-slate-500 dark:text-slate-400">
+              Despachos e ingresos por usuario
+            </CardDescription>
           </CardHeader>
 
           <CardContent className="flex-1 flex items-center justify-center">
