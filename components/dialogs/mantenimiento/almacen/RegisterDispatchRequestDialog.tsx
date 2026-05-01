@@ -47,10 +47,10 @@ export function RegisterDispatchRequestDialog() {
           onMouseLeave={() => setHovered(false)}
           onMouseMove={handleMouseMove}
           variant="outline"
-          className="relative overflow-hidden flex items-center justify-center gap-2 border border-dashed border-cyan-400/50 dark:border-cyan-300/30 bg-background/70 backdrop-blur text-cyan-700 dark:text-cyan-300 font-medium tracking-wide shadow-sm transition-all duration-200 hover:border-cyan-500/60 dark:hover:border-cyan-300/50 hover:bg-cyan-50/40 dark:hover:bg-cyan-950/20 hover:shadow-md hover:-translate-y-[1px] active:translate-y-0 active:shadow-sm focus-visible:ring-2 focus-visible:ring-cyan-500/25 focus-visible:ring-offset-2 before:absolute before:inset-0 before:pointer-events-none before:transition-opacity before:duration-300"
+          className="relative overflow-hidden flex items-center justify-center gap-2 border border-dashed border-blue-400/50 dark:border-blue-300/30 bg-background/70 backdrop-blur text-blue-700 dark:text-blue-300 font-medium tracking-wide shadow-sm transition-all duration-200 hover:border-blue-500/60 dark:hover:border-blue-300/50 hover:bg-blue-50/40 dark:hover:bg-blue-950/20 hover:shadow-md hover:-translate-y-[1px] active:translate-y-0 active:shadow-sm focus-visible:ring-2 focus-visible:ring-blue-500/25 focus-visible:ring-offset-2 before:absolute before:inset-0 before:pointer-events-none before:transition-opacity before:duration-300"
           style={{
             backgroundImage: hovered
-              ? `radial-gradient(circle at ${pos.x}% ${pos.y}%, rgba(34,211,238,0.08), transparent 65%)`
+              ? `radial-gradient(circle at ${pos.x}% ${pos.y}%, rgba(59,130,246,0.10), transparent 65%)`
               : 'none'
           }}
         >
