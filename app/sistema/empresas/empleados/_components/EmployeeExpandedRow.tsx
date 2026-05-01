@@ -49,9 +49,9 @@ export function EmployeeExpandedRow({ employee }: Props) {
           label="Fecha nacimiento"
           value={
             employee.birth_date
-              ? new Intl.DateTimeFormat("es-ES").format(
-                  new Date(employee.birth_date)
-                )
+              ? new Intl.DateTimeFormat("es-ES", {
+                  timeZone: "UTC",
+                }).format(new Date(employee.birth_date))
               : "—"
           }
         />
