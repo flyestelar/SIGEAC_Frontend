@@ -30,7 +30,7 @@ const formSchema = z.object({
   dni: z.string(),
   dni_type: z.string(),
   blood_type: z.string(),
-  gender: z.enum(["male", "female"]),
+  gender: z.enum(["MALE", "FEMALE"]),
   job_title_id: z.string(),
   department_id: z.string(),
   location_id: z.string(),
@@ -90,7 +90,7 @@ export function UpdateEmployeeForm({
       dni: "",
       dni_type: "",
       blood_type: "",
-      gender: "male",
+      gender: "MALE",
       job_title_id: "",
       department_id: "",
       location_id: "",
@@ -133,7 +133,7 @@ export function UpdateEmployeeForm({
       address: employee.address ?? "",
       profile_photo: undefined,
       birth_date: employee.birth_date ?? "",
-      gender: employee.gender ?? "male",
+      gender: employee.gender ?? "MALE",
     });
   }, [employee, form]);
 
@@ -437,8 +437,8 @@ const buildFormData = (values: FormValues, original: any) => {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="male">Hombre</SelectItem>
-                          <SelectItem value="female">Mujer</SelectItem>
+                          <SelectItem value="MALE">Hombre</SelectItem>
+                          <SelectItem value="FEMALE">Mujer</SelectItem>
                         </SelectContent>
                       </Select>
                       <FormMessage />

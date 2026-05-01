@@ -129,8 +129,8 @@ export const getEmployeeColumns = (
       cell: ({ row }) => {
         const gender = row.original.gender;
 
-        const isMale = gender === "male";
-        const isFemale = gender === "female";
+        const isMale = gender === "MALE";
+        const isFemale = gender === "FEMALE";
         const isUnknown = !gender;
 
         const label = isMale

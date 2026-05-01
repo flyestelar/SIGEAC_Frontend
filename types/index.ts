@@ -797,7 +797,7 @@ export type Employee = {
     dni: string;
     dni_type: string;
     blood_type: string;
-    gender: "male" | "female";
+    gender: "MALE" | "FEMALE";
     birth_date?: string | null;
     email?: string | null;
     phone?: string | null;

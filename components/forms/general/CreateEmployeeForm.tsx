@@ -61,7 +61,7 @@ const formSchema = z
     second_last_name: z.string().optional(),
     dni_type: z.string(),
     blood_type: z.string(),
-    gender: z.enum(["male", "female"]),
+    gender: z.enum(["MALE", "FEMALE"]),
     dni: z.string().min(6, "Requerido"),
     department_id: z.string(),
     job_title_id: z.string(),
@@ -165,7 +165,7 @@ export function CreateEmployeeForm({ onSuccess }: { onSuccess?: () => void }) {
       dni: "",
       dni_type: 'V',
       blood_type: "",
-      gender: "male",
+      gender: "MALE",
       middle_name: "",
       second_last_name: "",
       createUser: false,
@@ -501,8 +501,8 @@ export function CreateEmployeeForm({ onSuccess }: { onSuccess?: () => void }) {
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            <SelectItem value="male">Hombre</SelectItem>
-                            <SelectItem value="female">Mujer</SelectItem>
+                            <SelectItem value="MALE">Hombre</SelectItem>
+                            <SelectItem value="FEMALE">Mujer</SelectItem>
                           </SelectContent>
                         </Select>
                         <FormMessage />
