@@ -205,8 +205,9 @@ export function PartDispatchForm({ onClose }: FormProps) {
       category: "parte",
       isDepartment: isDepartment,
       // When isDepartment is true, the select value is a department id; otherwise it contains the aircraft id
-      department_id: isDepartment ? (data.department_id ? Number(data.department_id) : undefined) : undefined,
-      aircraft_id: isDepartment ? undefined : (data.department_id ? Number(data.department_id) : undefined),
+      // Keep ids as strings to match API typings (avoid converting to number)
+      department_id: isDepartment ? (data.department_id ? data.department_id : undefined) : undefined,
+      aircraft_id: isDepartment ? undefined : (data.department_id ? data.department_id : undefined),
     };
 
     await createDispatchRequest.mutateAsync({ data: { ...formattedData, user_id: Number(user!.id) }, company: selectedCompany!.slug });
