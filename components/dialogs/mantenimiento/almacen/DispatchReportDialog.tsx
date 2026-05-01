@@ -239,7 +239,7 @@ export function DispatchReportDialog() {
           className="relative overflow-hidden border border-dashed border-blue-400/50 dark:border-blue-300/30 bg-background/70 backdrop-blur text-blue-700 dark:text-blue-300 font-medium tracking-wide shadow-sm transition-all duration-200 hover:border-blue-500/60 dark:hover:border-blue-300/50 hover:bg-blue-50/40 dark:hover:bg-blue-950/20 hover:shadow-md hover:-translate-y-[1px] active:translate-y-0 active:shadow-sm focus-visible:ring-2 focus-visible:ring-blue-500/25 focus-visible:ring-offset-2"
           style={{
             backgroundImage: hovered
-              ? `radial-gradient(circle at ${pos.x}% ${pos.y}%, rgba(59,130,246,0.10), rgba(99,102,241,0.04), transparent 70%)`
+              ? `radial-gradient(circle at ${pos.x}% ${pos.y}%, rgba(59,130,246,0.10), transparent 65%)`
               : 'none'
           }}
         >
