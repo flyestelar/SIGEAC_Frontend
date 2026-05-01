@@ -1,84 +1,62 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { useGetDangerIdentificationWithAllById } from "@/hooks/sms/useGetDangerIdentificationWithAllById";
+import { ObligatoryReportResource } from "@/.gen/api/types.gen";
+import axiosInstance from "@/lib/axios";
 import { useCompanyStore } from "@/stores/CompanyStore";
-import { ObligatoryReport } from "@/types";
-import { PDFViewer } from "@react-pdf/renderer";
+import { Download, Loader2 } from "lucide-react";
 import { useState } from "react";
-import ObligatoryReportPdf from "@/components/pdf/sms/ObligatoryReportPdf";
 
 interface PreviewProps {
   title: string;
-  obligatoryReport: ObligatoryReport;
+  obligatoryReport: ObligatoryReportResource;
 }
 
-export default function PreviewVoluntaryReportPdfDialog({
+export default function PreviewObligatoryReportPdfDialog({
   title,
   obligatoryReport,
 }: PreviewProps) {
   const { selectedCompany } = useCompanyStore();
-  const [open, setOpen] = useState(false);
-  const { data: dangerIdentification } = useGetDangerIdentificationWithAllById({
-    company: selectedCompany?.slug,
-    id: obligatoryReport?.danger_identification?.id.toString(),
-  });
-  return (
-    <>
-      <Card className="flex">
-        <Dialog open={open} onOpenChange={setOpen}>
-          <DialogTrigger asChild>
-            <Button
-              onClick={() => setOpen(true)}
-              variant="outline"
-              size="sm"
-              className=" hidden h-8 lg:flex"
-            >
-              {title}
-            </Button>
-          </DialogTrigger>
+  const [isDownloading, setIsDownloading] = useState(false);
 
-          <DialogContent className="sm:max-w-[65%] max-h-[80vh]">
-            <DialogHeader>
-              <DialogTitle>Vista Previa del Reporte</DialogTitle>
-              <DialogDescription>
-                Revisa el reporte antes de descargarlo.
-              </DialogDescription>
-            </DialogHeader>
-            <div className="w-full h-screen">
-              {obligatoryReport &&
-              dangerIdentification &&
-              dangerIdentification.analysis &&
-              dangerIdentification.mitigation_plan &&
-              dangerIdentification.mitigation_plan.analysis ? (
-                <>
-                  <PDFViewer style={{ width: "100%", height: "60%" }}>
-                    <ObligatoryReportPdf
-                      report={obligatoryReport}
-                      identification={dangerIdentification}
-                    />
-                  </PDFViewer>
-                </>
-              ) : (
-                <>
-                  <PDFViewer style={{ width: "100%", height: "60%" }}>
-                    <ObligatoryReportPdf report={obligatoryReport} />
-                  </PDFViewer>
-                </>
-              )}
-            </div>
-          </DialogContent>
-        </Dialog>
-      </Card>
-    </>
+  const handleDownload = async () => {
+    if (!selectedCompany?.slug) return;
+    setIsDownloading(true);
+    try {
+      const response = await axiosInstance.get(
+        `/${selectedCompany.slug}/sms/obligatory-reports/${obligatoryReport.id}/pdf`,
+        { responseType: "blob" }
+      );
+      const blob = new Blob([response.data], { type: "application/pdf" });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `ROS-${obligatoryReport.report_number ?? obligatoryReport.id}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Error al descargar el PDF:", error);
+    } finally {
+      setIsDownloading(false);
+    }
+  };
+
+  return (
+    <Button
+      onClick={handleDownload}
+      variant="outline"
+      size="sm"
+      className="hidden h-8 lg:flex"
+      disabled={isDownloading}
+    >
+      {isDownloading ? (
+        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+      ) : (
+        <Download className="w-4 h-4 mr-2" />
+      )}
+      {title}
+    </Button>
   );
 }

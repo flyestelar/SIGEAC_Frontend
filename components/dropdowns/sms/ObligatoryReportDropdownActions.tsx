@@ -101,7 +101,7 @@ const ObligatoryReportDropdownActions = ({
     <>
       <Dialog open={open} onOpenChange={setOpen}>
         <DropdownMenu>
-          <DropdownMenuTrigger>
+          <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="h-8 w-8 p-0">
               <span className="sr-only">Abrir menu</span>
               <MoreHorizontal className="h-4 w-4" />
@@ -139,7 +139,7 @@ const ObligatoryReportDropdownActions = ({
             <DropdownMenuItem
               onClick={() => {
                 router.push(
-                  `/transmandu/sms/reportes/reportes_obligatorios/${obligatoryReport.id}`
+                  `/${selectedCompany?.slug}/sms/reportes/reportes_obligatorios/${obligatoryReport.id}`
                 );
               }}
             >
@@ -198,7 +198,7 @@ const ObligatoryReportDropdownActions = ({
                 {deleteObligatoryReport.isPending ? (
                   <Loader2 className="size-4 animate-spin" />
                 ) : (
-                  <p>Confirmar</p>
+                  "Confirmar"
                 )}
               </Button>
             </DialogFooter>
@@ -206,15 +206,13 @@ const ObligatoryReportDropdownActions = ({
         </Dialog>
 
         <Dialog open={openEdit} onOpenChange={setOpenEdit}>
-          <DialogContent className="flex flex-col max-w-2xl m-2">
-            <DialogHeader>
-              <DialogTitle className="text-center"></DialogTitle>
-              <CreateObligatoryReportForm
-                initialData={obligatoryReport}
-                isEditing={true}
-                onClose={() => setOpenEdit(false)}
-              />
-            </DialogHeader>
+          <DialogContent className="flex flex-col max-w-3xl max-h-[calc(100vh-6rem)] m-2 overflow-auto">
+            <DialogHeader />
+            <CreateObligatoryReportForm
+              initialData={obligatoryReport}
+              isEditing={true}
+              onClose={() => setOpenEdit(false)}
+            />
           </DialogContent>
         </Dialog>
 
@@ -273,15 +271,15 @@ const ObligatoryReportDropdownActions = ({
             </div>
             <div className="flex justify-end mt-4">
               {pdfUrl && (
-                <a
-                  href={pdfUrl}
-                  download={`ROS-${obligatoryReport.report_number || obligatoryReport.id}.pdf`}
-                >
-                  <Button>
+                <Button asChild>
+                  <a
+                    href={pdfUrl}
+                    download={`ROS-${obligatoryReport.report_number || obligatoryReport.id}.pdf`}
+                  >
                     <Download className="h-4 w-4 mr-2" />
                     Descargar Reporte
-                  </Button>
-                </a>
+                  </a>
+                </Button>
               )}
             </div>
           </DialogContent>

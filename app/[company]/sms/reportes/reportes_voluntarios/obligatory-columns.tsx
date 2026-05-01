@@ -7,9 +7,9 @@ import { DataTableColumnHeader } from "@/components/tables/DataTableHeader";
 import ObligatoryReportDropdownActions from "@/components/dropdowns/sms/ObligatoryReportDropdownActions";
 import { Badge } from "@/components/ui/badge";
 import { dateFormat } from "@/lib/utils";
-import { ObligatoryReport } from "@/types";
+import { ObligatoryReportResource } from "@/.gen/api/types.gen";
 
-export const columns: ColumnDef<ObligatoryReport>[] = [
+export const columns: ColumnDef<ObligatoryReportResource>[] = [
   {
     accessorKey: "report_number",
     header: ({ column }) => (
@@ -36,41 +36,47 @@ export const columns: ColumnDef<ObligatoryReport>[] = [
     cell: ({ row }) => {
       return (
         <p className="font-medium text-center">
-        {row.original.report_date
-          ? dateFormat(row.original.report_date, "PPP")
-          : "N/A"}
+          {row.original.report_date
+            ? dateFormat(row.original.report_date, "PPP")
+            : "N/A"}
         </p>
       );
     },
   },
   {
-    accessorKey: "flight_time",
+    accessorKey: "incident_date",
     header: ({ column }) => (
-      <DataTableColumnHeader filter column={column} title="Hora del Vuelo" />
+      <DataTableColumnHeader filter column={column} title="Fecha del incidente" />
     ),
     cell: ({ row }) => {
-        return <p className="font-medium text-center">{row.original.flight_time}</p>;
+      return (
+        <p className="font-medium text-center">
+          {row.original.incident_date
+            ? dateFormat(row.original.incident_date, "PPP")
+            : "N/A"}
+        </p>
+      );
     },
   },
   {
-    accessorKey: "incident_time",
+    accessorKey: "incident_location",
     header: ({ column }) => (
-      <DataTableColumnHeader filter column={column} title="Hora del suceso" />
+      <DataTableColumnHeader filter column={column} title="Lugar del incidente" />
     ),
-    cell: ({ row }) => {
-        const incident_time = row.original.incident_time;
-        return <p className="font-medium text-center">{incident_time}</p>;
-    },
+    cell: ({ row }) => (
+      <p className="font-medium text-center">
+        {row.original.incident_location || "N/A"}
+      </p>
+    ),
   },
-
   {
-    accessorKey: "flight_number",
+    accessorKey: "danger_type",
     header: ({ column }) => (
-      <DataTableColumnHeader filter column={column} title="Numero de vuelo" />
+      <DataTableColumnHeader filter column={column} title="Tipo de peligro" />
     ),
     cell: ({ row }) => (
       <p className="flex justify-center text-muted-foreground italic">
-        {row.original.flight_number}
+        {row.original.danger_type || "N/A"}
       </p>
     ),
   },
@@ -86,8 +92,8 @@ export const columns: ColumnDef<ObligatoryReport>[] = [
       ${
         row.original.status === "CERRADO"
           ? "bg-green-400"
-          : row.original.status === "PROCESO"
-          ? "bg-gray-500" // Color gris oscuro (puedes ajustar el tono)
+          : row.original.status === "ABIERTO"
+          ? "bg-gray-500"
           : "bg-red-400"
       }`}
         >
@@ -104,7 +110,7 @@ export const columns: ColumnDef<ObligatoryReport>[] = [
       return (
         <ObligatoryReportDropdownActions
           obligatoryReport={obligatoryReport}
-        ></ObligatoryReportDropdownActions>
+        />
       );
     },
   },

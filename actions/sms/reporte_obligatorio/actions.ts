@@ -96,7 +96,7 @@ export const useUpdateObligatoryReport = () => {
     mutationKey: ["obligatory-reports"],
     mutationFn: async ({ company, id, data }: UpdateObligatoryReportPayload) => {
       await axiosInstance.post(
-        `/${company}/sms/update-obligatory-reports/${id}`,
+        `/${company}/sms/obligatory-reports/update/${id}`,
         data,
         {
           headers: {
@@ -131,7 +131,7 @@ export const useAcceptObligatoryReport = () => {
     mutationKey: ["obligatory-reports"],
     mutationFn: async ({ company, id, data }: UpdateObligatoryReportPayload) => {
       await axiosInstance.patch(
-        `/${company}/sms/accept-obligatory-reports/${id}`,
+        `/${company}/sms/obligatory-reports/accept/${id}`,
         data,
       );
     },

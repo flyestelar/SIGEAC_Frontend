@@ -95,7 +95,7 @@ const VoluntaryReportDropdownActions = ({
     <>
       <Dialog open={open} onOpenChange={setOpen}>
         <DropdownMenu>
-          <DropdownMenuTrigger>
+          <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="h-8 w-8 p-0">
               <span className="sr-only">Abrir menu</span>
               <MoreHorizontal className="h-4 w-4" />
@@ -184,15 +184,15 @@ const VoluntaryReportDropdownActions = ({
             </div>
             <div className="flex justify-end mt-4">
               {pdfUrl && (
-                <a
-                  href={pdfUrl}
-                  download={`RVP-${voluntaryReport.report_number || voluntaryReport.id}.pdf`}
-                >
-                  <Button>
+                <Button asChild>
+                  <a
+                    href={pdfUrl}
+                    download={`RVP-${voluntaryReport.report_number || voluntaryReport.id}.pdf`}
+                  >
                     <Download className="h-4 w-4 mr-2" />
                     Descargar Reporte
-                  </Button>
-                </a>
+                  </a>
+                </Button>
               )}
             </div>
           </DialogContent>
@@ -225,7 +225,7 @@ const VoluntaryReportDropdownActions = ({
                 {deleteVoluntaryReport.isPending ? (
                   <Loader2 className="size-4 animate-spin" />
                 ) : (
-                  <p>Confirmar</p>
+                  "Confirmar"
                 )}
               </Button>
             </DialogFooter>

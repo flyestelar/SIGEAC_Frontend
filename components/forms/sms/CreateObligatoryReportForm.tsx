@@ -38,7 +38,6 @@ import { ObligatoryReportResource } from "@/.gen/api/types.gen";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { CalendarIcon, Loader2 } from "lucide-react";
-import Image from "next/image";
 import { useRouter } from "next/navigation";
 import {
   Select,
@@ -118,8 +117,7 @@ export function CreateObligatoryReportForm({
   const { createObligatoryReport } = useCreateObligatoryReport();
   const { updateObligatoryReport } = useUpdateObligatoryReport();
 
-  const { data: pilots, isLoading: isLoadingPilots } = useGetPilots(selectedCompany?.slug);
-  const { data: aircrafts, isLoading: isLoadingAircrafts } = useGetAircraftAcronyms(selectedCompany?.slug);
+  // const { data: aircrafts, isLoading: isLoadingAircrafts } = useGetAircraftAcronyms(selectedCompany?.slug);
 
   const { data: nextNumberData, isPending: isLoadingNextNumber } =
     useGetNextReportNumber(selectedCompany?.slug || null);
@@ -265,7 +263,7 @@ export function CreateObligatoryReportForm({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Estación</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Seleccionar estación" />
@@ -416,7 +414,7 @@ export function CreateObligatoryReportForm({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Lugar del Incidente</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Seleccionar" />
@@ -463,7 +461,7 @@ export function CreateObligatoryReportForm({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Tipo de Peligro</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Seleccionar" />
@@ -552,7 +550,7 @@ export function CreateObligatoryReportForm({
                     <FormLabel>Area</FormLabel>
                     <Select
                       onValueChange={field.onChange}
-                      defaultValue={field.value}
+                      value={field.value}
                     >
                       <FormControl>
                         <SelectTrigger>
@@ -688,16 +686,18 @@ export function CreateObligatoryReportForm({
                     <FormLabel>Imagen del Reporte</FormLabel>
                     <div className="flex flex-col gap-3">
                       {(field.value instanceof File || initialData?.image) && (
-                        <div className="relative w-24 h-24 border rounded-md overflow-hidden">
-                          <Image
+                        <div className="w-24 h-24 border rounded-md overflow-hidden">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
                             src={
                               field.value instanceof File
                                 ? URL.createObjectURL(field.value)
-                                : `${process.env.NEXT_PUBLIC_STORAGE_BASE_URL}${initialData?.image}`
+                                : initialData!.image!.startsWith("http")
+                                  ? initialData!.image!
+                                  : `${process.env.NEXT_PUBLIC_STORAGE_BASE_URL}${initialData!.image!}`
                             }
                             alt="Preview"
-                            fill
-                            className="object-contain"
+                            className="w-full h-full object-contain"
                           />
                         </div>
                       )}
@@ -723,12 +723,24 @@ export function CreateObligatoryReportForm({
                   <FormItem>
                     <FormLabel>Documento PDF</FormLabel>
                     <div className="flex flex-col gap-3">
-                      {field.value && (
+                      {field.value instanceof File ? (
                         <div>
                           <p className="text-xs text-muted-foreground">Archivo seleccionado:</p>
                           <p className="font-semibold text-sm">{field.value.name}</p>
                         </div>
-                      )}
+                      ) : initialData?.document ? (
+                        <div>
+                          <p className="text-xs text-muted-foreground">Documento actual:</p>
+                          <a
+                            href={initialData.document}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-sm font-medium text-blue-600 hover:underline"
+                          >
+                            Ver documento
+                          </a>
+                        </div>
+                      ) : null}
                       <FormControl>
                         <Input
                           type="file"

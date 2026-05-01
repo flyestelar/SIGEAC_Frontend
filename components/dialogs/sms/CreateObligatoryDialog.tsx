@@ -12,11 +12,11 @@ import {
 } from "@/components/ui/dialog";
 import { CreateObligatoryReportForm } from "@/components/forms/sms/CreateObligatoryReportForm";
 import { useState } from "react";
-import { ObligatoryReport } from "@/types";
+import { ObligatoryReportResource } from "@/.gen/api/types.gen";
 
 interface FormProps {
   title: string;
-  initialData?: ObligatoryReport;
+  initialData?: ObligatoryReportResource;
   isEditing?: boolean;
 }
 

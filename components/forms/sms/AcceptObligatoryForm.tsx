@@ -68,9 +68,11 @@ export function AcceptObligatoryReport({ onClose, initialData }: FormProps) {
           flight_destiny: initialData.flight_destiny,
           flight_number: initialData.flight_number,
           flight_origin: initialData.flight_origin,
-          incidents: initialData.incidents
-            ? JSON.parse(initialData.incidents)
-            : [],
+          incidents: Array.isArray(initialData.incidents)
+            ? initialData.incidents
+            : typeof initialData.incidents === "string" && initialData.incidents.trim()
+              ? (() => { try { return JSON.parse(initialData.incidents as string); } catch { return []; } })()
+              : [],
           other_incidents: initialData.other_incidents != null ? String(initialData.other_incidents) : "",
           report_date: initialData.report_date ? new Date(initialData.report_date) : new Date(),
           incident_date: initialData.incident_date ? new Date(initialData.incident_date) : new Date(),

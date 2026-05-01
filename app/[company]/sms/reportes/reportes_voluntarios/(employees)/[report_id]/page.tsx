@@ -36,10 +36,12 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
+import { ArrowLeft } from "lucide-react";
 
 const ShowVoluntaryReport = () => {
   const { report_id } = useParams<{ report_id: string }>();
+  const router = useRouter();
   const { selectedCompany } = useCompanyStore();
 
   const {
@@ -125,17 +127,12 @@ const ShowVoluntaryReport = () => {
   // ==========================================================
 
   const renderBasicInfo = () => {
-    // 1. Tipamos el parámetro para evitar el error ts(7006)
     const formatFriendlyDate = (dateString: string | null | undefined) => {
       if (!dateString) return null;
-      // Evitamos problemas de zona horaria picando la cadena directamente
-      const soloFecha = dateString.split(' ')[0]; // Extrae "2026-04-10"
+      const soloFecha = dateString.split(' ')[0];
       const [year, month, day] = soloFecha.split('-');
       return `${day}-${month}-${year}`;
     };
-
-    // 2. Usamos una referencia con 'any' para evitar que TS se queje de las propiedades faltantes
-    const reportData = voluntaryReport as any;
 
     return (
       <Card>
@@ -152,8 +149,8 @@ const ShowVoluntaryReport = () => {
             <div>
               <p className="text-sm font-medium">Número de Reporte</p>
               <p className="font-semibold">
-                {reportData?.report_number
-                  ? `RVP-${reportData.report_number}`
+                {voluntaryReport?.report_number
+                  ? `RVP-${voluntaryReport.report_number}`
                   : "N/A"}
               </p>
             </div>
@@ -165,9 +162,8 @@ const ShowVoluntaryReport = () => {
             <div>
               <p className="text-sm font-medium">Fecha del Reporte</p>
               <p className="font-medium">
-                {/* Ajustado para usar el valor de reportData */}
-                {reportData?.report_date 
-                  ? format(new Date(reportData.report_date.replace(/-/g, '/')), "PPP", { locale: es })
+                {voluntaryReport?.report_date
+                  ? format(new Date(voluntaryReport.report_date.replace(/-/g, '/')), "PPP", { locale: es })
                   : "N/A"}
               </p>
             </div>
@@ -181,26 +177,26 @@ const ShowVoluntaryReport = () => {
             </div>
             <Badge
               variant={
-                reportData?.status === "CERRADO" ? "default" : "secondary"
+                voluntaryReport?.status === "CERRADO" ? "default" : "secondary"
               }
               className={
-                reportData?.status === "CERRADO"
+                voluntaryReport?.status === "CERRADO"
                   ? "bg-green-100 text-green-800"
                   : "bg-red-100 text-red-800"
               }
             >
-              {reportData?.status || "PENDIENTE"}
+              {voluntaryReport?.status || "PENDIENTE"}
             </Badge>
           </div>
 
           {/* Fecha de Cierre: Solo aparece si el estado es CERRADO y la fecha existe */}
-          {reportData?.status === "CERRADO" && reportData?.close_date && (
+          {voluntaryReport?.status === "CERRADO" && voluntaryReport?.close_date && (
             <div className="flex items-center gap-3 pt-3 mt-2 border-t border-dashed">
               <CalendarCheck className="w-5 h-5 flex-shrink-0 text-green-600" />
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Fecha de Cierre</p>
                 <p className="font-semibold text-green-700">
-                  {formatFriendlyDate(reportData.close_date)}
+                  {formatFriendlyDate(voluntaryReport.close_date)}
                 </p>
               </div>
             </div>
@@ -220,19 +216,19 @@ const ShowVoluntaryReport = () => {
       </CardHeader>
       <CardContent className="space-y-3">
         <div>
-          <p className="text-sm font-medium mb-1">Área</p>
-          <p className="font-medium">{voluntaryReport?.danger_area || "N/A"}</p>
+          <p className="text-sm font-medium mb-1">Área de Identificación</p>
+          <p className="font-medium">{voluntaryReport?.finding_location || "N/A"}</p>
         </div>
         <div>
-          <p className="text-sm font-medium mb-1">Base</p>
+          <p className="text-sm font-medium mb-1">Estación</p>
           <p className="font-medium">
-            {voluntaryReport?.danger_location || "N/A"}
+            {voluntaryReport?.station || "N/A"}
           </p>
         </div>
         <div>
-          <p className="text-sm font-medium mb-1">Localización exacta</p>
+          <p className="text-sm font-medium mb-1">Localización específica</p>
           <p className="font-medium">
-            {voluntaryReport?.airport_location || "N/A"}
+            {voluntaryReport?.finding_location_other || "N/A"}
           </p>
         </div>
       </CardContent>
@@ -316,11 +312,7 @@ const ShowVoluntaryReport = () => {
   );
 
   const renderReporterInfo = () => {
-    const isAnonymous =
-      !voluntaryReport?.reporter_phone &&
-      !voluntaryReport?.reporter_email &&
-      !voluntaryReport?.reporter_name &&
-      !voluntaryReport?.reporter_last_name;
+    const isAnonymous = voluntaryReport?.is_anonymous;
 
     return (
       <Card>
@@ -342,8 +334,8 @@ const ShowVoluntaryReport = () => {
                   <User className="w-4 h-4" /> Nombre
                 </p>
                 <p className="font-medium">
-                  {voluntaryReport.reporter_name || "N/A"}{" "}
-                  {voluntaryReport.reporter_last_name}
+                  {voluntaryReport?.reporter_name || "N/A"}{" "}
+                  {voluntaryReport?.reporter_last_name}
                 </p>
               </div>
               <div>
@@ -351,7 +343,7 @@ const ShowVoluntaryReport = () => {
                   <Mail className="w-4 h-4" /> Email
                 </p>
                 <p className="font-medium">
-                  {voluntaryReport.reporter_email || "N/A"}
+                  {voluntaryReport?.reporter_email || "N/A"}
                 </p>
               </div>
               <div>
@@ -359,7 +351,7 @@ const ShowVoluntaryReport = () => {
                   <Phone className="w-4 h-4" /> Teléfono
                 </p>
                 <p className="font-medium">
-                  {voluntaryReport.reporter_phone || "N/A"}
+                  {voluntaryReport?.reporter_phone || "N/A"}
                 </p>
               </div>
             </div>
@@ -381,7 +373,7 @@ const ShowVoluntaryReport = () => {
               onClick={() => {
                 if (!voluntaryReport?.image) return;
                 handleDownloadImage(
-                  `${process.env.NEXT_PUBLIC_STORAGE_BASE_URL}${voluntaryReport.image}`,
+                  voluntaryReport.image!,
                   `Imagen-RVP-${voluntaryReport.report_number || "adjunta"}.jpg`,
                 );
               }}
@@ -395,7 +387,7 @@ const ShowVoluntaryReport = () => {
               <DialogTrigger asChild>
                 <div className="relative group w-full max-w-sm h-64 mx-auto cursor-pointer">
                   <Image
-                    src={`${process.env.NEXT_PUBLIC_STORAGE_BASE_URL}${voluntaryReport.image}`}
+                    src={voluntaryReport.image!}
                     alt="Imagen del reporte"
                     fill
                     className="w-full h-full object-contain rounded-md border group-hover:border-gray-400 transition-all"
@@ -417,7 +409,7 @@ const ShowVoluntaryReport = () => {
                 </DialogHeader>
                 <div className="relative h-[60vh] flex justify-center">
                   <Image
-                    src={`${process.env.NEXT_PUBLIC_STORAGE_BASE_URL}${voluntaryReport.image}`}
+                    src={voluntaryReport.image!}
                     alt="Imagen completa del reporte"
                     fill
                     className="object-contain"
@@ -433,7 +425,7 @@ const ShowVoluntaryReport = () => {
         <div className="border border-gray-300 dark:border-gray-600 p-6 rounded-lg text-center">
           <h3 className="text-xl font-semibold mb-4">Documento Adjunto</h3>
           <a
-            href={`${process.env.NEXT_PUBLIC_STORAGE_BASE_URL}${voluntaryReport.document}`}
+            href={voluntaryReport.document!}
             download={`RVP-${voluntaryReport.report_number}.pdf`}
             className="inline-flex items-center px-5 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700"
           >
@@ -451,6 +443,12 @@ const ShowVoluntaryReport = () => {
 
   return (
     <ContentLayout title="Detalles del Reporte Voluntario">
+      <div className="mb-4">
+        <Button variant="outline" size="sm" onClick={() => router.push(`/${selectedCompany?.slug}/sms/reportes`)}>
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Volver
+        </Button>
+      </div>
       {renderActionButtons()}
 
       {/* LOADING */}
