@@ -8,7 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { DispatchReportDialog } from "@/components/dialogs/mantenimiento/almacen/DispatchReportDialog";
+import { DispatchReportDialog } from "@/components/dialogs/aerolinea/administracion/DispatchReportDialog";
 
 interface DispatchWarehouseReportsProps {
   companySlug: string;

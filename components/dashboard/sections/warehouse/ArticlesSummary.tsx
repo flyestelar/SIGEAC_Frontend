@@ -70,12 +70,12 @@ export default function ArticlesSummary({ data, isLoading, isError }: Props) {
     {
       name: 'Salidas Totales',
       value: data.dispatchCount,
-      color: 'url(#gradEmerald)'
+      color: 'url(#gradTeal)'
     },
     {
       name: 'Salidas a Aeronaves',
       value: data.dispatchAircraftCount,
-      color: 'url(#gradFuchsia)'
+      color: 'url(#gradSlate)'
     },
     {
       name: 'Salidas a Taller',
@@ -111,28 +111,28 @@ export default function ArticlesSummary({ data, isLoading, isError }: Props) {
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6 text-center">
 
               <div>
-                <div className="text-3xl font-bold bg-gradient-to-b from-indigo-500 to-violet-400 bg-clip-text text-transparent">
+                <div className="text-3xl font-bold bg-gradient-to-b from-sky-600 to-cyan-500 bg-clip-text text-transparent">
                   {data.storedCount ?? 0}%
                 </div>
                 <p className="text-sm text-slate-500">Artículos Activos</p>
               </div>
 
               <div>
-                <div className="text-3xl font-bold bg-gradient-to-b from-emerald-500 to-teal-400 bg-clip-text text-transparent">
+                <div className="text-3xl font-bold bg-gradient-to-b from-teal-600 to-emerald-500 bg-clip-text text-transparent">
                   {data.dispatchCount ?? 0}
                 </div>
                 <p className="text-sm text-slate-500">Salidas Totales</p>
               </div>
 
               <div>
-                <div className="text-3xl font-bold bg-gradient-to-b from-fuchsia-500 to-pink-400 bg-clip-text text-transparent">
+                <div className="text-3xl font-bold bg-gradient-to-b from-slate-700 to-slate-500 dark:from-slate-200 dark:to-slate-400 bg-clip-text text-transparent">
                   {data.dispatchAircraftCount ?? 0}
                 </div>
                 <p className="text-sm text-slate-500">Salidas a Aeronaves</p>
               </div>
 
               <div>
-                <div className="text-3xl font-bold bg-gradient-to-b from-amber-500 to-orange-400 bg-clip-text text-transparent">
+                <div className="text-3xl font-bold bg-gradient-to-b from-amber-600 to-orange-500 bg-clip-text text-transparent">
                   {data.dispatchWorkOrderCount ?? 0}
                 </div>
                 <p className="text-sm text-slate-500">Salidas a Taller</p>
@@ -218,19 +218,19 @@ export default function ArticlesSummary({ data, isLoading, isError }: Props) {
             <BarChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
 
               <defs>
-                <linearGradient id="gradEmerald" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#10b981" stopOpacity={1} />
-                  <stop offset="100%" stopColor="#34d399" stopOpacity={0.6} />
+                <linearGradient id="gradTeal" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#0F766E" stopOpacity={1} />
+                  <stop offset="100%" stopColor="#14B8A6" stopOpacity={0.70} />
                 </linearGradient>
 
-                <linearGradient id="gradFuchsia" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#d946ef" stopOpacity={1} />
-                  <stop offset="100%" stopColor="#f472b6" stopOpacity={0.6} />
+                <linearGradient id="gradSlate" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#334155" stopOpacity={1} />
+                  <stop offset="100%" stopColor="#64748B" stopOpacity={0.72} />
                 </linearGradient>
 
                 <linearGradient id="gradAmber" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#f59e0b" stopOpacity={1} />
-                  <stop offset="100%" stopColor="#fb923c" stopOpacity={0.6} />
+                  <stop offset="0%" stopColor="#D97706" stopOpacity={1} />
+                  <stop offset="100%" stopColor="#F59E0B" stopOpacity={0.72} />
                 </linearGradient>
               </defs>
 

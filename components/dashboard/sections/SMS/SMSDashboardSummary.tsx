@@ -47,11 +47,16 @@ function TintedCard({
 }) {
   return (
     <Card
-      className={`relative overflow-hidden rounded-3xl border bg-background/70 backdrop-blur-xl shadow-sm ${className}`}
+      className={`relative overflow-hidden rounded-3xl border bg-background/75 backdrop-blur-xl shadow-sm ${className}`}
       style={{
-        borderColor: `rgba(${tone}, 0.22)`,
-        backgroundImage:
-          "linear-gradient(to bottom right, rgba(245,158,11,0.06), transparent 65%)",
+        borderColor: `rgba(${tone}, 0.14)`,
+        backgroundImage: `
+          linear-gradient(
+            to bottom right,
+            rgba(${tone}, 0.035),
+            transparent 68%
+          )
+        `,
       }}
     >
       {children}

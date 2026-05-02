@@ -111,9 +111,9 @@ export default function DispatchSummary({
   const purpleTone = "168,85,247"
 
   const dispatchChartData = [
-    { name: 'Salidas\nTotales', value: data.dispatchCount ?? 0, color: '#a855f7' },
-    { name: 'Salidas a\nAeronaves', value: data.dispatchAircraftCount ?? 0, color: '#c084fc' },
-    { name: 'Salidas a\nTaller', value: data.dispatchWorkOrderCount ?? 0, color: '#d8b4fe' },
+    { name: 'Salidas\nTotales', value: data.dispatchCount ?? 0, color: '#0EA5E9' },
+    { name: 'Salidas a\nAeronaves', value: data.dispatchAircraftCount ?? 0, color: '#14B8A6' },
+    { name: 'Salidas a\nTaller', value: data.dispatchWorkOrderCount ?? 0, color: '#F59E0B' },
   ]
 
   return (

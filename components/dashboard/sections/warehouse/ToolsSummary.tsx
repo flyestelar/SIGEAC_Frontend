@@ -60,8 +60,8 @@ export default function ToolsSummary({ data, isLoading, isError }: Props) {
   const skyTone = "14,165,233"
 
   const chartData = [
-    { type: 'Por Calibrar', count: data.expired_tools_count, color: 'url(#gradCoral)' },
-    { type: 'Próxima Calibración', count: data.tool_need_calibration_count, color: 'url(#gradViolet)' }
+    { type: 'Por Calibrar', count: data.expired_tools_count, color: 'url(#gradAmber)' },
+    { type: 'Próxima Calibración', count: data.tool_need_calibration_count, color: 'url(#gradTeal)' }
   ]
 
   return (
@@ -191,14 +191,14 @@ export default function ToolsSummary({ data, isLoading, isError }: Props) {
             <BarChart data={chartData} layout="vertical" margin={{ top: 5, right: 20, left: 20, bottom: 5 }}>
 
               <defs>
-                <linearGradient id="gradCoral" x1="0" y1="0" x2="1" y2="0">
-                  <stop offset="0%" stopColor="#fb7185" stopOpacity={1} />
-                  <stop offset="100%" stopColor="#fda4af" stopOpacity={0.6} />
+                <linearGradient id="gradAmber" x1="0" y1="0" x2="1" y2="0">
+                  <stop offset="0%" stopColor="#D97706" stopOpacity={1} />
+                  <stop offset="100%" stopColor="#F59E0B" stopOpacity={0.72} />
                 </linearGradient>
 
-                <linearGradient id="gradViolet" x1="0" y1="0" x2="1" y2="0">
-                  <stop offset="0%" stopColor="#a855f7" stopOpacity={1} />
-                  <stop offset="100%" stopColor="#c084fc" stopOpacity={0.6} />
+                <linearGradient id="gradTeal" x1="0" y1="0" x2="1" y2="0">
+                  <stop offset="0%" stopColor="#0F766E" stopOpacity={1} />
+                  <stop offset="100%" stopColor="#14B8A6" stopOpacity={0.72} />
                 </linearGradient>
               </defs>
 
