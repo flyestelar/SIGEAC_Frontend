@@ -191,14 +191,14 @@ export default function ToolsSummary({ data, isLoading, isError }: Props) {
             <BarChart data={chartData} layout="vertical" margin={{ top: 5, right: 20, left: 20, bottom: 5 }}>
 
               <defs>
-                <linearGradient id="indigoDispatch" x1="0" y1="0" x2="1" y2="0">
-                  <stop offset="0%" stopColor="#4F46E5" stopOpacity={1} />
-                  <stop offset="100%" stopColor="#6366F1" stopOpacity={0.6} />
+                <linearGradient id="indigoDispatch" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#6366F1" stopOpacity={1} />
+                  <stop offset="100%" stopColor="#818CF8" stopOpacity={0.6} />
                 </linearGradient>
 
-                <linearGradient id="cyanIncoming" x1="0" y1="0" x2="1" y2="0">
-                  <stop offset="0%" stopColor="#0F766E" stopOpacity={1} />
-                  <stop offset="100%" stopColor="#14B8A6" stopOpacity={0.6} />
+                <linearGradient id="cyanIncoming" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#22D3EE" stopOpacity={1} />
+                  <stop offset="100%" stopColor="#67E8F9" stopOpacity={0.6} />
                 </linearGradient>
               </defs>
 
