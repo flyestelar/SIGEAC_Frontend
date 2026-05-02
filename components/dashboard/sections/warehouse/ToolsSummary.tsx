@@ -193,12 +193,12 @@ export default function ToolsSummary({ data, isLoading, isError }: Props) {
               <defs>
                 <linearGradient id="indigoDispatch" x1="0" y1="0" x2="1" y2="0">
                   <stop offset="0%" stopColor="#4F46E5" stopOpacity={1} />
-                  <stop offset="100%" stopColor="#6366F1" stopOpacity={0.72} />
+                  <stop offset="100%" stopColor="#6366F1" stopOpacity={0.6} />
                 </linearGradient>
 
                 <linearGradient id="cyanIncoming" x1="0" y1="0" x2="1" y2="0">
                   <stop offset="0%" stopColor="#0F766E" stopOpacity={1} />
-                  <stop offset="100%" stopColor="#14B8A6" stopOpacity={0.72} />
+                  <stop offset="100%" stopColor="#14B8A6" stopOpacity={0.6} />
                 </linearGradient>
               </defs>
 

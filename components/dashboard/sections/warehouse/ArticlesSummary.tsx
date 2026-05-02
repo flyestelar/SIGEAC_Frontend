@@ -220,17 +220,17 @@ export default function ArticlesSummary({ data, isLoading, isError }: Props) {
               <defs>
                 <linearGradient id="indigoDispatch" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="0%" stopColor="#4F46E5" stopOpacity={1} />
-                  <stop offset="100%" stopColor="#6366F1" stopOpacity={0.70} />
+                  <stop offset="100%" stopColor="#6366F1" stopOpacity={0.6} />
                 </linearGradient>
 
                 <linearGradient id="cyanIncoming" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="0%" stopColor="#0F766E" stopOpacity={1} />
-                  <stop offset="100%" stopColor="#64748B" stopOpacity={0.72} />
+                  <stop offset="100%" stopColor="#64748B" stopOpacity={0.6} />
                 </linearGradient>
 
                 <linearGradient id="violetWorkOrder" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="0%" stopColor="#7C3AED" stopOpacity={1} />
-                  <stop offset="100%" stopColor="#8B5CF6" stopOpacity={0.72} />
+                  <stop offset="100%" stopColor="#8B5CF6" stopOpacity={0.6} />
                 </linearGradient>
               </defs>
 
