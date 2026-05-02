@@ -70,17 +70,17 @@ export default function ArticlesSummary({ data, isLoading, isError }: Props) {
     {
       name: 'Salidas Totales',
       value: data.dispatchCount,
-      color: 'url(#gradTeal)'
+      color: 'url(#indigoDispatch)'
     },
     {
       name: 'Salidas a Aeronaves',
       value: data.dispatchAircraftCount,
-      color: 'url(#gradSlate)'
+      color: 'url(#cyanIncoming)'
     },
     {
       name: 'Salidas a Taller',
       value: data.dispatchWorkOrderCount,
-      color: 'url(#gradAmber)'
+      color: 'url(#violetWorkOrder)'
     },
   ]
 
@@ -197,8 +197,8 @@ export default function ArticlesSummary({ data, isLoading, isError }: Props) {
       </div>
 
       {/* GRÁFICO */}
-      <TintedCard tone={cyanTone}>
-        <CardHeader className="text-center pb-2 space-y-2">
+      <TintedCard tone={cyanTone} >
+        <CardHeader className="text-center pb-4 space-y-3">
           <div className="flex justify-center">
             <div className="p-2 rounded-xl bg-cyan-500/10 text-cyan-600">
               <AlertTriangle className="size-5" />
@@ -213,28 +213,32 @@ export default function ArticlesSummary({ data, isLoading, isError }: Props) {
           </CardDescription>
         </CardHeader>
 
-        <CardContent className="flex justify-center items-center h-80">
+        <CardContent className="h-[400px] pt-10 pb-8 px-6">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+            <BarChart data={chartData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
 
               <defs>
-                <linearGradient id="gradTeal" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#0F766E" stopOpacity={1} />
-                  <stop offset="100%" stopColor="#14B8A6" stopOpacity={0.70} />
+                <linearGradient id="indigoDispatch" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#4F46E5" stopOpacity={1} />
+                  <stop offset="100%" stopColor="#6366F1" stopOpacity={0.70} />
                 </linearGradient>
 
-                <linearGradient id="gradSlate" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#334155" stopOpacity={1} />
+                <linearGradient id="cyanIncoming" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#0F766E" stopOpacity={1} />
                   <stop offset="100%" stopColor="#64748B" stopOpacity={0.72} />
                 </linearGradient>
 
-                <linearGradient id="gradAmber" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#D97706" stopOpacity={1} />
-                  <stop offset="100%" stopColor="#F59E0B" stopOpacity={0.72} />
+                <linearGradient id="violetWorkOrder" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#7C3AED" stopOpacity={1} />
+                  <stop offset="100%" stopColor="#8B5CF6" stopOpacity={0.72} />
                 </linearGradient>
               </defs>
 
-              <XAxis dataKey="name" />
+              <XAxis
+                dataKey="name"
+                tickMargin={10}
+                padding={{ left: 10, right: 10 }}
+              />
               <YAxis />
               <Tooltip content={<CustomTooltip />} />
 

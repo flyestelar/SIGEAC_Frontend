@@ -111,9 +111,9 @@ export default function DispatchSummary({
   const purpleTone = "168,85,247"
 
   const dispatchChartData = [
-    { name: 'Salidas\nTotales', value: data.dispatchCount ?? 0, color: '#0EA5E9' },
+    { name: 'Salidas\nTotales', value: data.dispatchCount ?? 0, color: '#0F766E' },
     { name: 'Salidas a\nAeronaves', value: data.dispatchAircraftCount ?? 0, color: '#14B8A6' },
-    { name: 'Salidas a\nTaller', value: data.dispatchWorkOrderCount ?? 0, color: '#F59E0B' },
+    { name: 'Salidas a\nTaller', value: data.dispatchWorkOrderCount ?? 0, color: '#2DD4BF' },
   ]
 
   return (
@@ -140,9 +140,9 @@ export default function DispatchSummary({
 
           <CardContent className="py-8">
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-8">
-              <Metric value={data.dispatchCount ?? 0} label="Salidas Totales" tone="245,158,11" />
-              <Metric value={data.dispatchAircraftCount ?? 0} label="Aeronaves" tone="249,115,22" />
-              <Metric value={data.dispatchWorkOrderCount ?? 0} label="Taller" tone="59,130,246" />
+              <Metric value={data.dispatchCount ?? 0} label="Salidas Totales" tone="15,118,110" />
+              <Metric value={data.dispatchAircraftCount ?? 0} label="Aeronaves" tone="20,184,166" />
+              <Metric value={data.dispatchWorkOrderCount ?? 0} label="Taller" tone="45,212,191" />
             </div>
           </CardContent>
         </TintedCard>
@@ -167,8 +167,8 @@ export default function DispatchSummary({
 
           <CardContent className="py-8">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-12">
-              <Metric value={`${data.storedCount ?? 0}%`} label="Artículos Activos" tone="34,197,94" />
-              <Metric value={data.entryCount ?? 0} label="Entradas Totales" tone="59,130,246" />
+              <Metric value={`${data.storedCount ?? 0}%`} label="Artículos Activos" tone="29,78,216" />
+              <Metric value={data.entryCount ?? 0} label="Entradas Totales" tone="79,70,229" />
             </div>
           </CardContent>
         </TintedCard>
