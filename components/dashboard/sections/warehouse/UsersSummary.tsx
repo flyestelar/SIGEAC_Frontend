@@ -15,7 +15,7 @@ interface Props {
 }
 
 /* =========================
-   CARD TINTADO (INDIGO)
+   CARD TINTADO (NO CAMBIA)
    ========================= */
 function TintedCard({
   children,
@@ -40,7 +40,7 @@ function TintedCard({
 }
 
 /* =========================
-   CUSTOM TOOLTIP
+   TOOLTIP (SIN CAMBIOS)
    ========================= */
 function CustomTooltip({ active, payload, label }: any) {
   if (!active || !payload?.length) return null
@@ -69,7 +69,13 @@ function CustomTooltip({ active, payload, label }: any) {
   )
 }
 
-export default function UsersSummary({ data, isLoading, isError, currentUserRole }: Props) {
+export default function UsersSummary({
+  data,
+  isLoading,
+  isError,
+  currentUserRole
+}: Props) {
+
   const [, tick] = useState(0)
 
   useEffect(() => {
@@ -108,10 +114,13 @@ export default function UsersSummary({ data, isLoading, isError, currentUserRole
   }
 
   return (
-    <div className="flex gap-6">
+    /* =========================
+       FIX PRINCIPAL: MOBILE STACK
+       ========================= */
+    <div className="flex flex-col lg:flex-row gap-6">
 
-      {/* USERS */}
-      <div className="flex-[4.5]">
+      {/* USERS TABLE */}
+      <div className="w-full lg:flex-[4.5]">
         <TintedCard tone={indigoTone} className="h-[520px] flex flex-col">
 
           <CardHeader className="pb-2 text-center space-y-2">
@@ -124,44 +133,55 @@ export default function UsersSummary({ data, isLoading, isError, currentUserRole
             <CardTitle className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-100">
               Usuarios Almacén
             </CardTitle>
+
             <CardDescription className="mx-auto max-w-md text-sm leading-relaxed text-slate-500 dark:text-slate-400">
               Última actividad y cargo
             </CardDescription>
           </CardHeader>
 
           <CardContent className="flex-1 flex items-center justify-center">
-            <div className="overflow-hidden rounded-xl border border-indigo-100/40 dark:border-indigo-900/20 w-full">
 
-              <div className="overflow-y-auto max-h-[320px]">
-                <Table>
-                  <TableHeader className="sticky top-0 bg-background/80 backdrop-blur">
-                    <TableRow>
-                      <TableHead className="text-center">Nombre</TableHead>
-                      <TableHead className="text-center">Cargo</TableHead>
-                      <TableHead className="text-center">Estado</TableHead>
-                    </TableRow>
-                  </TableHeader>
+            {/* FIX MOBILE: scroll horizontal controlado */}
+            <div className="w-full overflow-hidden rounded-xl border border-indigo-100/40 dark:border-indigo-900/20">
 
-                  <TableBody>
-                    {filteredUsers.map(u => (
-                      <TableRow key={u.id} className="hover:bg-indigo-50/30 dark:hover:bg-indigo-950/20 transition-colors">
-                        <TableCell className="text-center">{u.name}</TableCell>
-                        <TableCell className="text-center">{u.job_title}</TableCell>
-                        <TableCell className="text-center">
-                          <span className={`px-3 py-1 rounded-full text-xs font-medium transition-all ${
-                            isActive(u.last_used_at)
-                              ? 'bg-emerald-500/15 text-emerald-600'
-                              : 'bg-slate-500/15 text-slate-500'
-                          }`}>
-                            {isActive(u.last_used_at) ? 'Activo' : 'Inactivo'}
-                          </span>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
+              <div className="overflow-x-auto">
+                <div className="min-w-[520px] lg:min-w-full">
 
-                </Table>
+                  <div className="overflow-y-auto max-h-[260px] lg:max-h-[320px]">
+
+                    <Table>
+                      <TableHeader className="sticky top-0 bg-background/80 backdrop-blur">
+                        <TableRow>
+                          <TableHead className="text-center">Nombre</TableHead>
+                          <TableHead className="text-center">Cargo</TableHead>
+                          <TableHead className="text-center">Estado</TableHead>
+                        </TableRow>
+                      </TableHeader>
+
+                      <TableBody>
+                        {filteredUsers.map(u => (
+                          <TableRow key={u.id}>
+                            <TableCell className="text-center">{u.name}</TableCell>
+                            <TableCell className="text-center">{u.job_title}</TableCell>
+                            <TableCell className="text-center">
+                              <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                                isActive(u.last_used_at)
+                                  ? 'bg-emerald-500/15 text-emerald-600'
+                                  : 'bg-slate-500/15 text-slate-500'
+                              }`}>
+                                {isActive(u.last_used_at) ? 'Activo' : 'Inactivo'}
+                              </span>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+
+                    </Table>
+
+                  </div>
+                </div>
               </div>
+
             </div>
           </CardContent>
 
@@ -169,7 +189,7 @@ export default function UsersSummary({ data, isLoading, isError, currentUserRole
       </div>
 
       {/* CHART */}
-      <div className="flex-[7.5]">
+      <div className="w-full lg:flex-[7.5]">
         <TintedCard tone={indigoTone} className="h-[520px] flex flex-col">
 
           <CardHeader className="text-center pb-2 space-y-2">
@@ -179,39 +199,73 @@ export default function UsersSummary({ data, isLoading, isError, currentUserRole
               </div>
             </div>
 
-            <CardTitle className="text-2xl font-semibold">Actividad de Usuarios</CardTitle>
+            <CardTitle className="text-2xl font-semibold">
+              Actividad de Usuarios
+            </CardTitle>
+
             <CardDescription className="mx-auto max-w-md text-sm leading-relaxed text-slate-500 dark:text-slate-400">
               Despachos e ingresos por usuario
             </CardDescription>
           </CardHeader>
 
-          <CardContent className="flex-1 flex items-center justify-center">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+          {/* FIX CRÍTICO CHART MOBILE */}
+          <CardContent className="flex-1 w-full overflow-hidden">
 
-                <XAxis dataKey="name" tick={{ fontSize: 12 }} />
-                <YAxis />
+            <div className="h-[300px] sm:h-full w-full">
 
-                <Tooltip content={<CustomTooltip />} />
+              <ResponsiveContainer width="100%" height="100%">
 
-                <defs>
-                  <linearGradient id="indigoDispatch" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#4f46e5" stopOpacity={1} />
-                    <stop offset="100%" stopColor="#6366f1" stopOpacity={0.6} />
-                  </linearGradient>
+                <BarChart
+                  data={chartData}
+                  margin={{ top: 10, right: 10, left: 0, bottom: 10 }}
+                >
 
-                  <linearGradient id="cyanIncoming" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#06b6d4" stopOpacity={1} />
-                    <stop offset="100%" stopColor="#22d3ee" stopOpacity={0.6} />
-                  </linearGradient>
-                </defs>
+                  {/* FIX EJE X MOBILE (evita labels pegadas/cortadas) */}
+                  <XAxis
+                    dataKey="name"
+                    tick={{ fontSize: 12 }}
+                    interval={0}
+                    angle={-15}
+                    textAnchor="end"
+                    height={60}
+                  />
 
-                {/* BARRAS LADO A LADO (NO STACK) */}
-                <Bar dataKey="dispatch" name="Salidas" radius={[6, 6, 0, 0]} fill="url(#indigoDispatch)" />
-                <Bar dataKey="incoming" name="Registros" radius={[6, 6, 0, 0]} fill="url(#cyanIncoming)" />
+                  <YAxis />
 
-              </BarChart>
-            </ResponsiveContainer>
+                  <Tooltip content={<CustomTooltip />} />
+
+                  <defs>
+                    <linearGradient id="indigoDispatch" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#4f46e5" stopOpacity={1} />
+                      <stop offset="100%" stopColor="#6366f1" stopOpacity={0.6} />
+                    </linearGradient>
+
+                    <linearGradient id="cyanIncoming" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#06b6d4" stopOpacity={1} />
+                      <stop offset="100%" stopColor="#22d3ee" stopOpacity={0.6} />
+                    </linearGradient>
+                  </defs>
+
+                  <Bar
+                    dataKey="dispatch"
+                    name="Salidas"
+                    radius={[6, 6, 0, 0]}
+                    fill="url(#indigoDispatch)"
+                  />
+
+                  <Bar
+                    dataKey="incoming"
+                    name="Registros"
+                    radius={[6, 6, 0, 0]}
+                    fill="url(#cyanIncoming)"
+                  />
+
+                </BarChart>
+
+              </ResponsiveContainer>
+
+            </div>
+
           </CardContent>
 
         </TintedCard>
