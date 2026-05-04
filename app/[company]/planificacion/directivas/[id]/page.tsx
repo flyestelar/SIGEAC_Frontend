@@ -30,6 +30,7 @@ import {
   useDeleteAirworthinessDirectiveApplicability,
 } from '@/hooks/planificacion/directivas/queries';
 import { formatDate } from '@/lib/helpers/format';
+import { useDebouncedInput } from '@/lib/useDebounce';
 import { useCompanyStore } from '@/stores/CompanyStore';
 import { AlertCircle, ArrowLeft, CheckCheck, FileBadge2, FileText, Pencil, Plus, RotateCcw, Search, ShieldCheck, Trash2 } from 'lucide-react';
 import Link from 'next/link';
@@ -103,9 +104,20 @@ const TabTable = ({
 };
 
 export default function AirworthinessDirectiveDetailPage() {
+  const complianceListPerPage = 10;
   const { id } = useParams<{ id: string }>();
   const directiveId = Number(id);
   const { selectedCompany } = useCompanyStore();
+  const [controlSearch, setControlSearch] = useState('');
+  const [controlSearchInput, setControlSearchInput] = useDebouncedInput('', setControlSearch, 350);
+  const [controlAircraftFilter, setControlAircraftFilter] = useState('all');
+  const [controlSort, setControlSort] = useState<'newest' | 'oldest' | 'aircraft'>('oldest');
+  const [controlPage, setControlPage] = useState(1);
+  const [executionSearch, setExecutionSearch] = useState('');
+  const [executionSearchInput, setExecutionSearchInput] = useDebouncedInput('', setExecutionSearch, 350);
+  const [executionAircraftFilter, setExecutionAircraftFilter] = useState('all');
+  const [executionSort, setExecutionSort] = useState<'newest' | 'oldest' | 'aircraft'>('newest');
+  const [executionPage, setExecutionPage] = useState(1);
   const {
     data: directiveResponse,
     isLoading,
@@ -115,15 +127,29 @@ export default function AirworthinessDirectiveDetailPage() {
     useGetAirworthinessDirectiveApplicabilities(Number.isFinite(directiveId) ? directiveId : undefined);
   const { data: controlsResponse, isLoading: isControlsLoading } = useGetAirworthinessDirectiveComplianceControls(
     Number.isFinite(directiveId) ? directiveId : undefined,
+    {
+      search: controlSearch || undefined,
+      aircraft_id: controlAircraftFilter !== 'all' ? Number(controlAircraftFilter) : undefined,
+      order_by: controlSort,
+      page: controlPage,
+      per_page: complianceListPerPage,
+    },
   );
   const { data: recordsResponse, isLoading: isRecordsLoading } = useGetAirworthinessDirectiveComplianceRecords(
     Number.isFinite(directiveId) ? directiveId : undefined,
+    {
+      search: executionSearch || undefined,
+      aircraft_id: executionAircraftFilter !== 'all' ? Number(executionAircraftFilter) : undefined,
+      order_by: executionSort,
+      page: executionPage,
+      per_page: complianceListPerPage,
+    },
   );
   const directive = directiveResponse?.data;
   const applicabilities = useMemo(() => applicabilitiesResponse?.data ?? [], [applicabilitiesResponse?.data]);
   const controls = useMemo(() => controlsResponse?.data ?? [], [controlsResponse?.data]);
   const records = useMemo(() => recordsResponse?.data ?? [], [recordsResponse?.data]);
-  const controlRows = useMemo(() => {
+  const pendingControlRows = useMemo(() => {
     const controlsByAircraftId = new Map(controls.map((item) => [Number(item.aircraft_id), item]));
 
     return applicabilities.filter((item) => item.is_applicable).map((item) => ({
@@ -131,62 +157,39 @@ export default function AirworthinessDirectiveDetailPage() {
       control: controlsByAircraftId.get(item.aircraft_id),
     }));
   }, [applicabilities, controls]);
-  const [controlSearch, setControlSearch] = useState('');
-  const [controlAircraftFilter, setControlAircraftFilter] = useState('all');
-  const [controlSort, setControlSort] = useState<'due-soonest' | 'due-latest' | 'aircraft'>('due-soonest');
   const controlAircraftOptions = useMemo(() => {
     const uniqueAircraft = new Map<string, { value: string; label: string }>();
 
-    controlRows.forEach(({ applicability, control }) => {
+    applicabilities.filter((item) => item.is_applicable).forEach((applicability) => {
       const value = String(applicability.aircraft_id);
       if (!uniqueAircraft.has(value)) {
         uniqueAircraft.set(value, {
           value,
-          label: control?.aircraft?.acronym ?? applicability.aircraft?.acronym ?? `#${applicability.aircraft_id}`,
+          label: applicability.aircraft?.acronym ?? `#${applicability.aircraft_id}`,
         });
       }
     });
 
     return Array.from(uniqueAircraft.values()).sort((left, right) => left.label.localeCompare(right.label));
-  }, [controlRows]);
-  const filteredControlRows = useMemo(() => {
-    const normalizedSearch = controlSearch.trim().toLowerCase();
+  }, [applicabilities]);
+  const controlRows = useMemo(() => {
+    const controlsByAircraftId = new Map(controls.map((item) => [Number(item.aircraft_id), item]));
+    const hasServerFilters = Boolean(controlSearch || controlAircraftFilter !== 'all' || controlSort !== 'oldest' || controlPage > 1);
 
-    return [...controlRows]
-      .filter(({ applicability, control }) => {
-        if (controlAircraftFilter !== 'all' && String(applicability.aircraft_id) !== controlAircraftFilter) {
-          return false;
-        }
+    const controlOnlyRows = controls.map((control) => {
+      const applicability = applicabilities.find((item) => item.aircraft_id === Number(control.aircraft_id) && item.is_applicable);
+      return applicability
+        ? { applicability, control }
+        : undefined;
+    }).filter((item): item is { applicability: AirworthinessDirectiveApplicabilityResource; control: AirworthinessDirectiveComplianceControlResource } => Boolean(item));
 
-        if (!normalizedSearch) {
-          return true;
-        }
+    if (hasServerFilters) {
+      return controlOnlyRows;
+    }
 
-        return [
-          control?.aircraft?.acronym,
-          control?.aircraft?.model,
-          applicability.aircraft?.acronym,
-          applicability.aircraft?.model,
-          control?.compliance_status,
-          control?.urgency,
-        ].some((field) => field?.toLowerCase().includes(normalizedSearch));
-      })
-      .sort((left, right) => {
-        if (controlSort === 'aircraft') {
-          const leftAircraft = left.control?.aircraft?.acronym ?? left.applicability.aircraft?.acronym ?? `#${left.applicability.aircraft_id}`;
-          const rightAircraft = right.control?.aircraft?.acronym ?? right.applicability.aircraft?.acronym ?? `#${right.applicability.aircraft_id}`;
-          return leftAircraft.localeCompare(rightAircraft);
-        }
-
-        const leftTime = left.control?.calendar_due_date ? new Date(left.control.calendar_due_date).getTime() : Number.MAX_SAFE_INTEGER;
-        const rightTime = right.control?.calendar_due_date ? new Date(right.control.calendar_due_date).getTime() : Number.MAX_SAFE_INTEGER;
-
-        return controlSort === 'due-latest' ? rightTime - leftTime : leftTime - rightTime;
-      });
-  }, [controlAircraftFilter, controlRows, controlSearch, controlSort]);
-  const [executionSearch, setExecutionSearch] = useState('');
-  const [executionAircraftFilter, setExecutionAircraftFilter] = useState('all');
-  const [executionSort, setExecutionSort] = useState<'newest' | 'oldest' | 'aircraft'>('newest');
+    const pendingRows = pendingControlRows.filter((item) => !item.control);
+    return [...pendingRows, ...controlOnlyRows];
+  }, [applicabilities, controlAircraftFilter, controlPage, controlSearch, controlSort, controls, pendingControlRows]);
   const executionAircraftOptions = useMemo(() => {
     const uniqueAircraft = new Map<string, { value: string; label: string }>();
 
@@ -202,48 +205,17 @@ export default function AirworthinessDirectiveDetailPage() {
 
     return Array.from(uniqueAircraft.values()).sort((left, right) => left.label.localeCompare(right.label));
   }, [records]);
-  const filteredExecutionRecords = useMemo(() => {
-    const normalizedSearch = executionSearch.trim().toLowerCase();
-
-    return [...records]
-      .filter((record) => {
-        if (executionAircraftFilter !== 'all' && String(record.aircraft_id) !== executionAircraftFilter) {
-          return false;
-        }
-
-        if (!normalizedSearch) {
-          return true;
-        }
-
-        return [
-          record.work_order_number,
-          record.inspector_license_signature,
-          record.remarks,
-          record.aircraft?.acronym,
-        ].some((field) => field?.toLowerCase().includes(normalizedSearch));
-      })
-      .sort((left, right) => {
-        if (executionSort === 'aircraft') {
-          return (left.aircraft?.acronym ?? `#${left.aircraft_id}`).localeCompare(
-            right.aircraft?.acronym ?? `#${right.aircraft_id}`,
-          );
-        }
-
-        const leftTime = left.execution_date ? new Date(left.execution_date).getTime() : 0;
-        const rightTime = right.execution_date ? new Date(right.execution_date).getTime() : 0;
-
-        return executionSort === 'oldest' ? leftTime - rightTime : rightTime - leftTime;
-      });
-  }, [executionAircraftFilter, executionSearch, executionSort, records]);
   const resetControlFilters = () => {
-    setControlSearch('');
+    setControlSearchInput('');
     setControlAircraftFilter('all');
-    setControlSort('due-soonest');
+    setControlSort('oldest');
+    setControlPage(1);
   };
   const resetExecutionFilters = () => {
-    setExecutionSearch('');
+    setExecutionSearchInput('');
     setExecutionAircraftFilter('all');
     setExecutionSort('newest');
+    setExecutionPage(1);
   };
   const summary = directive?.summary;
   const [isCreateApplicabilityOpen, setIsCreateApplicabilityOpen] = useState(false);
@@ -552,14 +524,23 @@ export default function AirworthinessDirectiveDetailPage() {
                     <div className="relative">
                       <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                       <Input
-                        value={controlSearch}
-                        onChange={(event) => setControlSearch(event.target.value)}
+                        value={controlSearchInput}
+                        onChange={(event) => {
+                          setControlSearchInput(event.target.value);
+                          setControlPage(1);
+                        }}
                         placeholder="Buscar por aeronave, estado o urgencia"
                         className="pl-10"
                       />
                     </div>
 
-                    <Select value={controlAircraftFilter} onValueChange={setControlAircraftFilter}>
+                    <Select
+                      value={controlAircraftFilter}
+                      onValueChange={(value) => {
+                        setControlAircraftFilter(value);
+                        setControlPage(1);
+                      }}
+                    >
                       <SelectTrigger>
                         <SelectValue placeholder="Filtrar por aeronave" />
                       </SelectTrigger>
@@ -575,20 +556,23 @@ export default function AirworthinessDirectiveDetailPage() {
 
                     <Select
                       value={controlSort}
-                      onValueChange={(value) => setControlSort(value as 'due-soonest' | 'due-latest' | 'aircraft')}
+                      onValueChange={(value) => {
+                        setControlSort(value as 'newest' | 'oldest' | 'aircraft');
+                        setControlPage(1);
+                      }}
                     >
                       <SelectTrigger>
                         <SelectValue placeholder="Ordenar por" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="due-soonest">Vence primero</SelectItem>
-                        <SelectItem value="due-latest">Vence después</SelectItem>
+                        <SelectItem value="oldest">Vence primero</SelectItem>
+                        <SelectItem value="newest">Vence después</SelectItem>
                         <SelectItem value="aircraft">Aeronave</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
 
-                  {(controlSearch || controlAircraftFilter !== 'all' || controlSort !== 'due-soonest') && (
+                  {(controlSearchInput || controlAircraftFilter !== 'all' || controlSort !== 'oldest' || controlPage > 1) && (
                     <div className="flex justify-end">
                       <Button type="button" variant="outline" size="sm" className="gap-2" onClick={resetControlFilters}>
                         <RotateCcw className="h-4 w-4" />
@@ -600,7 +584,7 @@ export default function AirworthinessDirectiveDetailPage() {
 
                 <TabTable
                   headers={['Aeronave', 'Vence', 'FH', 'FC', 'Rec. días', 'Rec. horas', 'Rec. ciclos', 'Estado', 'Urgencia', 'Acciones']}
-                rows={filteredControlRows.map(({ applicability, control }) => [
+                rows={controlRows.map(({ applicability, control }) => [
                   <div key={`${applicability.id}-aircraft`}>
                     <p className="font-medium">{control?.aircraft?.acronym ?? applicability.aircraft?.acronym ?? `#${applicability.aircraft_id}`}</p>
                     <p className="text-xs text-muted-foreground">
@@ -656,13 +640,35 @@ export default function AirworthinessDirectiveDetailPage() {
                     )}
                   </div>,
                 ])}
-                emptyTitle={controlRows.length === 0 ? 'Sin controles' : 'Sin coincidencias'}
+                emptyTitle={controlRows.length === 0 ? 'Sin coincidencias' : 'Sin coincidencias'}
                 emptyDescription={
                   controlRows.length === 0
-                    ? 'No hay controles de cumplimiento registrados para esta directiva.'
+                    ? 'No hay controles que coincidan con los filtros actuales.'
                     : 'No hay controles que coincidan con los filtros actuales.'
                 }
                 />
+
+                <div className="mt-4 flex items-center justify-end gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setControlPage((current) => Math.max(1, current - 1))}
+                    disabled={controlPage === 1 || isControlsLoading}
+                  >
+                    Anterior
+                  </Button>
+                  <span className="text-sm text-muted-foreground">Página {controlPage}</span>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setControlPage((current) => current + 1)}
+                    disabled={controls.length < complianceListPerPage || isControlsLoading}
+                  >
+                    Siguiente
+                  </Button>
+                </div>
 
                 {controlApplicability && (
                   <CreateAirworthinessDirectiveComplianceControlDialog
@@ -698,14 +704,23 @@ export default function AirworthinessDirectiveDetailPage() {
                       <div className="relative">
                         <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                         <Input
-                          value={executionSearch}
-                          onChange={(event) => setExecutionSearch(event.target.value)}
+                          value={executionSearchInput}
+                          onChange={(event) => {
+                            setExecutionSearchInput(event.target.value);
+                            setExecutionPage(1);
+                          }}
                           placeholder="Buscar por OT, inspector, aeronave u observación"
                           className="pl-10"
                         />
                       </div>
 
-                      <Select value={executionAircraftFilter} onValueChange={setExecutionAircraftFilter}>
+                      <Select
+                        value={executionAircraftFilter}
+                        onValueChange={(value) => {
+                          setExecutionAircraftFilter(value);
+                          setExecutionPage(1);
+                        }}
+                      >
                         <SelectTrigger>
                           <SelectValue placeholder="Filtrar por aeronave" />
                         </SelectTrigger>
@@ -721,7 +736,10 @@ export default function AirworthinessDirectiveDetailPage() {
 
                       <Select
                         value={executionSort}
-                        onValueChange={(value) => setExecutionSort(value as 'newest' | 'oldest' | 'aircraft')}
+                        onValueChange={(value) => {
+                          setExecutionSort(value as 'newest' | 'oldest' | 'aircraft');
+                          setExecutionPage(1);
+                        }}
                       >
                         <SelectTrigger>
                           <SelectValue placeholder="Ordenar por" />
@@ -734,7 +752,7 @@ export default function AirworthinessDirectiveDetailPage() {
                       </Select>
                     </div>
 
-                    {(executionSearch || executionAircraftFilter !== 'all' || executionSort !== 'newest') && (
+                    {(executionSearchInput || executionAircraftFilter !== 'all' || executionSort !== 'newest' || executionPage > 1) && (
                       <div className="flex justify-end">
                         <Button type="button" variant="outline" size="sm" className="gap-2" onClick={resetExecutionFilters}>
                           <RotateCcw className="h-4 w-4" />
@@ -747,7 +765,7 @@ export default function AirworthinessDirectiveDetailPage() {
 
                 <TabTable
                   headers={['Aeronave', 'OT', 'Fecha', 'FH', 'FC', 'Inspector']}
-                  rows={filteredExecutionRecords.map((item) => [
+                  rows={records.map((item) => [
                     <div key={`${item.id}-aircraft`}>
                       <p className="font-medium">{item.aircraft?.acronym ?? `#${item.aircraft_id}`}</p>
                       <p className="line-clamp-2 text-xs text-muted-foreground">{item.remarks || 'Sin observación'}</p>
@@ -758,13 +776,35 @@ export default function AirworthinessDirectiveDetailPage() {
                     item.cycles_at_execution ?? '—',
                     item.inspector_license_signature,
                   ])}
-                  emptyTitle={records.length === 0 ? 'Sin ejecuciones' : 'Sin coincidencias'}
+                  emptyTitle={records.length === 0 ? 'Sin coincidencias' : 'Sin coincidencias'}
                   emptyDescription={
                     records.length === 0
-                      ? 'No hay historial de cumplimiento para esta directiva todavía.'
+                      ? 'No hay ejecuciones que coincidan con los filtros actuales.'
                       : 'No hay ejecuciones que coincidan con los filtros actuales.'
                   }
                 />
+
+                <div className="flex items-center justify-end gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setExecutionPage((current) => Math.max(1, current - 1))}
+                    disabled={executionPage === 1 || isRecordsLoading}
+                  >
+                    Anterior
+                  </Button>
+                  <span className="text-sm text-muted-foreground">Página {executionPage}</span>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setExecutionPage((current) => current + 1)}
+                    disabled={records.length < complianceListPerPage || isRecordsLoading}
+                  >
+                    Siguiente
+                  </Button>
+                </div>
               </div>
             )}
           </TabsContent>

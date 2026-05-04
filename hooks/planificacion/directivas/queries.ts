@@ -21,6 +21,14 @@ import {
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
+type AirworthinessDirectiveComplianceListQuery = {
+  search?: string | null;
+  aircraft_id?: number;
+  order_by?: 'newest' | 'oldest' | 'aircraft';
+  page?: number;
+  per_page?: number;
+};
+
 export const useGetAirworthinessDirectives = () => {
   return useQuery({
     ...airworthinessDirectivesIndexOptions(),
@@ -45,19 +53,27 @@ export const useGetAirworthinessDirectiveApplicabilities = (id: number | undefin
   });
 };
 
-export const useGetAirworthinessDirectiveComplianceControls = (id: number | undefined) => {
+export const useGetAirworthinessDirectiveComplianceControls = (
+  id: number | undefined,
+  query?: AirworthinessDirectiveComplianceListQuery,
+) => {
   return useQuery({
     ...airworthinessDirectivesComplianceControlsOptions({
       path: { id: id ?? 0 },
+      query,
     }),
     enabled: !!id,
   });
 };
 
-export const useGetAirworthinessDirectiveComplianceRecords = (id: number | undefined) => {
+export const useGetAirworthinessDirectiveComplianceRecords = (
+  id: number | undefined,
+  query?: AirworthinessDirectiveComplianceListQuery,
+) => {
   return useQuery({
     ...airworthinessDirectivesComplianceRecordsOptions({
       path: { id: id ?? 0 },
+      query,
     }),
     enabled: !!id,
   });
