@@ -55,7 +55,7 @@ const CertificatesDialog = ({ certificates, serial }: DialogProps) => {
               <DialogTitle>Certificados para: {serial ? serial : "N/A"}</DialogTitle>
               <DialogDescription>Aquí puede ver los permisos asignados al rol.</DialogDescription>
             </div>
-            <Image src={'/LOGO_TRD.png'} className="w-[70px] h-[70px]" width={70} height={70} alt="logo" />
+            <Image src={'/images/LOGO_TRD.png'} className="w-[70px] h-[70px]" width={70} height={70} alt="logo" />
           </DialogHeader>
           <div className="p-4 pb-0">
             <div className="flex flex-col items-center gap-2 p-2">

@@ -40,7 +40,7 @@ const RolesDialog = ({ roles, names }: RolesDialogProps) => {
               <DialogTitle>Roles para: <span className="text-3xl">{names}</span></DialogTitle>
               <DialogDescription>Aquí puede ver los permisos asignados al rol.</DialogDescription>
             </div>
-            <Image src={'/LOGO_TRD.png'} className="w-[70px] h-[70px]" width={70} height={70} alt="logo" />
+            <Image src={'/images/LOGO_TRD.png'} className="w-[70px] h-[70px]" width={70} height={70} alt="logo" />
           </DialogHeader>
           <div className="p-4 pb-4">
             <div className="flex flex-col gap-4">

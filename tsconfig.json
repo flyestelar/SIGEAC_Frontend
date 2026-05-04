@@ -10,6 +10,7 @@
     "strict": true,
     "noEmit": true,
     "esModuleInterop": true,
+    "target": "es2023",
     "module": "esnext",
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
@@ -22,14 +23,22 @@
       }
     ],
     "paths": {
-      "@/*": [
-        "./*"
+      "@api/client": [
+        "./.gen/api/client.gen.ts"
+      ],
+      "@api/types": [
+        "./.gen/api/types.gen.ts"
+      ],
+      "@api/queries": [
+        "./.gen/api/@tanstack/react-query.gen.ts"
       ],
       "@api/*": [
         "./.gen/api/*"
+      ],
+      "@/*": [
+        "./*"
       ]
-    },
-    "target": "ES2017"
+    }
   },
   "include": [
     "next-env.d.ts",

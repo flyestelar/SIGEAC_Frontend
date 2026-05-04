@@ -32,7 +32,7 @@ export function Sidebar() {
           asChild
         >
           <Link href={`/${selectedCompany?.slug}/dashboard`} className="flex items-center gap-2">
-            <Image src={'/logo.png'} width={150} height={150} alt="Logo" />
+            <Image src={'/images/logo.png'} width={150} height={150} alt="Logo" />
           </Link>
         </Button>
         {selectedCompany && selectedStation ? (

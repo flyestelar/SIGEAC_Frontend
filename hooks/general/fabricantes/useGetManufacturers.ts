@@ -14,5 +14,6 @@ export const useGetManufacturers = (company?: string) => {
     queryKey: ["manufacturers", company],
     queryFn: () => fetchManufacturers(company),
     enabled: !!company,
+    staleTime: 1000 * 60 * 60, // 1 hora
   });
 };

@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
-import loadingGif from '@/public/loading2.gif';
+import loadingGif from '@/public/images/loading2.gif';
 import { zodResolver } from "@hookform/resolvers/zod";
 import Image from "next/image";
 import { useForm } from "react-hook-form";
@@ -22,7 +22,6 @@ const FormSchema = z.object({
 type FormSchemaType = z.infer<typeof FormSchema>
 
 export function LoginForm() {
-
   const { loginMutation } = useAuth();
 
   const form = useForm<FormSchemaType>({
@@ -39,7 +38,7 @@ export function LoginForm() {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col space-y-3">
+      <form onSubmit={form.handleSubmit(onSubmit)} method="post" className="flex flex-col space-y-3">
         <FormField
           control={form.control}
           name="login"

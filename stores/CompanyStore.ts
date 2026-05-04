@@ -1,68 +1,58 @@
-import { Company } from "@/types";
-import { create } from "zustand";
+'use client';
 
-// Definimos la interfaz para los módulos
-interface Module {
-    id: number;
-    label: string;
-    value: string;
-}
+import { Company } from '@/types';
+import { useSyncExternalStore } from 'react';
+import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 
 // Actualizamos el estado para usar el objeto Company
 interface CompanyState {
-    selectedCompany: Company | null;
-    selectedStation: string | null;
+  selectedCompany: Company | null;
+  selectedStation: string | null;
 }
 
 interface CompanyActions {
-    setSelectedCompany: (company: Company) => void;
-    setSelectedStation: (station: string) => void;
-    initFromLocalStorage: () => void;
-    reset: () => void;
+  setSelectedCompany: (company: Company) => void;
+  setSelectedStation: (station: string) => void;
+  reset: () => void;
 }
 
 const initialState: CompanyState = {
-    selectedCompany: null,
-    selectedStation: null,
+  selectedCompany: null,
+  selectedStation: null,
 };
 
-export const useCompanyStore = create<CompanyState & CompanyActions>((set) => ({
-    ...initialState,
+export const useCompanyStore = create<CompanyState & CompanyActions>()(
+  persist(
+    (set) => ({
+      ...initialState,
 
-    setSelectedCompany: (company) => {
+      setSelectedCompany: (company) => {
         set({ selectedCompany: company });
-        // Guardamos el objeto como JSON en localStorage
-        localStorage.setItem('selectedCompany', JSON.stringify(company));
-    },
+      },
 
-    setSelectedStation: (station) => {
+      setSelectedStation: (station) => {
         set({ selectedStation: station });
-        localStorage.setItem('selectedStation', station);
-    },
+      },
 
-    initFromLocalStorage: () => {
-        const savedSelectedCompany = localStorage.getItem('selectedCompany');
-        if (savedSelectedCompany) {
-            try {
-                // Parseamos el JSON guardado
-                const companyObj: Company = JSON.parse(savedSelectedCompany);
-                set({ selectedCompany: companyObj });
-            } catch (error) {
-                console.error("Error parsing saved company", error);
-                // Si hay error, limpiamos el valor inválido
-                localStorage.removeItem('selectedCompany');
-            }
-        }
-
-        const savedSelectedStation = localStorage.getItem('selectedStation');
-        if (savedSelectedStation) {
-            set({ selectedStation: savedSelectedStation });
-        }
-    },
-
-    reset: () => {
+      reset: () => {
         set(initialState);
-        localStorage.removeItem('selectedCompany');
-        localStorage.removeItem('selectedStation');
-    }
-}));
+      },
+    }),
+    {
+      name: 'company-storage',
+    },
+  ),
+);
+
+export function useCompanySlug() {
+  return useCompanyStore((state) => state.selectedCompany?.slug);
+}
+
+export function useCompanyIsHydrated() {
+  return useSyncExternalStore(
+    useCompanyStore.persist?.onFinishHydration,
+    useCompanyStore.persist?.hasHydrated,
+    () => false,
+  );
+}

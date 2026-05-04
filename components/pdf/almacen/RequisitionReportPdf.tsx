@@ -166,7 +166,7 @@ const RequisitionReportPdf = ({
             <View style={styles.headerTable}>
               {/* Columna Izquierda: Logo */}
               <View style={[styles.headerCell, styles.logoCell]}>
-                <PDFImage src="/tmd_nombre.png" style={styles.logo} />
+                <PDFImage src="/images/tmd_nombre.png" style={styles.logo} />
               </View>
 
               {/* Columna Centro: Título */}

@@ -1,529 +1,488 @@
-'use client';
+"use client";
 
-import { useCreateFlightControl } from '@/actions/mantenimiento/planificacion/vuelos/actions';
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { useGetMaintenanceAircrafts } from '@/hooks/planificacion/useGetMaintenanceAircrafts';
-import { useGetEmployeesByDepartment } from '@/hooks/sistema/useGetEmployeesByDepartament';
-import { cn } from '@/lib/utils';
-import { useCompanyStore } from '@/stores/CompanyStore';
-import { Employee } from '@/types';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { format } from 'date-fns';
-import { es } from 'date-fns/locale';
-import { CalendarIcon, Check, ChevronsUpDown, Clock, Hash, Loader2, Plane, Route, User, Users } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { z } from 'zod';
-import { Button } from '../../../ui/button';
-import { Calendar } from '../../../ui/calendar';
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '../../../ui/command';
-import { Popover, PopoverContent, PopoverTrigger } from '../../../ui/popover';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { zodResolver } from "@hookform/resolvers/zod";
+import {
+  CalendarIcon,
+  Check,
+  ChevronsUpDown,
+  Loader2,
+  Plane,
+  User,
+  Clock,
+} from "lucide-react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { format } from "date-fns";
+import { es } from "date-fns/locale";
+import { Button } from "@/components/ui/button";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import { Calendar } from "@/components/ui/calendar";
+import { cn } from "@/lib/utils";
+import {
+  useCreateFlightControl,
+  useUpdateFlightControl,
+} from "@/actions/planificacion/vuelos/actions";
+import { useCompanyStore } from "@/stores/CompanyStore";
+import { useGetMaintenanceAircrafts } from "@/hooks/planificacion/useGetMaintenanceAircrafts";
 
-/* ------------------------------- Schema ------------------------------- */
-
-const timeRegex = /^([01]\d|2[0-3]):[0-5]\d$/;
-
-const formSchema = z
-  .object({
-    aircraft_id: z.string().min(1, 'Seleccione la aeronave.'),
-    flight_number: z.string().min(2, 'Ingrese el número de vuelo.'),
-    flight_date: z.date({ required_error: 'Seleccione la fecha del vuelo.' }),
-
-    origin: z.string().min(2, 'Ingrese origen.'),
-    destination: z.string().min(2, 'Ingrese destino.'),
-
-    departure_time: z.string().regex(timeRegex, 'Hora inválida (HH:MM).'),
-    arrival_time: z.string().regex(timeRegex, 'Hora inválida (HH:MM).'),
-
-    pilot: z.string().min(2, 'Ingrese el capitán.'),
-    co_pilot: z.string().min(2, 'Ingrese el primer oficial.'),
-
-    // Se calcula automáticamente
-    flight_hours: z.coerce.number().min(0, 'Horas inválidas.'),
-
-    // Si lo quieres mantener
-    flight_cycles: z.coerce.number().min(0, 'No puede ser negativo.'),
-  })
-  .superRefine((vals, ctx) => {
-    // Opcional: no permitir mismo origen/destino
-    if (vals.origin.trim().toUpperCase() === vals.destination.trim().toUpperCase()) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ['destination'],
-        message: 'Destino debe ser distinto al origen.',
-      });
-    }
-  });
+const formSchema = z.object({
+  aircraft_id: z.string().min(1, "Selecciona una aeronave"),
+  flight_number: z.string().optional(),
+  flight_date: z.date({ required_error: "Selecciona la fecha del vuelo" }),
+  origin: z.string().min(1, "Campo requerido"),
+  destination: z.string().min(1, "Campo requerido"),
+  departure_time: z.string().optional(),
+  arrival_time: z.string().optional(),
+  aircraft_operator: z.string().min(1, "Campo requerido"),
+  flight_hours: z.coerce.number().min(0, "Debe ser ≥ 0"),
+  flight_cycles: z.coerce.number().int().min(0, "Debe ser ≥ 0"),
+});
 
 type FormValues = z.infer<typeof formSchema>;
 
+interface FlightData {
+  id: string;
+  flight_number?: string;
+  aircraft_operator: string;
+  origin: string;
+  destination: string;
+  flight_date: string | Date;
+  departure_time?: string;
+  arrival_time?: string;
+  flight_hours: number;
+  flight_cycles: number | string;
+  aircraft_id: string;
+}
+
 interface FormProps {
   onClose: () => void;
+  flightData?: FlightData;
+  defaultAircraftId?: string;
 }
 
-/* ---------------------------- Utils (horas) --------------------------- */
-
-function minutesFromHHMM(hhmm: string) {
-  const [h, m] = hhmm.split(':').map((x) => parseInt(x, 10));
-  return h * 60 + m;
+function SectionHeader({ label }: { label: string }) {
+  return (
+    <div className="border-b bg-muted/20 px-4 py-2.5">
+      <span className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+        {label}
+      </span>
+    </div>
+  );
 }
 
-// diferencia en horas, soporta cruce de medianoche
-function diffHours(departure: string, arrival: string) {
-  const d = minutesFromHHMM(departure);
-  const a = minutesFromHHMM(arrival);
-  const diffMin = a >= d ? a - d : a + 24 * 60 - d;
-  // 2 decimales
-  return Math.round((diffMin / 60) * 100) / 100;
-}
-
-export default function CreateFlightControlForm({ onClose }: FormProps) {
+export default function CreateFlightControlForm({
+  onClose,
+  defaultAircraftId,
+  flightData,
+}: FormProps) {
   const { createFlightControl } = useCreateFlightControl();
+  const { updateFlightControl } = useUpdateFlightControl();
   const { selectedCompany } = useCompanyStore();
   const {
     data: aircrafts,
     isLoading: isAircraftsLoading,
     isError: isAircraftsError,
   } = useGetMaintenanceAircrafts(selectedCompany?.slug);
-  const {
-    data: employees,
-    isLoading: isEmployeesLoading,
-    isError: isEmployeesError,
-  } = useGetEmployeesByDepartment('OPS');
-  const [pilot, setPilot] = useState<Employee | null>(null);
-  const [coPilot, setCoPilot] = useState<Employee | null>(null);
-  const [openPilots, setOpenPilots] = useState(false);
-  const [openCoPilots, setOpenCoPilots] = useState(false);
+
+  const isEditMode = !!flightData;
+  const isPending = createFlightControl.isPending || updateFlightControl.isPending;
+
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
-      flight_number: '',
-      origin: '',
-      destination: '',
-      pilot: '',
-      co_pilot: '',
-      departure_time: '08:00',
-      arrival_time: '09:00',
-      flight_cycles: 1,
-    },
+    defaultValues: flightData
+      ? {
+          aircraft_id: flightData.aircraft_id.toString(),
+          flight_number: flightData.flight_number ?? "",
+          origin: flightData.origin,
+          destination: flightData.destination,
+          departure_time: flightData.departure_time ?? "",
+          arrival_time: flightData.arrival_time ?? "",
+          aircraft_operator: flightData.aircraft_operator,
+          flight_hours: Number(flightData.flight_hours),
+          flight_cycles: Number(flightData.flight_cycles),
+          flight_date:
+            typeof flightData.flight_date === "string"
+              ? new Date(flightData.flight_date)
+              : flightData.flight_date,
+        }
+      : {
+          aircraft_id: defaultAircraftId ?? "",
+          flight_number: "",
+          origin: "",
+          destination: "",
+          departure_time: "",
+          arrival_time: "",
+          aircraft_operator: "",
+          flight_hours: 0,
+          flight_cycles: 0,
+        },
   });
 
-  const { control, watch, setValue } = form;
-
-  const departureTime = watch('departure_time');
-  const arrivalTime = watch('arrival_time');
-
-  const computedHours = useMemo(() => {
-    if (!departureTime || !arrivalTime) return 0;
-    if (!timeRegex.test(departureTime) || !timeRegex.test(arrivalTime)) return 0;
-    return diffHours(departureTime, arrivalTime);
-  }, [departureTime, arrivalTime]);
-
-  // set automático del campo flight_hours (lo manda al submit)
-  useEffect(() => {
-    setValue('flight_hours', computedHours, { shouldDirty: true, shouldValidate: true });
-  }, [computedHours, setValue]);
-
   const onSubmit = async (values: FormValues) => {
-    if (!selectedCompany?.slug) return;
-
-    // Normalización rápida (códigos aeropuerto)
-    const data = {
+    const payload = {
       ...values,
-      flight_date: format(values.flight_date, 'yyyy-MM-dd'),
-      origin: values.origin.trim().toUpperCase(),
-      destination: values.destination.trim().toUpperCase(),
-      pilot: values.pilot.trim(),
-      co_pilot: values.co_pilot.trim(),
-      flight_number: values.flight_number.trim().toUpperCase(),
-      flight_hours: computedHours,
+      flight_date: format(values.flight_date, "yyyy-MM-dd"),
     };
-
-    await createFlightControl.mutateAsync({ data: data, company: selectedCompany.slug });
-    onClose();
+    try {
+      if (isEditMode) {
+        await updateFlightControl.mutateAsync({
+          id: flightData.id,
+          data: payload,
+          company: selectedCompany!.slug,
+        });
+      } else {
+        await createFlightControl.mutateAsync({
+          data: payload,
+          company: selectedCompany!.slug,
+        });
+      }
+      onClose();
+    } catch {
+      // error handled by mutation onError
+    }
   };
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-4">
-        {/* Bloque 1: Aeronave + Número + Fecha */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {/* Aeronave (mantiene el tuyo) */}
-          <FormField
-            control={form.control}
-            name="aircraft_id"
-            render={({ field }) => (
-              <FormItem className="flex flex-col space-y-2 mt-2">
-                <FormLabel className="inline-flex items-center gap-2">
-                  <Plane className="h-4 w-4 opacity-80" />
-                  Aeronave
-                </FormLabel>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3">
 
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <FormControl>
-                      <Button
-                        disabled={isAircraftsLoading || isAircraftsError}
-                        variant="outline"
-                        role="combobox"
-                        className={cn('justify-between', !field.value && 'text-muted-foreground')}
-                      >
-                        {isAircraftsLoading && <Loader2 className="size-4 animate-spin mr-2" />}
-                        {field.value ? (
-                          <p>{aircrafts?.find((a) => `${a.id}` === field.value)?.acronym}</p>
-                        ) : (
-                          'Elige la aeronave...'
-                        )}
-                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                      </Button>
-                    </FormControl>
-                  </PopoverTrigger>
+        {/* ── IDENTIFICACIÓN ─────────────────────────────── */}
+        <div className="overflow-hidden rounded-lg border bg-background">
+          <SectionHeader label="Identificación" />
+          <div className="grid grid-cols-3 gap-4 p-4">
 
-                  <PopoverContent className="p-0">
-                    <Command>
-                      <CommandInput placeholder="Buscar aeronave..." />
-                      <CommandList>
-                        <CommandEmpty className="text-sm p-2 text-center">Sin resultados.</CommandEmpty>
-                        <CommandGroup>
-                          {aircrafts?.map((aircraft) => (
-                            <CommandItem
-                              value={`${aircraft.id}`}
-                              key={aircraft.id}
-                              onSelect={() =>
-                                form.setValue('aircraft_id', aircraft.id.toString(), { shouldValidate: true })
-                              }
-                            >
-                              <Check
-                                className={cn(
-                                  'mr-2 h-4 w-4',
-                                  `${aircraft.id}` === field.value ? 'opacity-100' : 'opacity-0',
-                                )}
-                              />
-                              <p className="font-medium">{aircraft.acronym}</p>
-                            </CommandItem>
-                          ))}
-                        </CommandGroup>
-                      </CommandList>
-                    </Command>
-                  </PopoverContent>
-                </Popover>
+            <FormField
+              control={form.control}
+              name="aircraft_id"
+              render={({ field }) => (
+                <FormItem className="flex flex-col">
+                  <FormLabel>Aeronave</FormLabel>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <FormControl>
+                        <Button
+                          disabled={isAircraftsLoading || isAircraftsError || isEditMode}
+                          variant="outline"
+                          role="combobox"
+                          className={cn(
+                            "justify-between font-normal",
+                            !field.value && "text-muted-foreground",
+                          )}
+                        >
+                          {isAircraftsLoading ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : field.value ? (
+                            <span className="font-mono text-sm font-semibold tracking-wider">
+                              {aircrafts?.find((a) => `${a.id}` === field.value)?.acronym}
+                            </span>
+                          ) : (
+                            <span className="text-sm">Seleccionar…</span>
+                          )}
+                          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-40" />
+                        </Button>
+                      </FormControl>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-[200px] p-0">
+                      <Command>
+                        <CommandInput placeholder="Buscar aeronave…" />
+                        <CommandList>
+                          <CommandEmpty className="p-3 text-center text-sm text-muted-foreground">
+                            Sin resultados.
+                          </CommandEmpty>
+                          <CommandGroup>
+                            {aircrafts?.map((aircraft) => (
+                              <CommandItem
+                                key={aircraft.id}
+                                value={`${aircraft.id}`}
+                                onSelect={() =>
+                                  form.setValue("aircraft_id", aircraft.id.toString())
+                                }
+                              >
+                                <Check
+                                  className={cn(
+                                    "mr-2 h-4 w-4",
+                                    `${aircraft.id}` === field.value
+                                      ? "opacity-100"
+                                      : "opacity-0",
+                                  )}
+                                />
+                                <span className="font-mono">{aircraft.acronym}</span>
+                              </CommandItem>
+                            ))}
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-                <FormDescription className="text-xs">Aeronave que realizó el vuelo.</FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          {/* Número de vuelo */}
-          <FormField
-            control={control}
-            name="flight_number"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="inline-flex items-center gap-2">
-                  <Hash className="h-4 w-4 opacity-80" />
-                  Nro. de vuelo
-                </FormLabel>
-                <FormControl>
-                  <Input placeholder="Ej: PZOCS199" {...field} />
-                </FormControl>
-                <FormDescription className="text-xs">Identificador del vuelo.</FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          {/* Fecha */}
-          <FormField
-            control={form.control}
-            name="flight_date"
-            render={({ field }) => (
-              <FormItem className="flex flex-col mt-2.5">
-                <FormLabel className="inline-flex items-center gap-2">
-                  <CalendarIcon className="h-4 w-4 opacity-80" />
-                  Fecha de vuelo
-                </FormLabel>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <FormControl>
-                      <Button
-                        variant="outline"
-                        className={cn('pl-3 text-left font-normal', !field.value && 'text-muted-foreground')}
-                      >
-                        {field.value ? format(field.value, 'PPP', { locale: es }) : <span>Seleccione...</span>}
-                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                      </Button>
-                    </FormControl>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      locale={es}
-                      mode="single"
-                      selected={field.value}
-                      onSelect={field.onChange}
-                      disabled={(date: Date) => date > new Date() || date < new Date('1900-01-01')}
-                      initialFocus
+            <FormField
+              control={form.control}
+              name="flight_number"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>
+                    Nro. Vuelo{" "}
+                    <span className="text-[10px] font-normal text-muted-foreground">(Opcional)</span>
+                  </FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="ETR199"
+                      className="font-mono uppercase tracking-wider"
+                      {...field}
+                      onChange={(e) => field.onChange(e.target.value.toUpperCase())}
                     />
-                  </PopoverContent>
-                </Popover>
-                <FormDescription className="text-xs">Día en que se realizó el vuelo.</FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="flight_date"
+              render={({ field }) => (
+                <FormItem className="flex flex-col">
+                  <FormLabel>Fecha de Vuelo</FormLabel>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <FormControl>
+                        <Button
+                          variant="outline"
+                          className={cn(
+                            "pl-3 text-left font-normal",
+                            !field.value && "text-muted-foreground",
+                          )}
+                        >
+                          {field.value ? (
+                            <span className="text-sm">
+                              {format(field.value, "d MMM yyyy", { locale: es })}
+                            </span>
+                          ) : (
+                            <span className="text-sm">Seleccionar…</span>
+                          )}
+                          <CalendarIcon className="ml-auto h-4 w-4 opacity-40" />
+                        </Button>
+                      </FormControl>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={field.value}
+                        onSelect={field.onChange}
+                        disabled={(date) =>
+                          date > new Date() || date < new Date("1900-01-01")
+                        }
+                        initialFocus
+                      />
+                    </PopoverContent>
+                  </Popover>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
         </div>
 
-        {/* Bloque 2: Ruta */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <FormField
-            control={control}
-            name="origin"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="inline-flex items-center gap-2">
-                  <Route className="h-4 w-4 opacity-80" />
-                  Desde
-                </FormLabel>
-                <FormControl>
-                  <Input placeholder="Ej: PZO" {...field} />
-                </FormControl>
-                <FormDescription className="text-xs">Aeropuerto de salida.</FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+        {/* ── RUTA ───────────────────────────────────────── */}
+        <div className="overflow-hidden rounded-lg border bg-background">
+          <SectionHeader label="Ruta" />
+          <div className="p-4">
+            <div className="grid grid-cols-[1fr_auto_1fr_auto_1fr_1fr] items-end gap-2">
 
-          <FormField
-            control={control}
-            name="destination"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="inline-flex items-center gap-2">
-                  <Route className="h-4 w-4 opacity-80" />
-                  Hasta
-                </FormLabel>
-                <FormControl>
-                  <Input placeholder="Ej: CCS" {...field} />
-                </FormControl>
-                <FormDescription className="text-xs">Aeropuerto de llegada.</FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+              <FormField
+                control={form.control}
+                name="origin"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Salida</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="PZO"
+                        maxLength={4}
+                        className="font-mono text-base font-semibold uppercase tracking-widest"
+                        {...field}
+                        onChange={(e) => field.onChange(e.target.value.toUpperCase())}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <div className="flex h-9 items-center gap-0.5 pb-0.5 text-muted-foreground/40">
+                <div className="h-px w-3 bg-muted-foreground/30" />
+                <Plane className="h-3 w-3 -rotate-45" />
+                <div className="h-px w-3 bg-muted-foreground/30" />
+              </div>
+
+              <FormField
+                control={form.control}
+                name="destination"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Destino</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="CCS"
+                        maxLength={4}
+                        className="font-mono text-base font-semibold uppercase tracking-widest"
+                        {...field}
+                        onChange={(e) => field.onChange(e.target.value.toUpperCase())}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <div className="flex h-9 items-center pb-0.5">
+                <div className="h-4 w-px bg-border" />
+              </div>
+
+              <FormField
+                control={form.control}
+                name="departure_time"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="flex items-center gap-1.5">
+                      <Clock className="h-3 w-3 text-muted-foreground" />
+                      Salida
+                    </FormLabel>
+                    <FormControl>
+                      <Input type="time" className="tabular-nums" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="arrival_time"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="flex items-center gap-1.5">
+                      <Clock className="h-3 w-3 text-muted-foreground" />
+                      Llegada
+                    </FormLabel>
+                    <FormControl>
+                      <Input type="time" className="tabular-nums" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+          </div>
         </div>
 
-        {/* Bloque 3: Tripulación */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <FormField
-            control={form.control}
-            name="pilot"
-            render={({ field }) => (
-              <FormItem className="flex flex-col mt-2.5 w-full">
-                <FormLabel className="inline-flex items-center gap-2">
-                  <User className="h-4 w-4 opacity-80" />
-                  Capitán
-                </FormLabel>
-                <Popover open={openPilots} onOpenChange={setOpenPilots}>
-                  <PopoverTrigger asChild>
-                    <Button
-                      disabled={isEmployeesLoading || isEmployeesError}
-                      variant="outline"
-                      role="combobox"
-                      aria-expanded={openPilots}
-                      className="justify-between"
-                    >
-                      {pilot
-                        ? `${pilot.first_name} ${pilot.last_name}`
-                        : (() => {
-                            const dni = field.value;
-                            const found = employees?.find((e) => String(e.dni) === String(dni));
-                            return found ? `${found.first_name} ${found.last_name}` : 'Selec. al capitán';
-                          })()}
-                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-[260px] p-0">
-                    <Command>
-                      <CommandInput placeholder="Selec. el técnico..." />
-                      <CommandList>
-                        <CommandEmpty>No se han encontrado pilotos...</CommandEmpty>
-                        {employees?.map((e) => (
-                          <CommandItem
-                            value={`${e.first_name} ${e.last_name} ${e.dni}`}
-                            key={e.id}
-                            onSelect={() => {
-                              setPilot(e);
-                              form.setValue('pilot', String(e.dni), { shouldValidate: true, shouldDirty: true });
-                              setOpenPilots(false);
-                            }}
-                          >
-                            <Check
-                              className={cn(
-                                'mr-2 h-4 w-4',
-                                String(pilot?.dni ?? field.value) === String(e.dni) ? 'opacity-100' : 'opacity-0',
-                              )}
-                            />
-                            {`${e.first_name} ${e.last_name}`}
-                          </CommandItem>
-                        ))}
-                      </CommandList>
-                    </Command>
-                  </PopoverContent>
-                </Popover>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+        {/* ── TRIPULACIÓN Y MÉTRICAS ─────────────────────── */}
+        <div className="overflow-hidden rounded-lg border bg-background">
+          <SectionHeader label="Tripulación y Métricas" />
+          <div className="grid grid-cols-3 gap-4 p-4">
 
-          <FormField
-            control={form.control}
-            name="co_pilot"
-            render={({ field }) => (
-              <FormItem className="flex flex-col mt-2.5 w-full">
-                <FormLabel className="inline-flex items-center gap-2">
-                  <Users className="h-4 w-4 opacity-80" />
-                  Primer oficial
-                </FormLabel>
-                <Popover open={openCoPilots} onOpenChange={setOpenCoPilots}>
-                  <PopoverTrigger asChild>
-                    <Button
-                      disabled={isEmployeesLoading || isEmployeesError}
-                      variant="outline"
-                      role="combobox"
-                      aria-expanded={openCoPilots}
-                      className="justify-between"
-                    >
-                      {coPilot
-                        ? `${coPilot.first_name} ${coPilot.last_name}`
-                        : (() => {
-                            const dni = field.value;
-                            const found = employees?.find((e) => String(e.dni) === String(dni));
-                            return found ? `${found.first_name} ${found.last_name}` : 'Selec. al primer oficial';
-                          })()}
-                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-[260px] p-0">
-                    <Command>
-                      <CommandInput placeholder="Selec. el co-piloto..." />
-                      <CommandList>
-                        <CommandEmpty>No se han encontrado pilotos...</CommandEmpty>
-                        {employees
-                          ?.filter((e) => e.id != pilot?.id)
-                          .map((e) => (
-                            <CommandItem
-                              value={`${e.first_name} ${e.last_name} ${e.dni}`}
-                              key={e.id}
-                              onSelect={() => {
-                                setCoPilot(e);
-                                form.setValue('co_pilot', String(e.dni), { shouldValidate: true, shouldDirty: true });
-                                setOpenCoPilots(false);
-                              }}
-                            >
-                              <Check
-                                className={cn(
-                                  'mr-2 h-4 w-4',
-                                  String(coPilot?.dni ?? field.value) === String(e.dni) ? 'opacity-100' : 'opacity-0',
-                                )}
-                              />
-                              {`${e.first_name} ${e.last_name}`}
-                            </CommandItem>
-                          ))}
-                      </CommandList>
-                    </Command>
-                  </PopoverContent>
-                </Popover>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+            <FormField
+              control={form.control}
+              name="aircraft_operator"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="flex items-center gap-1.5">
+                    <User className="h-3 w-3 text-muted-foreground" />
+                    Piloto / Operador
+                  </FormLabel>
+                  <FormControl>
+                    <Input placeholder="Nombre completo" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="flight_hours"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Horas de Vuelo</FormLabel>
+                  <FormControl>
+                    <div className="relative">
+                      <Input
+                        type="number"
+                        min="0"
+                        step="0.1"
+                        placeholder="0.0"
+                        className="pr-7 tabular-nums"
+                        {...field}
+                      />
+                      <span className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-xs font-medium text-muted-foreground">
+                        h
+                      </span>
+                    </div>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="flight_cycles"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Ciclos</FormLabel>
+                  <FormControl>
+                    <div className="relative">
+                      <Input
+                        type="number"
+                        min="0"
+                        step="1"
+                        placeholder="0"
+                        className="pr-10 tabular-nums"
+                        {...field}
+                      />
+                      <span className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-xs font-medium text-muted-foreground">
+                        cyc
+                      </span>
+                    </div>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
         </div>
 
-        {/* Bloque 4: Tiempos */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <FormField
-            control={control}
-            name="departure_time"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="inline-flex items-center gap-2">
-                  <Clock className="h-4 w-4 opacity-80" />
-                  Hora salida
-                </FormLabel>
-                <FormControl>
-                  <Input type="time" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={control}
-            name="arrival_time"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="inline-flex items-center gap-2">
-                  <Clock className="h-4 w-4 opacity-80" />
-                  Hora llegada
-                </FormLabel>
-                <FormControl>
-                  <Input type="time" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          {/* Horas calculadas */}
-          <FormField
-            control={control}
-            name="flight_hours"
-            render={() => (
-              <FormItem>
-                <FormLabel className="inline-flex items-center gap-2">
-                  <Clock className="h-4 w-4 opacity-80" />
-                  Horas de vuelo
-                </FormLabel>
-                <FormControl>
-                  <Input value={computedHours.toString()} readOnly className="bg-muted" />
-                </FormControl>
-                <FormDescription className="text-xs">
-                  Calculado automáticamente (soporta cruce de medianoche).
-                </FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          {/* Opcional: ciclos */}
-          <FormField
-            control={control}
-            name="flight_cycles"
-            render={({ field }) => (
-              <FormItem className="w-full">
-                <FormLabel className="inline-flex items-center gap-2">
-                  <Check className="h-4 w-4 opacity-80" />
-                  Ciclos
-                </FormLabel>
-                <FormControl>
-                  <Input type="number" min={0} step={1} placeholder="Ej: 1" {...field} />
-                </FormControl>
-                <FormDescription className="text-xs">Si aplica para tu registro.</FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
-
-        <Button
-          className="bg-primary mt-2 text-white hover:bg-blue-900 disabled:bg-primary/70"
-          disabled={createFlightControl?.isPending}
-          type="submit"
-        >
-          {createFlightControl?.isPending ? <Loader2 className="size-4 animate-spin" /> : <span>Crear vuelo</span>}
+        <Button className="w-full" disabled={isPending} type="submit">
+          {isPending ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : isEditMode ? (
+            "Actualizar Vuelo"
+          ) : (
+            "Registrar Vuelo"
+          )}
         </Button>
+
       </form>
     </Form>
   );

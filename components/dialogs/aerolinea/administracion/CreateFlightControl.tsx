@@ -12,21 +12,21 @@ import {
 } from "@/components/ui/dialog"
 import { useState } from "react"
 
-export function CreateFlightControlDialog() {
+export function CreateFlightControlDialog({ defaultAircraftId }: { defaultAircraftId?: string }) {
   const [open, setOpen] = useState(false);
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button onClick={() => setOpen(true)} variant={'outline'} className="flex items-center justify-center gap-2 h-8 border-dashed">Nuevo</Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[420px] md:max-w-[650px]">
+      <DialogContent className="sm:max-w-[700px]">
         <DialogHeader>
           <DialogTitle>Creación de Vuelo</DialogTitle>
           <DialogDescription>
             Cree un vuelo rellenando la información necesaria.
           </DialogDescription>
         </DialogHeader>
-        <CreateFlightControlForm onClose={() => setOpen(false)} />
+        <CreateFlightControlForm defaultAircraftId={defaultAircraftId} onClose={() => setOpen(false)} />
       </DialogContent>
     </Dialog>
   )

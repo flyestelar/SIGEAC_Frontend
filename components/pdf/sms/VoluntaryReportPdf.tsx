@@ -278,7 +278,7 @@ const Footer = (currentPage: number, pageNumber: number) => (
 const Header = () => (
   <View style={styles.tableRowHeader}>
     <View style={{ ...styles.tableCellHeader, width: "20%" }}>
-      <PDFImage src="/tmd_sms_header.jpg" style={styles.logo} />
+      <PDFImage src="/images/tmd_sms_header.jpg" style={styles.logo} />
     </View>
     <View style={styles.column2Header}>
       <View style={styles.rowColumnHeader}>

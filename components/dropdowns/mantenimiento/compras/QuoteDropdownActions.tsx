@@ -16,7 +16,7 @@ import {
   Loader2,
   MoreHorizontal
 } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Button } from "../../../ui/button";
 import {
   Dialog,
@@ -37,6 +37,29 @@ const QuoteDropdownActions = ({ quote }: { quote: Quote }) => {
   const [openReject, setOpenReject] = useState(false);
   const [openApprove, setOpenApprove] = useState(false);
   const [orderNumber, setOrderNumber] = useState("");
+
+  // Group articles by vendor for multi-vendor PO creation
+  const vendorGroups = useMemo(() => {
+    const articles = quote.article_quote_order ?? [];
+    const groups: Record<string, { vendorId: number; vendorName: string; articles: typeof articles }> = {};
+
+    for (const article of articles) {
+      const vendorId = article.vendor_id ?? quote.vendor?.id;
+      if (!vendorId) continue;
+      const key = String(vendorId);
+      if (!groups[key]) {
+        groups[key] = {
+          vendorId: Number(vendorId),
+          vendorName: article.vendor?.name ?? quote.vendor?.name ?? 'N/A',
+          articles: [],
+        };
+      }
+      groups[key].articles.push(article);
+    }
+    return Object.values(groups);
+  }, [quote]);
+
+  const hasMultipleVendors = vendorGroups.length > 1;
 
   const { updateStatusQuote } = useUpdateQuoteStatus();
   const { updateStatusRequisition } = useUpdateRequisitionStatus();
@@ -77,29 +100,40 @@ const QuoteDropdownActions = ({ quote }: { quote: Quote }) => {
     }
   };
 
-  // ✅ APROBAR (flujo seguro)
+  // ✅ APROBAR (flujo seguro — crea una PO por cada proveedor distinto)
   const handleApprove = async (id: number) => {
     if (!orderNumber.trim()) return;
 
     try {
-      const poData = {
-        status: "PROCESO",
-        order_number: orderNumber,
-        justification: quote.justification,
-        purchase_date: new Date(),
-        sub_total: Number(quote.total),
-        total: Number(quote.total),
-        vendor_id: Number(quote.vendor.id),
-        created_by: `${user?.first_name} ${user?.last_name}`,
-        articles_purchase_orders: quote.article_quote_order,
-        quote_order_id: Number(quote.id)
-      };
+      // 1️⃣ Crear una PO por cada grupo de proveedor
+      for (let i = 0; i < vendorGroups.length; i++) {
+        const group = vendorGroups[i];
+        const groupTotal = group.articles.reduce(
+          (sum, a) => sum + (a.quantity * Number(a.unit_price)),
+          0
+        );
+        const poOrderNumber = vendorGroups.length > 1
+          ? `${orderNumber}-${i + 1}`
+          : orderNumber;
 
-      // 1️⃣ Crear PO primero
-      await createPurchaseOrder.mutateAsync({
-        data: poData,
-        company: selectedCompany!.slug
-      });
+        const poData = {
+          status: "PROCESO",
+          order_number: poOrderNumber,
+          justification: quote.justification,
+          purchase_date: new Date(),
+          sub_total: groupTotal,
+          total: groupTotal,
+          vendor_id: group.vendorId,
+          created_by: `${user?.first_name} ${user?.last_name}`,
+          articles_purchase_orders: group.articles,
+          quote_order_id: Number(quote.id)
+        };
+
+        await createPurchaseOrder.mutateAsync({
+          data: poData,
+          company: selectedCompany!.slug
+        });
+      }
 
       // 2️⃣ Actualizar cotización
       await updateStatusQuote.mutateAsync({
@@ -203,7 +237,9 @@ const QuoteDropdownActions = ({ quote }: { quote: Quote }) => {
               ¿Seguro que desea aprobar la cotización?
             </DialogTitle>
             <DialogDescription className="text-center">
-              Se aprobará la cotización y se generará una Orden de Compra.
+              {hasMultipleVendors
+                ? `Se generarán ${vendorGroups.length} órdenes de compra (una por cada proveedor). ¿Continuar?`
+                : 'Se aprobará la cotización y se generará una Orden de Compra.'}
             </DialogDescription>
           </DialogHeader>
 

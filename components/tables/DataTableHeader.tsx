@@ -27,7 +27,7 @@ export function DataTableColumnHeader<TData, TValue>({
 }: DataTableColumnHeaderProps<TData, TValue>) {
   const filterValue = (column.getFilterValue() as string) ?? '';
 
-  if (!column.getCanSort()) return <div className={cn(className)}>{title}</div>;
+  if (!column.getCanSort()) return <div className={cn('whitespace-nowrap', className)}>{title}</div>;
 
   const SortIcon =
     column.getIsSorted() === 'desc'
@@ -41,7 +41,7 @@ export function DataTableColumnHeader<TData, TValue>({
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" size="sm" className="h-8 px-2 data-[state=open]:bg-accent">
-            <span className="truncate">{title}</span>
+            <span className="truncate whitespace-nowrap">{title}</span>
             <SortIcon className="ml-2 h-4 w-4 opacity-80" />
           </Button>
         </DropdownMenuTrigger>

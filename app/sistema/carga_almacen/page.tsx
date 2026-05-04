@@ -9,13 +9,13 @@ import { Input } from '@/components/ui/input';
 import { useImportInventory } from '@/actions/sistema/carga_almacen/actions';
 import { toast } from 'sonner';
 import { ContentLayout } from '@/components/layout/ContentLayout';
+import { useParams } from 'next/navigation';
 
 export default function InventoryUploadPage() {
   const [file, setFile] = useState<File | null>(null);
   const [dragActive, setDragActive] = useState(false);
   const inputRef = useRef<HTMLInputElement | null>(null);
-  const { useParams } = require('next/navigation');
-  const params = useParams?.() as { company?: string } | undefined;
+  const params = useParams<{ company: string }>();
 
   const { importInventory, progress, setProgress } = useImportInventory();
 

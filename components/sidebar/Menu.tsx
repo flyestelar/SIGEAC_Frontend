@@ -63,7 +63,7 @@ function LeafItem({
     <Button
       variant={active ? 'secondary' : 'ghost'}
       className={cn(
-        'group w-full justify-start gap-3 h-10 mb-1 rounded-xl px-3 transition-colors',
+        'group w-full justify-start gap-3 h-10 mb-1 rounded-xl px-4 transition-colors',
         active && 'shadow-sm',
       )}
       asChild
@@ -71,7 +71,7 @@ function LeafItem({
       <Link href={href} aria-current={active ? 'page' : undefined}>
         <span
           className={cn(
-            'flex h-8 w-8 items-center justify-center rounded-lg transition-colors',
+            'flex items-center justify-center rounded-lg transition-colors',
             active ? 'text-foreground' : 'text-muted-foreground group-hover:text-foreground',
           )}
         >
@@ -137,7 +137,7 @@ export function Menu({ isOpen }: MenuProps) {
                 <li className="w-full" key={groupKey}>
                   <GroupHeader label={groupLabel} collapsed={collapsed && isOpen !== undefined} />
 
-                  {menus.map(({ href, label, icon: Icon, active, submenus }) =>
+                  {menus.map(({ href, label, icon: Icon, active, submenus }, index) =>
                     submenus.length === 0 ? (
                       <div className="w-full" key={`${label}-${href}`}>
                         <LeafItem

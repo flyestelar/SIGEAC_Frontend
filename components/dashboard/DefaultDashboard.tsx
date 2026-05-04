@@ -15,7 +15,7 @@ export default function DefaultDashboard({ companySlug }: DefaultDashboardProps)
       <main className="flex flex-col items-center justify-center min-h-[80vh] text-center px-6 py-20 bg-gradient-to-b from-white via-blue-50/20 to-white">
         {/* Imagen principal animada */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }} className="relative w-64 h-64 md:w-80 md:h-80 mb-12" >
-          <Image src="/dashboard-construction.png" alt="Panel en construcción" fill className="object-contain drop-shadow-md opacity-95" priority />
+          <Image src="/images/dashboard-construction.png" alt="Panel en construcción" fill className="object-contain drop-shadow-md opacity-95" priority />
         </motion.div>
 
         {/* Título principal */}

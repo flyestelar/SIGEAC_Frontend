@@ -7,7 +7,6 @@ import {
   AreaChartIcon,
   Award,
   Blocks,
-  BookCheck,
   BookUser,
   Building2,
   ClipboardCopy,
@@ -15,12 +14,13 @@ import {
   ClipboardList,
   ClipboardPen,
   ClipboardCheck,
+  Clock11,
+  ClockArrowUp,
   CreditCardIcon,
-  Drill,
   FileBadge,
-  FileUp,
   Globe,
   HandCoins,
+  Hourglass,
   Landmark,
   LayoutGrid,
   LucideIcon,
@@ -33,6 +33,7 @@ import {
   Settings,
   ScrollText,
   ShieldAlert,
+  SquareArrowDown,
   SquarePen,
   User2,
   UserRoundCog,
@@ -62,6 +63,8 @@ type Group = {
   menus: Menu[];
 };
 
+const SUPERUSER_ROLES = ['SUPERUSER'];
+
 export function getMenuList(pathname: string, currentCompany: Company | null, userRoles: string[]): Group[] {
   const date = format(new Date(), 'yyyy-MM-dd');
   const normalizedPathname = pathname !== '/' && pathname.endsWith('/') ? pathname.slice(0, -1) : pathname;
@@ -80,7 +83,12 @@ export function getMenuList(pathname: string, currentCompany: Company | null, us
 
   // Verificar acceso por rol
   const hasRoleAccess = (menuItem: { roles?: string[] }): boolean => {
-    return !menuItem.roles || menuItem.roles.length === 0 || menuItem.roles.some((role) => userRoles.includes(role));
+    return (
+      !menuItem.roles ||
+      menuItem.roles.length === 0 ||
+      menuItem.roles.some((role) => userRoles.includes(role)) ||
+      userRoles.some((role) => SUPERUSER_ROLES.includes(role)) // Acceso para SUPERUSER
+    );
   };
 
   // Verificar si el módulo está activo para la compañía
@@ -595,6 +603,14 @@ export function getMenuList(pathname: string, currentCompany: Company | null, us
           submenus: [],
         },
         {
+          href: `/${currentCompany?.slug}/almacen/desmontados`,
+          label: 'Comp. Desmontados',
+          active: pathname.includes(`/${currentCompany?.slug}/almacen/desmontados`),
+          icon: SquareArrowDown,
+          roles: ['ANALISTA_ALMACEN', 'JEFE_ALMACEN', 'SUPERUSER'],
+          submenus: [],
+        },
+        {
           href: `/${currentCompany?.slug}/almacen/despachados`,
           label: 'Materiales Despachados',
           active: pathname.includes(`/${currentCompany?.slug}/almacen/despachados`),
@@ -610,6 +626,14 @@ export function getMenuList(pathname: string, currentCompany: Company | null, us
           icon: PackagePlus,
           submenus: [],
         },
+        {
+          href: companyPath('/almacen/gestion_cantidades'),
+          label: 'Gestión de Cantidades',
+          active: isCompanyPath('/almacen/gestion_cantidades', 'includes'),
+          icon: ClipboardPen,
+          roles: ['ANALISTA_ALMACEN', 'JEFE_ALMACEN', 'SUPERUSER'],
+          submenus: [],
+        },
       ],
     },
     {
@@ -617,10 +641,34 @@ export function getMenuList(pathname: string, currentCompany: Company | null, us
       moduleValue: 'planification',
       menus: [
         {
+          href: companyPath('/planificacion/ordenes_trabajo'),
+          label: 'Ordenes de Trabajo',
+          active: isCompanyPath('/planificacion/ordenes_trabajo', 'includes'),
+          icon: ClockArrowUp,
+          roles: ['ANALISTA_PLANIFICACION', 'JEFE_PLANIFICACION', 'SUPERUSER'],
+          submenus: [],
+        },
+        {
+          href: companyPath('/planificacion/control_mantenimiento'),
+          label: 'Ctrl. de Mantenimiento',
+          active: isCompanyPath('/planificacion/control_mantenimiento', 'includes'),
+          icon: ClipboardList,
+          roles: ['ANALISTA_PLANIFICACION', 'JEFE_PLANIFICACION', 'SUPERUSER'],
+          submenus: [],
+        },
+        {
+          href: companyPath('/planificacion/hard_time'),
+          label: 'Ctrl. de Hard Time',
+          active: isCompanyPath('/planificacion/hard_time', 'includes'),
+          icon: Hourglass,
+          roles: ['ANALISTA_PLANIFICACION', 'JEFE_PLANIFICACION', 'SUPERUSER'],
+          submenus: [],
+        },
+        {
           href: companyPath('/planificacion/control_vuelos'),
-          label: 'Control de Vuelos',
+          label: 'Ctrl. de Hrs. de Vuelo',
           active: isCompanyPath('/planificacion/control_vuelos', 'includes'),
-          icon: BookCheck,
+          icon: ClockArrowUp,
           roles: ['ANALISTA_PLANIFICACION', 'JEFE_PLANIFICACION', 'SUPERUSER'],
           submenus: [
             {
@@ -647,49 +695,12 @@ export function getMenuList(pathname: string, currentCompany: Company | null, us
               label: 'Gestión de Aeronaves',
               active: isCompanyPath('/planificacion/aeronaves'),
             },
-            // {
-            //   href: `/${currentCompany?.slug}/planificacion/aeronaves/partes`,
-            //   label: 'Gestión de Partes',
-            //   active: pathname === `/${currentCompany?.slug}/planificacion/aeronaves/partes`,
-            // },
-          ],
-        },
-        // {
-        //   href: `/${currentCompany?.slug}/planificacion/calendario`,
-        //   label: 'Calendario de Servicios',
-        //   active: pathname.includes(`/${currentCompany?.slug}/planificacion/calendario`),
-        //   icon: CalendarFold,
-        //   roles: ['ANALISTA_ADMINISTRACION', 'JEFE_PLANIFICACION', 'SUPERUSER'],
-        //   submenus: [],
-        // },
-        {
-          href: companyPath('/planificacion/carga_documentos'),
-          label: 'Carga de Task/Directivas',
-          active: isCompanyPath('/planificacion/carga_documentos', 'includes'),
-          icon: FileUp,
-          roles: ['ANALISTA_ADMINISTRACION', 'JEFE_PLANIFICACION', 'SUPERUSER'],
-          submenus: [
             {
-              href: companyPath('/planificacion/carga_documentos/cargar_directivas'),
-              label: 'Carga de Directivas',
-              active: isCompanyPath('/planificacion/carga_documentos/cargar_directivas'),
-              roles: ['ANALISTA_ADMINISTRACION', 'JEFE_PLANIFICACION', 'SUPERUSER'],
-            },
-            {
-              href: companyPath('/planificacion/carga_documentos/cargar_tareas'),
-              label: 'Carga de Tareas',
-              active: isCompanyPath('/planificacion/carga_documentos/cargar_tareas'),
-              roles: ['ANALISTA_ADMINISTRACION', 'JEFE_PLANIFICACION', 'SUPERUSER'],
+              href: companyPath('/planificacion/aeronaves/tipos'),
+              label: 'Gestión de Tipos de Aeronave',
+              active: isCompanyPath('/planificacion/aeronaves/tipos'),
             },
           ],
-        },
-        {
-          href: companyPath('/planificacion/servicios'),
-          label: 'Servicios',
-          active: isCompanyPath('/planificacion/servicios', 'includes'),
-          icon: Drill,
-          roles: ['ANALISTA_ADMINISTRACION', 'JEFE_PLANIFICACION', 'SUPERUSER'],
-          submenus: [],
         },
       ],
     },

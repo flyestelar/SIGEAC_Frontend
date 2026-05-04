@@ -1,6 +1,6 @@
 "use client"
 
-import { useCreatePlanificationEvent } from "@/actions/mantenimiento/planificacion/eventos/actions"
+import { useCreatePlanificationEvent } from "@/actions/planificacion/eventos/actions"
 import { Button } from "@/components/ui/button"
 import { Calendar } from "@/components/ui/calendar"
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command'
@@ -22,7 +22,6 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { format } from "date-fns"
 import { es } from "date-fns/locale"
 import { CalendarIcon, Check, ChevronsUpDown, Loader2 } from "lucide-react"
-import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
 
@@ -44,9 +43,8 @@ const CreatePlanificationEventForm = ({
   date?: string,
   onClose: (open: boolean) => void
 }) => {
-  const [selectedAircraft, setSelectedAircraft] = useState<string | null>(null)
-  const {selectedCompany, selectedStation} = useCompanyStore()
-  const {createPlanificationEvent} = useCreatePlanificationEvent()
+  const { selectedCompany, selectedStation } = useCompanyStore()
+  const { createPlanificationEvent } = useCreatePlanificationEvent()
   const { data: aircrafts, isLoading: isAircraftsLoading, isError: isAircraftsError } = useGetMaintenanceAircrafts(selectedCompany?.slug);
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -65,14 +63,15 @@ const CreatePlanificationEventForm = ({
     return format(date, "yyyy-MM-dd HH:mm")
   }
 
-   async function onSubmit(values: z.infer<typeof formSchema>) {
+  async function onSubmit(values: z.infer<typeof formSchema>) {
     await createPlanificationEvent.mutateAsync({
-        company: selectedCompany!.slug,
-        data:{
-          ...values,
-           location_id: selectedStation!,
-        }})
-        onClose(false)
+      company: selectedCompany!.slug,
+      data: {
+        ...values,
+        location_id: selectedStation!,
+      }
+    })
+    onClose(false)
   }
 
   return (
@@ -138,7 +137,6 @@ const CreatePlanificationEventForm = ({
                               key={aircraft.id}
                               onSelect={() => {
                                 form.setValue("aircraft_id", aircraft.id.toString());
-                                setSelectedAircraft(aircraft.manufacturer.id.toString());
                               }}
                             >
                               <Check
@@ -150,7 +148,7 @@ const CreatePlanificationEventForm = ({
                                 )}
                               />
                               {
-                                <p>{aircraft.acronym} - {aircraft.manufacturer.name}</p>
+                                <p>{aircraft.acronym}</p>
                               }
                             </CommandItem>
                           ))}
@@ -221,7 +219,7 @@ const CreatePlanificationEventForm = ({
                         )}
                       >
                         {field.value ? (
-                          format(new Date(field.value), "PPP", {locale: es})
+                          format(new Date(field.value), "PPP", { locale: es })
                         ) : (
                           <span>Seleccione una fecha</span>
                         )}
@@ -290,7 +288,7 @@ const CreatePlanificationEventForm = ({
                         )}
                       >
                         {field.value ? (
-                          format(new Date(field.value), "PPP", {locale: es})
+                          format(new Date(field.value), "PPP", { locale: es })
                         ) : (
                           <span>Seleccione una fecha</span>
                         )}
