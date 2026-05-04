@@ -3,6 +3,7 @@
 import CreateAirworthinessDirectiveApplicabilityDialog from '@/components/dialogs/planificacion/directivas/CreateAirworthinessDirectiveApplicabilityDialog';
 import CreateAirworthinessDirectiveComplianceControlDialog from '@/components/dialogs/planificacion/directivas/CreateAirworthinessDirectiveComplianceControlDialog';
 import CreateAirworthinessDirectiveComplianceExecutionDialog from '@/components/dialogs/planificacion/directivas/CreateAirworthinessDirectiveComplianceExecutionDialog';
+import ViewAirworthinessDirectivePdfDialog from '@/components/dialogs/planificacion/directivas/ViewAirworthinessDirectivePdfDialog';
 import { ContentLayout } from '@/components/layout/ContentLayout';
 import LoadingPage from '@/components/misc/LoadingPage';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -32,7 +33,7 @@ import {
 import { formatDate } from '@/lib/helpers/format';
 import { useDebouncedInput } from '@/lib/useDebounce';
 import { useCompanyStore } from '@/stores/CompanyStore';
-import { AlertCircle, ArrowLeft, CheckCheck, FileBadge2, FileText, Pencil, Plus, RotateCcw, Search, ShieldCheck, Trash2 } from 'lucide-react';
+import { AlertCircle, ArrowLeft, CheckCheck, FileBadge2, Pencil, Plus, RotateCcw, Search, ShieldCheck, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { ReactNode, useMemo, useState } from 'react';
@@ -173,7 +174,6 @@ export default function AirworthinessDirectiveDetailPage() {
     return Array.from(uniqueAircraft.values()).sort((left, right) => left.label.localeCompare(right.label));
   }, [applicabilities]);
   const controlRows = useMemo(() => {
-    const controlsByAircraftId = new Map(controls.map((item) => [Number(item.aircraft_id), item]));
     const hasServerFilters = Boolean(controlSearch || controlAircraftFilter !== 'all' || controlSort !== 'oldest' || controlPage > 1);
 
     const controlOnlyRows = controls.map((control) => {
@@ -357,10 +357,7 @@ export default function AirworthinessDirectiveDetailPage() {
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
-            <Button size="sm" variant="outline" disabled={!directive.pdf_document} className="gap-2">
-              <FileText className="h-4 w-4" />
-              Ver PDF
-            </Button>
+            <ViewAirworthinessDirectivePdfDialog adNumber={directive.ad_number} pdfUrl={directive.pdf_document_url} />
             <Button size="sm" disabled>
               Editar directiva
             </Button>
@@ -391,7 +388,7 @@ export default function AirworthinessDirectiveDetailPage() {
           <StatCard label="Tipo" value={directive.is_recurring ? 'Recurrente' : 'Única'} />
           <StatCard
             label="Documento"
-            value={(summary?.has_pdf_document ?? Boolean(directive.pdf_document)) ? 'Disponible' : 'Pendiente'}
+            value={(summary?.has_pdf_document ?? Boolean(directive.pdf_document_url)) ? 'Disponible' : 'Pendiente'}
           />
         </div>
 

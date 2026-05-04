@@ -4,12 +4,14 @@ import { FormDatePickerField } from '@/components/forms/FormDatePickerField';
 import { FormTextField } from '@/components/forms/FormTextField';
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import { useCreateAirworthinessDirective } from '@/hooks/planificacion/directivas/queries';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Loader2, Save } from 'lucide-react';
+import { Loader2, Save, X } from 'lucide-react';
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
@@ -24,13 +26,20 @@ const createAirworthinessDirectiveSchema = z.object({
   issue_date: z.string().optional(),
   effective_date: z.string().optional(),
   is_recurring: z.boolean().default(false),
-  pdf_document: z.string().trim().optional(),
+  pdf_document: z
+    .custom<File | null>((value) => value === null || value instanceof File, {
+      message: 'Seleccione un archivo PDF válido',
+    })
+    .refine((file) => !file || file.type === 'application/pdf', 'Sólo se permite un archivo PDF')
+    .nullable()
+    .optional(),
 });
 
 type CreateAirworthinessDirectiveFormValues = z.infer<typeof createAirworthinessDirectiveSchema>;
 
 export default function CreateAirworthinessDirectiveForm({ onSuccess }: { onSuccess: () => void }) {
   const createAirworthinessDirective = useCreateAirworthinessDirective();
+  const [pdfInputKey, setPdfInputKey] = useState(0);
 
   const form = useForm<CreateAirworthinessDirectiveFormValues>({
     resolver: zodResolver(createAirworthinessDirectiveSchema),
@@ -41,7 +50,7 @@ export default function CreateAirworthinessDirectiveForm({ onSuccess }: { onSucc
       issue_date: '',
       effective_date: '',
       is_recurring: false,
-      pdf_document: '',
+      pdf_document: null,
     },
   });
 
@@ -53,12 +62,13 @@ export default function CreateAirworthinessDirectiveForm({ onSuccess }: { onSucc
         subject_description: values.subject_description || null,
         issue_date: values.issue_date || null,
         effective_date: values.effective_date || null,
-        is_recurring: values.is_recurring,
-        pdf_document: values.pdf_document || null,
+        is_recurring: (values.is_recurring ? 1: 0) as any,
+        pdf_document: values.pdf_document ?? null,
       },
     });
 
     form.reset();
+    setPdfInputKey((current) => current + 1);
     onSuccess();
   };
 
@@ -123,11 +133,45 @@ export default function CreateAirworthinessDirectiveForm({ onSuccess }: { onSucc
           <FormDatePickerField control={form.control} name="effective_date" label="Fecha de vigencia" />
         </div>
 
-        <FormTextField
+        <FormField
           control={form.control}
           name="pdf_document"
-          label="Documento PDF"
-          inputProps={{ placeholder: 'URL o ruta del PDF si ya existe' }}
+          render={({ field: { onChange, value, ...field } }) => (
+            <FormItem>
+              <FormLabel>Documento PDF</FormLabel>
+              <FormControl>
+                <div className="space-y-3">
+                  <Input
+                    key={pdfInputKey}
+                    {...field}
+                    type="file"
+                    accept="application/pdf"
+                    onChange={(event) => onChange(event.target.files?.[0] ?? null)}
+                  />
+                  {value ? (
+                    <div className="flex items-center justify-between rounded-2xl border px-4 py-3 text-sm">
+                      <div className="min-w-0">
+                        <p className="truncate font-medium">{value.name}</p>
+                        <p className="text-xs text-muted-foreground">PDF listo para adjuntar en la directiva.</p>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => {
+                          onChange(null);
+                          setPdfInputKey((current) => current + 1);
+                        }}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ) : null}
+                </div>
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
         />
 
         <FormField
