@@ -210,3 +210,35 @@ export const useUpdateCourseCalendar = () => {
     updateCourseCalendar: updateCourseMutation,
   };
 };
+
+export const useCreateCourseExam = () => {
+  const queryClient = useQueryClient();
+  const createMutation = useMutation({
+    mutationFn: async ({
+      company,
+      course_id,
+      data,
+    }: {
+      company: string;
+      course_id: string;
+      data: { name: string; description: string; exam_date: Date };
+    }) => {
+      await axiosInstance.post(`/general/${company}/course/${course_id}/create-exam`, data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["course-exams"] });
+      toast.success("¡Examen Creado!", {
+        description: `El examen ha sido creado correctamente.`,
+      });
+    },
+    onError: (error) => {
+      toast.error("Oops!", {
+        description: "No se pudo crear el examen...",
+      });
+      console.log(error);
+    },
+  });
+  return {
+    createCourseExam: createMutation,
+  };
+};
