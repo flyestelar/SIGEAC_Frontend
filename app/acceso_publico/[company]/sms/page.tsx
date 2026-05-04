@@ -1,7 +1,6 @@
 "use client";
 import { CustomCard } from "@/components/cards/CustomCard";
 import { PolicyCard } from "@/components/cards/PolicyCard";
-import { StrategyCard } from "@/components/cards/StrategyCard";
 import ActionPlanDialog from "@/components/dialogs/sms/ActionPlanDialog";
 import FeaturesDialog from "@/components/dialogs/sms/FeaturedDialog";
 import { SMSConceptsDialog } from "@/components/dialogs/sms/SMSConceptsDialog";
@@ -9,7 +8,7 @@ import { ImageGalleryDialog } from "@/components/dialogs/general/ImageGalleryDia
 import { GuestContentLayout } from "@/components/layout/GuestContentLayout";
 import { MissionVision } from "@/components/misc/MissionVision";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useGetSurveySettingNumbers } from "@/hooks/sms/survey/useGetSurveySettingNumbers";
 import {
@@ -25,9 +24,9 @@ import {
   Target,
   AlertTriangle,
   BookOpen,
-  Users,
-  BarChart3,
-  MessageSquare,
+  ArrowRight,
+  CheckCircle2,
+  Newspaper,
 } from "lucide-react";
 import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
@@ -39,9 +38,10 @@ const SMSPage = () => {
   const router = useRouter();
   const [isConceptOpen, setIsConceptOpen] = useState(false);
   const { data: surveyNumbers } = useGetSurveySettingNumbers(company);
+
   const SMSresponsibilities = [
     {
-      image: `${process.env.NEXT_PUBLIC_STORAGE_BASE_URL}images/sms/risk_icon.png`,
+      image: `${process.env.NEXT_PUBLIC_STORAGE_BASE_URL}sms/images/promotions/risk_icon.png`,
       title: "Responsabilidades SMS Dueños de Proceso",
       items: [
         "Mitigar los Riesgos",
@@ -51,7 +51,7 @@ const SMSPage = () => {
       ],
     },
     {
-      image: `${process.env.NEXT_PUBLIC_STORAGE_BASE_URL}images/sms/caution.png`,
+      image: `${process.env.NEXT_PUBLIC_STORAGE_BASE_URL}sms/images/promotions/caution.png`,
       title: "Responsabilidades SMS Resto del Personal",
       items: [
         "Identificar Peligros",
@@ -62,340 +62,425 @@ const SMSPage = () => {
     },
   ];
 
+  const strategyItems = [
+    {
+      key: "conceptos",
+      icon: BookOpen,
+      label: "Términos SMS",
+      desc: "Conceptos y definiciones esenciales del Sistema de Gestión de Seguridad.",
+      accentClass: "border-l-sky-500",
+      iconBg: "bg-sky-50 dark:bg-sky-950",
+      iconColor: "text-sky-600",
+      actionLabel: "Consultar",
+      actionColor: "text-sky-600",
+    },
+    {
+      key: "responsabilidades",
+      icon: Shield,
+      label: "Responsabilidades SMS",
+      desc: "Responsabilidades del personal en materia de seguridad operacional.",
+      accentClass: "border-l-amber-500",
+      iconBg: "bg-amber-50 dark:bg-amber-950",
+      iconColor: "text-amber-600",
+      actionLabel: "Ver más",
+      actionColor: "text-amber-600",
+    },
+    {
+      key: "encuesta",
+      icon: CheckCircle2,
+      label: "Encuestas SMS",
+      desc: "Evalúa tus conocimientos sobre el Sistema de Gestión de Seguridad.",
+      accentClass: "border-l-emerald-500",
+      iconBg: "bg-emerald-50 dark:bg-emerald-950",
+      iconColor: "text-emerald-600",
+      actionLabel: "Participar",
+      actionColor: "text-emerald-600",
+    },
+    {
+      key: "trivia",
+      icon: Target,
+      label: "Trivia SMS",
+      desc: "Pon a prueba tus conocimientos en materia de SMS.",
+      accentClass: "border-l-violet-500",
+      iconBg: "bg-violet-50 dark:bg-violet-950",
+      iconColor: "text-violet-600",
+      actionLabel: "Jugar",
+      actionColor: "text-violet-600",
+    },
+    {
+      key: "comunicados",
+      icon: Newspaper,
+      label: "Comunicados SMS",
+      desc: "Boletines e información institucional relacionada con SMS.",
+      accentClass: "border-l-rose-500",
+      iconBg: "bg-rose-50 dark:bg-rose-950",
+      iconColor: "text-rose-600",
+      actionLabel: "Ver comunicados",
+      actionColor: "text-rose-600",
+    },
+  ];
+
   return (
     <GuestContentLayout title="Seguridad Operacional SMS">
-      <div className="flex flex-col justify-center items-center w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* CARTA DE PRESENTACIÓN CON IMAGEN Y BOTONES */}
-        <div className="w-full mb-8">
-          <Card className="overflow-hidden border-0 shadow-lg">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Imagen */}
-              <div className="relative h-64 lg:h-full min-h-[300px]">
-                <Image
-                  src={`${process.env.NEXT_PUBLIC_STORAGE_BASE_URL}/images/sms/estelar_technik.png`}
-                  alt="Logo Estelar"
-                  fill
-                  className="object-cover"
-                  priority
-                />
-                <div className="absolute inset-0 bg-gradient-to-r from-blue-900/70 to-transparent lg:bg-gradient-to-r lg:from-blue-900/70 lg:to-transparent" />
-                <div className="absolute bottom-4 left-4 lg:bottom-8 lg:left-8 text-white">
-                  <h1 className="text-2xl lg:text-3xl font-bold mb-2">
-                    Sistema de Gestión de Seguridad Operacional
-                  </h1>
-                  <p className="text-sm lg:text-base opacity-90 max-w-md">
-                    Comprometidos con la excelencia operacional y la seguridad
-                    de nuestros procesos
-                  </p>
-                </div>
-              </div>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=Inter:wght@300;400;500;600&display=swap');
+        .sms-display { font-family: 'Barlow Condensed', sans-serif; letter-spacing: -0.01em; }
+        .sms-body   { font-family: 'Inter', sans-serif; }
+        .sms-stat-divider:not(:last-child) { border-right: 1px solid rgba(255,255,255,0.12); }
+        @keyframes sms-rise {
+          from { opacity: 0; transform: translateY(20px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        .sms-rise   { animation: sms-rise 0.55s ease forwards; }
+        .sms-rise-2 { animation: sms-rise 0.55s ease 0.12s forwards; opacity: 0; }
+        .sms-strategy-card { transition: transform 0.2s ease, box-shadow 0.2s ease; }
+        .sms-strategy-card:hover { transform: translateY(-3px); box-shadow: 0 10px 32px rgba(0,0,0,0.10); }
+      `}</style>
 
-              {/* Contenido y botones */}
-              <div className="p-6 lg:p-8 flex flex-col justify-center">
-                <div className="space-y-4 mb-6">
-                  <h2 className="text-xl lg:text-2xl font-semibold">
-                    Bienvenido al Portal SMS
-                  </h2>
-                  <p className="text-sm lg:text-base">
-                    Este sistema está diseñado para mantener los más altos
-                    estándares de seguridad operacional en todas nuestras
-                    actividades. Explora nuestras políticas, procedimientos y
-                    recursos disponibles.
-                  </p>
-                </div>
+      <div className="sms-body flex flex-col w-full max-w-6xl mx-auto gap-8">
 
-                <div className="flex flex-col sm:flex-row gap-4">
-                  <Button
-                    onClick={() =>
-                      router.push(
-                        `/acceso_publico/${company}/sms/crear_reporte/voluntario`,
-                      )
-                    }
-                    className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white transition-all duration-300"
-                  >
-                    <FileText className="w-4 h-4" />
-                    Reporte Voluntario
-                  </Button>
+        {/* ── HERO ── */}
+        <section className="relative rounded-2xl overflow-hidden shadow-2xl sms-rise">
+          {/* Background */}
+          <div className="absolute inset-0">
+            <Image
+              src={`${process.env.NEXT_PUBLIC_STORAGE_BASE_URL}images/sms/estelar_technik.png`}
+              alt="Estelar Technik"
+              fill
+              className="object-cover"
+              priority
+            />
+            <div className="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-950/90 to-slate-900/75" />
+          </div>
 
-                  <Button
-                    onClick={() =>
-                      router.push(
-                        `/acceso_publico/${company}/sms/crear_reporte/obligatorio`,
-                      )
-                    }
-                    variant="outline"
-                    className="flex items-center gap-2 border-blue-600 text-blue-600 hover:bg-blue-50 transition-all duration-300"
-                  >
-                    <Shield className="w-4 h-4" />
-                    Reporte Obligatorio
-                  </Button>
-                </div>
+          {/* Content */}
+          <div className="relative z-10 px-8 pt-10 pb-0 lg:px-14 lg:pt-14 min-h-[360px] flex flex-col">
+            {/* Status pill */}
+            <div className="flex items-center gap-2 mb-8">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-sky-400 opacity-75" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-sky-400" />
+              </span>
+              <span className="text-sky-400 text-[11px] font-semibold tracking-[0.22em] uppercase">
+                Portal Activo · Seguridad Operacional
+              </span>
+            </div>
 
-                {/* Información adicional */}
-                <div className="mt-6 pt-6 border-t border-gray-200">
-                  <div className="grid grid-cols-2 gap-4 text-center">
-                    <div>
-                      <div className="text-2xl font-bold text-blue-600">6</div>
-                      <div className="text-xs ">Planes de Emergencia</div>
-                    </div>
-                    <div>
-                      <div className="text-2xl font-bold text-blue-600">4</div>
-                      <div className="text-xs ">Áreas de Estrategia</div>
-                    </div>
-                  </div>
-                </div>
+            {/* Title */}
+            <div className="flex-1 max-w-2xl">
+              <h1 className="sms-display text-5xl lg:text-7xl font-extrabold text-white leading-none mb-4 uppercase">
+                Sistema de Gestión de{" "}
+                <span className="text-sky-400">Seguridad</span>{" "}
+                Operacional
+              </h1>
+              <p className="text-slate-300 text-sm lg:text-base leading-relaxed max-w-lg mb-8">
+                Comprometidos con los más altos estándares de seguridad en
+                todas nuestras operaciones de aviación.
+              </p>
+
+              {/* CTAs */}
+              <div className="flex flex-col sm:flex-row gap-3">
+                <Button
+                  onClick={() =>
+                    router.push(
+                      `/acceso_publico/${company}/sms/crear_reporte/voluntario`
+                    )
+                  }
+                  className="group bg-sky-500 hover:bg-sky-400 text-white border-0 px-6 h-11 text-sm font-semibold shadow-lg shadow-sky-500/25 transition-all duration-200"
+                >
+                  <FileText className="w-4 h-4 mr-2" />
+                  Reporte Voluntario
+                  <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform duration-150" />
+                </Button>
+                <Button
+                  onClick={() =>
+                    router.push(
+                      `/acceso_publico/${company}/sms/crear_reporte/obligatorio`
+                    )
+                  }
+                  className="bg-white/10 border border-white/40 text-white hover:bg-white/20 hover:border-white/60 px-6 h-11 text-sm font-semibold backdrop-blur-sm transition-all duration-200"
+                >
+                  <Shield className="w-4 h-4 mr-2" />
+                  Reporte Obligatorio
+                </Button>
               </div>
             </div>
-          </Card>
-        </div>
 
-        {/* TABS RESPONSIVE */}
-        <Tabs defaultValue="politicas" className="w-full">
-          <TabsList className="pb-40 sm:pb-2 grid w-full grid-cols-2 gap-2 lg:grid-cols-4 items-center justify-center">
-            <TabsTrigger
-              value="politicas"
-              className="flex-col sm:flex-row items-center justify-center gap-2 px-2 sm:px-4 mt-5 sm:mt-0"
-            >
-              <div>
-                <BookOpen className="h-4 w-4 flex-shrink-0" />
-              </div>
-              <div>
-                <span className="truncate text-xs sm:text-sm">Políticas</span>
-              </div>
-            </TabsTrigger>
-            <TabsTrigger
-              value="empresa"
-              className="flex-col sm:flex-row items-center justify-center gap-2 px-2 sm:px-4 mt-5 sm:mt-0"
-            >
-              <div>
-                <Building className="h-4 w-4 flex-shrink-0" />
-              </div>
-              <div>
-                <span className="truncate text-xs sm:text-sm">Empresa</span>
-              </div>
-            </TabsTrigger>
-            <TabsTrigger
-              value="estrategias"
-              className="flex-col sm:flex-row items-center justify-center gap-2 px-2 sm:px-4 mb-4 sm:mb-0"
-            >
-              <div>
-                <Target className="h-4 w-4 flex-shrink-0" />
-              </div>
-              <div>
-                <span className="truncate text-xs sm:text-sm">Estrategias</span>
-              </div>
-            </TabsTrigger>
-            <TabsTrigger
-              value="plan-respuesta"
-              className="flex-col sm:flex-row items-center justify-center gap-2 px-2 sm:px-4 mb-4 sm:mb-0"
-            >
-              <div>
-                <AlertTriangle className="h-4 w-4 flex-shrink-0" />
-              </div>
-              <div>
-                <span className="truncate text-xs sm:text-sm">
-                  Plan Respuesta
-                </span>
-              </div>
-            </TabsTrigger>
+            {/* Stats strip */}
+            <div className="mt-10 border-t border-white/10 grid grid-cols-2 sm:grid-cols-4">
+              {[
+                { value: "6",    label: "Planes de Emergencia" },
+                { value: "4",    label: "Áreas Estratégicas" },
+                { value: "100%", label: "Compromiso Operacional" },
+                { value: "24/7", label: "Gestión Continua" },
+              ].map((s, i) => (
+                <div
+                  key={i}
+                  className={`sms-stat-divider text-center py-5 ${i < 3 ? "sm:border-r sm:border-white/12" : ""}`}
+                >
+                  <div className="sms-display text-3xl lg:text-4xl font-bold text-sky-400">{s.value}</div>
+                  <div className="text-[11px] text-slate-400 mt-0.5 tracking-wide">{s.label}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ── TABS ── */}
+        <Tabs defaultValue="politicas" className="w-full sms-rise-2">
+          <TabsList className="w-full bg-transparent border-b border-border rounded-none h-auto p-0 flex overflow-x-auto gap-0">
+            {[
+              { value: "politicas",     icon: BookOpen,       label: "Políticas" },
+              { value: "empresa",       icon: Building,       label: "Empresa" },
+              { value: "estrategias",   icon: Target,         label: "Estrategias" },
+              { value: "plan-respuesta",icon: AlertTriangle,  label: "Plan de Respuesta" },
+            ].map((tab) => (
+              <TabsTrigger
+                key={tab.value}
+                value={tab.value}
+                className="flex-1 flex items-center justify-center gap-2 rounded-none border-b-2 border-transparent data-[state=active]:border-sky-500 data-[state=active]:text-sky-600 data-[state=active]:bg-transparent data-[state=active]:shadow-none py-3 px-3 text-sm font-medium text-muted-foreground transition-colors duration-200 whitespace-nowrap min-w-[100px]"
+              >
+                <tab.icon className="w-4 h-4 flex-shrink-0" />
+                <span>{tab.label}</span>
+              </TabsTrigger>
+            ))}
           </TabsList>
 
-          {/* CONTENIDO PARA POLÍTICAS */}
-          <TabsContent value="politicas" className="space-y-4 mt-4 sm:mt-6">
-            <Card className="min-h-[300px] sm:min-h-[400px]">
-              <CardHeader>
-                <CardTitle className="text-lg sm:text-xl flex items-center gap-2">
-                  Políticas del Sistema de Gestión de Seguridad
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3 sm:space-y-4 text-sm sm:text-base">
-                <div className="flex justify-center items-center">
-                  <ImageGalleryDialog
-                    images={policyImages}
-                    trigger={
-                      <Button
-                        variant="link"
-                        className="text-xs sm:text-base p-1 h-auto hover:no-underline text-blue-600 hover:text-blue-800 transition-colors"
-                      >
-                        Ver Políticas Completas
-                      </Button>
-                    }
-                  />
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 items-stretch">
-                  {policyCardsData.map((policy, index) => (
-                    <div key={index} className="h-full">
-                      <PolicyCard
-                        index={index}
-                        icon={policy.icon}
-                        title=""
-                        description={policy.description}
-                        className="h-full"
-                      />
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+          {/* ── POLÍTICAS ── */}
+          <TabsContent value="politicas" className="mt-6 space-y-5">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div>
+                <h2 className="sms-display text-2xl font-bold uppercase tracking-wide">
+                  Políticas de Seguridad Operacional
+                </h2>
+                <p className="text-sm text-muted-foreground mt-0.5">
+                  Compromisos institucionales en materia de seguridad
+                </p>
+              </div>
+              <ImageGalleryDialog
+                images={policyImages}
+                trigger={
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="border-sky-400 text-sky-600 hover:bg-sky-50 gap-2 shrink-0"
+                  >
+                    <BookOpen className="w-4 h-4" />
+                    Ver Políticas Completas
+                  </Button>
+                }
+              />
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {policyCardsData.map((policy, index) => (
+                <PolicyCard
+                  key={index}
+                  index={index}
+                  icon={policy.icon}
+                  title=""
+                  description={policy.description}
+                  className="hover:border-sky-200 hover:shadow-sm transition-all duration-200"
+                />
+              ))}
+            </div>
           </TabsContent>
 
-          {/* CONTENIDO PARA NUESTRA EMPRESA */}
-          <TabsContent value="empresa" className="space-y-4 mt-4 sm:mt-6">
-            <Card className="min-h-[300px] sm:min-h-[400px]">
-              <CardHeader>
-                <CardTitle className="text-lg sm:text-xl flex items-center gap-2">
-                  Nuestra Empresa
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3 sm:space-y-4 text-sm sm:text-base">
-                <div>
-                  <MissionVision />
-                </div>
-                <div className="pt-4 border-t">
-                  <div className="flex justify-center">
-                    <Image
-                      src={`${process.env.NEXT_PUBLIC_STORAGE_BASE_URL}images/sms/sms_airplane_page.jpg`}
-                      alt="Nuestra empresa - instalaciones y equipo"
-                      width={600}
-                      height={400}
-                      className="rounded-lg max-w-full h-auto max-h-64 object-cover shadow-md transition-all duration-500 ease-out hover:shadow-xl hover:scale-105"
-                    />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+          {/* ── EMPRESA ── */}
+          <TabsContent value="empresa" className="mt-6 space-y-5">
+            <div>
+              <h2 className="sms-display text-2xl font-bold uppercase tracking-wide">
+                Nuestra Empresa
+              </h2>
+              <p className="text-sm text-muted-foreground mt-0.5">
+                Misión, visión e identidad corporativa
+              </p>
+            </div>
+
+            <MissionVision />
+
+            <div className="relative rounded-xl overflow-hidden border border-border">
+              <Image
+                src={`${process.env.NEXT_PUBLIC_STORAGE_BASE_URL}sms/images/promotions/sms_airplane_page.jpg`}
+                alt="Instalaciones Estelar Technik"
+                width={1200}
+                height={500}
+                className="w-full object-cover max-h-72 hover:scale-[1.03] transition-transform duration-700"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-slate-900/65 to-transparent pointer-events-none" />
+              <div className="absolute bottom-4 left-5 text-white">
+                <p className="text-sm font-semibold">Instalaciones Operacionales</p>
+                <p className="text-xs opacity-70 uppercase tracking-widest">{company}</p>
+              </div>
+            </div>
           </TabsContent>
 
-          {/* CONTENIDO PARA ESTRATEGIAS */}
-          <TabsContent value="estrategias" className="space-y-4 mt-4 sm:mt-6">
-            <Card className="min-h-[300px] sm:min-h-[400px]">
-              <CardHeader>
-                <CardTitle className="text-lg sm:text-xl flex items-center gap-2">
-                  Estrategias de Seguridad Operacional
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3 sm:space-y-4 text-sm sm:text-base">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-stretch">
-                  {/* Términos SMS */}
-                  <div
-                    className="border-l-4 border-l-blue-500 pl-4 flex flex-col cursor-pointer"
-                    onClick={() => setIsConceptOpen(true)}
-                  >
-                    <StrategyCard
-                      title="Términos SMS"
-                      description="Lista de Conceptos Relacionados al SMS."
-                      className="h-full hover:scale-105 cursor-pointer"
-                    />
-                  </div>
+          {/* ── ESTRATEGIAS ── */}
+          <TabsContent value="estrategias" className="mt-6 space-y-5">
+            {/* Controlled dialog rendered outside grid */}
+            <SMSConceptsDialog
+              concepts={smsConcepts}
+              title="Glosario de Términos SMS"
+              description="Definiciones esenciales para comprender el Sistema de Gestión de Seguridad"
+              open={isConceptOpen}
+              onOpenChange={setIsConceptOpen}
+            />
 
-                  <SMSConceptsDialog
-                    concepts={smsConcepts}
-                    title="Glosario de Términos SMS"
-                    description="Definiciones esenciales para comprender el Sistema de Gestión de Seguridad"
-                    open={isConceptOpen}
-                    onOpenChange={setIsConceptOpen}
-                  />
+            <div>
+              <h2 className="sms-display text-2xl font-bold uppercase tracking-wide">
+                Estrategias de Seguridad Operacional
+              </h2>
+              <p className="text-sm text-muted-foreground mt-0.5">
+                Recursos y herramientas para fortalecer la cultura de seguridad
+              </p>
+            </div>
 
-                  {/* Responsabilidades SMS */}
-                  <FeaturesDialog features={SMSresponsibilities}>
-                    <div className="border-l-4 border-l-blue-500 pl-4 flex flex-col">
-                      <StrategyCard
-                        title="Responsabilidades SMS"
-                        description="Responsabilidades del Personal en Materia de SMS"
-                        className="h-full hover:scale-105 cursor-pointer"
-                      />
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {/* Términos SMS */}
+              <div
+                className={`sms-strategy-card cursor-pointer group`}
+                onClick={() => setIsConceptOpen(true)}
+              >
+                <Card className={`h-full border-l-4 ${strategyItems[0].accentClass}`}>
+                  <CardContent className="p-5">
+                    <div className={`w-9 h-9 rounded-lg ${strategyItems[0].iconBg} flex items-center justify-center mb-3`}>
+                      <BookOpen className={`w-5 h-5 ${strategyItems[0].iconColor}`} />
                     </div>
-                  </FeaturesDialog>
+                    <h3 className="font-semibold text-sm mb-1">{strategyItems[0].label}</h3>
+                    <p className="text-xs text-muted-foreground leading-relaxed">{strategyItems[0].desc}</p>
+                    <div className={`mt-3 flex items-center gap-1 text-xs font-medium group-hover:gap-2 transition-all ${strategyItems[0].actionColor}`}>
+                      <span>{strategyItems[0].actionLabel}</span>
+                      <ArrowRight className="w-3 h-3" />
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
 
-                  {/* Encuestas SMS */}
-                  <div
-                    className="border-l-4 border-l-blue-500 pl-4 flex flex-col"
-                    onClick={() => {
-                      if (surveyNumbers?.SMS_SURVEY) {
-                        router.push(
-                          `/acceso_publico/${company}/sms/encuesta/${surveyNumbers.SMS_SURVEY}`,
-                        );
-                      }
-                    }}
-                    style={{ cursor: surveyNumbers?.SMS_SURVEY ? 'pointer' : 'default' }}
-                  >
-                    <StrategyCard
-                      title="Encuestas SMS"
-                      description="Evalúa tus conocimientos en SMS"
-                      className="hover:scale-105 h-full"
-                    />
-                  </div>
-
-                  {/* Trivia SMS */}
-                  <div
-                    className="border-l-4 border-l-blue-500 pl-4 flex flex-col"
-                    onClick={() => {
-                      if (surveyNumbers?.SMS_QUIZ) {
-                        router.push(
-                          `/acceso_publico/${company}/sms/encuesta/${surveyNumbers.SMS_QUIZ}`,
-                        );
-                      }
-                    }}
-                    style={{ cursor: surveyNumbers?.SMS_QUIZ ? 'pointer' : 'default' }}
-                  >
-                    <StrategyCard
-                      title="Trivia SMS"
-                      description="Pon a prueba tus conocimientos en materia de SMS"
-                      className="hover:scale-105 h-full"
-                    />
-                  </div>
-
-                  {/* Comunicados SMS */}
-                  <div
-                    className="border-l-4 border-l-blue-500 pl-4 flex flex-col"
-                    onClick={() =>
-                      router.push(`/acceso_publico/${company}/sms/comunicados`)
-                    }
-                  >
-                    <StrategyCard
-                      title="Comunicados SMS"
-                      description="Información referente a los boletines de SMS"
-                      className="h-full hover:scale-105 cursor-pointer"
-                    />
-                  </div>
+              {/* Responsabilidades SMS */}
+              <FeaturesDialog features={SMSresponsibilities}>
+                <div className="sms-strategy-card cursor-pointer group">
+                  <Card className={`h-full border-l-4 ${strategyItems[1].accentClass}`}>
+                    <CardContent className="p-5">
+                      <div className={`w-9 h-9 rounded-lg ${strategyItems[1].iconBg} flex items-center justify-center mb-3`}>
+                        <Shield className={`w-5 h-5 ${strategyItems[1].iconColor}`} />
+                      </div>
+                      <h3 className="font-semibold text-sm mb-1">{strategyItems[1].label}</h3>
+                      <p className="text-xs text-muted-foreground leading-relaxed">{strategyItems[1].desc}</p>
+                      <div className={`mt-3 flex items-center gap-1 text-xs font-medium group-hover:gap-2 transition-all ${strategyItems[1].actionColor}`}>
+                        <span>{strategyItems[1].actionLabel}</span>
+                        <ArrowRight className="w-3 h-3" />
+                      </div>
+                    </CardContent>
+                  </Card>
                 </div>
-              </CardContent>
-            </Card>
+              </FeaturesDialog>
+
+              {/* Encuestas SMS */}
+              <div
+                className={`sms-strategy-card ${surveyNumbers?.SMS_SURVEY ? "cursor-pointer group" : "opacity-50"}`}
+                onClick={() => {
+                  if (surveyNumbers?.SMS_SURVEY) {
+                    router.push(`/acceso_publico/${company}/sms/encuesta/${surveyNumbers.SMS_SURVEY}`);
+                  }
+                }}
+              >
+                <Card className={`h-full border-l-4 ${strategyItems[2].accentClass}`}>
+                  <CardContent className="p-5">
+                    <div className={`w-9 h-9 rounded-lg ${strategyItems[2].iconBg} flex items-center justify-center mb-3`}>
+                      <CheckCircle2 className={`w-5 h-5 ${strategyItems[2].iconColor}`} />
+                    </div>
+                    <h3 className="font-semibold text-sm mb-1">{strategyItems[2].label}</h3>
+                    <p className="text-xs text-muted-foreground leading-relaxed">{strategyItems[2].desc}</p>
+                    {surveyNumbers?.SMS_SURVEY && (
+                      <div className={`mt-3 flex items-center gap-1 text-xs font-medium group-hover:gap-2 transition-all ${strategyItems[2].actionColor}`}>
+                        <span>{strategyItems[2].actionLabel}</span>
+                        <ArrowRight className="w-3 h-3" />
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Trivia SMS */}
+              <div
+                className={`sms-strategy-card ${surveyNumbers?.SMS_QUIZ ? "cursor-pointer group" : "opacity-50"}`}
+                onClick={() => {
+                  if (surveyNumbers?.SMS_QUIZ) {
+                    router.push(`/acceso_publico/${company}/sms/encuesta/${surveyNumbers.SMS_QUIZ}`);
+                  }
+                }}
+              >
+                <Card className={`h-full border-l-4 ${strategyItems[3].accentClass}`}>
+                  <CardContent className="p-5">
+                    <div className={`w-9 h-9 rounded-lg ${strategyItems[3].iconBg} flex items-center justify-center mb-3`}>
+                      <Target className={`w-5 h-5 ${strategyItems[3].iconColor}`} />
+                    </div>
+                    <h3 className="font-semibold text-sm mb-1">{strategyItems[3].label}</h3>
+                    <p className="text-xs text-muted-foreground leading-relaxed">{strategyItems[3].desc}</p>
+                    {surveyNumbers?.SMS_QUIZ && (
+                      <div className={`mt-3 flex items-center gap-1 text-xs font-medium group-hover:gap-2 transition-all ${strategyItems[3].actionColor}`}>
+                        <span>{strategyItems[3].actionLabel}</span>
+                        <ArrowRight className="w-3 h-3" />
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Comunicados SMS */}
+              <div
+                className="sms-strategy-card cursor-pointer group"
+                onClick={() => router.push(`/acceso_publico/${company}/sms/comunicados`)}
+              >
+                <Card className={`h-full border-l-4 ${strategyItems[4].accentClass}`}>
+                  <CardContent className="p-5">
+                    <div className={`w-9 h-9 rounded-lg ${strategyItems[4].iconBg} flex items-center justify-center mb-3`}>
+                      <Newspaper className={`w-5 h-5 ${strategyItems[4].iconColor}`} />
+                    </div>
+                    <h3 className="font-semibold text-sm mb-1">{strategyItems[4].label}</h3>
+                    <p className="text-xs text-muted-foreground leading-relaxed">{strategyItems[4].desc}</p>
+                    <div className={`mt-3 flex items-center gap-1 text-xs font-medium group-hover:gap-2 transition-all ${strategyItems[4].actionColor}`}>
+                      <span>{strategyItems[4].actionLabel}</span>
+                      <ArrowRight className="w-3 h-3" />
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
           </TabsContent>
 
-          {/* CONTENIDO PARA PLAN DE RESPUESTA */}
-          <TabsContent
-            value="plan-respuesta"
-            className="space-y-4 mt-4 sm:mt-6"
-          >
-            <Card className="min-h-[300px] sm:min-h-[400px]">
-              <CardHeader>
-                <CardTitle className="text-sm sm:text-xl flex items-center gap-2">
-                  Plan de Respuesta Ante la Emergencia de{" "}
-                  {company.toUpperCase()}
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3 sm:space-y-4 text-sm sm:text-base">
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 items-stretch">
-                  {emergencyPlans.map((plan, index) => (
-                    <div key={index} className="flex items-stretch">
-                      <ActionPlanDialog
-                        title={`${plan.cardData?.stepsTitle}`}
-                        actionSteps={plan.actionSteps}
-                      >
-                        <CustomCard
-                          imageUrl={plan.cardData.imageUrl}
-                          imageAlt={plan.cardData.imageAlt}
-                          title={plan.cardData.title}
-                          description={plan.cardData.description}
-                          actionLink={plan.cardData.actionLink}
-                        />
-                      </ActionPlanDialog>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+          {/* ── PLAN DE RESPUESTA ── */}
+          <TabsContent value="plan-respuesta" className="mt-6 space-y-5">
+            <div>
+              <h2 className="sms-display text-2xl font-bold uppercase tracking-wide">
+                Plan de Respuesta Ante la Emergencia
+              </h2>
+              <p className="text-sm text-muted-foreground mt-0.5">
+                Procedimientos de actuación en situaciones de emergencia ·{" "}
+                <span className="uppercase font-medium">{company}</span>
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {emergencyPlans.map((plan, index) => (
+                <ActionPlanDialog
+                  key={index}
+                  title={`${plan.cardData?.stepsTitle || plan.cardData?.title}`}
+                  actionSteps={plan.actionSteps}
+                >
+                  <div className="cursor-pointer hover:scale-[1.02] transition-transform duration-200">
+                    <CustomCard
+                      imageUrl={plan.cardData.imageUrl}
+                      imageAlt={plan.cardData.imageAlt}
+                      title={plan.cardData.title}
+                      description={plan.cardData.description}
+                      actionLink={plan.cardData.actionLink}
+                      className="h-full"
+                    />
+                  </div>
+                </ActionPlanDialog>
+              ))}
+            </div>
           </TabsContent>
         </Tabs>
       </div>
