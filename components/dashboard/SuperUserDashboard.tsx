@@ -1,4 +1,3 @@
-// components/dashboard/SuperUserDashboard.tsx
 "use client";
 
 import { useState } from "react";
@@ -13,7 +12,6 @@ import {
 } from "@/components/ui/select";
 import { User } from "@/types";
 
-// Importar solo los contenidos de los dashboards
 import WarehouseDashboardContent from "@/components/dashboard/content/WarehouseDashboardContent";
 import AdministrationDashboardContent from "@/components/dashboard/content/AdministrationDashboardContent";
 import SMSDashboardContent from "@/components/dashboard/content/SMSDashboardContent";
@@ -33,9 +31,8 @@ export default function SuperUserDashboard({
   user,
   roleNames,
 }: SuperUserDashboardProps) {
-  const [selectedDashboard, setSelectedDashboard] = useState<DashboardType>(
-    null
-  );
+  const [selectedDashboard, setSelectedDashboard] =
+    useState<DashboardType>(null);
 
   const renderDashboardContent = () => {
     switch (selectedDashboard) {
@@ -76,41 +73,86 @@ export default function SuperUserDashboard({
 
   return (
     <ContentLayout title={`SuperUser Dashboard / ${companySlug || ""}`}>
+
       <header className="border-b bg-background/60 backdrop-blur-md shadow-sm">
-        <div className="container mx-auto px-4 py-6 flex items-center justify-between">
 
-          {/* ================= ICON + TITLE ================= */}
-          <div className="flex items-center space-x-4">
+        <div className="
+          container mx-auto px-4
+          py-4 sm:py-6
+          flex flex-col sm:flex-row
+          gap-4 sm:gap-0
+          sm:items-center sm:justify-between
+        ">
 
-            <div className="relative">
+          <div className="
+            flex items-center
+            gap-3 sm:gap-4
+          ">
+
+            <div className="relative shrink-0">
               <div className="absolute inset-0 rounded-2xl bg-red-500/10 blur-md" />
-              <div className="relative flex h-12 w-12 items-center justify-center rounded-2xl border border-red-500/30 bg-red-500/10 text-red-500 shadow-sm">
-                <Shield className="h-6 w-6" />
+              <div className="
+                relative flex items-center justify-center
+                h-10 w-10 sm:h-12 sm:w-12
+                rounded-2xl border border-red-500/30
+                bg-red-500/10 text-red-500 shadow-sm
+              ">
+                <Shield className="h-5 w-5 sm:h-6 sm:w-6" />
               </div>
             </div>
 
             <div className="leading-tight">
-              <h1 className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-100">
+              <h1 className="
+                text-lg sm:text-2xl
+                font-semibold tracking-tight
+                text-slate-900 dark:text-slate-100
+              ">
                 SuperUser Dashboard
               </h1>
 
-              <p className="text-sm text-slate-500 dark:text-slate-400 font-[Inter,ui-sans-serif,system-ui]">
+              <p className="
+                text-xs sm:text-sm
+                text-slate-500 dark:text-slate-400
+              ">
                 Acceso global a todos los módulos del sistema
               </p>
             </div>
 
           </div>
 
-          {/* ================= SELECT ================= */}
-          <div className="w-[250px]">
+          <div className="
+            w-full sm:w-[250px]
+          ">
 
-            <Select onValueChange={(value) => setSelectedDashboard(value as DashboardType)}>
+            <Select
+              onValueChange={(value) =>
+                setSelectedDashboard(value as DashboardType)
+              }
+            >
 
-              <SelectTrigger className="h-10 px-3 rounded-xl bg-gradient-to-br from-background/70 to-background/40 backdrop-blur-md border border-slate-400/60 dark:border-slate-600/60 shadow-sm hover:shadow-md hover:shadow-red-500/10 hover:border-red-400/30 transition-all focus:ring-2 focus:ring-red-500/15 focus:border-red-400/40 text-slate-700 dark:text-slate-200">
+              <SelectTrigger className="
+                h-10 px-3
+                rounded-xl
+                bg-gradient-to-br from-background/70 to-background/40
+                backdrop-blur-md
+                border border-slate-400/60 dark:border-slate-600/60
+                shadow-sm
+                hover:shadow-md hover:shadow-red-500/10
+                hover:border-red-400/30
+                transition-all
+                focus:ring-2 focus:ring-red-500/15 focus:border-red-400/40
+                text-slate-700 dark:text-slate-200
+                text-sm
+              ">
                 <SelectValue placeholder="Seleccionar Dashboard" />
               </SelectTrigger>
 
-              <SelectContent className="rounded-xl border border-slate-200/60 dark:border-slate-800/60 bg-background/95 backdrop-blur-md shadow-xl">
+              <SelectContent className="
+                rounded-xl
+                border border-slate-200/60 dark:border-slate-800/60
+                bg-background/95 backdrop-blur-md
+                shadow-xl
+              ">
                 <SelectItem value="WAREHOUSE">Almacén</SelectItem>
                 <SelectItem value="ADMINISTRATION">Administración</SelectItem>
                 <SelectItem value="SMS">SMS</SelectItem>
@@ -123,17 +165,30 @@ export default function SuperUserDashboard({
         </div>
       </header>
 
-      {/* Contenido dinámico */}
-      <main className="mt-6">
+      <main className="mt-4 sm:mt-6">
+
         {!selectedDashboard ? (
-          <div className="flex flex-col items-center justify-center py-24 text-center text-muted-foreground">
-            <LayoutDashboard className="w-10 h-10 mb-4 opacity-50" />
-            <p className="text-sm">Seleccione un dashboard para comenzar.</p>
+          <div className="
+            flex flex-col items-center justify-center
+            py-16 sm:py-24
+            text-center text-muted-foreground
+            px-4
+          ">
+            <LayoutDashboard className="
+              w-8 h-8 sm:w-10 sm:h-10
+              mb-3 sm:mb-4
+              opacity-50
+            " />
+            <p className="text-xs sm:text-sm">
+              Seleccione un dashboard para comenzar.
+            </p>
           </div>
         ) : (
           renderDashboardContent()
         )}
+
       </main>
+
     </ContentLayout>
   );
 }
