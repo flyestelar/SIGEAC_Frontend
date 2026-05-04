@@ -1,6 +1,7 @@
 "use client";
 
-import Image from "next/image";
+import { useParams } from "next/navigation";
+import { FileServer } from "@/components/misc/FileServer";
 import Link from "next/link";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
@@ -406,6 +407,8 @@ export function ReportDetailView({ kind, report, backHref, title }: ReportDetail
       : buildObligatoryDetails(report)
     : [];
 
+  const { company } = useParams<{ company: string }>();
+
   const reportTime =
     kind === "ROS" && report ? (report as { report_time?: string }).report_time ?? null : null;
   const reportNotification = getHazardNotification(report);
@@ -632,20 +635,28 @@ export function ReportDetailView({ kind, report, backHref, title }: ReportDetail
                   <CardDescription>Vista previa del archivo cargado con el reporte.</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="relative aspect-video overflow-hidden rounded-lg border bg-muted">
-                    <Image
-                      src={report.imageUrl}
-                      alt="Imagen adjunta del reporte"
-                      fill
-                      className="object-contain"
-                    />
-                  </div>
-                  <Button asChild variant="outline" className="w-full">
-                    <a href={report.imageUrl} download>
-                      <Download className="mr-2 h-4 w-4" />
-                      Descargar imagen
-                    </a>
-                  </Button>
+                  <FileServer path={String(report.imageUrl)} company={company} type="file">
+                    {(url, isLoading, hasError) => (
+                      <>
+                        <div className="relative aspect-video overflow-hidden rounded-lg border bg-muted">
+                          {isLoading ? (
+                            <div className="flex items-center justify-center h-full">Cargando...</div>
+                          ) : hasError || !url ? (
+                            <div className="flex items-center justify-center h-full">No se pudo cargar la imagen.</div>
+                          ) : (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img src={url as string} alt="Imagen adjunta del reporte" className="object-contain w-full h-full" />
+                          )}
+                        </div>
+                        <Button asChild variant="outline" className="w-full">
+                          <a href={url ?? String(report.imageUrl)} download>
+                            <Download className="mr-2 h-4 w-4" />
+                            Descargar imagen
+                          </a>
+                        </Button>
+                      </>
+                    )}
+                  </FileServer>
                 </CardContent>
               </Card>
             ) : null}
