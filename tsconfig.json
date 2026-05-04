@@ -1,6 +1,10 @@
 {
   "compilerOptions": {
-    "lib": ["dom", "dom.iterable", "esnext"],
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
     "allowJs": true,
     "skipLibCheck": true,
     "strict": true,
@@ -11,7 +15,7 @@
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "jsx": "preserve",
+    "jsx": "react-jsx",
     "incremental": true,
     "plugins": [
       {
@@ -19,13 +23,31 @@
       }
     ],
     "paths": {
-      "@api/client": ["./.gen/api/client.gen.ts"],
-      "@api/types": ["./.gen/api/types.gen.ts"],
-      "@api/queries": ["./.gen/api/@tanstack/react-query.gen.ts"],
-      "@api/*": ["./.gen/api/*"],
-      "@/*": ["./*"]
+      "@api/client": [
+        "./.gen/api/client.gen.ts"
+      ],
+      "@api/types": [
+        "./.gen/api/types.gen.ts"
+      ],
+      "@api/queries": [
+        "./.gen/api/@tanstack/react-query.gen.ts"
+      ],
+      "@api/*": [
+        "./.gen/api/*"
+      ],
+      "@/*": [
+        "./*"
+      ]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
-  "exclude": ["node_modules"]
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/types/**/*.ts",
+    ".next/dev/types/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
 }
