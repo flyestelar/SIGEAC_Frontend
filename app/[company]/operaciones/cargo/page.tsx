@@ -157,7 +157,7 @@ const AircraftCard = ({
             </div>
 
             {/* Solo se renderiza si NO hay menú colisionando (es registrada o no es mes actual) */}
-            {(!aircraft.is_external || !isCurrentMonth) && (
+            {/*             {(!aircraft.is_external || !isCurrentMonth) && (
               <span
                 className={`text-xs font-mono px-2 py-1 rounded shrink-0 ${
                   aircraft.is_external
@@ -167,7 +167,7 @@ const AircraftCard = ({
               >
                 {aircraft.is_external ? "Externa" : aircraft.serial}
               </span>
-            )}
+            )} */}
           </div>
 
           <div className="flex items-center gap-3 border rounded-lg p-3 bg-muted/30">

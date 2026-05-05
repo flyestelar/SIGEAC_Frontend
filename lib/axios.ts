@@ -15,18 +15,22 @@ const axiosInstance = axios.create({
 });
 
 // 1. Interceptor de Petición: Asegura que el token lleve el formato correcto
-axiosInstance.interceptors.request.use((config) => {
-    const token = Cookies.get('auth_token');
+axiosInstance.interceptors.request.use(
+    (config) => {
+        const token = Cookies.get('auth_token');
 
-    if (token) {
-        // IMPORTANTE: Laravel necesita que el header empiece con "Bearer "
-        // Si tu cookie no lo tiene, lo añadimos aquí.
-        const authHeader = token.startsWith('Bearer ') ? token : `Bearer ${token}`;
-        config.headers.Authorization = authHeader;
+        if (token) {
+            // Laravel necesita que el header empiece con "Bearer "
+            const authHeader = token.startsWith('Bearer ') ? token : `Bearer ${token}`;
+            config.headers.Authorization = authHeader;
+        }
+
+        return config;
+    },
+    (error) => {
+        return Promise.reject(error);
     }
-
-    return config;
-});
+);
 
 // 2. Interceptor de Respuesta: Detecta si el servidor nos expulsó (Error 401)
 axiosInstance.interceptors.response.use(
