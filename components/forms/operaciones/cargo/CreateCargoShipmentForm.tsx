@@ -413,7 +413,9 @@ export default function CreateCargoShipmentForm({
                                 />
                                 Ninguna
                               </CommandItem>
-                              {aircrafts?.map((acf: any) => {
+                              {aircrafts
+                                ?.filter((acf: any) => ![4, 6].includes(acf.id))
+                                .map((acf: any) => {
                                 const dispValue =
                                   acf.acronym ||
                                   acf.serial ||

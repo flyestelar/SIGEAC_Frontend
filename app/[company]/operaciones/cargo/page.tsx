@@ -115,7 +115,6 @@ const AircraftCard = ({
   return (
     <>
       <Card className="flex flex-col justify-between hover:shadow-lg hover:border-primary/50 transition-all duration-200 group relative overflow-visible">
-        {/* MENÚ DE ACCIONES (SOLO APLICA A AERONAVES EXTERNAS EN MES ACTUAL) */}
         {canWrite && aircraft.is_external && isCurrentMonth && (
           <div className="absolute top-2 right-2 z-10">
             <DropdownMenu>
@@ -148,7 +147,7 @@ const AircraftCard = ({
                 <Plane className="h-5 w-5" />
               </div>
               <div className="pr-4">
-                <p className="text-2xl font-bold tracking-tight break-all">
+                <p className="text-xl font-bold tracking-tight break-all">
                   {aircraft.acronym}
                 </p>
                 <p className="text-sm text-muted-foreground">
