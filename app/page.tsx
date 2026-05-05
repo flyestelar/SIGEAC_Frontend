@@ -3,7 +3,7 @@
 import Footer from "@/components/layout/Footer";
 import Logo from "@/components/misc/Logo";
 import { Button } from "@/components/ui/button";
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 

@@ -21,10 +21,11 @@ import ActivitiesReportPdf from "@/components/pdf/desarrollo/ActivityReport";
 import { PDFDownloadLink } from "@react-pdf/renderer";
 import { Printer, FileText } from "lucide-react";
 
-import { useState } from "react";
+import { useState, use } from "react";
 import { DailyReportDialog } from "@/components/dialogs/aerolinea/desarollo/DailyReportDialog";
 
-const ActivityReportsByIdPage = ({ params }: { params: { id: string } }) => {
+const ActivityReportsByIdPage = (props: { params: Promise<{ id: string }> }) => {
+  const params = use(props.params);
   const { data: report, isLoading } = useGetUserActivity(params.id);
   const { user, loading } = useAuth();
   const userRoles = user?.roles?.map((role) => role.name) || [];

@@ -153,19 +153,9 @@ export default function CreateFollowUpControlForm({ onClose, id }: FormProps) {
                     onSelect={field.onChange}
                     disabled={(date) => date > new Date()} // Solo deshabilitar fechas futuras
                     initialFocus
-                    fromYear={1980} // Año mínimo que se mostrará
-                    toYear={new Date().getFullYear()} // Año máximo (actual)
-                    captionLayout="dropdown-buttons" // Selectores de año/mes
-                    components={{
-                      Dropdown: (props) => (
-                        <select
-                          {...props}
-                          className="bg-popover text-popover-foreground"
-                        >
-                          {props.children}
-                        </select>
-                      ),
-                    }}
+                    startMonth={new Date(1980, 0)} // Año mínimo que se mostrará
+                    endMonth={new Date(new Date().getFullYear(), 11)} // Año máximo (actual)
+                    captionLayout="dropdown" // Selectores de año/mes
                   />
                 </PopoverContent>
               </Popover>

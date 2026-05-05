@@ -177,19 +177,9 @@ export function CreditPaymentForm({ onClose, credit }: FormProps) {
                         date > new Date() || date < new Date("1999-07-21")
                       }
                       initialFocus
-                      fromYear={1980}
-                      toYear={new Date().getFullYear()}
-                      captionLayout="dropdown-buttons"
-                      components={{
-                        Dropdown: (props) => (
-                          <select
-                            {...props}
-                            className="bg-popover text-popover-foreground"
-                          >
-                            {props.children}
-                          </select>
-                        ),
-                      }}
+                      startMonth={new Date(1980, 0)}
+                      endMonth={new Date(new Date().getFullYear(), 11)}
+                      captionLayout="dropdown"
                     />
                   </PopoverContent>
                 </Popover>

@@ -1,6 +1,6 @@
 "use client";
 import BarChartCourseComponent from "@/components/charts/BarChartCourseComponent";
-import PieChartComponent from "@/components/charts/PieChartComponent";
+import { PieChartComponent } from "@/components/charts/PieChartComponent";
 import { ContentLayout } from "@/components/layout/ContentLayout";
 import DataFilter from "@/components/misc/DataFilter";
 import { Label } from "@/components/ui/label";

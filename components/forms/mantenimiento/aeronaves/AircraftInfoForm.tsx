@@ -276,7 +276,7 @@ export default function AircraftInfoForm({ onNext, onBack, initialData }: Aircra
                           </FormControl>
                         </PopoverTrigger>
 
-                        <PopoverContent className="p-0 w-[--radix-popover-trigger-width]" align="start">
+                        <PopoverContent className="p-0 w-auto" align="start">
                           <Calendar
                             mode="single"
                             selected={field.value}
@@ -287,12 +287,12 @@ export default function AircraftInfoForm({ onNext, onBack, initialData }: Aircra
                             disabled={(date) => date > new Date() || date < new Date('1900-01-01')}
                             // Dropdowns para navegar rápido por mes/año
                             captionLayout="dropdown"
-                            fromYear={1900}
-                            toYear={new Date().getFullYear()}
+                            startMonth={new Date(1900, 0)}
+                            endMonth={new Date(new Date().getFullYear(), 11)}
                             // Localización
                             locale={es}
                             // Enfoque inicial dentro del popover
-                            initialFocus
+                            autoFocus
                           />
                         </PopoverContent>
                       </Popover>

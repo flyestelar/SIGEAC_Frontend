@@ -11,10 +11,15 @@ import { Textarea } from '@/components/ui/textarea';
 import { useGetMaintenanceAircrafts } from '@/hooks/planificacion/useGetMaintenanceAircrafts';
 import { cn } from '@/lib/utils';
 import { useCompanyStore } from '@/stores/CompanyStore';
-import { aircraftComponentSlotIndexOptions, maintenanceControlsIndexOptions } from '@api/queries';
+import {
+  aircraftComponentSlotIndexOptions,
+  airworthinessDirectivesIndexOptions,
+  maintenanceControlsIndexOptions,
+} from '@api/queries';
 import {
   AircraftComponentSlotResource,
   AircraftResource,
+  AirworthinessDirectiveResource,
   HardTimeIntervalResource,
   MaintenanceControlResource,
   StoreWorkOrderRequest,
@@ -22,13 +27,14 @@ import {
 } from '@api/types';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useQuery } from '@tanstack/react-query';
-import { AlertCircle, CalendarDays, ClipboardCheck, MessageSquareText, ShieldAlert } from 'lucide-react';
+import { AlertCircle, CalendarDays, ClipboardCheck, MessageSquareText, ShieldAlert, ShieldCheck } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { Controller, useForm, Watch } from 'react-hook-form';
 import { z } from 'zod';
 import AircraftHeader from './AircraftHeader';
 import ControlsList from './ControlsList';
+import DirectivesList from './DirectivesList';
 import HardTimeControlsList from './HardTimeControlsList';
 import SelectionSummary from './SelectionSummary';
 
@@ -36,9 +42,10 @@ const workOrderSchema = z.object({
   entry_date: z.string().optional(),
   exit_date: z.string().optional(),
   remarks: z.string().trim().optional(),
+  directive_ids: z.array(z.number()).default([]),
 });
 
-type WorkOrderFormValues = z.infer<typeof workOrderSchema>;
+export type WorkOrderFormValues = z.infer<typeof workOrderSchema>;
 
 export type SelectedControlItem = {
   taskCardIds: Set<number>;
@@ -57,7 +64,7 @@ const WorkOrderCreator = () => {
   const [selectedAircraftId, setSelectedAircraftId] = useState<number | null>(null);
   const [selectedControls, setSelectedControls] = useState<Map<number, SelectedControlItem>>(new Map());
   const [selectedHardTimeIntervals, setSelectedHardTimeIntervals] = useState<Set<number>>(new Set());
-  const [activeTab, setActiveTab] = useState<'maintenance' | 'hard_time'>('maintenance');
+  const [activeTab, setActiveTab] = useState<'maintenance' | 'hard_time' | 'directives'>('maintenance');
 
   const form = useForm<WorkOrderFormValues>({
     resolver: zodResolver(workOrderSchema),
@@ -65,6 +72,7 @@ const WorkOrderCreator = () => {
       entry_date: '',
       exit_date: '',
       remarks: '',
+      directive_ids: [],
     },
   });
 
@@ -82,8 +90,19 @@ const WorkOrderCreator = () => {
     enabled: !!selectedAircraftId,
   });
 
+  const { data: directivesResponse, isLoading: isDirectivesLoading } = useQuery({
+    ...airworthinessDirectivesIndexOptions({
+      query: { aircraft_id: selectedAircraftId ?? undefined },
+    }),
+    enabled: !!selectedAircraftId,
+  });
+
   const controls = useMemo<MaintenanceControlResource[]>(() => controlsResponse?.data ?? [], [controlsResponse]);
   const slots = useMemo<AircraftComponentSlotResource[]>(() => slotsResponse?.data ?? [], [slotsResponse]);
+  const directives = useMemo<AirworthinessDirectiveResource[]>(
+    () => directivesResponse?.data ?? [],
+    [directivesResponse],
+  );
 
   const hardTimeIntervalDirectory = useMemo(() => {
     const map = new Map<number, { interval: HardTimeIntervalResource; slot: AircraftComponentSlotResource }>();
@@ -163,6 +182,7 @@ const WorkOrderCreator = () => {
       entry_date: '',
       exit_date: '',
       remarks: '',
+      directive_ids: [],
     });
     setActiveTab('maintenance');
   };
@@ -247,6 +267,10 @@ const WorkOrderCreator = () => {
       hard_time_interval_id: id,
     }));
 
+    const directiveItems = values.directive_ids.map((id) => ({
+      airworthiness_directive_id: id,
+    }));
+
     const payload: StoreWorkOrderRequest = {
       aircraft_id: selectedAircraftId,
       remarks: values.remarks?.trim() || undefined,
@@ -254,6 +278,7 @@ const WorkOrderCreator = () => {
       exit_date: values.exit_date || undefined,
       items: maintenanceItems,
       component_items: hardTimeItems,
+      directive_items: directiveItems,
     };
 
     const res = await createWorkOrder.mutateAsync({ body: payload });
@@ -280,7 +305,6 @@ const WorkOrderCreator = () => {
         onSelect={handleSelectAircraft}
         onClear={handleClearAircraft}
       />
-
       {selectedAircraft && (
         <Form {...form}>
           <form className="grid gap-6 lg:grid-cols-12" onSubmit={onSubmit}>
@@ -350,9 +374,9 @@ const WorkOrderCreator = () => {
                 </div>
               </div>
 
-              {/* 3. Controls selection — tabs between maintenance and hard time */}
+              {/* 3. Controls selection — tabs between maintenance, hard time, and directives */}
               <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)} className="space-y-4">
-                <TabsList className="grid w-full grid-cols-2 bg-muted/30 p-1">
+                <TabsList className="grid w-full grid-cols-3 bg-muted/30 p-1">
                   <TabsTrigger value="maintenance" className="gap-2 data-[state=active]:bg-background">
                     <ClipboardCheck className="size-3.5" />
                     Servicios Programados
@@ -369,7 +393,7 @@ const WorkOrderCreator = () => {
                   </TabsTrigger>
                   <TabsTrigger value="hard_time" className="gap-2 data-[state=active]:bg-background">
                     <ShieldAlert className="size-3.5" />
-                    Servicios - Componentes
+                    Componentes
                     {selectedHardTimeIntervals.size > 0 && (
                       <Badge
                         variant="outline"
@@ -378,6 +402,24 @@ const WorkOrderCreator = () => {
                         {selectedHardTimeIntervals.size}
                       </Badge>
                     )}
+                  </TabsTrigger>
+                  <TabsTrigger value="directives" className="gap-2 data-[state=active]:bg-background">
+                    <ShieldCheck className="size-3.5" />
+                    Directivas
+                    <Watch
+                      control={form.control}
+                      compute={({ directive_ids }) => directive_ids.length}
+                      render={(directivesCount) =>
+                        directivesCount > 0 && (
+                          <Badge
+                            variant="outline"
+                            className="ml-1 h-5 border-violet-500/30 bg-violet-500/10 px-1.5 text-[10px] tabular-nums text-violet-600 dark:text-violet-400"
+                          >
+                            {directivesCount}
+                          </Badge>
+                        )
+                      }
+                    />
                   </TabsTrigger>
                 </TabsList>
 
@@ -402,6 +444,40 @@ const WorkOrderCreator = () => {
                     isLoading={isSlotsLoading}
                   />
                 </TabsContent>
+
+                <TabsContent value="directives" className="mt-0">
+                  <Controller
+                    control={form.control}
+                    name="directive_ids"
+                    render={({ field }) => {
+                      const handleToggleDirective = (directiveId: number) => {
+                        const current = field.value;
+                        const next = current.includes(directiveId)
+                          ? current.filter((id) => id !== directiveId)
+                          : [...current, directiveId];
+                        field.onChange(next);
+                      };
+
+                      const handleToggleDirectiveGroup = (directiveIds: number[]) => {
+                        const current = field.value;
+                        const allSelected = directiveIds.length > 0 && directiveIds.every((id) => current.includes(id));
+                        const next = allSelected
+                          ? current.filter((id) => !directiveIds.includes(id))
+                          : [...new Set([...current, ...directiveIds])];
+                        field.onChange(next);
+                      };
+                      return (
+                        <DirectivesList
+                          directives={directives}
+                          selectedDirectiveIds={new Set(field.value)}
+                          onToggleDirective={handleToggleDirective}
+                          onToggleGroup={handleToggleDirectiveGroup}
+                          isLoading={isDirectivesLoading}
+                        />
+                      );
+                    }}
+                  />
+                </TabsContent>
               </Tabs>
             </div>
 
@@ -413,6 +489,7 @@ const WorkOrderCreator = () => {
                 totalTaskCards={totalSelectedTaskCards}
                 hardTimeIntervalDirectory={hardTimeIntervalDirectory}
                 selectedHardTimeIntervals={selectedHardTimeIntervals}
+                directives={directives}
                 onSubmit={onSubmit}
                 isSubmitting={createWorkOrder.isPending}
                 onCancel={() => router.push(`/${selectedCompany!.slug}/planificacion/ordenes_trabajo`)}

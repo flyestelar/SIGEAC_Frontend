@@ -53,6 +53,22 @@ import {
   aircraftTypesStore,
   aircraftTypesUpdate,
   aircraftUpdate,
+  airworthinessDirectiveApplicabilitiesDestroy,
+  airworthinessDirectiveApplicabilitiesIndex,
+  airworthinessDirectiveApplicabilitiesShow,
+  airworthinessDirectiveApplicabilitiesStore,
+  airworthinessDirectiveApplicabilitiesUpdate,
+  airworthinessDirectiveComplianceControlsDestroy,
+  airworthinessDirectiveComplianceControlsStore,
+  airworthinessDirectiveComplianceControlsStoreExecution,
+  airworthinessDirectiveComplianceControlsUpdate,
+  airworthinessDirectivesComplianceControls,
+  airworthinessDirectivesComplianceRecords,
+  airworthinessDirectivesDestroy,
+  airworthinessDirectivesIndex,
+  airworthinessDirectivesShow,
+  airworthinessDirectivesStore,
+  airworthinessDirectivesUpdate,
   analysisCloseReport,
   analysisGetPostRiskCountByDateRange,
   analysisGetRiskCountByDateRange,
@@ -648,6 +664,54 @@ import type {
   AircraftUpdateData,
   AircraftUpdateError,
   AircraftUpdateResponse,
+  AirworthinessDirectiveApplicabilitiesDestroyData,
+  AirworthinessDirectiveApplicabilitiesDestroyError,
+  AirworthinessDirectiveApplicabilitiesDestroyResponse,
+  AirworthinessDirectiveApplicabilitiesIndexData,
+  AirworthinessDirectiveApplicabilitiesIndexError,
+  AirworthinessDirectiveApplicabilitiesIndexResponse,
+  AirworthinessDirectiveApplicabilitiesShowData,
+  AirworthinessDirectiveApplicabilitiesShowError,
+  AirworthinessDirectiveApplicabilitiesShowResponse,
+  AirworthinessDirectiveApplicabilitiesStoreData,
+  AirworthinessDirectiveApplicabilitiesStoreError,
+  AirworthinessDirectiveApplicabilitiesStoreResponse,
+  AirworthinessDirectiveApplicabilitiesUpdateData,
+  AirworthinessDirectiveApplicabilitiesUpdateError,
+  AirworthinessDirectiveApplicabilitiesUpdateResponse,
+  AirworthinessDirectiveComplianceControlsDestroyData,
+  AirworthinessDirectiveComplianceControlsDestroyError,
+  AirworthinessDirectiveComplianceControlsDestroyResponse,
+  AirworthinessDirectiveComplianceControlsStoreData,
+  AirworthinessDirectiveComplianceControlsStoreError,
+  AirworthinessDirectiveComplianceControlsStoreExecutionData,
+  AirworthinessDirectiveComplianceControlsStoreExecutionError,
+  AirworthinessDirectiveComplianceControlsStoreExecutionResponse,
+  AirworthinessDirectiveComplianceControlsStoreResponse,
+  AirworthinessDirectiveComplianceControlsUpdateData,
+  AirworthinessDirectiveComplianceControlsUpdateError,
+  AirworthinessDirectiveComplianceControlsUpdateResponse,
+  AirworthinessDirectivesComplianceControlsData,
+  AirworthinessDirectivesComplianceControlsError,
+  AirworthinessDirectivesComplianceControlsResponse,
+  AirworthinessDirectivesComplianceRecordsData,
+  AirworthinessDirectivesComplianceRecordsError,
+  AirworthinessDirectivesComplianceRecordsResponse,
+  AirworthinessDirectivesDestroyData,
+  AirworthinessDirectivesDestroyError,
+  AirworthinessDirectivesDestroyResponse,
+  AirworthinessDirectivesIndexData,
+  AirworthinessDirectivesIndexError,
+  AirworthinessDirectivesIndexResponse,
+  AirworthinessDirectivesShowData,
+  AirworthinessDirectivesShowError,
+  AirworthinessDirectivesShowResponse,
+  AirworthinessDirectivesStoreData,
+  AirworthinessDirectivesStoreError,
+  AirworthinessDirectivesStoreResponse,
+  AirworthinessDirectivesUpdateData,
+  AirworthinessDirectivesUpdateError,
+  AirworthinessDirectivesUpdateResponse,
   AnalysisCloseReportData,
   AnalysisCloseReportError,
   AnalysisGetPostRiskCountByDateRangeData,
@@ -2003,8 +2067,10 @@ import type {
   WorkOrdersStoreResponse,
   WorkOrderTaskEventShowEventsByWorkOrderTaskData,
   WorkOrderTaskEventShowEventsByWorkOrderTaskError,
+  WorkOrderTaskEventShowEventsByWorkOrderTaskResponse,
   WorkOrderTaskEventStoreData,
   WorkOrderTaskEventStoreError,
+  WorkOrderTaskEventStoreResponse,
   WorkshopsDestroyData,
   WorkshopsDestroyError,
   WorkshopsDestroyResponse,
@@ -3254,6 +3320,568 @@ export const aircraftTypesUpdateMutation = (
   return mutationOptions;
 };
 
+export const airworthinessDirectiveApplicabilitiesIndexQueryKey = (
+  options: Options<AirworthinessDirectiveApplicabilitiesIndexData>,
+) => createQueryKey('airworthinessDirectiveApplicabilitiesIndex', options);
+
+export const airworthinessDirectiveApplicabilitiesIndexOptions = (
+  options: Options<AirworthinessDirectiveApplicabilitiesIndexData>,
+) =>
+  queryOptions<
+    AirworthinessDirectiveApplicabilitiesIndexResponse,
+    AxiosError<AirworthinessDirectiveApplicabilitiesIndexError>,
+    AirworthinessDirectiveApplicabilitiesIndexResponse,
+    ReturnType<typeof airworthinessDirectiveApplicabilitiesIndexQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await airworthinessDirectiveApplicabilitiesIndex({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: airworthinessDirectiveApplicabilitiesIndexQueryKey(options),
+  });
+
+export const airworthinessDirectiveApplicabilitiesStoreMutation = (
+  options?: Partial<Options<AirworthinessDirectiveApplicabilitiesStoreData>>,
+): UseMutationOptions<
+  AirworthinessDirectiveApplicabilitiesStoreResponse,
+  AxiosError<AirworthinessDirectiveApplicabilitiesStoreError>,
+  Options<AirworthinessDirectiveApplicabilitiesStoreData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    AirworthinessDirectiveApplicabilitiesStoreResponse,
+    AxiosError<AirworthinessDirectiveApplicabilitiesStoreError>,
+    Options<AirworthinessDirectiveApplicabilitiesStoreData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await airworthinessDirectiveApplicabilitiesStore({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+export const airworthinessDirectiveApplicabilitiesDestroyMutation = (
+  options?: Partial<Options<AirworthinessDirectiveApplicabilitiesDestroyData>>,
+): UseMutationOptions<
+  AirworthinessDirectiveApplicabilitiesDestroyResponse,
+  AxiosError<AirworthinessDirectiveApplicabilitiesDestroyError>,
+  Options<AirworthinessDirectiveApplicabilitiesDestroyData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    AirworthinessDirectiveApplicabilitiesDestroyResponse,
+    AxiosError<AirworthinessDirectiveApplicabilitiesDestroyError>,
+    Options<AirworthinessDirectiveApplicabilitiesDestroyData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await airworthinessDirectiveApplicabilitiesDestroy({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+export const airworthinessDirectiveApplicabilitiesShowQueryKey = (
+  options: Options<AirworthinessDirectiveApplicabilitiesShowData>,
+) => createQueryKey('airworthinessDirectiveApplicabilitiesShow', options);
+
+export const airworthinessDirectiveApplicabilitiesShowOptions = (
+  options: Options<AirworthinessDirectiveApplicabilitiesShowData>,
+) =>
+  queryOptions<
+    AirworthinessDirectiveApplicabilitiesShowResponse,
+    AxiosError<AirworthinessDirectiveApplicabilitiesShowError>,
+    AirworthinessDirectiveApplicabilitiesShowResponse,
+    ReturnType<typeof airworthinessDirectiveApplicabilitiesShowQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await airworthinessDirectiveApplicabilitiesShow({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: airworthinessDirectiveApplicabilitiesShowQueryKey(options),
+  });
+
+export const airworthinessDirectiveApplicabilitiesUpdateMutation = (
+  options?: Partial<Options<AirworthinessDirectiveApplicabilitiesUpdateData>>,
+): UseMutationOptions<
+  AirworthinessDirectiveApplicabilitiesUpdateResponse,
+  AxiosError<AirworthinessDirectiveApplicabilitiesUpdateError>,
+  Options<AirworthinessDirectiveApplicabilitiesUpdateData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    AirworthinessDirectiveApplicabilitiesUpdateResponse,
+    AxiosError<AirworthinessDirectiveApplicabilitiesUpdateError>,
+    Options<AirworthinessDirectiveApplicabilitiesUpdateData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await airworthinessDirectiveApplicabilitiesUpdate({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+export const airworthinessDirectiveComplianceControlsDestroyMutation = (
+  options?: Partial<Options<AirworthinessDirectiveComplianceControlsDestroyData>>,
+): UseMutationOptions<
+  AirworthinessDirectiveComplianceControlsDestroyResponse,
+  AxiosError<AirworthinessDirectiveComplianceControlsDestroyError>,
+  Options<AirworthinessDirectiveComplianceControlsDestroyData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    AirworthinessDirectiveComplianceControlsDestroyResponse,
+    AxiosError<AirworthinessDirectiveComplianceControlsDestroyError>,
+    Options<AirworthinessDirectiveComplianceControlsDestroyData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await airworthinessDirectiveComplianceControlsDestroy({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+export const airworthinessDirectiveComplianceControlsStoreMutation = (
+  options?: Partial<Options<AirworthinessDirectiveComplianceControlsStoreData>>,
+): UseMutationOptions<
+  AirworthinessDirectiveComplianceControlsStoreResponse,
+  AxiosError<AirworthinessDirectiveComplianceControlsStoreError>,
+  Options<AirworthinessDirectiveComplianceControlsStoreData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    AirworthinessDirectiveComplianceControlsStoreResponse,
+    AxiosError<AirworthinessDirectiveComplianceControlsStoreError>,
+    Options<AirworthinessDirectiveComplianceControlsStoreData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await airworthinessDirectiveComplianceControlsStore({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+export const airworthinessDirectiveComplianceControlsUpdateMutation = (
+  options?: Partial<Options<AirworthinessDirectiveComplianceControlsUpdateData>>,
+): UseMutationOptions<
+  AirworthinessDirectiveComplianceControlsUpdateResponse,
+  AxiosError<AirworthinessDirectiveComplianceControlsUpdateError>,
+  Options<AirworthinessDirectiveComplianceControlsUpdateData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    AirworthinessDirectiveComplianceControlsUpdateResponse,
+    AxiosError<AirworthinessDirectiveComplianceControlsUpdateError>,
+    Options<AirworthinessDirectiveComplianceControlsUpdateData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await airworthinessDirectiveComplianceControlsUpdate({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+export const airworthinessDirectiveComplianceControlsStoreExecutionMutation = (
+  options?: Partial<Options<AirworthinessDirectiveComplianceControlsStoreExecutionData>>,
+): UseMutationOptions<
+  AirworthinessDirectiveComplianceControlsStoreExecutionResponse,
+  AxiosError<AirworthinessDirectiveComplianceControlsStoreExecutionError>,
+  Options<AirworthinessDirectiveComplianceControlsStoreExecutionData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    AirworthinessDirectiveComplianceControlsStoreExecutionResponse,
+    AxiosError<AirworthinessDirectiveComplianceControlsStoreExecutionError>,
+    Options<AirworthinessDirectiveComplianceControlsStoreExecutionData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await airworthinessDirectiveComplianceControlsStoreExecution({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+export const airworthinessDirectivesComplianceControlsQueryKey = (
+  options: Options<AirworthinessDirectivesComplianceControlsData>,
+) => createQueryKey('airworthinessDirectivesComplianceControls', options);
+
+export const airworthinessDirectivesComplianceControlsOptions = (
+  options: Options<AirworthinessDirectivesComplianceControlsData>,
+) =>
+  queryOptions<
+    AirworthinessDirectivesComplianceControlsResponse,
+    AxiosError<AirworthinessDirectivesComplianceControlsError>,
+    AirworthinessDirectivesComplianceControlsResponse,
+    ReturnType<typeof airworthinessDirectivesComplianceControlsQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await airworthinessDirectivesComplianceControls({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: airworthinessDirectivesComplianceControlsQueryKey(options),
+  });
+
+const createInfiniteParams = <K extends Pick<QueryKey<Options>[0], 'body' | 'headers' | 'path' | 'query'>>(
+  queryKey: QueryKey<Options>,
+  page: K,
+) => {
+  const params = { ...queryKey[0] };
+  if (page.body) {
+    params.body = {
+      ...(queryKey[0].body as any),
+      ...(page.body as any),
+    };
+  }
+  if (page.headers) {
+    params.headers = {
+      ...queryKey[0].headers,
+      ...page.headers,
+    };
+  }
+  if (page.path) {
+    params.path = {
+      ...(queryKey[0].path as any),
+      ...(page.path as any),
+    };
+  }
+  if (page.query) {
+    params.query = {
+      ...(queryKey[0].query as any),
+      ...(page.query as any),
+    };
+  }
+  return params as unknown as typeof page;
+};
+
+export const airworthinessDirectivesComplianceControlsInfiniteQueryKey = (
+  options: Options<AirworthinessDirectivesComplianceControlsData>,
+): QueryKey<Options<AirworthinessDirectivesComplianceControlsData>> =>
+  createQueryKey('airworthinessDirectivesComplianceControls', options, true);
+
+export const airworthinessDirectivesComplianceControlsInfiniteOptions = (
+  options: Options<AirworthinessDirectivesComplianceControlsData>,
+) =>
+  infiniteQueryOptions<
+    AirworthinessDirectivesComplianceControlsResponse,
+    AxiosError<AirworthinessDirectivesComplianceControlsError>,
+    InfiniteData<AirworthinessDirectivesComplianceControlsResponse>,
+    QueryKey<Options<AirworthinessDirectivesComplianceControlsData>>,
+    | number
+    | Pick<QueryKey<Options<AirworthinessDirectivesComplianceControlsData>>[0], 'body' | 'headers' | 'path' | 'query'>
+  >(
+    // @ts-ignore
+    {
+      queryFn: async ({ pageParam, queryKey, signal }) => {
+        // @ts-ignore
+        const page: Pick<
+          QueryKey<Options<AirworthinessDirectivesComplianceControlsData>>[0],
+          'body' | 'headers' | 'path' | 'query'
+        > =
+          typeof pageParam === 'object'
+            ? pageParam
+            : {
+                query: {
+                  page: pageParam,
+                },
+              };
+        const params = createInfiniteParams(queryKey, page);
+        const { data } = await airworthinessDirectivesComplianceControls({
+          ...options,
+          ...params,
+          signal,
+          throwOnError: true,
+        });
+        return data;
+      },
+      queryKey: airworthinessDirectivesComplianceControlsInfiniteQueryKey(options),
+    },
+  );
+
+export const airworthinessDirectivesComplianceRecordsQueryKey = (
+  options: Options<AirworthinessDirectivesComplianceRecordsData>,
+) => createQueryKey('airworthinessDirectivesComplianceRecords', options);
+
+export const airworthinessDirectivesComplianceRecordsOptions = (
+  options: Options<AirworthinessDirectivesComplianceRecordsData>,
+) =>
+  queryOptions<
+    AirworthinessDirectivesComplianceRecordsResponse,
+    AxiosError<AirworthinessDirectivesComplianceRecordsError>,
+    AirworthinessDirectivesComplianceRecordsResponse,
+    ReturnType<typeof airworthinessDirectivesComplianceRecordsQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await airworthinessDirectivesComplianceRecords({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: airworthinessDirectivesComplianceRecordsQueryKey(options),
+  });
+
+export const airworthinessDirectivesComplianceRecordsInfiniteQueryKey = (
+  options: Options<AirworthinessDirectivesComplianceRecordsData>,
+): QueryKey<Options<AirworthinessDirectivesComplianceRecordsData>> =>
+  createQueryKey('airworthinessDirectivesComplianceRecords', options, true);
+
+export const airworthinessDirectivesComplianceRecordsInfiniteOptions = (
+  options: Options<AirworthinessDirectivesComplianceRecordsData>,
+) =>
+  infiniteQueryOptions<
+    AirworthinessDirectivesComplianceRecordsResponse,
+    AxiosError<AirworthinessDirectivesComplianceRecordsError>,
+    InfiniteData<AirworthinessDirectivesComplianceRecordsResponse>,
+    QueryKey<Options<AirworthinessDirectivesComplianceRecordsData>>,
+    | number
+    | Pick<QueryKey<Options<AirworthinessDirectivesComplianceRecordsData>>[0], 'body' | 'headers' | 'path' | 'query'>
+  >(
+    // @ts-ignore
+    {
+      queryFn: async ({ pageParam, queryKey, signal }) => {
+        // @ts-ignore
+        const page: Pick<
+          QueryKey<Options<AirworthinessDirectivesComplianceRecordsData>>[0],
+          'body' | 'headers' | 'path' | 'query'
+        > =
+          typeof pageParam === 'object'
+            ? pageParam
+            : {
+                query: {
+                  page: pageParam,
+                },
+              };
+        const params = createInfiniteParams(queryKey, page);
+        const { data } = await airworthinessDirectivesComplianceRecords({
+          ...options,
+          ...params,
+          signal,
+          throwOnError: true,
+        });
+        return data;
+      },
+      queryKey: airworthinessDirectivesComplianceRecordsInfiniteQueryKey(options),
+    },
+  );
+
+export const airworthinessDirectivesIndexQueryKey = (options?: Options<AirworthinessDirectivesIndexData>) =>
+  createQueryKey('airworthinessDirectivesIndex', options);
+
+/**
+ * Display a listing of the resource
+ */
+export const airworthinessDirectivesIndexOptions = (options?: Options<AirworthinessDirectivesIndexData>) =>
+  queryOptions<
+    AirworthinessDirectivesIndexResponse,
+    AxiosError<AirworthinessDirectivesIndexError>,
+    AirworthinessDirectivesIndexResponse,
+    ReturnType<typeof airworthinessDirectivesIndexQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await airworthinessDirectivesIndex({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: airworthinessDirectivesIndexQueryKey(options),
+  });
+
+export const airworthinessDirectivesIndexInfiniteQueryKey = (
+  options?: Options<AirworthinessDirectivesIndexData>,
+): QueryKey<Options<AirworthinessDirectivesIndexData>> => createQueryKey('airworthinessDirectivesIndex', options, true);
+
+/**
+ * Display a listing of the resource
+ */
+export const airworthinessDirectivesIndexInfiniteOptions = (options?: Options<AirworthinessDirectivesIndexData>) =>
+  infiniteQueryOptions<
+    AirworthinessDirectivesIndexResponse,
+    AxiosError<AirworthinessDirectivesIndexError>,
+    InfiniteData<AirworthinessDirectivesIndexResponse>,
+    QueryKey<Options<AirworthinessDirectivesIndexData>>,
+    number | Pick<QueryKey<Options<AirworthinessDirectivesIndexData>>[0], 'body' | 'headers' | 'path' | 'query'>
+  >(
+    // @ts-ignore
+    {
+      queryFn: async ({ pageParam, queryKey, signal }) => {
+        // @ts-ignore
+        const page: Pick<
+          QueryKey<Options<AirworthinessDirectivesIndexData>>[0],
+          'body' | 'headers' | 'path' | 'query'
+        > =
+          typeof pageParam === 'object'
+            ? pageParam
+            : {
+                query: {
+                  page: pageParam,
+                },
+              };
+        const params = createInfiniteParams(queryKey, page);
+        const { data } = await airworthinessDirectivesIndex({
+          ...options,
+          ...params,
+          signal,
+          throwOnError: true,
+        });
+        return data;
+      },
+      queryKey: airworthinessDirectivesIndexInfiniteQueryKey(options),
+    },
+  );
+
+/**
+ * Store a newly created resource in storage
+ */
+export const airworthinessDirectivesStoreMutation = (
+  options?: Partial<Options<AirworthinessDirectivesStoreData>>,
+): UseMutationOptions<
+  AirworthinessDirectivesStoreResponse,
+  AxiosError<AirworthinessDirectivesStoreError>,
+  Options<AirworthinessDirectivesStoreData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    AirworthinessDirectivesStoreResponse,
+    AxiosError<AirworthinessDirectivesStoreError>,
+    Options<AirworthinessDirectivesStoreData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await airworthinessDirectivesStore({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+/**
+ * Remove the specified resource from storage
+ */
+export const airworthinessDirectivesDestroyMutation = (
+  options?: Partial<Options<AirworthinessDirectivesDestroyData>>,
+): UseMutationOptions<
+  AirworthinessDirectivesDestroyResponse,
+  AxiosError<AirworthinessDirectivesDestroyError>,
+  Options<AirworthinessDirectivesDestroyData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    AirworthinessDirectivesDestroyResponse,
+    AxiosError<AirworthinessDirectivesDestroyError>,
+    Options<AirworthinessDirectivesDestroyData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await airworthinessDirectivesDestroy({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+export const airworthinessDirectivesShowQueryKey = (options: Options<AirworthinessDirectivesShowData>) =>
+  createQueryKey('airworthinessDirectivesShow', options);
+
+/**
+ * Display the specified resource
+ */
+export const airworthinessDirectivesShowOptions = (options: Options<AirworthinessDirectivesShowData>) =>
+  queryOptions<
+    AirworthinessDirectivesShowResponse,
+    AxiosError<AirworthinessDirectivesShowError>,
+    AirworthinessDirectivesShowResponse,
+    ReturnType<typeof airworthinessDirectivesShowQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await airworthinessDirectivesShow({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: airworthinessDirectivesShowQueryKey(options),
+  });
+
+/**
+ * Update the specified resource in storage
+ */
+export const airworthinessDirectivesUpdateMutation = (
+  options?: Partial<Options<AirworthinessDirectivesUpdateData>>,
+): UseMutationOptions<
+  AirworthinessDirectivesUpdateResponse,
+  AxiosError<AirworthinessDirectivesUpdateError>,
+  Options<AirworthinessDirectivesUpdateData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    AirworthinessDirectivesUpdateResponse,
+    AxiosError<AirworthinessDirectivesUpdateError>,
+    Options<AirworthinessDirectivesUpdateData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await airworthinessDirectivesUpdate({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
 export const analysisIndexQueryKey = (options: Options<AnalysisIndexData>) => createQueryKey('analysisIndex', options);
 
 export const analysisIndexOptions = (options: Options<AnalysisIndexData>) =>
@@ -3525,38 +4153,6 @@ export const articleListOptions = (options?: Options<ArticleListData>) =>
     },
     queryKey: articleListQueryKey(options),
   });
-
-const createInfiniteParams = <K extends Pick<QueryKey<Options>[0], 'body' | 'headers' | 'path' | 'query'>>(
-  queryKey: QueryKey<Options>,
-  page: K,
-) => {
-  const params = { ...queryKey[0] };
-  if (page.body) {
-    params.body = {
-      ...(queryKey[0].body as any),
-      ...(page.body as any),
-    };
-  }
-  if (page.headers) {
-    params.headers = {
-      ...queryKey[0].headers,
-      ...page.headers,
-    };
-  }
-  if (page.path) {
-    params.path = {
-      ...(queryKey[0].path as any),
-      ...(page.path as any),
-    };
-  }
-  if (page.query) {
-    params.query = {
-      ...(queryKey[0].query as any),
-      ...(page.query as any),
-    };
-  }
-  return params as unknown as typeof page;
-};
 
 export const articleListInfiniteQueryKey = (options?: Options<ArticleListData>): QueryKey<Options<ArticleListData>> =>
   createQueryKey('articleList', options, true);
@@ -14616,14 +15212,16 @@ export const workOrdersShowOptions = (options: Options<WorkOrdersShowData>) =>
 
 /**
  * Store a newly created resource in storage
- *
- * ⚠️ Cannot generate request documentation: include(D:\ESTELAR\SIGEAC_Backend\vendor\composer/../../app/Models/Planification/WorkOrderTask.php): Failed to open stream: No such file or directory
  */
 export const workOrderTaskEventStoreMutation = (
   options?: Partial<Options<WorkOrderTaskEventStoreData>>,
-): UseMutationOptions<unknown, AxiosError<WorkOrderTaskEventStoreError>, Options<WorkOrderTaskEventStoreData>> => {
+): UseMutationOptions<
+  WorkOrderTaskEventStoreResponse,
+  AxiosError<WorkOrderTaskEventStoreError>,
+  Options<WorkOrderTaskEventStoreData>
+> => {
   const mutationOptions: UseMutationOptions<
-    unknown,
+    WorkOrderTaskEventStoreResponse,
     AxiosError<WorkOrderTaskEventStoreError>,
     Options<WorkOrderTaskEventStoreData>
   > = {
@@ -14640,19 +15238,16 @@ export const workOrderTaskEventStoreMutation = (
 };
 
 export const workOrderTaskEventShowEventsByWorkOrderTaskQueryKey = (
-  options?: Options<WorkOrderTaskEventShowEventsByWorkOrderTaskData>,
+  options: Options<WorkOrderTaskEventShowEventsByWorkOrderTaskData>,
 ) => createQueryKey('workOrderTaskEventShowEventsByWorkOrderTask', options);
 
-/**
- * ⚠️ Cannot generate request documentation: include(D:\ESTELAR\SIGEAC_Backend\vendor\composer/../../app/Models/Planification/WorkOrderTask.php): Failed to open stream: No such file or directory
- */
 export const workOrderTaskEventShowEventsByWorkOrderTaskOptions = (
-  options?: Options<WorkOrderTaskEventShowEventsByWorkOrderTaskData>,
+  options: Options<WorkOrderTaskEventShowEventsByWorkOrderTaskData>,
 ) =>
   queryOptions<
-    unknown,
+    WorkOrderTaskEventShowEventsByWorkOrderTaskResponse,
     AxiosError<WorkOrderTaskEventShowEventsByWorkOrderTaskError>,
-    unknown,
+    WorkOrderTaskEventShowEventsByWorkOrderTaskResponse,
     ReturnType<typeof workOrderTaskEventShowEventsByWorkOrderTaskQueryKey>
   >({
     queryFn: async ({ queryKey, signal }) => {
