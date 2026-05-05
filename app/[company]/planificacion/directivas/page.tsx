@@ -75,13 +75,6 @@ export default function AirworthinessDirectivesPage() {
           onOpenChange={setIsCreateDialogOpen}
         />
 
-        <Alert>
-          <FileText className="size-4" />
-          <AlertDescription>
-            Índice conectado. El resumen operativo de cada AD se consume desde `summary` cuando viene en la respuesta.
-          </AlertDescription>
-        </Alert>
-
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           <div className="rounded-2xl border bg-background p-4">
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Total ADs</p>
