@@ -239,7 +239,7 @@ const CourseSummaryCard = ({
                         type="button"
                         size="sm"
                         variant="outline"
-                        className="h-8"
+                        className="h-8 mt-7"
                         onClick={() => openProtectedDocument(certificateUrl)}
                       >
                         <Eye className="w-4 h-4 mr-2" />

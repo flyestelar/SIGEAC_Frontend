@@ -27,7 +27,12 @@ import { useUpdateCourseExamResult } from "@/actions/general/cursos/actions";
 
 const ExamAttendanceRow = ({ attendance, company, examId }: { attendance: any; company: string; examId: string }) => {
   const [score, setScore] = useState(attendance.score || "");
-  const [approved, setApproved] = useState(attendance.approved === 1 || attendance.approved === true);
+  
+  const [approved, setApproved] = useState(
+    attendance.approved !== undefined && attendance.approved !== null
+      ? attendance.approved === 1 || attendance.approved === true
+      : true
+  );
   const [file, setFile] = useState<File | null>(null);
 
   const { updateCourseExamResult } = useUpdateCourseExamResult();
