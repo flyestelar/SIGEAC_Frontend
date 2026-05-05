@@ -234,6 +234,7 @@ export function ReportDetailsPanel({
                                     key={`${currentReportType}-${currentReport.id}-${formMode}`}
                                     id={currentReport.id}
                                     reportType={currentReportType}
+                                    reportId={currentReport.id.toString()}
                                     initialData={currentNotification || undefined}
                                     isEditing={Boolean(currentNotification)}
                                     onClose={onCloseForm}

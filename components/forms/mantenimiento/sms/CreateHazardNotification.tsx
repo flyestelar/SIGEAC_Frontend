@@ -71,12 +71,14 @@ interface FormProps {
     initialData?: HazardNotification;
     isEditing?: boolean;
     reportType: string;
+    reportId: string;
     onClose?: () => void;
 }
 
 export default function CreateHazardNotification({
     onClose,
     id,
+    reportId,
     isEditing,
     initialData,
     reportType,
@@ -150,6 +152,8 @@ export default function CreateHazardNotification({
             // Preparamos el objeto 'data' tal cual lo pide tu interfaz de Action
             const dataPayload = {
                 ...values,
+                voluntary_report_id: reportType === "RVP" ? reportId : undefined,
+                obligatory_report_id: reportType === "ROS" ? reportId : undefined,
             };
 
             if (isEditing && initialData) {

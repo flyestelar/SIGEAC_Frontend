@@ -30,7 +30,7 @@ export function EvaluationWorkflowHeader({
             <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-xl">
                     <FileStack className="h-5 w-5" />
-                    Flujo de evaluación y mitigación
+                    Evaluación y Mitigación
                 </CardTitle>
                 <CardDescription>
                     Trabajando sobre {getNotificationSource(selectedNotification)}

@@ -17,7 +17,7 @@ export const getNotificationSource = (notification: HazardNotification) => {
         return `ROS-${code}`;
     }
 
-    return `HN-${notification.report_number || notification.id}`;
+    return `${notification.report_number || notification.id}`;
 };
 
 export const sortByNewestDate = (notifications: HazardNotification[]) =>
