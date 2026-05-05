@@ -113,8 +113,13 @@ const buildCourseSummaries = (profile: any): CourseSummary[] => {
     return course;
   };
 
+  const attendedCourses: any[] = Array.isArray(profile) ? [] : profile?.courses || [];
   const certificates: any[] = Array.isArray(profile) ? [] : profile?.certificates || [];
   const exams: any[] = Array.isArray(profile) ? profile : profile?.exams || [];
+
+  attendedCourses.forEach((courseAttendance: any, index: number) => {
+    ensureCourse(courseAttendance, `course-${index}`);
+  });
 
   certificates?.forEach((certificate: any, index: number) => {
     ensureCourse(certificate, `certificate-${index}`).certificates.push(certificate);
