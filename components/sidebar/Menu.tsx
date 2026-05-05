@@ -111,12 +111,10 @@ export function Menu({ isOpen }: MenuProps) {
     return user?.roles?.map((r) => r.name) ?? [];
   }, [user?.roles]);
 
-  // Dependencia estable aunque cambie el orden del array
-  const rolesKey = useMemo(() => [...userRoles].sort().join('|'), [userRoles]);
-
   const menuList = useMemo(() => {
-    return getMenuList(pathname, selectedCompany, userRoles);
-  }, [pathname, selectedCompany, userRoles]);
+    const company = user?.companies.find((c) => c.id === selectedCompany?.id) || selectedCompany;
+    return getMenuList(company, userRoles);
+  }, [selectedCompany, user?.companies, userRoles]);
 
   // Tailwind no puede compilar min-h dinámico -> style
   const minHeight = useMemo(() => {
@@ -136,15 +134,16 @@ export function Menu({ isOpen }: MenuProps) {
               return (
                 <li className="w-full" key={groupKey}>
                   <GroupHeader label={groupLabel} collapsed={collapsed && isOpen !== undefined} />
-
-                  {menus.map(({ href, label, icon: Icon, active, submenus }, index) =>
-                    submenus.length === 0 ? (
+                  {menus.map(({ href, label, icon: Icon, submenus }) => {
+                    const hasSubmenus = submenus.length > 0;
+                    const isActive = !!href && (hasSubmenus ? pathname.startsWith(href) : pathname === href);
+                    return submenus.length === 0 ? (
                       <div className="w-full" key={`${label}-${href}`}>
                         <LeafItem
                           href={href}
                           label={label}
                           Icon={Icon}
-                          active={active}
+                          active={isActive}
                           collapsed={collapsed && isOpen !== undefined}
                         />
                       </div>
@@ -153,13 +152,13 @@ export function Menu({ isOpen }: MenuProps) {
                         <CollapseMenuButton
                           icon={Icon}
                           label={label}
-                          active={active}
+                          active={isActive}
                           submenus={submenus}
                           isOpen={isOpen}
                         />
                       </div>
-                    ),
-                  )}
+                    );
+                  })}
                 </li>
               );
             })}

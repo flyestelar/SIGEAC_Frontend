@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { ChevronDown, Dot, LucideIcon } from "lucide-react";
 
@@ -30,7 +31,6 @@ import {
 type Submenu = {
   href: string;
   label: string;
-  active: boolean;
 };
 
 interface CollapseMenuButtonProps {
@@ -48,8 +48,8 @@ export function CollapseMenuButton({
   submenus,
   isOpen
 }: CollapseMenuButtonProps) {
-
-  const isSubmenuActive = submenus.some((submenu) => submenu.active);
+  const pathname = usePathname();
+  const isSubmenuActive = submenus.some((submenu) => pathname === submenu.href);
 
   const [isCollapsed, setIsCollapsed] = useState<boolean>(isSubmenuActive);
 
@@ -64,7 +64,7 @@ export function CollapseMenuButton({
         asChild
       >
         <Button
-          variant={active ? "secondary" : "ghost"}
+          variant={active || isSubmenuActive ? "secondary" : "ghost"}
           className="w-full justify-start h-10"
         >
           <div className="w-full items-center flex justify-between">
@@ -99,16 +99,18 @@ export function CollapseMenuButton({
           </div>
         </Button>
       </CollapsibleTrigger>
-      <CollapsibleContent className="overflow-hidden data-[state=closed]:animate-collapsible-up data-[state=open]:animate-collapsible-down">
-        {submenus.map(({ href, label, active }, index) => (
+      <CollapsibleContent className="pl-3 overflow-hidden data-[state=closed]:animate-collapsible-up data-[state=open]:animate-collapsible-down">
+        {submenus.map(({ href, label }, index) => {
+        const subMenuActive = pathname === href;
+        return (
           <Button
             key={index}
-            variant={active ? "secondary" : "ghost"}
+            variant={subMenuActive ? "secondary" : "ghost"}
             className="w-full justify-start h-10 mb-1"
             asChild
           >
             <Link href={href}>
-              <span className="mr-4 ml-2">
+              <span className="mr-1">
                 <Dot size={18} />
               </span>
               <p
@@ -123,7 +125,8 @@ export function CollapseMenuButton({
               </p>
             </Link>
           </Button>
-        ))}
+        );
+        })}
       </CollapsibleContent>
     </Collapsible>
   ) : (
