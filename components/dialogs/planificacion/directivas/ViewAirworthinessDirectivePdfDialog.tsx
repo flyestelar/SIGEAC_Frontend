@@ -57,7 +57,7 @@ export default function ViewAirworthinessDirectivePdfDialog({
         </Button>
       </DialogTrigger>
 
-      <DialogContent className="flex max-h-[94vh] max-w-[96vw] flex-col overflow-hidden border p-0 sm:rounded-2xl xl:max-w-7xl">
+      <DialogContent className="flex max-h-[94vh] max-w-[96vw] flex-col overflow-hidden border p-0 sm:rounded-2xl xl:max-w-7xl gap-0">
         <div className="border-b bg-[linear-gradient(135deg,rgba(15,23,42,0.04),rgba(15,23,42,0.01))]">
           <DialogHeader className="gap-3 px-6 py-5">
             <div className="flex flex-wrap items-center gap-3">
@@ -74,7 +74,7 @@ export default function ViewAirworthinessDirectivePdfDialog({
             </div>
           </DialogHeader>
         </div>
-        <DocumentViewer url={pdfUrl} adNumber={adNumber} />
+        <DocumentViewer url={pdfUrl} />
       </DialogContent>
     </Dialog>
   );
