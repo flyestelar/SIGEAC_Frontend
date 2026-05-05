@@ -25,6 +25,17 @@ type BulkUpdatePayload = {
 /* =========================
    API CALLS
 ========================= */
+const QUERY_KEYS = {
+  articles: ["warehouse-articles"],
+  general: ["general-articles"],
+}
+const invalidateArticles = (queryClient: any) => {
+  queryClient.invalidateQueries({ queryKey: QUERY_KEYS.articles })
+}
+
+const invalidateGeneral = (queryClient: any) => {
+  queryClient.invalidateQueries({ queryKey: QUERY_KEYS.general })
+}
 
 // 🔹 ARTICLE
 const updateArticleCost = async ({ company, id, cost }: UpdateCostPayload) => {
@@ -71,7 +82,7 @@ export const useUpdateArticleCost = () => {
     mutationFn: updateArticleCost,
     onSuccess: () => {
       toast.success("Costo actualizado correctamente")
-      queryClient.invalidateQueries({ queryKey: ["articles"] })
+      invalidateArticles(queryClient)
     },
     onError: () => {
       toast.error("Error al actualizar costo")
@@ -86,7 +97,7 @@ export const useBulkUpdateArticleCost = () => {
     mutationFn: bulkUpdateArticleCost,
     onSuccess: () => {
       toast.success("Costos actualizados correctamente")
-      queryClient.invalidateQueries({ queryKey: ["articles"] })
+      invalidateArticles(queryClient)
     },
     onError: () => {
       toast.error("Error en actualización masiva")
@@ -101,7 +112,7 @@ export const useUpdateGeneralCost = () => {
     mutationFn: updateGeneralCost,
     onSuccess: () => {
       toast.success("Costo actualizado correctamente")
-      queryClient.invalidateQueries({ queryKey: ["general-articles"] })
+      invalidateGeneral(queryClient)
     },
     onError: () => {
       toast.error("Error al actualizar costo")
@@ -116,7 +127,7 @@ export const useBulkUpdateGeneralCost = () => {
     mutationFn: bulkUpdateGeneralCost,
     onSuccess: () => {
       toast.success("Costos actualizados correctamente")
-      queryClient.invalidateQueries({ queryKey: ["general-articles"] })
+      invalidateGeneral(queryClient)
     },
     onError: () => {
       toast.error("Error en actualización masiva")
