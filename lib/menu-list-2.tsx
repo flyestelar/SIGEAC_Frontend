@@ -91,8 +91,6 @@ export function getMenuList(
             menuItem.roles.some((role) => userRoles.includes(role))
         );
     };
-    console.log('modulos ativos', currentCompany?.modules);
-    // Verificar si el módulo está activo para la compañía
     const isModuleActive = (moduleValue?: string): boolean => {
         // Si no requiere módulo específico o no hay compañía seleccionada, está activo
         if (!moduleValue || !currentCompany) return true;
@@ -100,17 +98,11 @@ export function getMenuList(
         return currentCompany.modules.some((m) => m.value === moduleValue);
     };
 
-    // Verificar si la empresa actual es una OMAC
-    // (Ajusta 'isOmac' por la propiedad real que uses en tu base de datos)
 
-    // Verificar el acceso dependiendo del tipo de empresa
-    console.log(currentCompany?.isOmac, currentCompany, 'this is oamc or no');
     const hasOmacAccess = (item: { requiresOmac?: boolean }): boolean => {
         // Si el menú no tiene la restricción, pasa directo
         if (item.requiresOmac === undefined) return true;
-
         // Si tiene la restricción, verificamos si hace match con la empresa
-        //
         console.log(`Verificando acceso OMAC empresa es OMAC = ${currentCompany?.isOmac}`);
         return item.requiresOmac === currentCompany?.isOmac;
     };
