@@ -21,9 +21,9 @@ import { CalendarIcon, Loader2 } from "lucide-react";
 import { useParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { Calendar } from "../../../ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "../../../ui/popover";
-import { Separator } from "../../../ui/separator";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Separator } from "@/components/ui/separator";
 import Image from "next/image";
 import { useCompanyStore } from "@/stores/CompanyStore";
 import { useGetImage } from "@/hooks/general/archivos/UseGetImage";
@@ -69,7 +69,7 @@ export function EditFollowUpControlForm({ onClose, initialData }: FormProps) {
   } = useGetImage({
     company: selectedCompany?.slug,
     origin: "sms",
-    fileName: initialData.image,
+    fileName: typeof initialData.image === 'string' ? initialData.image : undefined,
   });
 
   const { plan_id, medida_id } = useParams<{

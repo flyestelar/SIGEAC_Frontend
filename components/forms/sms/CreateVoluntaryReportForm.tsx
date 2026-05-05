@@ -448,11 +448,15 @@ export function CreateVoluntaryReportForm({
                           initialFocus
                           fromYear={2000}
                           toYear={new Date().getFullYear()}
-                          captionLayout="dropdown-buttons"
+                          captionLayout="dropdown"
                           components={{
-                            Dropdown: (props) => (
+                            Dropdown: ({ options, classNames, components: _c, ...props }) => (
                               <select {...props} className="bg-popover text-popover-foreground">
-                                {props.children}
+                                {options?.map((opt) => (
+                                  <option key={opt.value} value={opt.value} disabled={opt.disabled}>
+                                    {opt.label}
+                                  </option>
+                                ))}
                               </select>
                             ),
                           }}
@@ -494,11 +498,15 @@ export function CreateVoluntaryReportForm({
                           initialFocus
                           fromYear={2000}
                           toYear={new Date().getFullYear()}
-                          captionLayout="dropdown-buttons"
+                          captionLayout="dropdown"
                           components={{
-                            Dropdown: (props) => (
+                            Dropdown: ({ options, classNames, components: _c, ...props }) => (
                               <select {...props} className="bg-popover text-popover-foreground">
-                                {props.children}
+                                {options?.map((opt) => (
+                                  <option key={opt.value} value={opt.value} disabled={opt.disabled}>
+                                    {opt.label}
+                                  </option>
+                                ))}
                               </select>
                             ),
                           }}
