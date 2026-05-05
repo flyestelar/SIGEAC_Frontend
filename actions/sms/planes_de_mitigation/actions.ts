@@ -22,11 +22,12 @@ interface UpdateMitigationPlanData {
   };
 }
 
-interface closeReportData {
+interface updateStatus {
   company: string | null;
   data: {
     mitigation_id: number | string;
     result: string;
+    close_date?: string; // Agregamos la fecha de cierre
   };
 }
 export const useCreateMitigationPlan = () => {
@@ -121,12 +122,13 @@ export const useCloseReport = () => {
   const queryClient = useQueryClient();
   const closeReportMutation = useMutation({
     mutationKey: ["close-report"],
-    mutationFn: async ({ data, company }: closeReportData) => {
+    mutationFn: async ({ data, company }: updateStatus) => {
       await axiosInstance.patch(
         `/${company}/sms/close-report/${data.mitigation_id}`,
         data
       );
     },
+
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["mitigation-plans"] });
       queryClient.invalidateQueries({ queryKey: ["voluntary-reports"] });
@@ -145,5 +147,37 @@ export const useCloseReport = () => {
   });
   return {
     closeReportByMitigationId: closeReportMutation,
+  };
+};
+
+export const useOpenReport = () => {
+  const queryClient = useQueryClient();
+  const openReportMutation = useMutation({
+    mutationKey: ["open-report"],
+    mutationFn: async ({ data, company }: updateStatus) => {
+      await axiosInstance.patch(
+        `/${company}/sms/open-report/${data.mitigation_id}`,
+        data
+      );
+    },
+
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["mitigation-plans"] });
+      queryClient.invalidateQueries({ queryKey: ["voluntary-reports"] });
+      queryClient.invalidateQueries({ queryKey: ["obligatory-reports"] });
+      queryClient.invalidateQueries({ queryKey: ["analysis"] });
+      toast.success("Reporte Cerrado!", {
+        description: `Se ha abierto el reporte correctamente.`,
+      });
+    },
+    onError: (error) => {
+      toast.error("Oops!", {
+        description: "No se pudo abrir el reporte...",
+      });
+      console.log(error);
+    },
+  });
+  return {
+    openReportByMitigationId: openReportMutation,
   };
 };

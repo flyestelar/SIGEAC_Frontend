@@ -39,7 +39,6 @@ interface UpdateDangerIdentification {
 export const useCreateDangerIdentification = () => {
   const queryClient = useQueryClient();
   const createMutation = useMutation({
-    mutationKey: ["danger-identifications/${id}"],
     mutationFn: async ({
       company,
       reportType,
@@ -47,7 +46,7 @@ export const useCreateDangerIdentification = () => {
       data,
     }: DangerIdentificationData) => {
       const response = await axiosInstance.post(
-        `/${company}/sms/danger-identifications/${reportType}/${id}/`,
+        `/${company}/sms/danger-identifications/${reportType}/${id}`,
         data,
         {
           headers: {
@@ -57,8 +56,8 @@ export const useCreateDangerIdentification = () => {
       );
       return response.data;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["danger-identifications"] });
+    onSuccess: (_,data) => {
+      queryClient.invalidateQueries({ queryKey: ["danger-identifications", data.company] });
       queryClient.invalidateQueries({ queryKey: ["voluntary-reports"] });
       queryClient.invalidateQueries({ queryKey: ["voluntary-report"] });
       queryClient.invalidateQueries({ queryKey: ["analysis"] });
@@ -92,8 +91,8 @@ export const useDeleteDangerIdentification = () => {
         `/${company}/sms/danger-identifications/${id}`
       );
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["danger-identifications"] });
+    onSuccess: (_,data) => {
+      queryClient.invalidateQueries({ queryKey: ["danger-identifications", data.company] });
       queryClient.invalidateQueries({ queryKey: ["voluntary-reports"] });
       queryClient.invalidateQueries({
         queryKey: ["danger-identification-by-id"],
@@ -125,8 +124,8 @@ export const useUpdateDangerIdentification = () => {
         data
       );
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["danger-identifications"] });
+    onSuccess: (_,data) => {
+      queryClient.invalidateQueries({ queryKey: ["danger-identifications", data.company] });
       queryClient.invalidateQueries({ queryKey: ["danger-identification"] });
       toast.success("¡Actualizado!", {
         description: `La identificacion de peligro ha sido actualizada correctamente.`,

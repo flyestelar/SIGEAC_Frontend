@@ -8,7 +8,7 @@ const fetchTotalDangerIdentificationsCountedByType = async (
   company?: string,
 ) => {
   const { data } = await axiosInstance.get(
-    `/${company}/sms/total-danger-identifications/counted-by-type?from=${from}&to=${to}`
+    `/${company}/sms/stats/total-danger-id-counted-by-type?from=${from}&to=${to}`
   );
   return data;
 };

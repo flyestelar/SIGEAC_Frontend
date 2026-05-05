@@ -16,8 +16,8 @@ import {
 interface BarChartProps {
   data: GeneralStats;
   title: string;
-  width: string;
-  height: string;
+  width?: string;
+  height?: string;
   bar_first_name: string;
   bar_second_name: string;
 }
@@ -25,8 +25,8 @@ interface BarChartProps {
 const BarChartComponent = ({
   data,
   title,
-  width,
-  height,
+  width = "100%",
+  height = "100%",
   bar_first_name,
   bar_second_name,
 }: BarChartProps) => {

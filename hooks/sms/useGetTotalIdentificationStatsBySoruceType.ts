@@ -8,7 +8,7 @@ const fetchTotalIdentificationStatsBySourceType = async (
   company?: string
 ): Promise<pieChartData[]> => {
   const { data } = await axiosInstance.get(
-    `/${company}/sms/total-danger-identifications-information-source-count-by-type?from=${from}&to=${to}`
+    `/${company}/sms/stats/total-danger-id-by-source-type?from=${from}&to=${to}`
   );
   return data;
 };

@@ -1,0 +1,422 @@
+"use client";
+import CreateDangerIdentificationDialog from "@/components/dialogs/sms/CreateDangerIdentificationDialog";
+import CreateObligatoryDialog from "@/components/dialogs/sms/CreateObligatoryDialog";
+import DeleteObligatoryReportDialog from "@/components/dialogs/sms/DeleteObligatoryReportDialog";
+import PreviewObligatoryReportPdfDialog from "@/components/dialogs/sms/PreviewObligatoryReportPdfDialog";
+import { ContentLayout } from "@/components/layout/ContentLayout";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { CardContent } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { useGetObligatoryReportById } from "@/hooks/sms/useGetObligatoryReportById";
+import { format } from "date-fns";
+import { es } from "date-fns/locale";
+import {
+  AlertCircle,
+  Calendar,
+  File,
+  FileText,
+  Image as ImageIcon,
+  Loader2,
+  MapPin,
+  Plane,
+  User,
+  Users,
+  Download,
+} from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+import { useParams, useRouter } from "next/navigation";
+import { useCompanyStore } from "@/stores/CompanyStore";
+import { ArrowLeft } from "lucide-react";
+
+const ShowObligatoryReport = () => {
+  const { obligarory_id } = useParams<{ obligarory_id: string }>();
+  const router = useRouter();
+
+  const { selectedCompany } = useCompanyStore();
+
+  const {
+    data: obligatoryReport,
+    isLoading,
+    isError,
+  } = useGetObligatoryReportById({
+    company: selectedCompany?.slug ?? null,
+    id: obligarory_id,
+  });
+
+  const resolveUrl = (path: string | null) => {
+    if (!path) return null;
+    if (path.startsWith('http://') || path.startsWith('https://')) return path;
+    return `${process.env.NEXT_PUBLIC_STORAGE_BASE_URL}${path}`;
+  };
+
+  const parseDate = (dateString: string | null | undefined) => {
+    if (!dateString) return null;
+    const d = new Date(dateString.replace(/-/g, '/'));
+    return isNaN(d.getTime()) ? null : d;
+  };
+
+  return (
+    <ContentLayout title="Reportes Obligatorios">
+      <div className="mb-4">
+        <Button variant="outline" size="sm" onClick={() => router.push(`/${selectedCompany?.slug}/sms/reportes`)}>
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Volver
+        </Button>
+      </div>
+      <div className="flex justify-evenly gap-2 flex-wrap">
+        {/* Botón para crear identificación de peligro */}
+        {obligatoryReport &&
+        obligatoryReport.status === "ABIERTO" &&
+        !obligatoryReport.danger_identification ? (
+          <div className="flex items-center py-4">
+            <CreateDangerIdentificationDialog
+              title={"Crear Identificación de Peligro"}
+              id={obligatoryReport?.id}
+              reportType="ROS"
+            />
+          </div>
+        ) : (
+          obligatoryReport &&
+          obligatoryReport.status === "ABIERTO" &&
+          obligatoryReport.danger_identification?.id && (
+            <div className="flex items-center py-4">
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-8 flex items-center gap-1"
+                asChild
+              >
+                <Link
+                  href={`/${selectedCompany?.slug}/sms/gestion_reportes/peligros_identificados/${obligatoryReport.danger_identification.id}`}
+                >
+                  <span className="hidden lg:inline">Ver Identificación</span>
+                </Link>
+              </Button>
+            </div>
+          )
+        )}
+
+        {/* Botón para editar reporte */}
+        {obligatoryReport && obligatoryReport.status === "ABIERTO" && (
+          <div className="flex items-center py-4">
+            <CreateObligatoryDialog
+              initialData={obligatoryReport}
+              isEditing={true}
+              title={"Editar"}
+            />
+          </div>
+        )}
+
+        {/* Botón para eliminar reporte */}
+        {obligatoryReport && obligatoryReport.status === "ABIERTO" && (
+          <div className="flex items-center py-4">
+            <DeleteObligatoryReportDialog
+              company={selectedCompany!.slug}
+              id={obligatoryReport.id.toString()}
+            />
+          </div>
+        )}
+
+        {/* Botón para descargar PDF */}
+        {obligatoryReport && (
+          <div className="flex items-center py-4">
+            <PreviewObligatoryReportPdfDialog
+              title={"Descargar PDF"}
+              obligatoryReport={obligatoryReport}
+            />
+          </div>
+        )}
+      </div>
+
+      <div className="flex flex-col justify-center items-center border border-gray-300 rounded-lg p-6 gap-y-4 shadow-md dark:border-gray-700">
+        <div className="flex items-center gap-3">
+          <FileText className="w-8 h-8 text-blue-600" />
+          <h1 className="text-2xl font-semibold text-center text-gray-800 dark:text-white">
+            Detalles del Reporte Obligatorio
+          </h1>
+        </div>
+
+        {isLoading && (
+          <div className="flex w-full h-64 justify-center items-center">
+            <Loader2 className="size-24 animate-spin text-blue-500" />
+          </div>
+        )}
+
+        {obligatoryReport && (
+          <div className="w-full space-y-4">
+            {/* Encabezado con código y fecha */}
+            {obligatoryReport.report_number && (
+              <div className="flex flex-col md:flex-row justify-between p-4 rounded-lg gap-2 border border-gray-300">
+                <div className="flex justify-end items-center gap-2">
+                  <p className="text-lg text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                    <File className="w-5 h-5" />
+                    <span className="font-semibold">Código:</span> ROS-
+                    {obligatoryReport.report_number}
+                  </p>
+                  <Badge
+                    className={`justify-center items-center text-center font-bold font-sans ${
+                      obligatoryReport.status === "CERRADO"
+                        ? "bg-green-400"
+                        : obligatoryReport.status === "ABIERTO"
+                          ? "bg-red-400"
+                          : "bg-gray-500"
+                    }`}
+                  >
+                    {obligatoryReport.status}
+                  </Badge>
+                </div>
+                {parseDate(obligatoryReport.report_date) && (
+                  <p className="text-lg font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                    <Calendar className="w-5 h-5" />
+                    <span className="font-semibold">Fecha del Reporte:</span>
+                    {format(parseDate(obligatoryReport.report_date)!, "PPP", {
+                      locale: es,
+                    })}
+                  </p>
+                )}
+              </div>
+            )}
+
+            {/* Información básica del incidente */}
+            <div className="flex-col p-4 rounded-lg space-y-3 border border-gray-300">
+              <p className="text-lg text-gray-700 dark:text-gray-300 flex items-start gap-2">
+                <MapPin className="w-5 h-5 mt-1 flex-shrink-0" />
+                <span>
+                  <span className="font-semibold">Lugar del Suceso: </span>
+                  {obligatoryReport.incident_location}
+                </span>
+              </p>
+
+              {parseDate(obligatoryReport.incident_date) && (
+                <p className="text-lg font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                  <Calendar className="w-5 h-5" />
+                  <span>
+                    <span className="font-semibold">Fecha: </span>
+                    {format(parseDate(obligatoryReport.incident_date)!, "PPP", {
+                      locale: es,
+                    })}
+                  </span>
+                </p>
+              )}
+            </div>
+
+            {/* Otros incidentes */}
+            {obligatoryReport.other_incidents && (
+              <div className="p-4 rounded-lg">
+                <p className="text-lg font-medium text-gray-700 dark:text-gray-300 flex items-start gap-2">
+                  <AlertCircle className="w-5 h-5 mt-1 flex-shrink-0" />
+                  <span>
+                    <span className="font-semibold">Otros Incidentes: </span>
+                    {obligatoryReport.other_incidents}
+                  </span>
+                </p>
+              </div>
+            )}
+
+            {/* Lista de incidentes */}
+            {obligatoryReport.incidents && obligatoryReport.incidents.length > 0 && (
+              <div className="flex flex-col p-4 rounded-lg border border-gray-300">
+                <p className="text-lg font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center gap-2">
+                  <AlertCircle className="w-5 h-5" />
+                  <span>Lista de Incidentes:</span>
+                </p>
+                <ul className="space-y-1">
+                  {(obligatoryReport.incidents as string[]).map(
+                    (incident, index) => (
+                      <li
+                        key={index}
+                        className="text-gray-600 dark:text-gray-400 flex items-start gap-2"
+                      >
+                        <span className="text-gray-500 dark:text-gray-400">•</span>
+                        <span>{incident}</span>
+                      </li>
+                    )
+                  )}
+                </ul>
+              </div>
+            )}
+
+            {/* Descripción */}
+            <div className="p-4 rounded-lg border border-gray-300">
+              <p className="text-xl font-semibold text-center text-gray-800 dark:text-white mb-4 flex items-center justify-center gap-2">
+                <FileText className="w-6 h-6" />
+                Descripción
+              </p>
+              <p className="text-lg text-gray-700 dark:text-gray-300">
+                {obligatoryReport.description}
+              </p>
+            </div>
+
+            {/* Sección de Aeronave */}
+            {obligatoryReport.aircraft && (
+              <div className="p-4 rounded-lg border border-gray-300">
+                <p className="text-xl font-semibold text-center text-gray-800 dark:text-white mb-4 flex items-center justify-center gap-2">
+                  <Plane className="w-6 h-6" />
+                  Datos de Aeronave
+                </p>
+                <div className="space-y-2">
+                  <p className="text-lg text-gray-700 dark:text-gray-300">
+                    <span className="font-semibold">Matrícula: </span>
+                    {obligatoryReport.aircraft.acronym}
+                  </p>
+                  <p className="text-lg font-medium text-gray-700 dark:text-gray-300">
+                    <span className="font-semibold">Modelo: </span>
+                    {obligatoryReport.aircraft.model}
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Sección de Tripulación */}
+            <div className="flex flex-col lg:flex-row justify-center items-stretch gap-4">
+              {obligatoryReport.pilot && (
+                <div className="p-4 rounded-lg flex-1 border border-gray-300">
+                  <p className="text-xl font-semibold text-center text-gray-800 dark:text-white mb-4 flex items-center justify-center gap-2">
+                    <User className="w-6 h-6" />
+                    Datos del Piloto
+                  </p>
+                  <div className="space-y-2">
+                    <p className="text-lg text-gray-700 dark:text-gray-300">
+                      <span className="font-semibold">DNI: </span>
+                      {obligatoryReport.pilot.employee?.dni}
+                    </p>
+                    <p className="text-lg text-gray-700 dark:text-gray-300">
+                      <span className="font-semibold">Licencia: </span>
+                      {obligatoryReport.pilot.license_number}
+                    </p>
+                    <p className="text-lg text-gray-700 dark:text-gray-300">
+                      <span className="font-semibold">Nombre: </span>
+                      {obligatoryReport.pilot.employee?.first_name}{" "}
+                      {obligatoryReport.pilot.employee?.last_name}
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {obligatoryReport.copilot && (
+                <div className="p-4 rounded-lg flex-1 border border-gray-300">
+                  <p className="text-xl font-semibold text-center text-gray-800 dark:text-white mb-4 flex items-center justify-center gap-2">
+                    <Users className="w-6 h-6" />
+                    Datos del Copiloto
+                  </p>
+                  <div className="space-y-2">
+                    <p className="text-lg text-gray-700 dark:text-gray-300">
+                      <span className="font-semibold">DNI: </span>
+                      {obligatoryReport.copilot.employee?.dni}
+                    </p>
+                    <p className="text-lg text-gray-700 dark:text-gray-300">
+                      <span className="font-semibold">Licencia: </span>
+                      {obligatoryReport.copilot.license_number}
+                    </p>
+                    <p className="text-lg text-gray-700 dark:text-gray-300">
+                      <span className="font-semibold">Nombre: </span>
+                      {obligatoryReport.copilot.employee?.first_name}{" "}
+                      {obligatoryReport.copilot.employee?.last_name}
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Imagen adjunta */}
+            {resolveUrl(obligatoryReport.image) && (
+              <Dialog>
+                <DialogTrigger asChild>
+                  <div className="cursor-pointer flex justify-center">
+                    <CardContent className="flex flex-col gap-2 p-0">
+                      <div className="relative group">
+                        <div className="w-64 h-64">
+                          <Image
+                            src={resolveUrl(obligatoryReport.image)!}
+                            alt={`vista previa del ${obligatoryReport.report_number}`}
+                            fill
+                            className="object-contain rounded-md border-2 border-gray-300 shadow-sm group-hover:border-blue-400 transition-all"
+                            onError={(e) => {
+                              const target = e.target as HTMLImageElement;
+                              target.style.display = "none";
+                            }}
+                          />
+                          <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                            <span className="bg-black/50 text-white px-3 py-1 rounded-md flex items-center gap-1">
+                              <ImageIcon className="w-4 h-4" />
+                              Ver imagen completa
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </div>
+                </DialogTrigger>
+
+                <DialogContent className="max-w-4xl max-h-[90vh]">
+                  <DialogHeader>
+                    <DialogTitle className="flex items-center gap-2">
+                      <ImageIcon className="w-5 h-5" />
+                      Imagen del Reporte
+                    </DialogTitle>
+                  </DialogHeader>
+
+                  <div className="relative flex justify-center items-center h-[70vh]">
+                    <Image
+                      src={resolveUrl(obligatoryReport.image)!}
+                      alt={`vista previa del ${obligatoryReport.report_number}`}
+                      fill
+                      className="max-w-full max-h-[70vh] object-contain border-4 border-gray-100 shadow-lg rounded-lg"
+                    />
+                  </div>
+
+                  <div className="flex justify-end mt-4">
+                    <a
+                      href={resolveUrl(obligatoryReport.image)!}
+                      download={`ROS-${obligatoryReport.report_number}`}
+                      className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700"
+                    >
+                      <Download className="w-4 h-4 mr-2" />
+                      Descargar Imagen
+                    </a>
+                  </div>
+                </DialogContent>
+              </Dialog>
+            )}
+
+            {/* Documento adjunto */}
+            {resolveUrl(obligatoryReport.document) && (
+              <div className="border border-gray-300 dark:border-gray-600 p-6 rounded-lg text-center">
+                <h3 className="text-xl font-semibold mb-4">
+                  Documento Adjunto
+                </h3>
+                <a
+                  href={resolveUrl(obligatoryReport.document)!}
+                  download={`ROS-${obligatoryReport.report_number}.pdf`}
+                  className="inline-flex items-center px-5 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700"
+                >
+                  <File className="w-5 h-5 mr-2" />
+                  Descargar Documento Adjunto
+                </a>
+              </div>
+            )}
+          </div>
+        )}
+
+        {isError && (
+          <div className="bg-red-100 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 flex items-center gap-3">
+            <AlertCircle className="w-5 h-5 text-red-500" />
+            <p className="text-red-700 dark:text-red-300">
+              Ha ocurrido un error al cargar el reporte obligatorio...
+            </p>
+          </div>
+        )}
+      </div>
+    </ContentLayout>
+  );
+};
+
+export default ShowObligatoryReport;

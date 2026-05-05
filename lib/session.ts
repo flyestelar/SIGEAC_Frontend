@@ -51,18 +51,20 @@ export async function decryptJWT(session: string | undefined = '') {
 export async function createSession(userId: string) {
     const expires = new Date(Date.now() + cookieConfig.duration) // Duración en milisegundos (24 horas)
     const session = await encryptJWT({ userId, expires })
-    cookies().set(cookieConfig.name, session, {
+    const cookieStore = await cookies()
+    cookieStore.set(cookieConfig.name, session, {
         secure: true,
         httpOnly: true,
         sameSite: 'lax',
         path: "/",
         expires: expires,
-    },)
+    })
 }
 
 // Función para verificar la sesión
 export async function verifySession() {
-    const cookie = cookies().get(cookieConfig.name)?.value
+    const cookieStore = await cookies()
+    const cookie = cookieStore.get(cookieConfig.name)?.value
     const session = await decryptJWT(cookie)
     if(!session?.userId) {
         redirect('/login')
@@ -72,6 +74,7 @@ export async function verifySession() {
 
 // Función para eliminar la sesión
 export async function deleteSession() {
-    cookies().delete(cookieConfig.name)
-    cookies().delete('auth_token')
+    const cookieStore = await cookies()
+    cookieStore.delete(cookieConfig.name)
+    cookieStore.delete('auth_token')
 }

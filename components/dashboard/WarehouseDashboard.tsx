@@ -1,18 +1,9 @@
-// components/dashboard/WarehouseDashboard.tsx
-'use client';
+"use client";
 
-import { ContentLayout } from '@/components/layout/ContentLayout';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { Plane, Shield, Package2, Wrench, Users, LayoutDashboard } from 'lucide-react';
-import { useState } from 'react';
-import { useGetWarehouseDashboard } from '@/hooks/sistema/dashboard/useWarehouseDashboard';
-import { User } from '@/types';
-
-// Subcomponents
-import ArticlesSummary from '@/components/dashboard/sections/ArticlesSummary';
-import ToolsSummary from '@/components/dashboard/sections/ToolsSummary';
-import UsersSummary from '@/components/dashboard/sections/UsersSummary';
-import DashboardSummary from '@/components/dashboard/sections/DashboardSummary';
+import { ContentLayout } from "@/components/layout/ContentLayout";
+import { Plane, Shield } from "lucide-react";
+import { User } from "@/types";
+import WarehouseDashboardContent from "@/components/dashboard/content/WarehouseDashboardContent";
 
 interface WarehouseDashboardProps {
   companySlug: string;
@@ -21,89 +12,49 @@ interface WarehouseDashboardProps {
   roleNames: string[];
 }
 
-export default function WarehouseDashboard({ companySlug, location_id, user, roleNames }: WarehouseDashboardProps) {
-  const [activeTab, setActiveTab] = useState('DASHBOARD');
-  const { data, isLoading, isError } = useGetWarehouseDashboard(companySlug, location_id);
-
-  const canViewUsersTab = roleNames.some((r) => ['SUPERUSER', 'JEFE_ALMACEN'].includes(r));
+export default function WarehouseDashboard(props: WarehouseDashboardProps) {
+  const { companySlug } = props;
 
   return (
-    <ContentLayout title={`Dashboard / ${companySlug || ''}`}>
-      <header className="shadow-sm border-b">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <div className="bg-blue-600 p-2 rounded-lg">
-              <Plane className="h-6 w-6 text-white" />
-            </div>
-            <div>
-              <h1 className="text-xl font-bold">Sistema de Gestión Aeronáutica Civil</h1>
-              <p className="text-sm">Plataforma oficial de administración</p>
-            </div>
-          </div>
+    <ContentLayout title={`Dashboard / ${companySlug || ""}`}>
+      {/* Header */}
+      <header className="border-b bg-background/60 backdrop-blur-md shadow-sm">
+        <div className="container mx-auto px-4 py-6 flex items-center justify-between">
+
+          {/* ================= ICON + TITLE ================= */}
           <div className="flex items-center space-x-4">
-            <Shield className="h-5 w-5 text-green-600" />
-            <span className="text-sm font-medium">Sistema Seguro</span>
+
+            <div className="relative">
+              <div className="absolute inset-0 rounded-2xl bg-blue-500/10 blur-md" />
+              <div className="relative flex h-12 w-12 items-center justify-center rounded-2xl border border-blue-500/30 bg-blue-500/10 text-blue-600 shadow-sm">
+                <Plane className="h-6 w-6" />
+              </div>
+            </div>
+
+            <div className="leading-tight">
+              <h1 className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-100">
+                Sistema de Gestión Aeronáutica Civil
+              </h1>
+
+              <p className="text-sm text-slate-500 dark:text-slate-400">
+                Plataforma oficial de administración
+              </p>
+            </div>
+
           </div>
+
+          {/* ================= STATUS BADGE ================= */}
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 shadow-sm backdrop-blur-md">
+            <Shield className="h-4 w-4" />
+            <span className="text-xs font-medium tracking-wide">
+              Sistema seguro
+            </span>
+          </div>
+
         </div>
       </header>
 
-      {/* Tabs principales */}
-      <main className="max-w-7xl mt-6 mx-auto px-4">
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="flex justify-center mb-0 space-x-3 border-b rounded-t-xl bg-muted/40">
-            <TabsTrigger
-              value="DASHBOARD"
-              className="flex gap-2 data-[state=active]:border-b-2 data-[state=active]:border-blue-600 data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-t-lg px-3 py-2"
-            >
-              <LayoutDashboard className="size-4" /> Dashboard
-            </TabsTrigger>
-            <TabsTrigger
-              value="ARTICULOS"
-              className="flex gap-2 data-[state=active]:border-b-2 data-[state=active]:border-blue-600 data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-t-lg px-3 py-2"
-            >
-              <Package2 className="size-4" /> Materiales
-            </TabsTrigger>
-            <TabsTrigger
-              value="HERRAMIENTAS"
-              className="flex gap-2 data-[state=active]:border-b-2 data-[state=active]:border-blue-600 data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-t-lg px-3 py-2"
-            >
-              <Wrench className="size-4" /> Herramientas
-            </TabsTrigger>
-
-            {canViewUsersTab && (
-              <TabsTrigger
-                value="USUARIOS"
-                className="flex gap-2 data-[state=active]:border-b-2 data-[state=active]:border-blue-600 data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-t-lg px-3 py-2"
-              >
-                <Users className="size-4" /> Usuarios
-              </TabsTrigger>
-            )}
-          </TabsList>
-
-          <div className="mt-10">
-            <TabsContent value="DASHBOARD">
-              <div className="mt-6">
-                {' '}
-                <DashboardSummary companySlug={companySlug} />{' '}
-              </div>
-            </TabsContent>
-
-            <TabsContent value="ARTICULOS">
-              <ArticlesSummary data={data} isLoading={isLoading} isError={isError} />
-            </TabsContent>
-
-            <TabsContent value="HERRAMIENTAS">
-              <ToolsSummary data={data} isLoading={isLoading} isError={isError} />
-            </TabsContent>
-
-            {canViewUsersTab && (
-              <TabsContent value="USUARIOS">
-                <UsersSummary data={data} isLoading={isLoading} isError={isError} currentUserRole={roleNames[0]} />
-              </TabsContent>
-            )}
-          </div>
-        </Tabs>
-      </main>
+      <WarehouseDashboardContent {...props} />
     </ContentLayout>
   );
 }

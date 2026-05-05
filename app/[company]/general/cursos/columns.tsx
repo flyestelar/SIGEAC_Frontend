@@ -1,13 +1,13 @@
 "use client";
 
-import CourseDropdownActions from "@/components/dropdowns/aerolinea/sms/CourseDropdownActions";
+import CourseDropdownActions from "@/components/dropdowns/sms/CourseDropdownActions";
 import { DataTableColumnHeader } from "@/components/tables/DataTableHeader";
 import { Badge } from "@/components/ui/badge";
 import { dateFormat } from "@/lib/utils";
-import { Course } from "@/types";
+import { CourseResource } from "@/.gen/api/types.gen";
 import { ColumnDef } from "@tanstack/react-table";
 
-export const columns: ColumnDef<Course>[] = [
+export const columns: ColumnDef<CourseResource>[] = [
   {
     accessorKey: "name",
     header: ({ column }) => (
@@ -27,7 +27,7 @@ export const columns: ColumnDef<Course>[] = [
     cell: ({ row }) => {
       return (
         <p className="font-medium text-center">
-          {dateFormat(row.original.start_date, "PPP")}
+          {dateFormat(row.original.start_date ?? "", "PPP")}
         </p>
       );
     },
@@ -45,7 +45,7 @@ export const columns: ColumnDef<Course>[] = [
     cell: ({ row }) => {
       return (
         <p className="font-medium text-center">
-          {dateFormat(row.original.end_date, "PPP")}
+          {dateFormat(row.original.end_date ?? "", "PPP")}
         </p>
       );
     },
@@ -57,7 +57,7 @@ export const columns: ColumnDef<Course>[] = [
     ),
     meta: { title: "Nombre" },
     cell: ({ row }) => {
-      return <div className="flex justify-center">{row.original.time}</div>;
+      return <div className="flex justify-center">{row.original.start_time}-{row.original.end_time} </div>;
     },
   },
   {

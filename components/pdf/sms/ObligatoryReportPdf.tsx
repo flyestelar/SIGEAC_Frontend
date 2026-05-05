@@ -7,7 +7,8 @@ import {
   StyleSheet,
   Image as PDFImage,
 } from "@react-pdf/renderer";
-import { MitigationTable, ObligatoryReport } from "@/types";
+import { MitigationTable } from "@/types";
+import { ObligatoryReportResource } from "@/.gen/api/types.gen";
 import { dateFormat, timeFormat } from "@/lib/utils";
 import {
   FifthPage,
@@ -527,7 +528,7 @@ const Header = () => (
 );
 
 interface MyDocumentProps {
-  report: ObligatoryReport;
+  report: ObligatoryReportResource;
   identification?: MitigationTable;
 }
 
@@ -578,7 +579,7 @@ const ObligatoryReportPdf = ({ report, identification }: MyDocumentProps) => (
       <View style={styles.tableRow}>
         <View style={{ ...styles.tableCell, width: "15%" }}>
           <Text style={styles.cellText}>
-            {dateFormat(report.report_date, "dd-MM-yyyy")}
+            {report.report_date ? dateFormat(report.report_date, "dd-MM-yyyy") : ""}
           </Text>
         </View>
 
@@ -586,7 +587,7 @@ const ObligatoryReportPdf = ({ report, identification }: MyDocumentProps) => (
 
         <View style={{ ...styles.tableCell, width: "15%" }}>
           <Text style={styles.cellText}>
-            {dateFormat(report.incident_date, "dd-MM-yyyy")}
+            {report.incident_date ? dateFormat(report.incident_date, "dd-MM-yyyy") : ""}
           </Text>
         </View>
 
@@ -742,13 +743,13 @@ const ObligatoryReportPdf = ({ report, identification }: MyDocumentProps) => (
           <Text style={styles.cellText}>{report.flight_time}</Text>
         </View>
         <View style={{ ...styles.tableCell, width: "23.33%" }}>
-          <Text style={styles.cellText}>{report.aircraft.acronym}</Text>
+          <Text style={styles.cellText}>{report.aircraft?.acronym}</Text>
         </View>
         <View style={{ ...styles.tableCell, width: "24.67%" }}>
           <Text style={styles.cellText}>{report.flight_number}</Text>
         </View>
         <View style={{ ...styles.tableCell, width: "42%" }}>
-          <Text style={styles.cellText}>{report.aircraft.model}</Text>
+          <Text style={styles.cellText}>{report.aircraft?.model}</Text>
         </View>
       </View>
 
@@ -820,7 +821,7 @@ const ObligatoryReportPdf = ({ report, identification }: MyDocumentProps) => (
 
           <View style={styles.checkbox}>
             <Text style={styles.xMark}>
-              {report.incidents.includes(
+              {report.incidents?.includes(
                 "La aereonave aterriza quedándose solo con el combustible de reserva o menos"
               )
                 ? "X"
@@ -834,7 +835,7 @@ const ObligatoryReportPdf = ({ report, identification }: MyDocumentProps) => (
           </Text>
           <View style={styles.checkbox}>
             <Text style={styles.xMark}>
-              {report.incidents.includes("Salida de pista - RUNAWAY INCURSION")
+              {report.incidents?.includes("Salida de pista - RUNAWAY INCURSION")
                 ? "X"
                 : ""}
             </Text>
@@ -849,7 +850,7 @@ const ObligatoryReportPdf = ({ report, identification }: MyDocumentProps) => (
             <Text style={styles.xMark}>
               {" "}
               <Text style={styles.xMark}>
-                {report.incidents.includes(
+                {report.incidents?.includes(
                   "Despegue abortado(REJETED TAKE OFF-RTO)"
                 )
                   ? "X"
@@ -865,7 +866,7 @@ const ObligatoryReportPdf = ({ report, identification }: MyDocumentProps) => (
           </Text>
           <View style={styles.checkbox}>
             <Text style={styles.xMark}>
-              {report.incidents.includes("Aterrizaje fuerte (HARD LANDING)")
+              {report.incidents?.includes("Aterrizaje fuerte (HARD LANDING)")
                 ? "X"
                 : ""}
             </Text>
@@ -877,7 +878,7 @@ const ObligatoryReportPdf = ({ report, identification }: MyDocumentProps) => (
           </Text>
           <View style={styles.checkbox}>
             <Text style={styles.xMark}>
-              {report.incidents.includes("El avion es evacuado") ? "X" : ""}
+              {report.incidents?.includes("El avion es evacuado") ? "X" : ""}
             </Text>
           </View>
         </View>
@@ -903,7 +904,7 @@ const ObligatoryReportPdf = ({ report, identification }: MyDocumentProps) => (
 
           <View style={styles.checkbox}>
             <Text style={styles.xMark}>
-              {report.incidents.includes(
+              {report.incidents?.includes(
                 "Incursion en pista o calle de rodaje (RUNAWAY INCURSION-RI)"
               )
                 ? "X"
@@ -918,7 +919,7 @@ const ObligatoryReportPdf = ({ report, identification }: MyDocumentProps) => (
           </Text>
           <View style={styles.checkbox}>
             <Text style={styles.xMark}>
-              {report.incidents.includes("Derrame de combustible") ? "X" : ""}
+              {report.incidents?.includes("Derrame de combustible") ? "X" : ""}
             </Text>
           </View>
         </View>
@@ -926,7 +927,7 @@ const ObligatoryReportPdf = ({ report, identification }: MyDocumentProps) => (
           <Text style={styles.cellTextIncident}> FALLA DE{"\n"}UN MOTOR</Text>
           <View style={styles.checkbox}>
             <Text style={styles.xMark}>
-              {report.incidents.includes("Falla de motor") ? "X" : ""}
+              {report.incidents?.includes("Falla de motor") ? "X" : ""}
             </Text>
           </View>
         </View>
@@ -937,7 +938,7 @@ const ObligatoryReportPdf = ({ report, identification }: MyDocumentProps) => (
           </Text>
           <View style={styles.checkbox}>
             <Text style={styles.xMark}>
-              {report.incidents.includes("Alerta de fuego o humo") ? "X" : ""}
+              {report.incidents?.includes("Alerta de fuego o humo") ? "X" : ""}
             </Text>
           </View>
         </View>
@@ -948,7 +949,7 @@ const ObligatoryReportPdf = ({ report, identification }: MyDocumentProps) => (
           </Text>
           <View style={styles.checkbox}>
             <Text style={styles.xMark}>
-              {report.incidents.includes("Fallo en los controles de vuelo")
+              {report.incidents?.includes("Fallo en los controles de vuelo")
                 ? "X"
                 : ""}
             </Text>
@@ -978,7 +979,7 @@ const ObligatoryReportPdf = ({ report, identification }: MyDocumentProps) => (
 
           <View style={styles.checkbox}>
             <Text style={styles.xMark}>
-              {report.incidents.includes(
+              {report.incidents?.includes(
                 "Aproximacion no estabilizada por debajo de los 500 pies VRF o 1000 PIES IRF"
               )
                 ? "X"
@@ -994,7 +995,7 @@ const ObligatoryReportPdf = ({ report, identification }: MyDocumentProps) => (
           </Text>
           <View style={styles.checkbox}>
             <Text style={styles.xMark}>
-              {report.incidents.includes(
+              {report.incidents?.includes(
                 "Error  de navegacion con desviacion significativa de la ruta"
               )
                 ? "X"
@@ -1006,7 +1007,7 @@ const ObligatoryReportPdf = ({ report, identification }: MyDocumentProps) => (
           <Text style={styles.cellTextIncident}>TAIL STRIKE</Text>
           <View style={styles.checkbox}>
             <Text style={styles.xMark}>
-              {report.incidents.includes("Tail Strike") ? "X" : ""}
+              {report.incidents?.includes("Tail Strike") ? "X" : ""}
             </Text>
           </View>
         </View>
@@ -1014,7 +1015,7 @@ const ObligatoryReportPdf = ({ report, identification }: MyDocumentProps) => (
           <Text style={styles.cellTextIncident}>WIND SHEAR</Text>
           <View style={styles.checkbox}>
             <Text style={styles.xMark}>
-              {report.incidents.includes("Wind Shear") ? "X" : ""}
+              {report.incidents?.includes("Wind Shear") ? "X" : ""}
             </Text>
           </View>
         </View>
@@ -1024,7 +1025,7 @@ const ObligatoryReportPdf = ({ report, identification }: MyDocumentProps) => (
           </Text>
           <View style={styles.checkbox}>
             <Text style={styles.xMark}>
-              {report.incidents.includes("Parametros de vuelo anormales")
+              {report.incidents?.includes("Parametros de vuelo anormales")
                 ? "X"
                 : ""}
             </Text>
@@ -1040,7 +1041,7 @@ const ObligatoryReportPdf = ({ report, identification }: MyDocumentProps) => (
 
           <View style={styles.checkbox}>
             <Text style={styles.xMark}>
-              {report.incidents.includes("Despresurizacion") ? "X" : ""}
+              {report.incidents?.includes("Despresurizacion") ? "X" : ""}
             </Text>
           </View>
         </View>
@@ -1050,7 +1051,7 @@ const ObligatoryReportPdf = ({ report, identification }: MyDocumentProps) => (
           </Text>
           <View style={styles.checkbox}>
             <Text style={styles.xMark}>
-              {report.incidents.includes(
+              {report.incidents?.includes(
                 "Casi colision (RESOLUCION ACVSORY-RA)"
               )
                 ? "X"
@@ -1062,7 +1063,7 @@ const ObligatoryReportPdf = ({ report, identification }: MyDocumentProps) => (
           <Text style={styles.cellTextIncident}>IMPACTO{"\n"}CON AVES</Text>
           <View style={styles.checkbox}>
             <Text style={styles.xMark}>
-              {report.incidents.includes("Impacto con aves") ? "X" : ""}
+              {report.incidents?.includes("Impacto con aves") ? "X" : ""}
             </Text>
           </View>
         </View>
@@ -1166,8 +1167,8 @@ const ObligatoryReportPdf = ({ report, identification }: MyDocumentProps) => (
     {report && identification && (
       <>
         <FirstPage
-          reportDate={report.report_date}
-          identificationDate={report.incident_date}
+          reportDate={report.report_date ? new Date(report.report_date) : new Date()}
+          identificationDate={report.incident_date ? new Date(report.incident_date) : new Date()}
           reportNumber={report.report_number}
           reportType="ROS"
           identification={identification}

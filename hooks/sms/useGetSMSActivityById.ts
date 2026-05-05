@@ -1,12 +1,12 @@
 import axiosInstance from "@/lib/axios";
-import { SMSActivity } from "@/types";
+import { SmsActivityResource } from "@/.gen/api/types.gen";
 import { useQuery } from "@tanstack/react-query";
 
 const fetchSMSActivityById = async ({
   company,
   id,
 }: {
-  company: string | null;
+  company: string | null | undefined;
   id: string;
 }) => {
   const { data } = await axiosInstance.get(`/${company}/sms/activities/${id}`);
@@ -17,10 +17,10 @@ export const useGetSMSActivityById = ({
   company,
   id,
 }: {
-  company: string | null;
+  company: string | null | undefined;
   id: string;
 }) => {
-  return useQuery<SMSActivity>({
+  return useQuery<SmsActivityResource>({
     queryKey: ["sms-activity", id], // Incluye el ID en la clave de la query
     queryFn: () => fetchSMSActivityById({ company, id }), // Pasa el ID a la función fetchUser
     staleTime: 1000 * 60 * 5, // 5 minutos

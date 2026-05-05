@@ -29,7 +29,7 @@ export default function RootLayout({
       <head>
         <link rel="icon" href="/images/logo.png" sizes="any" />
       </head>
-      <body className={inter.className}>
+      <body className={inter.className} suppressHydrationWarning>
         <QueryClientProvider>
           <RedirectHandler />
           <AuthProvider>

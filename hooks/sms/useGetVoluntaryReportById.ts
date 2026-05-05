@@ -1,3 +1,4 @@
+import { VoluntaryReportResource } from "@/.gen/api/types.gen";
 import axiosInstance from "@/lib/axios";
 import { DangerIdentification } from "@/types";
 import { useQuery } from "@tanstack/react-query";
@@ -43,7 +44,7 @@ export const useGetVoluntaryReportById = ({
   company?: string;
   id: string;
 }) => {
-  return useQuery<GetVoluntaryReport>({
+  return useQuery<VoluntaryReportResource>({
     queryKey: ["voluntary-report", company, id], // Incluye el ID en la clave de la query
     queryFn: () => fetcVoluntaryReportById({ company, id }), // Pasa el ID a la función fetchUser
     staleTime: 1000 * 60 * 5, // 5 minutos

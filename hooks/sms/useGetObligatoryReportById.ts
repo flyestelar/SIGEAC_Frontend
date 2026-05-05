@@ -1,5 +1,5 @@
 import axiosInstance from "@/lib/axios";
-import { ObligatoryReport } from "@/types";
+import { ObligatoryReportResource } from "@/.gen/api/types.gen";
 import { useQuery } from "@tanstack/react-query";
 
 const fetcObligatoryReportById = async ({
@@ -22,7 +22,7 @@ export const useGetObligatoryReportById = ({
   company: string | null;
   id: string;
 }) => {
-  return useQuery<ObligatoryReport>({
+  return useQuery<ObligatoryReportResource>({
     queryKey: ["obligatory-reports", id],
     queryFn: () => fetcObligatoryReportById({ company, id }),
     staleTime: 1000 * 60 * 5, // 5 minutos

@@ -9,7 +9,7 @@ const fetcDangerIdentificationsCountedByType = async (
   reportType: string
 ) => {
   const { data } = await axiosInstance.get(
-    `/${company}/sms/danger-identifications/counted-by-type?reportType=${reportType}&from=${from}&to=${to}`
+    `/${company}/sms/stats/danger-id-counted-by-type?reportType=${reportType}&from=${from}&to=${to}`
   );
   return data;
 };

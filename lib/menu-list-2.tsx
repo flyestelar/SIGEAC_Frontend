@@ -10,8 +10,10 @@ import {
   BookUser,
   Building2,
   ClipboardCopy,
+  CalendarClock,
   ClipboardList,
   ClipboardPen,
+  ClipboardCheck,
   Clock11,
   ClockArrowUp,
   CreditCardIcon,
@@ -28,6 +30,7 @@ import {
   Plane,
   PlaneIcon,
   Receipt,
+  Settings,
   ScrollText,
   ShieldAlert,
   SquareArrowDown,
@@ -319,131 +322,198 @@ export function getMenuList(pathname: string, currentCompany: Company | null, us
       ],
     },
     {
-      groupLabel: 'SMS',
-      moduleValue: 'sms',
-      menus: [
-        {
-          href: companyPath('/sms'),
-          label: 'Reportes',
-          active: isCompanyPath('/sms/reportes', 'includes'),
-          icon: ClipboardPen,
-          roles: ['ANALISTA_SMS', 'JEFE_SMS', 'SUPERUSER'],
-          submenus: [
-            {
-              href: companyPath('/sms/reportes/reportes_voluntarios'),
-              label: 'Reportes Voluntarios',
-              roles: ['ANALISTA_SMS', 'JEFE_SMS', 'SUPERUSER'],
-              active: isCompanyPath('/sms/reportes/reportes_voluntarios'),
-            },
-            {
-              href: companyPath('/sms/reportes/reportes_obligatorios'),
-              label: 'Reportes Obligatorios',
-              roles: ['ANALISTA_SMS', 'JEFE_SMS', 'SUPERUSER'],
-              active: isCompanyPath('/sms/reportes/reportes_obligatorios'),
-            },
-          ],
-        },
-        {
-          href: companyPath('/sms'),
-          label: 'Gestion de Reportes',
-          active: isCompanyPath('/sms/gestion_reportes', 'includes'),
-          icon: ShieldAlert,
-          roles: ['ANALISTA_SMS', 'JEFE_SMS', 'SUPERUSER'],
-          submenus: [
-            {
-              href: companyPath('/sms/gestion_reportes/peligros_identificados'),
-              label: 'Peligros Identificados',
-              roles: ['ANALISTA_SMS', 'JEFE_SMS', 'SUPERUSER'],
-              active: isCompanyPath('/sms/gestion_reportes/peligros_identificados'),
-            },
-            {
-              href: companyPath('/sms/gestion_reportes/planes_de_mitigacion'),
-              label: 'Planes de Mitigacion',
-              roles: ['ANALISTA_SMS', 'JEFE_SMS', 'SUPERUSER'],
-              active: isCompanyPath('/sms/gestion_reportes/planes_de_mitigacion'),
-            },
-          ],
-        },
-        {
-          href: companyPath('/sms'),
-          label: 'Estadisticas',
-          icon: AreaChartIcon,
-          active: isCompanyPath('/sms/estadisticas', 'includes'),
-          roles: ['ANALISTA_SMS', 'JEFE_SMS', 'SUPERUSER'],
-          submenus: [
-            {
-              href: companyPath('/sms/estadisticas/general'),
-              label: 'General',
-              roles: ['ANALISTA_SMS', 'JEFE_SMS', 'SUPERUSER'],
-              active: isCompanyPath('/sms/estadisticas/general'),
-            },
+            groupLabel: "SMS",
+            moduleValue: "sms",
+            menus: [
+                {
+                    href: `/${currentCompany?.slug}/sms/reportes`,
+                    label: "Reportes",
+                    active: pathname.includes(`/${currentCompany?.slug}/sms/reportes`),
+                    icon: ClipboardPen,
+                    roles: ["ANALISTA_SMS", "JEFE_SMS", "SUPERUSER"],
+                    submenus: [],
+                },
+                {
+                    href: `/${currentCompany?.slug}/sms/gestion_reportes`,
+                    label: "Gestion de Reportes",
+                    active: pathname.includes(
+                        `/${currentCompany?.slug}/sms/gestion_reportes`,
+                    ),
+                    icon: ShieldAlert,
+                    roles: ["ANALISTA_SMS", "JEFE_SMS", "SUPERUSER"],
+                    submenus: [
+                        {
+                            href: `/${currentCompany?.slug}/sms/gestion_reportes/peligros_identificados`,
+                            label: "Peligros Identificados",
+                            roles: ["ANALISTA_SMS", "JEFE_SMS", "SUPERUSER"],
+                            active:
+                                pathname ===
+                                `/${currentCompany?.slug}/sms/gestion_reportes/peligros_identificados`,
+                        },
+                        {
+                            href: `/${currentCompany?.slug}/sms/gestion_reportes/planes_de_mitigacion`,
+                            label: "Planes de Mitigacion",
+                            roles: ["ANALISTA_SMS", "JEFE_SMS", "SUPERUSER"],
+                            active:
+                                pathname ===
+                                `/${currentCompany?.slug}/sms/gestion_reportes/planes_de_mitigacion`,
+                        },
+                    ],
+                },
+                {
+                    href: `/${currentCompany?.slug}/sms/estadisticas`,
+                    label: "Estadisticas",
+                    icon: AreaChartIcon,
+                    active: pathname.includes(
+                        `/${currentCompany?.slug}/sms/estadisticas`,
+                    ),
+                    roles: ["ANALISTA_SMS", "JEFE_SMS", "SUPERUSER"],
+                    submenus: [
+                        {
+                            href: `/${currentCompany?.slug}/sms/estadisticas/general`,
+                            label: "General",
+                            roles: ["ANALISTA_SMS", "JEFE_SMS", "SUPERUSER"],
+                            active:
+                                pathname ===
+                                `/${currentCompany?.slug}/sms/estadisticas/general`,
+                        },
+                        {
+                            href: `/${currentCompany?.slug}/sms/estadisticas/reportes_voluntarios`,
+                            label: "Reportes Voluntarios",
+                            roles: ["ANALISTA_SMS", "JEFE_SMS", "SUPERUSER"],
+                            active:
+                                pathname ===
+                                `/${currentCompany?.slug}/sms/estadisticas/reportes_voluntarios`,
+                        },
+                        {
+                            href: `/${currentCompany?.slug}/sms/estadisticas/reportes_obligatorios`,
+                            label: "Reportes Obligatorios",
+                            roles: ["ANALISTA_SMS", "JEFE_SMS", "SUPERUSER"],
+                            active:
+                                pathname ===
+                                `/${currentCompany?.slug}/sms/estadisticas/reportes_obligatorios`,
+                        },
+                        {
+                            href: `/${currentCompany?.slug}/sms/estadisticas/indicadores_riesgo`,
+                            label: "Indicadores de Riesgo",
+                            roles: ["ANALISTA_SMS", "JEFE_SMS", "SUPERUSER"],
+                            active:
+                                pathname ===
+                                `/${currentCompany?.slug}/sms/estadisticas/indicadores_riesgo`,
+                        },
+                        {
+                            href: `/${currentCompany?.slug}/sms/estadisticas/actividades`,
+                            label: "Actividades",
+                            roles: ["ANALISTA_SMS", "JEFE_SMS", "SUPERUSER"],
+                            active:
+                                pathname ===
+                                `/${currentCompany?.slug}/sms/estadisticas/actividades`,
+                        },
+                    ],
+                },
 
-            {
-              href: companyPath('/sms/estadisticas/reportes_voluntarios'),
-              label: 'Reportes Voluntarios',
-              roles: ['ANALISTA_SMS', 'JEFE_SMS', 'SUPERUSER'],
-              active: isCompanyPath('/sms/estadisticas/reportes_voluntarios'),
-            },
-            {
-              href: companyPath('/sms/estadisticas/reportes_obligatorios'),
-              label: 'Reportes Obligatorios',
-              roles: ['ANALISTA_SMS', 'JEFE_SMS', 'SUPERUSER'],
-              active: isCompanyPath('/sms/estadisticas/reportes_obligatorios'),
-            },
-            {
-              href: companyPath('/sms/estadisticas/indicadores_riesgo'),
-              label: 'Indicadores de Riesgo',
-              roles: ['ANALISTA_SMS', 'JEFE_SMS', 'SUPERUSER'],
-              active: isCompanyPath('/sms/estadisticas/indicadores_riesgo'),
-            },
-          ],
+                // {
+                //   href: `/${currentCompany?.slug}/sms/certificados`,
+                //   label: "Certificados",
+                //   active: pathname.includes(`/${currentCompany?.slug}/sms/certificados`),
+                //   icon: Award,
+                //   roles: ["SUPERUSER", "JEFE_SMS", "ANALISTA_SMS"],
+                //   submenus: [],
+                // },
+
+                {
+                    href: "",
+                    label: "Promoción",
+                    active: pathname.includes(`/${currentCompany?.slug}/sms/promocion`),
+                    icon: CalendarClock,
+                    roles: ["SUPERUSER", "JEFE_SMS", "ANALISTA_SMS"],
+                    submenus: [
+                        {
+                            href: `/${currentCompany?.slug}/sms/promocion/actividades/calendario`,
+                            label: "Calendario Actividades",
+                            roles: ["SUPERUSER", "JEFE_SMS", "ANALISTA_SMS"],
+                            active:
+                                pathname ===
+                                `/${currentCompany?.slug}/sms/promocion/actividades/calendario`,
+                        },
+                        {
+                            href: `/${currentCompany?.slug}/sms/promocion/actividades`,
+                            label: "Actividades",
+                            roles: ["SUPERUSER", "JEFE_SMS", "ANALISTA_SMS"],
+                            active:
+                                pathname ===
+                                `/${currentCompany?.slug}/sms/promocion/actividades`,
+                        },
+                        {
+                            href: `/${currentCompany?.slug}/sms/promocion/capacitacion_personal`,
+                            label: "Capacitación",
+                            roles: ["SUPERUSER", "JEFE_SMS", "ANALISTA_SMS"],
+                            active:
+                                pathname ===
+                                `/${currentCompany?.slug}/sms/promocion/capacitacion_personal`,
+                        },
+                        // {
+                        //   href: `/${currentCompany?.slug}/sms/promocion/boletines`,
+                        //   label: "Boletines",
+                        //   roles: ["SUPERUSER", "JEFE_SMS", "ANALISTA_SMS"],
+                        //   active:
+                        //     pathname ===
+                        //     `/${currentCompany?.slug}/sms/promocion/boletines`,
+                        // },
+                    ],
+                },
+                {
+                    href: "",
+                    label: "Gestión de Encuestas",
+                    active: pathname.includes(
+                        `/${currentCompany?.slug}/sms/gestion_encuestas`,
+                    ),
+                    icon: ClipboardCheck,
+                    roles: ["SUPERUSER", "JEFE_SMS", "ANALISTA_SMS"],
+                    submenus: [
+                        {
+                            href: `/${currentCompany?.slug}/sms/gestion_encuestas/crear`,
+                            label: "Crear",
+                            roles: ["SUPERUSER", "JEFE_SMS", "ANALISTA_SMS"],
+                            active:
+                                pathname ===
+                                `/${currentCompany?.slug}/sms/gestion_encuestas/crear`,
+                        },
+                        {
+                            href: `/${currentCompany?.slug}/sms/gestion_encuestas/encuestas`,
+                            label: "Lista",
+                            roles: ["SUPERUSER", "JEFE_SMS", "ANALISTA_SMS"],
+                            active:
+                                pathname ===
+                                `/${currentCompany?.slug}/sms/gestion_encuestas/encuestas`,
+                        },
+                    ],
+                },
+                {
+                    href: "",
+                    label: "Ajustes SMS",
+                    active: pathname.includes(`/${currentCompany?.slug}/sms/ajustes`),
+                    icon: Settings,
+                    roles: ["SUPERUSER", "JEFE_SMS", "ANALISTA_SMS"],
+                    submenus: [
+                        {
+                            href: `/${currentCompany?.slug}/sms/ajustes/encuesta`,
+                            label: "Encuesta",
+                            roles: ["SUPERUSER", "JEFE_SMS", "ANALISTA_SMS"],
+                            active:
+                                pathname === `/${currentCompany?.slug}/sms/ajustes/encuesta`,
+                        },
+                        {
+                            href: `/${currentCompany?.slug}/sms/ajustes/boletin`,
+                            label: "Boletines",
+                            roles: ["SUPERUSER", "JEFE_SMS", "ANALISTA_SMS"],
+                            active:
+                                pathname === `/${currentCompany?.slug}/sms/ajustes/boletin`,
+                        },
+                    ],
+                },
+            ],
         },
-        {
-          href: '',
-          label: 'Planificacion',
-          active: isCompanyPath('/sms/planificacion', 'includes'),
-          icon: Activity,
-          roles: ['SUPERUSER'],
-          submenus: [
-            {
-              href: companyPath('/sms/planificacion/actividades'),
-              label: 'Actividades SMS',
-              roles: ['SUPERUSER'],
-              active: isCompanyPath('/sms/planificacion/actividades'),
-            },
-            {
-              href: companyPath('/sms/planificacion/capacitacion_personal'),
-              label: 'Capacitacion SMS',
-              roles: ['SUPERUSER'],
-              active: isCompanyPath('/sms/planificacion/capacitacion_personal'),
-            },
-          ],
-        },
-        {
-          href: companyPath('/sms'),
-          label: 'Nuevo Reporte',
-          active:
-            isCompanyPath('/sms/reportes/reportes_voluntarios/nuevo_reporte') ||
-            isCompanyPath('/sms/reportes/reportes_obligatorios/nuevo_reporte'),
-          icon: ClipboardPen,
-          roles: [],
-          submenus: [
-            {
-              href: companyPath('/sms/reportes/reportes_voluntarios/nuevo_reporte'),
-              label: 'Reportes Voluntarios',
-              roles: [],
-              active: isCompanyPath('/sms/reportes/reportes_voluntarios/nuevo_reporte'),
-            },
-            {
-              href: companyPath('/sms/reportes/reportes_obligatorios/nuevo_reporte'),
-              label: 'Reportes Obligatorios',
-              roles: [],
-              active: isCompanyPath('/sms/reportes/reportes_obligatorios/nuevo_reporte'),
-            },
-          ],
-        },
-      ],
-    },
     {
       groupLabel: 'Compras',
       moduleValue: 'purchases',
@@ -709,6 +779,12 @@ export function getMenuList(pathname: string, currentCompany: Company | null, us
               href: '/ajustes/globales/condiciones',
               label: 'Condiciones',
               active: pathname === '/ajustes/globales/condiciones',
+            },
+            {
+              href: "/ajustes/globales/fuentes_informacion",
+              label: "Fuentes de Informacion",
+              active: pathname === "/ajustes/globales/fuentes_informacion",
+              roles: ["JEFE_SMS", "ANALISTA_SMS", "SUPERUSER"],
             },
           ],
         },

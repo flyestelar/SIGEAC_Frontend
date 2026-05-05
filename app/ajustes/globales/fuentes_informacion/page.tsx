@@ -3,11 +3,13 @@
 import { ContentLayout } from "@/components/layout/ContentLayout";
 import LoadingPage from "@/components/misc/LoadingPage";
 import { useGetInformationSources } from "@/hooks/sms/useGetInformationSource";
+import { useCompanyStore } from "@/stores/CompanyStore";
 import { columns } from "./columns";
 import { DataTable } from "./data-table";
 
 const InformationSourcePage = () => {
-  const { data, isLoading, isError } = useGetInformationSources();
+  const { selectedCompany } = useCompanyStore();
+  const { data, isLoading, isError } = useGetInformationSources(selectedCompany?.slug);
 
   if (isLoading) {
     return <LoadingPage />;

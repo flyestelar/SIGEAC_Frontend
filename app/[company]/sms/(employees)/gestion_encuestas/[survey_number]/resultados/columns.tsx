@@ -1,0 +1,99 @@
+"use client";
+
+import { ColumnDef } from "@tanstack/react-table";
+
+import { DataTableColumnHeader } from "@/components/tables/DataTableHeader";
+
+import { Badge } from "@/components/ui/badge";
+import { ResponsesBySurvey } from "@/hooks/sms/survey/useGetResponsesBySurvey";
+
+export const columns: ColumnDef<ResponsesBySurvey>[] = [
+  {
+    accessorKey: "survey_number",
+    header: ({ column }) => (
+      <DataTableColumnHeader
+        filter
+        column={column}
+        title="Numero de Encuesta"
+      />
+    ),
+    meta: { title: "Numero de Encuesta" },
+    cell: ({ row }) => {
+      return (
+        <div className="flex justify-center">{row.original.survey_number}</div>
+      );
+    },
+  },
+  // {
+  //   accessorKey: "report_date",
+  //   header: ({ column }) => (
+  //     <DataTableColumnHeader filter column={column} title="Fecha del reporte" />
+  //   ),
+  //   cell: ({ row }) => {
+  //     return (
+  //       <p className="font-medium text-center">
+  //         {row.original.report_date
+  //           ? dateFormat(row.original.report_date, "PPP")
+  //           : "N/A"}
+  //       </p>
+  //     );
+  //   },
+  // },
+  {
+    accessorKey: "survey_type",
+    header: ({ column }) => (
+      <DataTableColumnHeader filter column={column} title="Tipo" />
+    ),
+    cell: ({ row }) => {
+      const type = row.original.survey_type;
+
+      const displayText =
+        type === "SURVEY" ? "Encuesta" : type === "QUIZ" ? "Trivia" : "N/A";
+
+      return <p className="font-medium text-center">{displayText}</p>;
+    },
+  },
+  {
+    accessorKey: "questions_answered",
+    header: ({ column }) => (
+      <DataTableColumnHeader filter column={column} title="Respuestas" />
+    ),
+    meta: { title: "Numero de Respuestas" },
+    cell: ({ row }) => {
+      return (
+        <div className="flex justify-center">
+          <Badge className="bg-blue-500">{row.original.questions_answered}</Badge>
+        </div>
+      );
+    },
+  },
+  {
+    accessorKey: "email",
+    header: ({ column }) => (
+      <DataTableColumnHeader filter column={column} title="Usuario" />
+    ),
+    cell: ({ row }) => {
+      // Mostrar email para usuarios anónimos, user_id para usuarios autenticados
+      const identifier = row.original.email ?? row.original.user;
+      return (
+        <div className="flex justify-center">
+          <a
+            href={`/transmandu/sms/gestion_encuestas/${row.original.survey_number}/resultados/${identifier}`}
+            className="font-bold hover:scale-105 hover:no-underline transition-colors duration-200 cursor-pointer"
+          >
+            {identifier ?? "N/A"}
+          </a>
+        </div>
+      );
+    },
+  },
+  {
+    id: "actions",
+    cell: ({ row }) => {
+      // const surveyData = row.original;
+      // return (
+      //   <SurveyDropdownActions surveyData={surveyData}></SurveyDropdownActions>
+      // );
+    },
+  },
+];

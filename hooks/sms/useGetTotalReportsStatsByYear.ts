@@ -8,7 +8,7 @@ const fetcVoluntaryReportStatsByYear = async (
   company?: string
 ) => {
   const { data } = await axiosInstance.get(
-    `/${company}/sms/total-reports-stats-by-year?from=${from}&to=${to}`
+    `/${company}/sms/stats/total-reports-by-year?from=${from}&to=${to}`
   );
   return data;
 };

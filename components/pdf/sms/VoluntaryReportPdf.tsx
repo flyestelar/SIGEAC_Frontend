@@ -1,5 +1,6 @@
 import { dateFormat } from "@/lib/utils";
-import { MitigationTable, VoluntaryReport } from "@/types";
+import { MitigationTable } from "@/types";
+import { VoluntaryReportResource } from "@/.gen/api/types.gen";
 import {
   Document,
   Image as PDFImage,
@@ -308,7 +309,7 @@ const Header = () => (
 );
 
 interface MyDocumentProps {
-  report: VoluntaryReport;
+  report: VoluntaryReportResource;
   identification?: MitigationTable;
 }
 
@@ -366,7 +367,7 @@ const MyDocument = ({ report, identification }: MyDocumentProps) => (
 
         <View style={{ ...styles.tableCell, width: "20%" }}>
           <Text style={styles.cellText}>
-            {dateFormat(report.identification_date, "dd-MM-yyyy")}
+            {report.identification_date ? dateFormat(report.identification_date, "dd-MM-yyyy") : "N/A"}
           </Text>
         </View>
 

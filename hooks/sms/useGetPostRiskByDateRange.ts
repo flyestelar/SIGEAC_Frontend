@@ -9,7 +9,7 @@ const fetchPostRiskCountByDateRange = async (
   reportType: string
 ): Promise<pieChartData[]> => {
   const { data } = await axiosInstance.get(
-    `/${company}/sms/post-risk-count-by-date-range?reportType=${reportType}&from=${from}&to=${to}`
+    `/${company}/sms/stats/post-risk-by-date-range?reportType=${reportType}&from=${from}&to=${to}`
   );
   return data;
 };

@@ -1,4 +1,5 @@
 import axiosInstance from "@/lib/axios";
+import { useCompanyStore } from "@/stores/CompanyStore";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
@@ -17,6 +18,14 @@ interface SMSActivityAttendanceData {
   };
 }
 
+interface SMSActivityAttendaceData {
+  activity_id: string;
+  employees_list: {
+    addedEmployees: EmployeeSelected[];
+    removedEmployees: EmployeeSelected[];
+  };
+}
+
 export const useCreateSMSActivityAttendance = () => {
   const queryClient = useQueryClient();
   const createMutation = useMutation({
@@ -26,7 +35,7 @@ export const useCreateSMSActivityAttendance = () => {
       activity_id,
     }: SMSActivityAttendanceData) => {
       const response = await axiosInstance.post(
-        `/${company}/sms/activities/${activity_id}/enrollements`,
+        `/${company}/sms/activities/${activity_id}/enrollments`,
         data,
         {
           headers: {
@@ -36,12 +45,25 @@ export const useCreateSMSActivityAttendance = () => {
       );
       return response.data;
     },
-    onSuccess: () => {
+    onSuccess: (_, data) => {
       queryClient.invalidateQueries({ queryKey: ["sms-activity-attendance"] });
-      queryClient.invalidateQueries({ queryKey: ["enrollment-status"] });
+      queryClient.invalidateQueries({ queryKey: ["enrollment-status-by-activity",data.activity_id] });
       queryClient.invalidateQueries({
         queryKey: ["enrolled-employees"],
       });
+
+      queryClient.invalidateQueries({
+        queryKey: ["sms-activity", data.activity_id],
+      });
+
+      queryClient.invalidateQueries({
+        queryKey: ["sms-activity-attendance-list", data.activity_id],
+      });
+
+      queryClient.invalidateQueries({
+        queryKey: ["sms-activity-attendance-stats", data.activity_id],
+      });
+
       toast.success("Actualizado!", {
         description: `Actualizacion de personas en la actividad`,
       });
@@ -55,5 +77,51 @@ export const useCreateSMSActivityAttendance = () => {
   });
   return {
     createSMSActivityAttendance: createMutation,
+  };
+};
+
+export const useMarkSMSActivityAttendance = () => {
+  const { selectedCompany } = useCompanyStore();
+  const queryClient = useQueryClient();
+  const markSMSActivityAttendanceMutation = useMutation({
+    mutationFn: async ({
+      activity_id,
+      employees_list,
+    }: SMSActivityAttendaceData) => {
+      await axiosInstance.patch(
+        `/${selectedCompany?.slug}/sms/activities/mark-attendance/${activity_id}`,
+        employees_list
+      );
+    },
+    onSuccess: (_, data) => {
+      queryClient.invalidateQueries({
+        queryKey: ["sms-activity", data.activity_id],
+      });
+
+      queryClient.invalidateQueries({
+        queryKey: ["sms-activity-attendance-list", data.activity_id],
+      });
+
+      queryClient.invalidateQueries({
+        queryKey: ["sms-activity-attendance-stats", data.activity_id],
+      });
+      queryClient.invalidateQueries({ queryKey: ["sms-activities"] });
+      
+      queryClient.invalidateQueries({
+        queryKey: ["sms-activity-attendance-status", data.activity_id],
+      });
+      toast.success("¡Actualizado!", {
+        description: `La asistancia ha sido actualizada correctamente.`,
+      });
+    },
+    onError: (error) => {
+      toast.error("Oops!", {
+        description: "No se pudo actualizar la asistencia...",
+      });
+      console.log(error);
+    },
+  });
+  return {
+    markSMSActivityAttendance: markSMSActivityAttendanceMutation,
   };
 };
