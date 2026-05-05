@@ -1,21 +1,26 @@
 'use client';
 
-import { AircraftComponentSlotResource, HardTimeIntervalResource, MaintenanceControlResource } from '@api/types';
+import {
+  AircraftComponentSlotResource,
+  AirworthinessDirectiveResource,
+  HardTimeIntervalResource,
+  MaintenanceControlResource,
+} from '@api/types';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
 import { ClipboardList, FileCheck2, Loader2, MapPinned, ShieldAlert, ShieldCheck, Wrench } from 'lucide-react';
+import { useFormContext, useWatch } from 'react-hook-form';
+import { WorkOrderFormValues } from './WorkOrderCreator';
 
 interface SelectionSummaryProps {
   controls: MaintenanceControlResource[];
   selectedControls: Map<number, { taskCardIds: Set<number> }>;
   totalTaskCards: number;
-  hardTimeIntervalDirectory: Map<
-    number,
-    { interval: HardTimeIntervalResource; slot: AircraftComponentSlotResource }
-  >;
+  hardTimeIntervalDirectory: Map<number, { interval: HardTimeIntervalResource; slot: AircraftComponentSlotResource }>;
   selectedHardTimeIntervals: Set<number>;
+  directives: AirworthinessDirectiveResource[];
   onSubmit: () => void;
   isSubmitting: boolean;
   onCancel: () => void;
@@ -27,10 +32,17 @@ const SelectionSummary = ({
   totalTaskCards,
   hardTimeIntervalDirectory,
   selectedHardTimeIntervals,
+  directives,
   onSubmit,
   isSubmitting,
   onCancel,
 }: SelectionSummaryProps) => {
+  const { control } = useFormContext<WorkOrderFormValues>();
+  const selectedDirectiveIdss = useWatch({
+    control,
+    name: 'directive_ids',
+  });
+  const selectedDirectiveIds = new Set(selectedDirectiveIdss);
   const selectedControlEntries = controls
     .filter((c) => selectedControls.has(c.id))
     .map((c) => ({ control: c, item: selectedControls.get(c.id)! }));
@@ -39,7 +51,9 @@ const SelectionSummary = ({
     .map((id) => hardTimeIntervalDirectory.get(id))
     .filter((entry): entry is NonNullable<typeof entry> => entry !== undefined);
 
-  const totalSelected = totalTaskCards + selectedHardTimeEntries.length;
+  const selectedDirectiveEntries = directives.filter((d) => selectedDirectiveIds.has(d.id));
+
+  const totalSelected = totalTaskCards + selectedHardTimeEntries.length + selectedDirectiveEntries.length;
 
   const readinessLabel = totalSelected === 0 ? 'Sin selección' : 'Listo para crear';
 
@@ -59,18 +73,23 @@ const SelectionSummary = ({
 
         <div className="space-y-4 p-4">
           {/* Counters */}
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-3 gap-2">
             <div className="rounded-md border bg-muted/20 px-3 py-2">
-              <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">Mantenimiento</p>
+              <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">Mant.</p>
               <p className="mt-0.5 font-mono text-lg font-semibold tabular-nums">{totalTaskCards}</p>
               <p className="text-[10px] text-muted-foreground">
-                {selectedControlEntries.length} control{selectedControlEntries.length !== 1 ? 'es' : ''}
+                {selectedControlEntries.length} ctrl{selectedControlEntries.length !== 1 ? 's' : ''}
               </p>
             </div>
             <div className="rounded-md border bg-muted/20 px-3 py-2">
-              <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">Hard Time</p>
+              <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">H. Time</p>
               <p className="mt-0.5 font-mono text-lg font-semibold tabular-nums">{selectedHardTimeEntries.length}</p>
               <p className="text-[10px] text-muted-foreground">intervalo(s)</p>
+            </div>
+            <div className="rounded-md border bg-muted/20 px-3 py-2">
+              <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">AD</p>
+              <p className="mt-0.5 font-mono text-lg font-semibold tabular-nums">{selectedDirectiveEntries.length}</p>
+              <p className="text-[10px] text-muted-foreground">directiva(s)</p>
             </div>
           </div>
 
@@ -163,12 +182,45 @@ const SelectionSummary = ({
                     </div>
                   </div>
                 )}
+
+                {selectedDirectiveEntries.length > 0 && (
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between px-1">
+                      <p className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+                        <ShieldCheck className="size-3" />
+                        Directivas AD
+                      </p>
+                      <Badge variant="outline" className="text-[10px] tabular-nums">
+                        {selectedDirectiveEntries.length}
+                      </Badge>
+                    </div>
+                    <div className="space-y-1.5">
+                      {selectedDirectiveEntries.map((directive) => (
+                        <div key={directive.id} className="rounded-md border bg-background px-3 py-2">
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="font-mono text-sm font-semibold">{directive.ad_number}</span>
+                            <Badge variant="outline" className="shrink-0 text-[10px] text-muted-foreground">
+                              {directive.authority}
+                            </Badge>
+                          </div>
+                          {directive.subject_description && (
+                            <p className="mt-0.5 line-clamp-1 text-[11px] text-muted-foreground">
+                              {directive.subject_description}
+                            </p>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             </ScrollArea>
           ) : (
             <div className="flex flex-col items-center justify-center gap-1.5 rounded-md border border-dashed py-8 text-center text-muted-foreground">
               <ClipboardList className="size-6 opacity-30" />
-              <p className="text-xs">Seleccione controles de mantenimiento o hard time para ver el resumen.</p>
+              <p className="text-xs">
+                Seleccione controles de mantenimiento, hard time o directivas para ver el resumen.
+              </p>
             </div>
           )}
         </div>

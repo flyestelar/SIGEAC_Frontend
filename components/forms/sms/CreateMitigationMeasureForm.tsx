@@ -212,19 +212,9 @@ export default function CreateMitigationMeasureForm({
                       selected={field.value}
                       onSelect={field.onChange}
                       initialFocus
-                      fromYear={2000} // Año mínimo que se mostrará
-                      toYear={new Date().getFullYear()} // Año máximo (actual)
-                      captionLayout="dropdown-buttons" // Selectores de año/mes
-                      components={{
-                        Dropdown: (props) => (
-                          <select
-                            {...props}
-                            className="bg-popover text-popover-foreground"
-                          >
-                            {props.children}
-                          </select>
-                        ),
-                      }}
+                      startMonth={new Date(1980, 0)} // Año mínimo que se mostrará
+                      endMonth={new Date(new Date().getFullYear(), 11)} // Año máximo (actual)
+                      captionLayout="dropdown" // Selectores de año/mes
                     />
                   </PopoverContent>
                 </Popover>
@@ -268,17 +258,7 @@ export default function CreateMitigationMeasureForm({
                       initialFocus
                       fromYear={2000}
                       toYear={new Date().getFullYear()}
-                      captionLayout="dropdown-buttons"
-                      components={{
-                        Dropdown: (props) => (
-                          <select
-                            {...props}
-                            className="bg-popover text-popover-foreground"
-                          >
-                            {props.children}
-                          </select>
-                        ),
-                      }}
+                      captionLayout="dropdown"
                     />
                   </PopoverContent>
                 </Popover>

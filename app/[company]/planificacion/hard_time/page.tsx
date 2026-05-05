@@ -1,14 +1,7 @@
-import nextDynamic from 'next/dynamic';
+"use client";
 
-import LoadingPage from '@/components/misc/LoadingPage';
+import { HardTimeDashboard } from './_components/hard-time-dashboard';
 
-const HardTimeDashboard = nextDynamic(
-  () => import('./_components/hard-time-dashboard').then((module) => module.HardTimeDashboard),
-  {
-    ssr: false,
-    loading: () => <LoadingPage />,
-  },
-);
 
 export const dynamic = 'force-dynamic';
 

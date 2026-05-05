@@ -3,7 +3,8 @@ import { ThemeToggler } from '@/components/layout/ThemeToggler'
 import { LoginRedirect } from '@/components/misc/LoginRedirect'
 import Logo from '@/components/misc/Logo'
 
-const Login = ({ searchParams }: { searchParams: { from?: string } }) => {
+const Login = async (props: { searchParams: Promise<{ from?: string }> }) => {
+  const searchParams = await props.searchParams;
   const redirectTo = searchParams.from;
 
   return (

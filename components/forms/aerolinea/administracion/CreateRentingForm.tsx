@@ -163,19 +163,9 @@ export function CreateRentingForm({ onClose }: FormProps) {
                         date > new Date() || date < new Date("1980-01-01")
                       }
                       initialFocus
-                      fromYear={1980} // Año mínimo que se mostrará
-                      toYear={new Date().getFullYear()} // Año máximo (actual)
-                      captionLayout="dropdown-buttons" // Selectores de año/mes
-                      components={{
-                        Dropdown: (props) => (
-                          <select
-                            {...props}
-                            className="bg-popover text-popover-foreground"
-                          >
-                            {props.children}
-                          </select>
-                        ),
-                      }}
+                      startMonth={new Date(1980, 0)} // Año mínimo que se mostrará
+                      endMonth={new Date(new Date().getFullYear(), 11)} // Año máximo (actual)
+                      captionLayout="dropdown" // Selectores de año/mes
                     />
                   </PopoverContent>
                 </Popover>
@@ -220,19 +210,9 @@ export function CreateRentingForm({ onClose }: FormProps) {
                           return date < startDate;
                         }}
                         initialFocus
-                        fromYear={2000}
+                        startMonth={new Date(2000, 0)}
                         toYear={new Date().getFullYear() + 1}
-                        captionLayout="dropdown-buttons"
-                        components={{
-                          Dropdown: (props) => (
-                            <select
-                              {...props}
-                              className="bg-popover text-popover-foreground"
-                            >
-                              {props.children}
-                            </select>
-                          ),
-                        }}
+                        captionLayout="dropdown"
                       />
                     </PopoverContent>
                   </Popover>

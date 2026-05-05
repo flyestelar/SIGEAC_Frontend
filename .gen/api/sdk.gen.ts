@@ -129,6 +129,54 @@ import type {
   AircraftUpdateData,
   AircraftUpdateErrors,
   AircraftUpdateResponses,
+  AirworthinessDirectiveApplicabilitiesDestroyData,
+  AirworthinessDirectiveApplicabilitiesDestroyErrors,
+  AirworthinessDirectiveApplicabilitiesDestroyResponses,
+  AirworthinessDirectiveApplicabilitiesIndexData,
+  AirworthinessDirectiveApplicabilitiesIndexErrors,
+  AirworthinessDirectiveApplicabilitiesIndexResponses,
+  AirworthinessDirectiveApplicabilitiesShowData,
+  AirworthinessDirectiveApplicabilitiesShowErrors,
+  AirworthinessDirectiveApplicabilitiesShowResponses,
+  AirworthinessDirectiveApplicabilitiesStoreData,
+  AirworthinessDirectiveApplicabilitiesStoreErrors,
+  AirworthinessDirectiveApplicabilitiesStoreResponses,
+  AirworthinessDirectiveApplicabilitiesUpdateData,
+  AirworthinessDirectiveApplicabilitiesUpdateErrors,
+  AirworthinessDirectiveApplicabilitiesUpdateResponses,
+  AirworthinessDirectiveComplianceControlsDestroyData,
+  AirworthinessDirectiveComplianceControlsDestroyErrors,
+  AirworthinessDirectiveComplianceControlsDestroyResponses,
+  AirworthinessDirectiveComplianceControlsStoreData,
+  AirworthinessDirectiveComplianceControlsStoreErrors,
+  AirworthinessDirectiveComplianceControlsStoreExecutionData,
+  AirworthinessDirectiveComplianceControlsStoreExecutionErrors,
+  AirworthinessDirectiveComplianceControlsStoreExecutionResponses,
+  AirworthinessDirectiveComplianceControlsStoreResponses,
+  AirworthinessDirectiveComplianceControlsUpdateData,
+  AirworthinessDirectiveComplianceControlsUpdateErrors,
+  AirworthinessDirectiveComplianceControlsUpdateResponses,
+  AirworthinessDirectivesComplianceControlsData,
+  AirworthinessDirectivesComplianceControlsErrors,
+  AirworthinessDirectivesComplianceControlsResponses,
+  AirworthinessDirectivesComplianceRecordsData,
+  AirworthinessDirectivesComplianceRecordsErrors,
+  AirworthinessDirectivesComplianceRecordsResponses,
+  AirworthinessDirectivesDestroyData,
+  AirworthinessDirectivesDestroyErrors,
+  AirworthinessDirectivesDestroyResponses,
+  AirworthinessDirectivesIndexData,
+  AirworthinessDirectivesIndexErrors,
+  AirworthinessDirectivesIndexResponses,
+  AirworthinessDirectivesShowData,
+  AirworthinessDirectivesShowErrors,
+  AirworthinessDirectivesShowResponses,
+  AirworthinessDirectivesStoreData,
+  AirworthinessDirectivesStoreErrors,
+  AirworthinessDirectivesStoreResponses,
+  AirworthinessDirectivesUpdateData,
+  AirworthinessDirectivesUpdateErrors,
+  AirworthinessDirectivesUpdateResponses,
   AnalysisCloseReportData,
   AnalysisCloseReportErrors,
   AnalysisCloseReportResponses,
@@ -2255,6 +2303,272 @@ export const aircraftTypesUpdate = <ThrowOnError extends boolean = false>(
     responseType: 'json',
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/aircraft-types/{id}',
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    },
+  });
+
+export const airworthinessDirectiveApplicabilitiesIndex = <ThrowOnError extends boolean = false>(
+  options: Options<AirworthinessDirectiveApplicabilitiesIndexData, ThrowOnError>,
+) =>
+  (options.client ?? client).get<
+    AirworthinessDirectiveApplicabilitiesIndexResponses,
+    AirworthinessDirectiveApplicabilitiesIndexErrors,
+    ThrowOnError
+  >({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/airworthiness-directives/{directiveId}/applicabilities',
+    ...options,
+  });
+
+export const airworthinessDirectiveApplicabilitiesStore = <ThrowOnError extends boolean = false>(
+  options: Options<AirworthinessDirectiveApplicabilitiesStoreData, ThrowOnError>,
+) =>
+  (options.client ?? client).post<
+    AirworthinessDirectiveApplicabilitiesStoreResponses,
+    AirworthinessDirectiveApplicabilitiesStoreErrors,
+    ThrowOnError
+  >({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/airworthiness-directives/{directiveId}/applicabilities',
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    },
+  });
+
+export const airworthinessDirectiveApplicabilitiesDestroy = <ThrowOnError extends boolean = false>(
+  options: Options<AirworthinessDirectiveApplicabilitiesDestroyData, ThrowOnError>,
+) =>
+  (options.client ?? client).delete<
+    AirworthinessDirectiveApplicabilitiesDestroyResponses,
+    AirworthinessDirectiveApplicabilitiesDestroyErrors,
+    ThrowOnError
+  >({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/airworthiness-directives/{directiveId}/applicabilities/{applicabilityId}',
+    ...options,
+  });
+
+export const airworthinessDirectiveApplicabilitiesShow = <ThrowOnError extends boolean = false>(
+  options: Options<AirworthinessDirectiveApplicabilitiesShowData, ThrowOnError>,
+) =>
+  (options.client ?? client).get<
+    AirworthinessDirectiveApplicabilitiesShowResponses,
+    AirworthinessDirectiveApplicabilitiesShowErrors,
+    ThrowOnError
+  >({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/airworthiness-directives/{directiveId}/applicabilities/{applicabilityId}',
+    ...options,
+  });
+
+export const airworthinessDirectiveApplicabilitiesUpdate = <ThrowOnError extends boolean = false>(
+  options: Options<AirworthinessDirectiveApplicabilitiesUpdateData, ThrowOnError>,
+) =>
+  (options.client ?? client).put<
+    AirworthinessDirectiveApplicabilitiesUpdateResponses,
+    AirworthinessDirectiveApplicabilitiesUpdateErrors,
+    ThrowOnError
+  >({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/airworthiness-directives/{directiveId}/applicabilities/{applicabilityId}',
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    },
+  });
+
+export const airworthinessDirectiveComplianceControlsDestroy = <ThrowOnError extends boolean = false>(
+  options: Options<AirworthinessDirectiveComplianceControlsDestroyData, ThrowOnError>,
+) =>
+  (options.client ?? client).delete<
+    AirworthinessDirectiveComplianceControlsDestroyResponses,
+    AirworthinessDirectiveComplianceControlsDestroyErrors,
+    ThrowOnError
+  >({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/airworthiness-directives/{directiveId}/applicabilities/{applicabilityId}/compliance-control',
+    ...options,
+  });
+
+export const airworthinessDirectiveComplianceControlsStore = <ThrowOnError extends boolean = false>(
+  options: Options<AirworthinessDirectiveComplianceControlsStoreData, ThrowOnError>,
+) =>
+  (options.client ?? client).post<
+    AirworthinessDirectiveComplianceControlsStoreResponses,
+    AirworthinessDirectiveComplianceControlsStoreErrors,
+    ThrowOnError
+  >({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/airworthiness-directives/{directiveId}/applicabilities/{applicabilityId}/compliance-control',
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    },
+  });
+
+export const airworthinessDirectiveComplianceControlsUpdate = <ThrowOnError extends boolean = false>(
+  options: Options<AirworthinessDirectiveComplianceControlsUpdateData, ThrowOnError>,
+) =>
+  (options.client ?? client).put<
+    AirworthinessDirectiveComplianceControlsUpdateResponses,
+    AirworthinessDirectiveComplianceControlsUpdateErrors,
+    ThrowOnError
+  >({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/airworthiness-directives/{directiveId}/applicabilities/{applicabilityId}/compliance-control',
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    },
+  });
+
+export const airworthinessDirectiveComplianceControlsStoreExecution = <ThrowOnError extends boolean = false>(
+  options: Options<AirworthinessDirectiveComplianceControlsStoreExecutionData, ThrowOnError>,
+) =>
+  (options.client ?? client).post<
+    AirworthinessDirectiveComplianceControlsStoreExecutionResponses,
+    AirworthinessDirectiveComplianceControlsStoreExecutionErrors,
+    ThrowOnError
+  >({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/airworthiness-directives/{directiveId}/applicabilities/{applicabilityId}/compliance-records',
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    },
+  });
+
+export const airworthinessDirectivesComplianceControls = <ThrowOnError extends boolean = false>(
+  options: Options<AirworthinessDirectivesComplianceControlsData, ThrowOnError>,
+) =>
+  (options.client ?? client).get<
+    AirworthinessDirectivesComplianceControlsResponses,
+    AirworthinessDirectivesComplianceControlsErrors,
+    ThrowOnError
+  >({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/airworthiness-directives/{id}/compliance-controls',
+    ...options,
+  });
+
+export const airworthinessDirectivesComplianceRecords = <ThrowOnError extends boolean = false>(
+  options: Options<AirworthinessDirectivesComplianceRecordsData, ThrowOnError>,
+) =>
+  (options.client ?? client).get<
+    AirworthinessDirectivesComplianceRecordsResponses,
+    AirworthinessDirectivesComplianceRecordsErrors,
+    ThrowOnError
+  >({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/airworthiness-directives/{id}/compliance-records',
+    ...options,
+  });
+
+/**
+ * Display a listing of the resource
+ */
+export const airworthinessDirectivesIndex = <ThrowOnError extends boolean = false>(
+  options?: Options<AirworthinessDirectivesIndexData, ThrowOnError>,
+) =>
+  (options?.client ?? client).get<
+    AirworthinessDirectivesIndexResponses,
+    AirworthinessDirectivesIndexErrors,
+    ThrowOnError
+  >({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/airworthiness-directives',
+    ...options,
+  });
+
+/**
+ * Store a newly created resource in storage
+ */
+export const airworthinessDirectivesStore = <ThrowOnError extends boolean = false>(
+  options: Options<AirworthinessDirectivesStoreData, ThrowOnError>,
+) =>
+  (options.client ?? client).post<
+    AirworthinessDirectivesStoreResponses,
+    AirworthinessDirectivesStoreErrors,
+    ThrowOnError
+  >({
+    ...formDataBodySerializer,
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/airworthiness-directives',
+    ...options,
+    headers: {
+      'Content-Type': null,
+      ...options.headers,
+    },
+  });
+
+/**
+ * Remove the specified resource from storage
+ */
+export const airworthinessDirectivesDestroy = <ThrowOnError extends boolean = false>(
+  options: Options<AirworthinessDirectivesDestroyData, ThrowOnError>,
+) =>
+  (options.client ?? client).delete<
+    AirworthinessDirectivesDestroyResponses,
+    AirworthinessDirectivesDestroyErrors,
+    ThrowOnError
+  >({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/airworthiness-directives/{id}',
+    ...options,
+  });
+
+/**
+ * Display the specified resource
+ */
+export const airworthinessDirectivesShow = <ThrowOnError extends boolean = false>(
+  options: Options<AirworthinessDirectivesShowData, ThrowOnError>,
+) =>
+  (options.client ?? client).get<AirworthinessDirectivesShowResponses, AirworthinessDirectivesShowErrors, ThrowOnError>(
+    {
+      responseType: 'json',
+      security: [{ scheme: 'bearer', type: 'http' }],
+      url: '/airworthiness-directives/{id}',
+      ...options,
+    },
+  );
+
+/**
+ * Update the specified resource in storage
+ */
+export const airworthinessDirectivesUpdate = <ThrowOnError extends boolean = false>(
+  options: Options<AirworthinessDirectivesUpdateData, ThrowOnError>,
+) =>
+  (options.client ?? client).put<
+    AirworthinessDirectivesUpdateResponses,
+    AirworthinessDirectivesUpdateErrors,
+    ThrowOnError
+  >({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/airworthiness-directives/{id}',
     ...options,
     headers: {
       'Content-Type': 'application/json',
@@ -8555,29 +8869,26 @@ export const workOrdersShow = <ThrowOnError extends boolean = false>(
 
 /**
  * Store a newly created resource in storage
- *
- * ⚠️ Cannot generate request documentation: include(D:\ESTELAR\SIGEAC_Backend\vendor\composer/../../app/Models/Planification/WorkOrderTask.php): Failed to open stream: No such file or directory
  */
 export const workOrderTaskEventStore = <ThrowOnError extends boolean = false>(
-  options?: Options<WorkOrderTaskEventStoreData, ThrowOnError>,
+  options: Options<WorkOrderTaskEventStoreData, ThrowOnError>,
 ) =>
-  (options?.client ?? client).post<WorkOrderTaskEventStoreResponses, WorkOrderTaskEventStoreErrors, ThrowOnError>({
+  (options.client ?? client).post<WorkOrderTaskEventStoreResponses, WorkOrderTaskEventStoreErrors, ThrowOnError>({
+    responseType: 'json',
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/{company}/{work_order_task}/store-work-order-task-event',
     ...options,
   });
 
-/**
- * ⚠️ Cannot generate request documentation: include(D:\ESTELAR\SIGEAC_Backend\vendor\composer/../../app/Models/Planification/WorkOrderTask.php): Failed to open stream: No such file or directory
- */
 export const workOrderTaskEventShowEventsByWorkOrderTask = <ThrowOnError extends boolean = false>(
-  options?: Options<WorkOrderTaskEventShowEventsByWorkOrderTaskData, ThrowOnError>,
+  options: Options<WorkOrderTaskEventShowEventsByWorkOrderTaskData, ThrowOnError>,
 ) =>
-  (options?.client ?? client).get<
+  (options.client ?? client).get<
     WorkOrderTaskEventShowEventsByWorkOrderTaskResponses,
     WorkOrderTaskEventShowEventsByWorkOrderTaskErrors,
     ThrowOnError
   >({
+    responseType: 'json',
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/{company}/{work_order_task}/show-events-by-work-order-task',
     ...options,

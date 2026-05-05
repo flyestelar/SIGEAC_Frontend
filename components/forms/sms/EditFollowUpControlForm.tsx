@@ -159,17 +159,7 @@ export function EditFollowUpControlForm({ onClose, initialData }: FormProps) {
                     initialFocus
                     fromYear={2000} // Año mínimo que se mostrará
                     toYear={new Date().getFullYear()} // Año máximo (actual)
-                    captionLayout="dropdown-buttons" // Selectores de año/mes
-                    components={{
-                      Dropdown: (props) => (
-                        <select
-                          {...props}
-                          className="bg-popover text-popover-foreground"
-                        >
-                          {props.children}
-                        </select>
-                      ),
-                    }}
+                    captionLayout="dropdown" // Selectores de año/mes
                   />
                 </PopoverContent>
               </Popover>

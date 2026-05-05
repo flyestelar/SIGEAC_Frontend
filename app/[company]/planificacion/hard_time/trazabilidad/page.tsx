@@ -1,14 +1,5 @@
-import nextDynamic from 'next/dynamic';
-
-import LoadingPage from '@/components/misc/LoadingPage';
-
-const HardTimeTraceabilityClient = nextDynamic(
-  () => import('./_components/hard-time-traceability-client').then((module) => module.HardTimeTraceabilityClient),
-  {
-    ssr: false,
-    loading: () => <LoadingPage />,
-  },
-);
+"use client";
+import { HardTimeTraceabilityClient } from './_components/hard-time-traceability-client';
 
 export const dynamic = 'force-dynamic';
 
