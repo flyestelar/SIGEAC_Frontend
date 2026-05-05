@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useMemo, useState, useCallback, useDeferredValue } from 'react'
+import { useMemo, useState, useCallback, useDeferredValue } from 'react'
 
 import { ContentLayout } from '@/components/layout/ContentLayout'
 import LoadingPage from '@/components/misc/LoadingPage'
@@ -50,28 +50,6 @@ type BaseRow = {
   variant_type?: string
 }
 
-/* ─────────────────────────────────────────────
-   🔥 TABLE MEMO (FIX REAL DE RE-RENDER)
-───────────────────────────────────────────── */
-
-const TableSection = React.memo(function TableSection({
-  columns,
-  data,
-  loading,
-  type,
-  category,
-}: any) {
-  return (
-    <DataTable
-      columns={columns}
-      data={data}
-      loading={loading}
-      type={type}
-      category={category}
-    />
-  )
-})
-
 /* ───────────────────────────────────────────── */
 
 const CostManagementPage = () => {
@@ -92,8 +70,9 @@ const CostManagementPage = () => {
   const { data: generalArticles, isLoading: loadingGeneral } =
     useGetGeneralArticles()
 
-  const isLoading =
-    type === 'ARTICLE' ? loadingArticles : loadingGeneral
+  const isLoading = type === 'ARTICLE' ? loadingArticles : loadingGeneral
+
+  /* ───────────────────────────── DATA BUILD ───────────────────────────── */
 
   const articleData = useMemo<BaseRow[]>(() => {
     if (!warehouseData?.batches) return []
@@ -146,24 +125,15 @@ const CostManagementPage = () => {
     })
   }, [baseData, deferredSearch, type])
 
+  /* ───────────────────────────── COST LOGIC ───────────────────────────── */
+
   const {
     drafts: costDrafts,
     hasChanges,
     onCostChange,
     setDrafts,
     getChangedRows,
-  } = useCostDrafts<BaseRow>({
-    data: filteredData,
-  })
-
-  const changedCount = useMemo(
-    () => getChangedRows().length,
-    [getChangedRows]
-  )
-
-  const resetAll = useCallback(() => {
-    setDrafts({})
-  }, [setDrafts])
+  } = useCostDrafts<BaseRow>({ data: filteredData })
 
   const bulkArticleMutation = useBulkUpdateArticleCost()
   const bulkGeneralMutation = useBulkUpdateGeneralCost()
@@ -183,11 +153,11 @@ const CostManagementPage = () => {
 
     if (type === 'ARTICLE') {
       bulkArticleMutation.mutate(payload, {
-        onSuccess: resetAll,
+        onSuccess: () => setDrafts({}),
       })
     } else {
       bulkGeneralMutation.mutate(payload, {
-        onSuccess: resetAll,
+        onSuccess: () => setDrafts({}),
       })
     }
   }, [
@@ -196,7 +166,7 @@ const CostManagementPage = () => {
     selectedCompany,
     bulkArticleMutation,
     bulkGeneralMutation,
-    resetAll,
+    setDrafts,
   ])
 
   const columns = useMemo(
@@ -209,13 +179,14 @@ const CostManagementPage = () => {
     [type, costDrafts, onCostChange]
   )
 
-  if (isLoading) return <LoadingPage />
+  /* ───────────────────────────── UI ───────────────────────────── */
 
   return (
     <ContentLayout title="Gestión de Costos">
+
       <div className="flex flex-col gap-4">
 
-        {/* HEADER (NO RELEVANTE PARA PERF) */}
+        {/* HEADER SIEMPRE RENDERIZADO */}
         <div className="flex items-center gap-2">
           <BackButton iconOnly variant="secondary" />
 
@@ -246,10 +217,6 @@ const CostManagementPage = () => {
           </span>
         </div>
 
-        <p className="text-xs text-muted-foreground italic">
-          Edición de costos unitarios para artículos y ferretería.
-        </p>
-
         <CostTypeToggle
           type={type}
           setType={setType}
@@ -261,19 +228,23 @@ const CostManagementPage = () => {
 
         <CostSaveBar
           hasChanges={hasChanges}
-          modifiedCount={changedCount}
+          modifiedCount={getChangedRows().length}
           onSave={handleSave}
         />
 
-        <TableSection
-          columns={columns}
-          data={baseData}
-          loading={isLoading}
-          type={type}
-          category={category}
-        />
+        {/* 🔥 SOLO LA TABLA SE ACTUALIZA VISUALMENTE */}
+        {isLoading && filteredData.length === 0 ? (
+          <LoadingPage />
+        ) : (
+          <DataTable
+            columns={columns}
+            data={filteredData}
+            loading={isLoading}
+          />
+        )}
 
       </div>
+
     </ContentLayout>
   )
 }
