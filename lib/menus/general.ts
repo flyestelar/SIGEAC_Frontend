@@ -45,6 +45,13 @@ export function buildGeneralGroup({ pathname, currentCompany }: MenuContext): Gr
                         roles: [],
                         active: pathname === `/${currentCompany?.slug}/sms/certificados`,
                     },
+
+                    {
+                    href: `/${currentCompany?.slug}/general/cursos/resumen`,
+                    label: "Resumen",
+                    roles: [],
+                    active: pathname === `/${currentCompany?.slug}/general/cursos/resumen`,
+                    },
                 ],
             },
             {
