@@ -54,7 +54,7 @@ interface FormProps {
 }
 // { onClose }: FormProps
 // lo de arriba va en prop
-export function CreateVoluntaryReportForm({
+export function CreateGeneralVoluntaryReportForm({
   onClose,
   isEditing,
   initialData,
