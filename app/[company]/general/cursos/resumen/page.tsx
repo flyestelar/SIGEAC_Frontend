@@ -1,19 +1,21 @@
 "use client";
 
 import { useState } from "react";
+import axiosInstance from "@/lib/axios";
 import { ContentLayout } from "@/components/layout/ContentLayout";
 import { useCompanyStore } from "@/stores/CompanyStore";
 import { useGetEmployeesByCompany } from "@/hooks/sistema/empleados/useGetEmployees";
 import { useGetEmployeeTrainingProfile } from "@/hooks/curso/useGetEmployeeTrainingProfile";
 import {
   Loader2, Users, FileText, CheckCircle,
-  XCircle, Search, FileBadge, ChevronDown, ChevronUp, BookOpen, Calendar
+  XCircle, Search, FileBadge, ChevronDown, ChevronUp, BookOpen, Calendar, Eye
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 
 type CourseSummary = {
   key: string;
@@ -85,6 +87,44 @@ const getItemDate = (item: any) => {
   );
 };
 
+const encodeFilePath = (path: string) =>
+  btoa(path).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+
+const openProtectedDocument = async (endpoint: string) => {
+  const documentWindow = window.open("", "_blank");
+
+  try {
+    const response = await axiosInstance.get(endpoint, {
+      responseType: "blob",
+    });
+    const blobUrl = URL.createObjectURL(response.data);
+
+    if (documentWindow) {
+      documentWindow.location.href = blobUrl;
+    } else {
+      window.open(blobUrl, "_blank");
+    }
+
+    window.setTimeout(() => URL.revokeObjectURL(blobUrl), 60_000);
+  } catch (error) {
+    documentWindow?.close();
+    console.error("Error al abrir el documento:", error);
+  }
+};
+
+const getCertificateUrl = (companySlug: string | undefined, document?: string | null) => {
+  if (!companySlug || !document) return null;
+
+  return `/${companySlug}/sms/certificates/serve/${encodeFilePath(document)}`;
+};
+
+const getExamDocumentUrl = (companySlug: string | undefined, documentPath?: string | null) => {
+  if (!companySlug || !documentPath) return null;
+
+  const normalizedPath = documentPath.replace(/^\/+/, "");
+  return `/general/${companySlug}/course-exam-attendance/document/${encodeFilePath(normalizedPath)}`;
+};
+
 const buildCourseSummaries = (profile: any): CourseSummary[] => {
   const courses = new Map<string, CourseSummary>();
 
@@ -141,20 +181,30 @@ const buildCourseSummaries = (profile: any): CourseSummary[] => {
   });
 };
 
-const CourseSummaryCard = ({ course }: { course: CourseSummary }) => (
+const CourseSummaryCard = ({
+  course,
+  companySlug,
+  showHeader = true,
+}: {
+  course: CourseSummary;
+  companySlug?: string;
+  showHeader?: boolean;
+}) => (
   <div className="border border-gray-200 dark:border-gray-800 rounded-lg bg-white dark:bg-[#0b1120] overflow-hidden">
-    <div className="bg-gray-50/50 dark:bg-gray-800/30 px-4 py-3 border-b border-gray-200 dark:border-gray-800 flex flex-col md:flex-row md:items-center md:justify-between gap-2">
-      <h3 className="font-semibold flex items-center gap-2 text-gray-800 dark:text-gray-200">
-        <BookOpen className="w-4 h-4 text-blue-500" />
-        {course.name}
-      </h3>
-      {course.date && (
-        <span className="text-xs text-muted-foreground flex items-center gap-1">
-          <Calendar className="w-3.5 h-3.5" />
-          {format(course.date, "dd/MM/yyyy")}
-        </span>
-      )}
-    </div>
+    {showHeader && (
+      <div className="bg-gray-50/50 dark:bg-gray-800/30 px-4 py-3 border-b border-gray-200 dark:border-gray-800 flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+        <h3 className="font-semibold flex items-center gap-2 text-gray-800 dark:text-gray-200">
+          <BookOpen className="w-4 h-4 text-blue-500" />
+          {course.name}
+        </h3>
+        {course.date && (
+          <span className="text-xs text-muted-foreground flex items-center gap-1">
+            <Calendar className="w-3.5 h-3.5" />
+            {format(course.date, "dd/MM/yyyy")}
+          </span>
+        )}
+      </div>
+    )}
 
     <div className="p-4 grid grid-cols-1 lg:grid-cols-2 gap-5">
       <div>
@@ -166,9 +216,10 @@ const CourseSummaryCard = ({ course }: { course: CourseSummary }) => (
           <div className="space-y-3">
             {course.certificates.map((cert: any, index: number) => {
               const issueDate = getItemDate(cert);
+              const certificateUrl = getCertificateUrl(companySlug, cert.document);
 
               return (
-                <div key={cert.id || index} className="flex justify-between gap-3 border-b border-gray-100 dark:border-gray-800/50 last:border-0 pb-3 last:pb-0">
+                <div key={cert.id || index} className="flex justify-between items-start gap-3 border-b border-gray-100 dark:border-gray-800/50 last:border-0 pb-3 last:pb-0">
                   <div>
                     <p className="font-medium text-sm text-gray-900 dark:text-gray-100">
                       {cert.name || cert.course_name || "Certificado"}
@@ -177,9 +228,25 @@ const CourseSummaryCard = ({ course }: { course: CourseSummary }) => (
                       Emision: {issueDate ? format(issueDate, "dd/MM/yyyy") : "N/A"}
                     </p>
                   </div>
-                  <Badge variant="outline" className="h-6 whitespace-nowrap">
-                    {cert.expiration_date ? `Expira ${format(new Date(cert.expiration_date), "dd/MM/yyyy")}` : "Sin expiracion"}
-                  </Badge>
+                  <div className="flex flex-col items-end gap-2">
+                    {cert.expiration_date && (
+                      <Badge variant="outline" className="h-6 whitespace-nowrap">
+                        Expira {format(new Date(cert.expiration_date), "dd/MM/yyyy")}
+                      </Badge>
+                    )}
+                    {certificateUrl && (
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        className="h-8"
+                        onClick={() => openProtectedDocument(certificateUrl)}
+                      >
+                        <Eye className="w-4 h-4 mr-2" />
+                        Ver
+                      </Button>
+                    )}
+                  </div>
                 </div>
               );
             })}
@@ -196,27 +263,45 @@ const CourseSummaryCard = ({ course }: { course: CourseSummary }) => (
         </h4>
         {course.exams.length > 0 ? (
           <div className="space-y-3">
-            {course.exams.map((exam: any, index: number) => (
-              <div key={exam.id || index} className="flex justify-between items-center gap-3 border-b border-gray-100 dark:border-gray-800/50 last:border-0 pb-3 last:pb-0">
-                <div>
-                  <p className="font-medium text-sm text-gray-900 dark:text-gray-100">
-                    {exam.exam_name || exam.name || exam.courseExam?.name || exam.exam?.name || "Examen"}
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-0.5">
-                    Puntuacion: <span className="font-medium">{exam.score || "N/A"}</span>
-                  </p>
+            {course.exams.map((exam: any, index: number) => {
+              const examDocumentUrl = getExamDocumentUrl(companySlug, exam.document_path);
+
+              return (
+                <div key={exam.id || index} className="flex justify-between items-start gap-3 border-b border-gray-100 dark:border-gray-800/50 last:border-0 pb-3 last:pb-0">
+                  <div>
+                    <p className="font-medium text-sm text-gray-900 dark:text-gray-100">
+                      {exam.exam_name || exam.name || exam.courseExam?.name || exam.exam?.name || "Examen"}
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      Puntuacion: <span className="font-medium">{exam.score || "N/A"}</span>
+                    </p>
+                  </div>
+                  <div className="flex flex-col items-end gap-2">
+                    {exam.approved ? (
+                      <Badge className="bg-green-500/10 text-green-600 dark:text-green-400 hover:bg-green-500/20 border-0 flex items-center gap-1">
+                        <CheckCircle className="w-3 h-3" /> Aprobado
+                      </Badge>
+                    ) : (
+                      <Badge variant="destructive" className="bg-red-500/10 text-red-600 dark:text-red-400 hover:bg-red-500/20 border-0 flex items-center gap-1">
+                        <XCircle className="w-3 h-3" /> Reprobado
+                      </Badge>
+                    )}
+                    {examDocumentUrl && (
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        className="h-8"
+                        onClick={() => openProtectedDocument(examDocumentUrl)}
+                      >
+                        <Eye className="w-4 h-4 mr-2" />
+                        Ver
+                      </Button>
+                    )}
+                  </div>
                 </div>
-                {exam.approved ? (
-                  <Badge className="bg-green-500/10 text-green-600 dark:text-green-400 hover:bg-green-500/20 border-0 flex items-center gap-1">
-                    <CheckCircle className="w-3 h-3" /> Aprobado
-                  </Badge>
-                ) : (
-                  <Badge variant="destructive" className="bg-red-500/10 text-red-600 dark:text-red-400 hover:bg-red-500/20 border-0 flex items-center gap-1">
-                    <XCircle className="w-3 h-3" /> Reprobado
-                  </Badge>
-                )}
-              </div>
-            ))}
+              );
+            })}
           </div>
         ) : (
           <p className="text-sm text-muted-foreground italic py-2">No hay examenes registrados.</p>
@@ -307,11 +392,44 @@ const EmployeeProfileExpanded = ({
           </div>
 
           {visibleCourses.length > 0 ? (
-            <div className="space-y-4">
-              {visibleCourses.map((course) => (
-                <CourseSummaryCard key={course.key} course={course} />
-              ))}
-            </div>
+            viewMode === "latest" ? (
+              <CourseSummaryCard
+                course={visibleCourses[0]}
+                companySlug={companySlug}
+              />
+            ) : (
+              <Accordion type="single" collapsible className="space-y-3">
+                {visibleCourses.map((course) => (
+                  <AccordionItem
+                    key={course.key}
+                    value={course.key}
+                    className="border border-gray-200 dark:border-gray-800 rounded-lg bg-white dark:bg-[#0b1120] px-4"
+                  >
+                    <AccordionTrigger className="hover:no-underline">
+                      <div className="flex flex-col md:flex-row md:items-center gap-2 text-left">
+                        <span className="font-semibold flex items-center gap-2">
+                          <BookOpen className="w-4 h-4 text-blue-500" />
+                          {course.name}
+                        </span>
+                        {course.date && (
+                          <span className="text-xs text-muted-foreground flex items-center gap-1">
+                            <Calendar className="w-3.5 h-3.5" />
+                            {format(course.date, "dd/MM/yyyy")}
+                          </span>
+                        )}
+                      </div>
+                    </AccordionTrigger>
+                    <AccordionContent>
+                      <CourseSummaryCard
+                        course={course}
+                        companySlug={companySlug}
+                        showHeader={false}
+                      />
+                    </AccordionContent>
+                  </AccordionItem>
+                ))}
+              </Accordion>
+            )
           ) : (
             <div className="border border-dashed border-gray-200 dark:border-gray-800 rounded-lg py-10 text-center text-sm text-muted-foreground">
               No hay cursos registrados para este empleado.

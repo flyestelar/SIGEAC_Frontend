@@ -66,6 +66,8 @@ type Group = {
   menus: Menu[];
 };
 
+const SMS_COURSE_ROLES = ["ANALISTA_SMS", "JEFE_SMS", "SUPERUSER"];
+
 export function getMenuList(
   pathname: string,
   currentCompany: Company | null,
@@ -120,13 +122,14 @@ export function getMenuList(
         {
           href: `/${currentCompany?.slug}/general/cursos`,
           label: "Cursos",
-          roles: ["SUPERUSER", "JEFE_SMS", "ANALISTA_SMS"],
+          roles: SMS_COURSE_ROLES,
           active: pathname === `/${currentCompany?.slug}/general/cursos`,
           icon: Presentation,
           submenus: [
             {
               href: `/${currentCompany?.slug}/general/cursos/calendario`,
               label: "Calendario",
+              roles: SMS_COURSE_ROLES,
               active:
                 pathname ===
                 `/${currentCompany?.slug}/general/cursos/calendario`,
@@ -134,11 +137,13 @@ export function getMenuList(
             {
               href: `/${currentCompany?.slug}/general/cursos`,
               label: "Cursos",
+              roles: SMS_COURSE_ROLES,
               active: pathname === `/${currentCompany?.slug}/general/cursos`,
             },
             {
               href: `/${currentCompany?.slug}/general/cursos/estadisticas`,
               label: "Estadisticas",
+              roles: SMS_COURSE_ROLES,
               active:
                 pathname ===
                 `/${currentCompany?.slug}/general/cursos/estadisticas`,
@@ -146,13 +151,13 @@ export function getMenuList(
             {
               href: `/${currentCompany?.slug}/sms/certificados`,
               label: "Certificados",
-              roles: [],
+              roles: SMS_COURSE_ROLES,
               active: pathname === `/${currentCompany?.slug}/sms/certificados`,
             },
             {
               href: `/${currentCompany?.slug}/general/cursos/resumen`,
               label: "Resumen",
-              roles: [],
+              roles: SMS_COURSE_ROLES,
               active: pathname === `/${currentCompany?.slug}/general/cursos/resumen`,
             },
           ],
