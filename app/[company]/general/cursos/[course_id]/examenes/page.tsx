@@ -3,7 +3,7 @@
 import { ContentLayout } from "@/components/layout/ContentLayout";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { useGetCourseAttendanceList } from "@/hooks/curso/useGetCourseAttendanceList";
+import { useGetCourseExamAttendance } from "@/hooks/curso/useGetCourseExamAttendance";
 import { useGetCourseExams } from "@/hooks/curso/useGetCourseExams";
 import { useGetCourseById } from "@/hooks/curso/useGetCourseById";
 import { useCompanyStore } from "@/stores/CompanyStore";
@@ -23,6 +23,80 @@ import { useState } from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
+import { useUpdateCourseExamResult } from "@/actions/general/cursos/actions";
+
+const ExamAttendanceRow = ({ attendance, company, examId }: { attendance: any; company: string; examId: string }) => {
+  const [score, setScore] = useState(attendance.score || "");
+  const [approved, setApproved] = useState(attendance.approved === 1 || attendance.approved === true);
+  const [file, setFile] = useState<File | null>(null);
+
+  const { updateCourseExamResult } = useUpdateCourseExamResult();
+
+  const handleSave = () => {
+    const formData = new FormData();
+    formData.append("_method", "PATCH");
+    if (score !== "") formData.append("score", score.toString());
+    formData.append("approved", approved ? "1" : "0");
+    formData.append("exam_id", examId);
+    formData.append("employee_dni", attendance.employee_dni);
+    if (attendance.course_attendance_id) {
+      formData.append("course_attendance_id", attendance.course_attendance_id.toString());
+    }
+    if (file) formData.append("document", file);
+
+    updateCourseExamResult.mutate({
+      company,
+      id: attendance.exam_attendance_id?.toString(),
+      exam_id: examId,
+      employee_dni: attendance.employee_dni,
+      data: formData,
+    });
+  };
+
+  return (
+    <tr key={attendance.id}>
+      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
+        <div className="flex flex-col">
+          <span>{attendance.employee.first_name} {attendance.employee.last_name}</span>
+          <span className="text-xs text-muted-foreground">{attendance.employee_dni}</span>
+        </div>
+      </td>
+      <td className="px-6 py-4 whitespace-nowrap text-sm">
+        <Input 
+          type="number" 
+          placeholder="Ej: 85" 
+          className="w-24" 
+          value={score}
+          onChange={(e) => setScore(e.target.value)}
+        />
+      </td>
+      <td className="px-6 py-4 whitespace-nowrap text-sm">
+        <Switch 
+          checked={approved}
+          onCheckedChange={setApproved}
+        />
+      </td>
+      <td className="px-6 py-4 whitespace-nowrap text-sm">
+        <Input 
+          type="file" 
+          className="w-56 text-xs cursor-pointer file:cursor-pointer" 
+          accept=".pdf,.jpg,.jpeg,.png"
+          onChange={(e) => setFile(e.target.files?.[0] || null)}
+        />
+        {attendance.document_path && !file && (
+          <span className="text-[10px] text-blue-500 mt-1 block font-medium">
+            Documento guardado
+          </span>
+        )}
+      </td>
+      <td className="px-6 py-4 whitespace-nowrap text-right text-sm">
+        <Button size="sm" onClick={handleSave} disabled={updateCourseExamResult.isPending}>
+          {updateCourseExamResult.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : "Guardar"}
+        </Button>
+      </td>
+    </tr>
+  );
+};
 
 const ManageExamsPage = () => {
   const { course_id } = useParams<{ course_id: string }>();
@@ -45,7 +119,11 @@ const ManageExamsPage = () => {
     data: attendanceList,
     isLoading: isAttendanceListLoading,
     isError: isAttendanceListError,
-  } = useGetCourseAttendanceList({ course_id, company: selectedCompany?.slug });
+  } = useGetCourseExamAttendance({
+    company: selectedCompany?.slug,
+    course_id,
+    exam_id: selectedExamId,
+  });
 
   const selectedExam = exams?.find((exam) => exam.id.toString() === selectedExamId);
 
@@ -139,33 +217,23 @@ const ManageExamsPage = () => {
                           <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                             Aprobado
                           </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                            Documento
+                          </th>
                           <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                             Acciones
                           </th>
                         </tr>
                       </thead>
                       <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                        {attendanceList.map((attendance) => {
-                          return (
-                            <tr key={attendance.id}>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
-                                <div className="flex flex-col">
-                                  <span>{attendance.employee.first_name} {attendance.employee.last_name}</span>
-                                  <span className="text-xs text-muted-foreground">{attendance.employee_dni}</span>
-                                </div>
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm">
-                                <Input type="number" placeholder="Ej: 85" className="w-24" />
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm">
-                                <Switch />
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-right text-sm">
-                                <Button size="sm">Guardar</Button>
-                              </td>
-                            </tr>
-                          );
-                        })}
+                        {attendanceList.map((attendance: any) => (
+                          <ExamAttendanceRow 
+                            key={attendance.row_id ?? attendance.employee_dni} 
+                            attendance={attendance} 
+                            company={selectedCompany?.slug || ""} 
+                            examId={selectedExamId}
+                          />
+                        ))}
                       </tbody>
                     </table>
                   </div>
