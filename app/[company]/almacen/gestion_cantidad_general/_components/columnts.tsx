@@ -4,9 +4,9 @@ import React from "react"
 import { ColumnDef } from "@tanstack/react-table"
 import { Badge } from "@/components/ui/badge"
 import { DataTableColumnHeader } from "@/components/tables/DataTableHeader"
-import ActivityReportsDropdownActions from "@/components/dropdowns/aerolinea/desarrollo/ActivityReportsDropdownActions"
 import { GeneralArticle } from "@/types"
 import { QuantityEditCell } from "./QuantityCell"
+import GeneralArticleDropDownActions from "@/components/dropdowns/mantenimiento/almacen/GeneralArticleDropDownActions"
 
 type BuildColumnsArgs = {
     baseQuantities: Record<number, number>
@@ -117,7 +117,7 @@ export function buildGeneralInventoryColumns({
             header: () => <div className="text-center text-sm font-medium">Acciones</div>,
             cell: ({ row }) => (
                 <div className="flex justify-center">
-                    <ActivityReportsDropdownActions id={String(row.original.id)} />
+                    <GeneralArticleDropDownActions article={(row.original)} />
                 </div>
             ),
             enableSorting: false,
