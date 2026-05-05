@@ -432,10 +432,10 @@ export function CreateGenVolReport({
                                             </SelectTrigger>
                                         </FormControl>
                                         <SelectContent>
-                                            <SelectItem value="WORKSHOP">TALLER</SelectItem>
-                                            <SelectItem value="MAINTENANCE">MANTENIMIENTO</SelectItem>
-                                            <SelectItem value="OFFICE">OFICINAS</SelectItem>
-                                            <SelectItem value="OTHERS">OTROS</SelectItem>
+                                            <SelectItem value="TALLER">TALLER</SelectItem>
+                                            <SelectItem value="MANTENIMIENTO">MANTENIMIENTO</SelectItem>
+                                            <SelectItem value="OFICINA">OFICINAS</SelectItem>
+                                            <SelectItem value="OTROS">OTROS</SelectItem>
                                         </SelectContent>
                                     </Select>
                                     <FormMessage />
