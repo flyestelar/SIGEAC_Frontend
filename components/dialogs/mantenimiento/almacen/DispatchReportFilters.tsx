@@ -443,7 +443,6 @@ export function DispatchReportFilters({
                     return;
                   }
 
-                  // Selección de un solo día
                   if (!to) {
                     setStartDate(from);
                     setEndDate(from);
@@ -466,7 +465,6 @@ export function DispatchReportFilters({
                     : 1
                 }
                 showOutsideDays={false}
-                fromMonth={new Date(new Date().getFullYear(), 0, 1)}
                 toMonth={new Date()}
                 locale={es}
                 disabled={(d) => d > new Date()}
@@ -481,9 +479,7 @@ export function DispatchReportFilters({
                 )}
                 formatters={{
                   formatMonthCaption: (date) =>
-                    format(date, "MMM yyyy", { locale: es })
-                      .toLowerCase()
-                      .replace(".", ""),
+                    format(date, "MMMM yyyy", { locale: es }).toUpperCase(),
                 }}
               />
             </div>

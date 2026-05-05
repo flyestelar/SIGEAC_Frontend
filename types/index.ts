@@ -212,6 +212,7 @@ export type Company = {
     alt_phone_number: number;
     cod_iata: string;
     cod_oaci: string;
+    isOmac: boolean;
     modules: Module[];
     created_at: string;
     updated_at: string;
@@ -797,6 +798,7 @@ export type Employee = {
     dni: string;
     dni_type: string;
     blood_type: string;
+    gender: "MALE" | "FEMALE";
     birth_date?: string | null;
     email?: string | null;
     phone?: string | null;
@@ -869,6 +871,7 @@ export type Pilot = {
     employee_dni: string;
     employee: Employee;
     license_number: string;
+    rank?: string;
 };
 
 export type InformationSource = {

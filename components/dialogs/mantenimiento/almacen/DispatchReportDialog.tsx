@@ -217,11 +217,34 @@ export function DispatchReportDialog() {
       setLoadingDownload(false);
     }
   };
+  const [hovered, setHovered] = useState(false)
+  const [pos, setPos] = useState({ x: 50, y: 50 })
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLButtonElement>) => {
+    if (!hovered) return
+    const rect = e.currentTarget.getBoundingClientRect()
+    const x = ((e.clientX - rect.left) / rect.width) * 100
+    const y = ((e.clientY - rect.top) / rect.height) * 100
+    setPos({ x, y })
+  }
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" className="relative overflow-hidden border border-dashed border-indigo-400/50 dark:border-indigo-300/30 bg-background/70 backdrop-blur text-indigo-700 dark:text-indigo-300 font-medium tracking-wide shadow-sm transition-all duration-200 hover:border-indigo-500/60 dark:hover:border-indigo-300/50 hover:bg-indigo-50/40 dark:hover:bg-indigo-950/20 hover:shadow-md hover:-translate-y-[1px] active:translate-y-0 active:shadow-sm focus-visible:ring-2 focus-visible:ring-indigo-500/25 focus-visible:ring-offset-2">Generar Reporte</Button>
+        <Button
+          onMouseEnter={() => setHovered(true)}
+          onMouseLeave={() => setHovered(false)}
+          onMouseMove={handleMouseMove}
+          variant="outline"
+          className="relative overflow-hidden border border-dashed border-blue-400/50 dark:border-blue-300/30 bg-background/70 backdrop-blur text-blue-700 dark:text-blue-300 font-medium tracking-wide shadow-sm transition-all duration-200 hover:border-blue-500/60 dark:hover:border-blue-300/50 hover:bg-blue-50/40 dark:hover:bg-blue-950/20 hover:shadow-md hover:-translate-y-[1px] active:translate-y-0 active:shadow-sm focus-visible:ring-2 focus-visible:ring-blue-500/25 focus-visible:ring-offset-2"
+          style={{
+            backgroundImage: hovered
+              ? `radial-gradient(circle at ${pos.x}% ${pos.y}%, rgba(59,130,246,0.10), transparent 65%)`
+              : 'none'
+          }}
+        >
+          Generar Reporte
+        </Button>
       </DialogTrigger>
 
       <DialogContent className="sm:max-w-[580px] p-0 overflow-visible">
