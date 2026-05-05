@@ -15,8 +15,10 @@ export default function Home() {
   };
 
   return (
-    <div className="w-full h-screen flex flex-col lg:flex-row bg-sky-100">
-      <div className="w-full flex items-center justify-center h-full bg-clouds bg-cover relative animate-moveBackground rounded-b-full lg:rounded-r-full lg:rounded-b-none">
+    <div className="w-full h-screen flex flex-col lg:flex-row bg-sky-100 overflow-hidden">
+      
+      {/* LEFT SIDE */}
+      <div className="w-full flex flex-1 items-center justify-center bg-clouds bg-cover relative animate-moveBackground rounded-b-full lg:rounded-r-full lg:rounded-b-none">
         <motion.div
           key="plane"
           initial={{
@@ -49,11 +51,17 @@ export default function Home() {
           />
         </motion.div>
       </div>
-      <div className="w-full h-full flex flex-col items-center justify-center gap-4">
+
+      {/* RIGHT SIDE */}
+      <div className="w-full flex flex-1 flex-col items-center justify-center gap-4">
+        
         <div className="flex flex-col justify-center items-center gap-4">
           <Logo />
-          <Button onClick={onClick}>Iniciar Sesión - v2.0.2</Button>
+          <Button onClick={onClick}>
+            Iniciar Sesión - v2.0.2
+          </Button>
         </div>
+
         <Footer />
       </div>
     </div>
