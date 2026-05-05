@@ -23,7 +23,7 @@ import Image from "next/image";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { Separator } from "../../ui/separator";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
 
 const FormSchema = z.object({
@@ -49,8 +49,28 @@ export function LoginForm() {
     },
   });
 
+  // 👇 ref directo al input de password
+  const passwordRef = useRef<HTMLInputElement | null>(null);
+
   const onSubmit = (data: FormSchemaType) => {
     loginMutation.mutate(data);
+  };
+
+  const handleTogglePassword = () => {
+    const input = passwordRef.current;
+
+    // guardar posición del cursor antes del cambio
+    const pos = input?.selectionStart ?? 0;
+
+    setShowPassword((v) => !v);
+
+    // restaurar cursor en el siguiente tick
+    requestAnimationFrame(() => {
+      if (input) {
+        input.focus();
+        input.setSelectionRange(pos, pos);
+      }
+    });
   };
 
   return (
@@ -90,6 +110,10 @@ export function LoginForm() {
                 <div className="relative">
                   <Input
                     {...field}
+                    ref={(el) => {
+                      field.ref(el);
+                      passwordRef.current = el;
+                    }}
                     className="dark:bg-black/30 pr-10 text-foreground tracking-wider placeholder:text-muted-foreground"
                     type={showPassword ? "text" : "password"}
                     placeholder="******"
@@ -102,7 +126,7 @@ export function LoginForm() {
                         <button
                           type="button"
                           onMouseDown={(e) => e.preventDefault()}
-                          onClick={() => setShowPassword((v) => !v)}
+                          onClick={handleTogglePassword}
                           className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition flex items-center justify-center"
                         >
                           <span className="transition-all duration-200 ease-in-out">
