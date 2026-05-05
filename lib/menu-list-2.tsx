@@ -5,7 +5,6 @@ import { format } from "date-fns";
 
 import {
     AreaChartIcon,
-    Award,
     Blocks,
     BookCheck,
     Boxes,
@@ -38,7 +37,8 @@ import {
     Truck,
     User2,
     UserRoundCog,
-    Wrench
+    Wrench,
+    Package,
 } from "lucide-react";
 
 type Submenu = {
@@ -47,7 +47,7 @@ type Submenu = {
     active: boolean;
     roles?: string[];
     moduleValue?: string;
-    requiresOmac?: boolean;
+    requiresOmac?: boolean; // TO HIDE SUB MENU EXCLUSIVES FROM OMAC
 };
 
 type Menu = {
@@ -58,8 +58,8 @@ type Menu = {
     roles: string[];
     moduleValue?: string;
     submenus: Submenu[];
-    requiresOmac?: boolean;
-};
+    requiresOmac?: boolean; //TO HIDE MSUB MENU EXCLUSIVES FROM OMAC
+}
 
 type Group = {
     groupLabel: string;
@@ -70,7 +70,7 @@ type Group = {
 export function getMenuList(
     pathname: string,
     currentCompany: Company | null,
-    userRoles: string[]
+    userRoles: string[],
 ): Group[] {
     const date = format(new Date(), "yyyy-MM-dd");
     const isValidHref = (href: string): boolean => {
@@ -91,22 +91,20 @@ export function getMenuList(
             menuItem.roles.some((role) => userRoles.includes(role))
         );
     };
+
+    // Verificar si el módulo está activo para la compañía
     const isModuleActive = (moduleValue?: string): boolean => {
         // Si no requiere módulo específico o no hay compañía seleccionada, está activo
         if (!moduleValue || !currentCompany) return true;
         // Verificar si la compañía tiene este módulo
         return currentCompany.modules.some((m) => m.value === moduleValue);
     };
-
-
     const hasOmacAccess = (item: { requiresOmac?: boolean }): boolean => {
         // Si el menú no tiene la restricción, pasa directo
         if (item.requiresOmac === undefined) return true;
         // Si tiene la restricción, verificamos si hace match con la empresa
-        console.log(`Verificando acceso OMAC empresa es OMAC = ${currentCompany?.isOmac}`);
         return item.requiresOmac === currentCompany?.isOmac;
     };
-
     const fullMenu: Group[] = [
         {
             groupLabel: "",
@@ -151,6 +149,12 @@ export function getMenuList(
                                 pathname ===
                                 `/${currentCompany?.slug}/general/cursos/estadisticas`,
                         },
+                        {
+                            href: `/${currentCompany?.slug}/sms/certificados`,
+                            label: "Certificados",
+                            roles: [],
+                            active: pathname === `/${currentCompany?.slug}/sms/certificados`,
+                        },
                     ],
                 },
                 {
@@ -160,14 +164,6 @@ export function getMenuList(
                     icon: ShieldCheck,
                     roles: [],
                     submenus: [
-                        // {
-                        //   href: `https://sigeac-one.vercel.app/acceso_publico/transmandu/sms`,
-                        //   label: "Pagina de SMS",
-                        //   roles: [],
-                        //   active:
-                        //     pathname ===
-                        //     `/${currentCompany?.slug}/general/reporte/pagina_de_sms`,
-                        // },
                         {
                             href: `/${currentCompany?.slug}/general/reporte/voluntario`,
                             label: "Reporte Voluntario",
@@ -192,14 +188,6 @@ export function getMenuList(
                                 pathname ===
                                 `/${currentCompany?.slug}/general/reporte/codigos_qr`,
                         },
-
-                        {
-                            href: `/${currentCompany?.slug}/sms/certificados`,
-                            label: "Certificados",
-                            roles: [], // Libre para que Richard lo vea
-                            active: pathname === `/${currentCompany?.slug}/sms/certificados`,
-                        },
-
                     ],
                 },
                 {
@@ -261,9 +249,7 @@ export function getMenuList(
                         "JEFE_ALMACEN",
                     ],
                     submenus: [],
-
-                }
-
+                },
             ],
         },
         {
@@ -295,201 +281,6 @@ export function getMenuList(
                 },
             ],
         },
-        // {
-        //   groupLabel: "Administración",
-        //   moduleValue: "administration",
-        //   menus: [
-        //     {
-        //       href: `/${currentCompany?.slug}/administracion/creditos`,
-        //       label: "Créditos",
-        //       active: pathname.includes(
-        //         `/${currentCompany?.slug}/administracion/creditos`,
-        //       ),
-        //       icon: CreditCardIcon,
-        //       roles: [
-        //         "SUPERUSER",
-        //         "ANALISTA_ADMINISTRACION",
-        //         "JEFE_ADMINISTRACION",
-        //         "JEFE_CONTADURIA",
-        //         "RRHH_ADMINISTRACION",
-        //       ],
-        //       submenus: [
-        //         {
-        //           href: `/${currentCompany?.slug}/administracion/creditos/credito_arrendamiento`,
-        //           label: "Arrendamiento",
-        //           active:
-        //             pathname ===
-        //             `/${currentCompany?.slug}/administracion/creditos/credito_arrendamiento`,
-        //         },
-        //         {
-        //           href: `/${currentCompany?.slug}/administracion/creditos/cuentas_por_pagar`,
-        //           label: "Cuentas por Pagar",
-        //           active:
-        //             pathname ===
-        //             `/${currentCompany?.slug}/administracion/creditos/cuentas_por_pagar`,
-        //         },
-        //         {
-        //           href: `/${currentCompany?.slug}/administracion/creditos/credito_vuelo`,
-        //           label: "Vuelos",
-        //           active:
-        //             pathname ===
-        //             `/${currentCompany?.slug}/administracion/creditos/credito_vuelo`,
-        //         },
-        //       ],
-        //     },
-        //     {
-        //       href: `/${currentCompany?.slug}/administracion/gestion_cajas`,
-        //       label: "Finanzas",
-        //       active: pathname.includes(
-        //         `/${currentCompany?.slug}/administracion/gestion_cajas`,
-        //       ),
-        //       icon: Landmark,
-        //       roles: [
-        //         "SUPERUSER",
-        //         "ANALISTA_ADMINISTRACION",
-        //         "JEFE_ADMINISTRACION",
-        //         "JEFE_CONTADURIA",
-        //         "RRHH_ADMINISTRACION",
-        //       ],
-        //       submenus: [
-        //         {
-        //           href: `/${currentCompany?.slug}/administracion/gestion_cajas/categorias`,
-        //           label: "Categorías",
-        //           active:
-        //             pathname ===
-        //             `/${currentCompany?.slug}/administracion/gestion_cajas/categorias`,
-        //         },
-        //         {
-        //           href: `/${currentCompany?.slug}/administracion/gestion_cajas/cajas`,
-        //           label: "Cajas",
-        //           active:
-        //             pathname ===
-        //             `/${currentCompany?.slug}/administracion/gestion_cajas/cajas`,
-        //         },
-        //         {
-        //           href: `/${currentCompany?.slug}/administracion/gestion_cajas/cuentas`,
-        //           label: "Cuentas",
-        //           active:
-        //             pathname ===
-        //             `/${currentCompany?.slug}/administracion/gestion_cajas/cuentas`,
-        //         },
-        //         {
-        //           href: `/${currentCompany?.slug}/administracion/gestion_cajas/movimientos`,
-        //           label: "Movimientos",
-        //           active:
-        //             pathname ===
-        //             `/${currentCompany?.slug}/administracion/gestion_cajas/movimientos`,
-        //         },
-        //       ],
-        //     },
-        //     {
-        //       href: `/${currentCompany?.slug}/administracion/gestion_general`,
-        //       label: "General",
-        //       active: pathname.includes(
-        //         `/${currentCompany?.slug}/administracion/gestion_general`,
-        //       ),
-        //       icon: BookUser,
-        //       roles: [
-        //         "SUPERUSER",
-        //         "ANALISTA_ADMINISTRACION",
-        //         "JEFE_ADMINISTRACION",
-        //         "JEFE_CONTADURIA",
-        //         "RRHH_ADMINISTRACION",
-        //       ],
-        //       submenus: [
-        //         {
-        //           href: `/${currentCompany?.slug}/administracion/gestion_general/clientes`,
-        //           label: "Clientes",
-        //           active:
-        //             pathname ===
-        //             `/${currentCompany?.slug}/administracion/gestion_general/clientes`,
-        //         },
-        //         {
-        //           href: `/${currentCompany?.slug}/administracion/gestion_general/proveedor`,
-        //           label: "Proveedor",
-        //           active:
-        //             pathname ===
-        //             `/${currentCompany?.slug}/administracion/gestion_general/proveedor`,
-        //         },
-        //       ],
-        //     },
-        //     {
-        //       href: `/${currentCompany?.slug}/administracion/operaciones`,
-        //       label: "Operaciones",
-        //       active: pathname.includes(
-        //         `/${currentCompany?.slug}/administracion/operaciones`,
-        //       ),
-        //       icon: PackageOpen,
-        //       roles: [
-        //         "SUPERUSER",
-        //         "ANALISTA_ADMINISTRACION",
-        //         "JEFE_ADMINISTRACION",
-        //       ],
-        //       submenus: [
-        //         {
-        //           href: `/${currentCompany?.slug}/administracion/operaciones/arrendamiento`,
-        //           label: "Arrendamiento",
-        //           active:
-        //             pathname ===
-        //             `/${currentCompany?.slug}/administracion/operaciones/arrendamiento`,
-        //         },
-        //       ],
-        //     },
-        //     {
-        //       href: `/${currentCompany?.slug}/administracion/gestion_vuelos`,
-        //       label: "Vuelos",
-        //       active: pathname.includes(
-        //         `/${currentCompany?.slug}/administracion/gestion_vuelos`,
-        //       ),
-        //       icon: PlaneIcon,
-        //       roles: [
-        //         "SUPERUSER",
-        //         "ANALISTA_ADMINISTRACION",
-        //         "JEFE_ADMINISTRACION",
-        //         "RRHH_ADMINISTRACION",
-        //       ],
-        //       submenus: [
-        //         {
-        //           href: `/${currentCompany?.slug}/administracion/gestion_vuelos/aviones`,
-        //           label: "Aeronaves",
-        //           active:
-        //             pathname ===
-        //             `/${currentCompany?.slug}/administracion/gestion_vuelos/aviones`,
-        //           roles: [
-        //             "SUPERUSER",
-        //             "ANALISTA_ADMINISTRACION",
-        //             "JEFE_ADMINISTRACION",
-        //             "RRHH_ADMINISTRACION",
-        //           ],
-        //         },
-        //         {
-        //           href: `/${currentCompany?.slug}/administracion/gestion_vuelos/rutas`,
-        //           label: "Rutas",
-        //           active:
-        //             pathname ===
-        //             `/${currentCompany?.slug}/administracion/gestion_vuelos/rutas`,
-        //           roles: [
-        //             "SUPERUSER",
-        //             "ANALISTA_ADMINISTRACION",
-        //             "JEFE_ADMINISTRACION",
-        //           ], // RRHH no puede ver Rutas
-        //         },
-        //         {
-        //           href: `/${currentCompany?.slug}/administracion/gestion_vuelos/vuelos`,
-        //           label: "Vuelos",
-        //           active:
-        //             pathname ===
-        //             `/${currentCompany?.slug}/administracion/gestion_vuelos/vuelos`,
-        //           roles: [
-        //             "SUPERUSER",
-        //             "ANALISTA_ADMINISTRACION",
-        //             "JEFE_ADMINISTRACION",
-        //           ], // RRHH no puede ver Vuelos
-        //         },
-        //       ],
-        //     },
-        //   ],
-        // },
         {
             groupLabel: "SMS",
             moduleValue: "sms",
@@ -540,7 +331,6 @@ export function getMenuList(
                     ),
                     roles: ["ANALISTA_SMS", "JEFE_SMS", "SUPERUSER"],
                     requiresOmac: false,
-
                     submenus: [
                         {
                             href: `/${currentCompany?.slug}/sms/estadisticas/general`,
@@ -584,16 +374,6 @@ export function getMenuList(
                         },
                     ],
                 },
-
-                // {
-                //   href: `/${currentCompany?.slug}/sms/certificados`,
-                //   label: "Certificados",
-                //   active: pathname.includes(`/${currentCompany?.slug}/sms/certificados`),
-                //   icon: Award,
-                //   roles: ["SUPERUSER", "JEFE_SMS", "ANALISTA_SMS"],
-                //   submenus: [],
-                // },
-
                 {
                     href: "",
                     label: "Promoción",
@@ -626,14 +406,6 @@ export function getMenuList(
                                 pathname ===
                                 `/${currentCompany?.slug}/sms/promocion/capacitacion_personal`,
                         },
-                        // {
-                        //   href: `/${currentCompany?.slug}/sms/promocion/boletines`,
-                        //   label: "Boletines",
-                        //   roles: ["SUPERUSER", "JEFE_SMS", "ANALISTA_SMS"],
-                        //   active:
-                        //     pathname ===
-                        //     `/${currentCompany?.slug}/sms/promocion/boletines`,
-                        // },
                     ],
                 },
                 {
@@ -688,6 +460,7 @@ export function getMenuList(
                         },
                     ],
                 },
+
                 // APARTADO DE SMS UNICAMENTE PARA EMPRESAS OMAC
                 {
                     href: `/${currentCompany?.slug}/sms/aeronautical`,
@@ -725,7 +498,6 @@ export function getMenuList(
                         },
                     ],
                 },
-
             ],
         },
         {
@@ -781,49 +553,24 @@ export function getMenuList(
                         "JEFE_ADMINISTRACION",
                     ],
                     submenus: [],
-
-                }
+                },
+                // {
+                //   href: `/${currentCompany?.slug}/compras/gestion_costos`,
+                //   label: "Gestión de Costos",
+                //   active: pathname.includes(
+                //     `/${currentCompany?.slug}/compras/gestion_costos`,
+                //   ),
+                //   icon: Receipt,
+                //   roles: [
+                //     "ANALISTA_COMPRAS",
+                //     "JEFE_COMPRAS",
+                //     "SUPERUSER",
+                //     "JEFE_ADMINISTRACION",
+                //   ],
+                //   submenus: [],
+                // },
             ],
         },
-        // {
-        //   groupLabel: "Carga Administrativa",
-        //   moduleValue: "warehouse",
-        //   menus: [
-        //     {
-        //       href: "",
-        //       label: "Control de Ingreso",
-        //       active: pathname.includes(
-        //         `/${currentCompany?.slug}/almacen/inventario/ingreso`
-        //       ),
-        //       icon: PackagePlus,
-        //       roles: [
-        //         "ANALISTA_ALMACEN",
-        //         "ANALISTA_COMPRAS",
-        //         "SUPERUSER",
-        //         "JEFE_ALMACEN",
-        //       ],
-        //       submenus: [
-        //         {
-        //           href: `/${currentCompany?.slug}/almacen/ingreso/registrar_ingreso`,
-        //           label: "Ingreso de Articulo",
-        //           active:
-        //             pathname ===
-        //             `/${currentCompany?.slug}/almacen/ingreso/registrar_ingreso`,
-        //         },
-        //         // {
-        //         //   href: `/${currentCompany?.slug}/almacen/ingreso/en_transito`,
-        //         //   label: "Articulos en Tránsito",
-        //         //   active: pathname === `/${currentCompany?.slug}/almacen/ingreso/en_transito`
-        //         // },
-        //         // {
-        //         //   href: `/${currentCompany?.slug}/almacen/ingreso/en_recepcion`,
-        //         //   label: "Articulos en Recepción",
-        //         //   active: pathname === `/${currentCompany?.slug}/almacen/ingreso/en_recepcion`
-        //         // },
-        //       ],
-        //     },
-        //   ],
-        // },
         {
             groupLabel: "Almacen",
             moduleValue: "warehouse",
@@ -870,13 +617,6 @@ export function getMenuList(
                             active:
                                 pathname === `/${currentCompany?.slug}/almacen/por_ubicar`,
                         },
-                        // {
-                        //   href: `/${currentCompany?.slug}/almacen/inventario_articulos/entregado`,
-                        //   label: "Entregado",
-                        //   active:
-                        //     pathname ===
-                        //     `/${currentCompany?.slug}/almacen/inventario_articulos/entregado`,
-                        // },
                     ],
                 },
                 {
@@ -895,13 +635,6 @@ export function getMenuList(
                                 pathname ===
                                 `/${currentCompany?.slug}/almacen/solicitudes/salida`,
                         },
-                        // {
-                        //   href: `/${currentCompany?.slug}/almacen/solicitudes/pendiente`,
-                        //   label: "Pendiente",
-                        //   active:
-                        //     pathname ===
-                        //     `/${currentCompany?.slug}/almacen/solicitudes/pendiente`,
-                        // },
                     ],
                 },
                 {
@@ -991,13 +724,6 @@ export function getMenuList(
                                 pathname ===
                                 `/${currentCompany?.slug}/planificacion/control_vuelos/vuelos`,
                         },
-                        // {
-                        //   href: `/${currentCompany?.slug}/planificacion/control_vuelos/reportes`,
-                        //   label: "Reportes",
-                        //   active:
-                        //     pathname ===
-                        //     `/${currentCompany?.slug}/planificacion/control_vuelos/reportes`,
-                        // },
                     ],
                 },
             ],
@@ -1008,7 +734,6 @@ export function getMenuList(
                 {
                     href: `/${currentCompany?.slug}/control_calidad/incoming`,
                     label: "Gestión de Incoming",
-
                     active: pathname.includes(
                         `/${currentCompany?.slug}/control_calidad/incoming`,
                     ),
@@ -1019,12 +744,32 @@ export function getMenuList(
                 {
                     href: `/${currentCompany?.slug}/control_calidad/cuarentena`,
                     label: "Gestión de Cuarentena",
-
                     active: pathname.includes(
                         `/${currentCompany?.slug}/control_calidad/cuarentena`,
                     ),
                     icon: OctagonAlert,
                     roles: ["JEFE_CONTROL_CALIDAD", "SUPERUSER"],
+                    submenus: [],
+                },
+            ],
+        },
+        {
+            groupLabel: "Operaciones",
+            moduleValue: "operation",
+            menus: [
+                {
+                    href: `/${currentCompany?.slug}/operaciones/cargo`,
+                    label: "Carga",
+                    active: pathname.includes(
+                        `/${currentCompany?.slug}/operaciones/cargo`,
+                    ),
+                    icon: Package,
+                    roles: [
+                        "ANALISTA_ADMINISTRACION",
+                        "JEFE_ADMINISTRACION",
+                        "SUPERUSER",
+                        "OPERADOR_CARGA",
+                    ],
                     submenus: [],
                 },
             ],
@@ -1059,26 +804,6 @@ export function getMenuList(
                     roles: ["SUPERUSER", "ENGINEERING"],
                     submenus: [],
                 },
-                // {
-                //   href: `/${currentCompany?.slug}/ingenieria/certificados`,
-                //   label: "Certificados",
-                //   active: pathname.includes(
-                //     `/${currentCompany?.slug}/ingenieria/certificados`
-                //   ),
-                //   icon: Award,
-                //   roles: ["SUPERUSER"],
-                //   submenus: [],
-                // },
-                // {
-                //   href: `/${currentCompany?.slug}/ingenieria/requisiciones/nueva_requisicion`,
-                //   label: "Solicitudes de Compra",
-                //   active: pathname.includes(
-                //     `/${currentCompany?.slug}/ingenieria/requisiciones/nueva_requisicion`
-                //   ),
-                //   icon: ScrollText,
-                //   roles: ["SUPERUSER", "ENGINEERING"],
-                //   submenus: [],
-                // },
             ],
         },
         {
@@ -1089,7 +814,13 @@ export function getMenuList(
                     label: "Globales",
                     active: pathname.includes("/ajustes/globales"),
                     icon: Globe,
-                    roles: [],
+                    roles: [
+                        "JEFE_ALMACEN",
+                        "ANALISTA_ALMACEN",
+                        "JEFE_PLANIFICACION",
+                        "ANALISTA_PLANIFICACION",
+                        "SUPERUSER",
+                    ],
                     submenus: [
                         {
                             href: "/ajustes/globales/unidades",
@@ -1134,7 +865,13 @@ export function getMenuList(
                             href: "/ajustes/globales/terceros",
                             label: "Terceros",
                             active: pathname === "/ajustes/terceros/clientes",
-                            roles: [],
+                            roles: [
+                                "JEFE_ALMACEN",
+                                "ANALISTA_ALMACEN",
+                                "JEFE_PLANIFICACION",
+                                "ANALISTA_PLANIFICACION",
+                                "SUPERUSER",
+                            ],
                         },
                         {
                             href: "/ajustes/globales/condiciones",
@@ -1161,34 +898,6 @@ export function getMenuList(
                         },
                     ],
                 },
-                // {
-                //   href: "/ajustes/bancos_cuentas",
-                //   label: "Bancos",
-                //   active: pathname.includes("/bancos_cuentas"),
-                //   icon: Landmark,
-                //   roles: [
-                //     "SUPERUSER",
-                //     "ANALISTA_ADMINISTRACION",
-                //     "JEFE_ADMINISTRACION",
-                //   ],
-                //   submenus: [
-                //     {
-                //       href: "/ajustes/bancos_cuentas/bancos",
-                //       label: "Bancos",
-                //       active: pathname === "/ajustes/bancos_cuentas/bancos",
-                //     },
-                //     {
-                //       href: "/ajustes/bancos_cuentas/cuentas",
-                //       label: "Cuentas",
-                //       active: pathname === "/ajustes/bancos_cuentas/cuentas",
-                //     },
-                //     {
-                //       href: "/ajustes/bancos_cuentas/tarjetas",
-                //       label: "Tarjetas",
-                //       active: pathname === "/ajustes/bancos_cuentas/tarjetas",
-                //     },
-                //   ],
-                // },
                 {
                     href: "/ajustes/cuenta",
                     label: "Cuenta",
@@ -1227,11 +936,6 @@ export function getMenuList(
                             label: "Administrar Roles",
                             active: pathname === "/sistema/usuarios_permisos/roles",
                         },
-                        // {
-                        //   href: "/sistema/usuarios_permisos/permisos",
-                        //   label: "Administrar Permisos",
-                        //   active: pathname === "/sistema/usuarios_permisos/permisos",
-                        // },
                     ],
                 },
                 {
@@ -1297,7 +1001,6 @@ export function getMenuList(
         },
     ];
 
-
     return (
         fullMenu
             // Filtrar grupos por módulo activo
@@ -1309,7 +1012,7 @@ export function getMenuList(
                     (menu) =>
                         isModuleActive(menu.moduleValue) &&
                         hasRoleAccess(menu) &&
-                        hasOmacAccess(menu) // <-- Nuevo filtro
+                        hasOmacAccess(menu), // <-- Nuevo filtro
                 );
 
                 // 2. Mapeamos y filtramos los submenús
@@ -1320,7 +1023,7 @@ export function getMenuList(
                                 isModuleActive(sub.moduleValue) &&
                                 hasRoleAccess(sub) &&
                                 hasOmacAccess(sub) && // <-- Nuevo filtro
-                                isValidHref(sub.href)
+                                isValidHref(sub.href),
                         );
 
                         const href = isValidHref(menu.href) ? menu.href : submenus[0]?.href;
