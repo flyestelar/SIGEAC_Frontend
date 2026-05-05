@@ -118,10 +118,14 @@ const WorkOrderPage = () => {
   }
 
   const workOrderStale = Boolean(
-    workOrder.statusData?.work_order_updated_at && workOrder.statusData.work_order_updated_at !== wo?.updated_at,
+    workOrder.statusData?.work_order_updated_at &&
+      wo.updated_at &&
+      !timestampEqualSecondsPrecision(workOrder.statusData.work_order_updated_at, wo?.updated_at),
   );
   const tallySheetStale = Boolean(
-    tallySheet.statusData?.work_order_updated_at && tallySheet.statusData.work_order_updated_at !== wo?.updated_at,
+    tallySheet.statusData?.work_order_updated_at &&
+      wo.updated_at &&
+      !timestampEqualSecondsPrecision(tallySheet.statusData.work_order_updated_at, wo?.updated_at),
   );
   return (
     <ContentLayout title="Orden de Trabajo">
@@ -191,26 +195,18 @@ const WorkOrderPage = () => {
               {
                 label: 'Orden de Trabajo',
                 type: 'work_order' as const,
+                stale: workOrderStale,
                 ...workOrder,
               },
               {
                 label: 'Tally Sheet',
                 type: 'tally_sheet' as const,
+                stale: tallySheetStale,
                 ...tallySheet,
               },
             ].map((doc) => {
               if (doc.isNotGenerated) return null;
 
-              const { statusData } = doc;
-              const isStale = Boolean(
-                statusData?.work_order_updated_at &&
-                  wo.updated_at &&
-                  !timestampEqualSecondsPrecision(statusData.work_order_updated_at, wo.updated_at),
-              );
-              console.log('isStale', doc.type, isStale, {
-                statusDataUpdatedAt: statusData?.work_order_updated_at,
-                woUpdatedAt: wo.updated_at,
-              });
               return (
                 <div
                   key={doc.label}
@@ -218,10 +214,10 @@ const WorkOrderPage = () => {
                     'flex items-center gap-3 rounded-lg border px-4 py-3 text-sm transition-colors',
                     doc.isGenerating && 'border-sky-500/30 bg-sky-500/5 text-sky-600 dark:text-sky-400',
                     doc.isCompleted &&
-                      !isStale &&
+                      !doc.stale &&
                       'border-emerald-500/30 bg-emerald-500/5 text-emerald-600 dark:text-emerald-400',
                     doc.isCompleted &&
-                      isStale &&
+                      doc.stale &&
                       'border-amber-500/30 bg-amber-500/10 text-amber-600 dark:text-amber-400',
                     doc.isFailed && 'border-red-500/30 bg-red-500/5 text-red-600 dark:text-red-400',
                   )}
@@ -235,7 +231,7 @@ const WorkOrderPage = () => {
                       {doc.isGenerating
                         ? 'Generando documento PDF...'
                         : doc.isCompleted
-                          ? isStale
+                          ? doc.stale
                             ? 'Documento PDF listo (desactualizado)'
                             : 'Documento PDF listo para descargar'
                           : doc.isFailed
@@ -255,7 +251,7 @@ const WorkOrderPage = () => {
                       isPending={false}
                       onQueue={() => queueDocument(doc.type)}
                       disabled={false}
-                      stale={isStale}
+                      stale={doc.stale}
                     />
                   )}
                 </div>

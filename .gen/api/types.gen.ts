@@ -4407,7 +4407,6 @@ export type AirworthinessDirectivesIndexData = {
     aircraft_id?: number;
     page?: number;
     per_page?: number;
-    aircraft_id?: number;
   };
   url: '/airworthiness-directives';
 };
