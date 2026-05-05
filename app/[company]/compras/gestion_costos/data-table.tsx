@@ -1,6 +1,6 @@
 'use client'
 
-import React from 'react'
+import React, { useMemo, useState } from 'react'
 import {
   ColumnDef,
   flexRender,
@@ -27,26 +27,31 @@ export type DataTableProps<TData> = {
   columns: ColumnDef<TData, any>[]
   data: TData[]
   loading?: boolean
+
+  type?: string
+  category?: string
 }
 
-export function DataTable<TData>({
+function DataTableInner<TData>({
   columns,
   data,
   loading = false,
 }: DataTableProps<TData>) {
 
-  const [sorting, setSorting] = React.useState<SortingState>([])
-  const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
+  const [sorting, setSorting] = useState<SortingState>([])
+  const [columnVisibility, setColumnVisibility] =
+    useState<VisibilityState>({})
+
+  const stableData = useMemo(() => data, [data])
 
   const table = useReactTable({
-    data,
+    data: stableData,
     columns,
 
     state: {
       sorting,
       columnVisibility,
     },
-    
 
     onSortingChange: setSorting,
     onColumnVisibilityChange: setColumnVisibility,
@@ -56,7 +61,8 @@ export function DataTable<TData>({
     getPaginationRowModel: getPaginationRowModel(),
   })
 
-  const isEmpty = table.getRowModel().rows.length === 0
+  const rows = table.getRowModel().rows
+  const isEmpty = rows.length === 0
 
   return (
     <div className="flex flex-col gap-3">
@@ -68,7 +74,10 @@ export function DataTable<TData>({
             {table.getHeaderGroups().map(headerGroup => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map(header => (
-                  <TableHead key={header.id} className="text-xs font-medium">
+                  <TableHead
+                    key={header.id}
+                    className="text-xs font-medium"
+                  >
                     {header.isPlaceholder
                       ? null
                       : flexRender(
@@ -84,18 +93,24 @@ export function DataTable<TData>({
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={columns.length} className="h-24 text-center">
+                <TableCell
+                  colSpan={columns.length}
+                  className="h-24 text-center"
+                >
                   Cargando...
                 </TableCell>
               </TableRow>
             ) : isEmpty ? (
               <TableRow>
-                <TableCell colSpan={columns.length} className="h-24 text-center text-muted-foreground">
+                <TableCell
+                  colSpan={columns.length}
+                  className="h-24 text-center text-muted-foreground"
+                >
                   Sin registros
                 </TableCell>
               </TableRow>
             ) : (
-              table.getRowModel().rows.map(row => (
+              rows.map(row => (
                 <TableRow key={row.id} className="hover:bg-muted/40">
                   {row.getVisibleCells().map(cell => (
                     <TableCell key={cell.id} className="py-2">
@@ -117,3 +132,5 @@ export function DataTable<TData>({
     </div>
   )
 }
+
+export const DataTable = React.memo(DataTableInner) as typeof DataTableInner

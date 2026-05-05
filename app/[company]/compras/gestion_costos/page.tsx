@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState, useCallback } from 'react'
+import React, { useMemo, useState, useCallback, useDeferredValue } from 'react'
 
 import { ContentLayout } from '@/components/layout/ContentLayout'
 import LoadingPage from '@/components/misc/LoadingPage'
@@ -35,42 +35,62 @@ import {
 } from '@/actions/mantenimiento/compras/gestion_costos/actions'
 
 type CostType = 'ARTICLE' | 'GENERAL'
-type Category = 'ALL' | 'COMPONENTE' | 'CONSUMIBLE' | 'HERRAMIENTA'
+type Category = 'all' | 'COMPONENT' | 'PART' | 'CONSUMABLE' | 'TOOL'
 
 type BaseRow = {
   id: number
   cost?: number
-
   batch_name?: string
   part_number?: string
   serial?: string
   quantity?: number
-
   name?: string
   description?: string
   brand_model?: string
   variant_type?: string
 }
 
+/* ─────────────────────────────────────────────
+   🔥 TABLE MEMO (FIX REAL DE RE-RENDER)
+───────────────────────────────────────────── */
+
+const TableSection = React.memo(function TableSection({
+  columns,
+  data,
+  loading,
+  type,
+  category,
+}: any) {
+  return (
+    <DataTable
+      columns={columns}
+      data={data}
+      loading={loading}
+      type={type}
+      category={category}
+    />
+  )
+})
+
+/* ───────────────────────────────────────────── */
+
 const CostManagementPage = () => {
   const { selectedCompany } = useCompanyStore()
 
   const [type, setType] = useState<CostType>('ARTICLE')
-  const [category, setCategory] = useState<Category>('ALL')
+  const [category, setCategory] = useState<Category>('all')
   const [search, setSearch] = useState('')
 
-  const {
-    data: warehouseData,
-    isLoading: loadingArticles,
-  } = useGetAllWarehouseArticlesByCategory(
-    category === 'ALL' ? 'all' : category,
-    type === 'ARTICLE'
-  )
+  const deferredSearch = useDeferredValue(search)
 
-  const {
-    data: generalArticles,
-    isLoading: loadingGeneral,
-  } = useGetGeneralArticles()
+  const { data: warehouseData, isLoading: loadingArticles } =
+    useGetAllWarehouseArticlesByCategory(
+      category === 'all' ? 'all' : category,
+      type === 'ARTICLE'
+    )
+
+  const { data: generalArticles, isLoading: loadingGeneral } =
+    useGetGeneralArticles()
 
   const isLoading =
     type === 'ARTICLE' ? loadingArticles : loadingGeneral
@@ -105,9 +125,9 @@ const CostManagementPage = () => {
   }, [type, generalArticles, articleData])
 
   const filteredData = useMemo<BaseRow[]>(() => {
-    if (!search.trim()) return baseData
+    if (!deferredSearch.trim()) return baseData
 
-    const q = search.toLowerCase()
+    const q = deferredSearch.toLowerCase()
 
     return baseData.filter((item: any) => {
       if (type === 'ARTICLE') {
@@ -124,7 +144,7 @@ const CostManagementPage = () => {
         item.variant_type?.toLowerCase?.().includes(q)
       )
     })
-  }, [baseData, search, type])
+  }, [baseData, deferredSearch, type])
 
   const {
     drafts: costDrafts,
@@ -136,16 +156,15 @@ const CostManagementPage = () => {
     data: filteredData,
   })
 
-  // derivados
-  const changedCount = useMemo(() => {
-    return getChangedRows().length
-  }, [getChangedRows])
+  const changedCount = useMemo(
+    () => getChangedRows().length,
+    [getChangedRows]
+  )
 
   const resetAll = useCallback(() => {
     setDrafts({})
   }, [setDrafts])
 
-  // 🔥 MUTATIONS
   const bulkArticleMutation = useBulkUpdateArticleCost()
   const bulkGeneralMutation = useBulkUpdateGeneralCost()
 
@@ -164,11 +183,11 @@ const CostManagementPage = () => {
 
     if (type === 'ARTICLE') {
       bulkArticleMutation.mutate(payload, {
-        onSuccess: () => resetAll(),
+        onSuccess: resetAll,
       })
     } else {
       bulkGeneralMutation.mutate(payload, {
-        onSuccess: () => resetAll(),
+        onSuccess: resetAll,
       })
     }
   }, [
@@ -196,6 +215,7 @@ const CostManagementPage = () => {
     <ContentLayout title="Gestión de Costos">
       <div className="flex flex-col gap-4">
 
+        {/* HEADER (NO RELEVANTE PARA PERF) */}
         <div className="flex items-center gap-2">
           <BackButton iconOnly variant="secondary" />
 
@@ -245,10 +265,12 @@ const CostManagementPage = () => {
           onSave={handleSave}
         />
 
-        <DataTable
+        <TableSection
           columns={columns}
-          data={filteredData}
+          data={baseData}
           loading={isLoading}
+          type={type}
+          category={category}
         />
 
       </div>

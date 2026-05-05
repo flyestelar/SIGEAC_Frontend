@@ -8,7 +8,12 @@ import { cn } from '@/lib/utils'
 
 type CostType = 'ARTICLE' | 'GENERAL'
 
-type Category = 'ALL' | 'COMPONENTE' | 'CONSUMIBLE' | 'HERRAMIENTA'
+type Category =
+  | 'all'
+  | 'COMPONENT'
+  | 'PART'
+  | 'CONSUMABLE'
+  | 'TOOL'
 
 type Props = {
   type: CostType
@@ -19,14 +24,27 @@ type Props = {
 }
 
 /* ─────────────────────────────────────────────
-   CONFIG
+   LABELS UI (clave del cambio)
+───────────────────────────────────────────── */
+
+const categoryLabels: Record<Category, string> = {
+  all: 'Todos',
+  COMPONENT: 'Componente',
+  PART: 'Parte',
+  CONSUMABLE: 'Consumible',
+  TOOL: 'Herramienta',
+}
+
+/* ─────────────────────────────────────────────
+   CONFIG (backend-safe values)
 ───────────────────────────────────────────── */
 
 const categories: Category[] = [
-  'ALL',
-  'COMPONENTE',
-  'CONSUMIBLE',
-  'HERRAMIENTA',
+  'all',
+  'COMPONENT',
+  'PART',
+  'CONSUMABLE',
+  'TOOL',
 ]
 
 /* ─────────────────────────────────────────────
@@ -60,7 +78,7 @@ const CostTypeToggle = ({
         <button
           onClick={() => {
             setType('GENERAL')
-            setCategory('ALL')
+            setCategory('all')
           }}
           className={cn(
             'px-3 py-1.5 text-xs font-medium transition-colors',
@@ -91,10 +109,11 @@ const CostTypeToggle = ({
                     : 'bg-background text-muted-foreground hover:bg-muted/40'
                 )}
               >
-                {cat}
+                {categoryLabels[cat]}
               </button>
             )
           })}
+
         </div>
       )}
     </div>
