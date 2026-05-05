@@ -155,7 +155,7 @@ export function CreateEmployeeForm({ onSuccess }: { onSuccess?: () => void }) {
   const {
     data: companies_locations,
     error: companies_locationsError,
-  } = useGetLocationsByCompanies(selectedCompany?.slug);
+  } = useGetLocationsByCompanies();
   
   const form = useForm<EmployeeForm>({
     resolver: zodResolver(formSchema),
