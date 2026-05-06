@@ -183,7 +183,7 @@ const CostManagementPage = () => {
       <div className="flex flex-col gap-6">
 
         <div className="flex items-center gap-3">
-          <BackButton iconOnly variant="secondary" />
+          <BackButton iconOnly tooltip="Volver" variant="secondary" />
 
           <Breadcrumb>
             <BreadcrumbList>
@@ -212,7 +212,7 @@ const CostManagementPage = () => {
               </h1>
 
               <p className="text-sm text-muted-foreground">
-                Administra y actualiza los costos de artículos y recursos del sistema
+                Administra y actualiza los costos unitarios de artículos y otros elementos del inventario aeronáutico y general.
               </p>
             </div>
           </div>
