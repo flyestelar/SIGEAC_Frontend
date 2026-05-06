@@ -237,7 +237,7 @@ export function CreateGenVolReport({
                 company: company,
                 reportData: {
                     ...data,
-                    status: "IN_PROCESS",
+                    status: "EN_PROCESO",
                 },
             };
             try {
@@ -247,10 +247,6 @@ export function CreateGenVolReport({
             }
         }
         onClose();
-    };
-
-    const onError = (errors: any) => {
-        console.log("❌ Errores de validación:", errors);
     };
 
     return (
