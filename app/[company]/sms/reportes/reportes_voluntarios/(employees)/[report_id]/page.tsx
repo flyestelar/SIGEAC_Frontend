@@ -390,6 +390,7 @@ const ShowVoluntaryReport = () => {
                     src={voluntaryReport.image!}
                     alt="Imagen del reporte"
                     fill
+                    unoptimized
                     className="w-full h-full object-contain rounded-md border group-hover:border-gray-400 transition-all"
                     onError={(e) => {
                       console.error("Error cargando imagen:", e);
@@ -412,6 +413,7 @@ const ShowVoluntaryReport = () => {
                     src={voluntaryReport.image!}
                     alt="Imagen completa del reporte"
                     fill
+                    unoptimized
                     className="object-contain"
                   />
                 </div>
