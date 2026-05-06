@@ -90,7 +90,7 @@ export const useUpdateFollowUpControl = () => {
   const updateFollowUpControlMutation = useMutation({
     mutationFn: async ({ company, id, data }: updateFolllowUpControlData) => {
       await axiosInstance.post(
-        `/${company}/sms/update-follow-up-controls/${id}`,
+        `/${company}/sms/follow-up-controls/update/${id}`,
         data,
         {
           headers: {

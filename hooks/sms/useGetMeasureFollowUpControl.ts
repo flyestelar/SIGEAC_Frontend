@@ -9,7 +9,7 @@ interface data {
 
 const fetchMeasureFollowUpControl = async ({ company, measure_id }: data) => {
   const { data } = await axiosInstance.get(
-    `/${company}/sms/measure/${measure_id}/controls`
+    `/${company}/sms/follow-up-controls/by-measure/${measure_id}`
   );
   return data;
 };
