@@ -3,6 +3,7 @@
 import CreateAirworthinessDirectiveApplicabilityDialog from '@/components/dialogs/planificacion/directivas/CreateAirworthinessDirectiveApplicabilityDialog';
 import CreateAirworthinessDirectiveComplianceControlDialog from '@/components/dialogs/planificacion/directivas/CreateAirworthinessDirectiveComplianceControlDialog';
 import CreateAirworthinessDirectiveComplianceExecutionDialog from '@/components/dialogs/planificacion/directivas/CreateAirworthinessDirectiveComplianceExecutionDialog';
+import EditAirworthinessDirectiveDialog from '@/components/dialogs/planificacion/directivas/EditAirworthinessDirectiveDialog';
 import ViewAirworthinessDirectivePdfDialog from '@/components/dialogs/planificacion/directivas/ViewAirworthinessDirectivePdfDialog';
 import { ContentLayout } from '@/components/layout/ContentLayout';
 import LoadingPage from '@/components/misc/LoadingPage';
@@ -228,6 +229,7 @@ export default function AirworthinessDirectiveDetailPage() {
   const [executionControl, setExecutionControl] = useState<AirworthinessDirectiveComplianceControlResource | undefined>();
   const [isExecutionDialogOpen, setIsExecutionDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isEditDirectiveOpen, setIsEditDirectiveOpen] = useState(false);
   const deleteApplicability = useDeleteAirworthinessDirectiveApplicability(Number.isFinite(directiveId) ? directiveId : undefined);
   const existingAircraftIds = useMemo(() => applicabilities.map((item) => item.aircraft_id), [applicabilities]);
 
@@ -358,7 +360,7 @@ export default function AirworthinessDirectiveDetailPage() {
 
           <div className="flex flex-wrap items-center gap-2">
             <ViewAirworthinessDirectivePdfDialog adNumber={directive.ad_number} pdfUrl={directive.pdf_document_url} />
-            <Button size="sm" disabled>
+            <Button size="sm" onClick={() => setIsEditDirectiveOpen(true)}>
               Editar directiva
             </Button>
           </div>
@@ -807,6 +809,11 @@ export default function AirworthinessDirectiveDetailPage() {
           </TabsContent>
         </Tabs>
       </div>
+      <EditAirworthinessDirectiveDialog
+        directive={directive}
+        open={isEditDirectiveOpen}
+        onOpenChange={setIsEditDirectiveOpen}
+      />
     </ContentLayout>
   );
 }

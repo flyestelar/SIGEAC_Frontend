@@ -2566,12 +2566,13 @@ export const airworthinessDirectivesUpdate = <ThrowOnError extends boolean = fal
     AirworthinessDirectivesUpdateErrors,
     ThrowOnError
   >({
+    ...formDataBodySerializer,
     responseType: 'json',
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/airworthiness-directives/{id}',
     ...options,
     headers: {
-      'Content-Type': 'application/json',
+      'Content-Type': null,
       ...options.headers,
     },
   });

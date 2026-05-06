@@ -4622,7 +4622,7 @@ export type AirworthinessDirectivesUpdateData = {
     issue_date?: string | null;
     effective_date?: string | null;
     is_recurring?: boolean;
-    pdf_document?: string | null;
+    pdf_document?: Blob | File | null;
   };
   path: {
     id: string;

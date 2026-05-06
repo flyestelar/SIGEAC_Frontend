@@ -17,6 +17,7 @@ import {
   airworthinessDirectivesIndexQueryKey,
   airworthinessDirectivesShowOptions,
   airworthinessDirectivesStoreMutation,
+  airworthinessDirectivesUpdateMutation,
 } from '@api/queries';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
@@ -97,6 +98,27 @@ export const useCreateAirworthinessDirective = () => {
       toast.error('Error al crear directiva', {
         description: message,
       });
+    },
+  });
+};
+
+export const useUpdateAirworthinessDirective = (id: number | undefined) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    ...airworthinessDirectivesUpdateMutation(),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: airworthinessDirectivesIndexQueryKey() });
+      queryClient.invalidateQueries({
+        queryKey: airworthinessDirectivesShowOptions({ path: { id: id ?? 0 } }).queryKey,
+      });
+      toast.success('Directiva actualizada', {
+        description: 'Los datos de la directiva fueron actualizados correctamente.',
+      });
+    },
+    onError: (error) => {
+      const message = error.response?.data?.message || 'No se pudo actualizar la directiva.';
+      toast.error('Error al actualizar directiva', { description: message });
     },
   });
 };
