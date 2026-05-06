@@ -40,8 +40,10 @@ export function getArticleCostColumns({
         </div>
       ),
       cell: ({ row }) => (
-        <div className="flex justify-center text-center font-medium">
-          {row.original.part_number ?? '—'}
+        <div className="flex justify-center w-full">
+          <span className="block max-w-[220px] whitespace-normal break-words text-sm font-semibold text-foreground text-center">
+            {row.original.part_number ?? '—'}
+          </span>
         </div>
       ),
     },
@@ -49,13 +51,14 @@ export function getArticleCostColumns({
     {
       accessorKey: 'batch_name',
       header: ({ column }) => (
-        <div className="flex justify-center text-center w-full">
+        <div className="flex justify-center text-center w-full max-w-[320px] mx-auto">
           <DataTableColumnHeader column={column} title="Descripción" />
         </div>
       ),
+
       cell: ({ row }) => (
-        <div className="flex justify-center text-center font-medium">
-          <span className="truncate text-sm text-muted-foreground text-center">
+        <div className="flex justify-center w-full">
+          <span className="block max-w-[320px] whitespace-normal break-words text-sm text-muted-foreground text-center">
             {row.original.batch_name ?? '—'}
           </span>
         </div>
@@ -70,8 +73,8 @@ export function getArticleCostColumns({
         </div>
       ),
       cell: ({ row }) => (
-        <div className="flex justify-center text-center font-medium">
-          <span className="truncate text-sm text-muted-foreground text-center">
+        <div className="flex justify-center w-full">
+          <span className="block max-w-[220px] whitespace-normal break-words text-sm text-muted-foreground text-center">
             {row.original.serial ?? '—'}
           </span>
         </div>

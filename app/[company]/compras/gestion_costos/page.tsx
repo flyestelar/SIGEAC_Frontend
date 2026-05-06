@@ -50,8 +50,6 @@ type BaseRow = {
   variant_type?: string
 }
 
-/* ───────────────────────────────────────────── */
-
 const CostManagementPage = () => {
   const { selectedCompany } = useCompanyStore()
 
@@ -70,9 +68,15 @@ const CostManagementPage = () => {
   const { data: generalArticles, isLoading: loadingGeneral } =
     useGetGeneralArticles()
 
-  const isLoading = type === 'ARTICLE' ? loadingArticles : loadingGeneral
+  const isInitialLoading =
+    type === 'ARTICLE'
+      ? loadingArticles && !warehouseData
+      : loadingGeneral && !generalArticles
 
-  /* ───────────────────────────── DATA BUILD ───────────────────────────── */
+  const isUpdating =
+    type === 'ARTICLE'
+      ? loadingArticles && !!warehouseData
+      : loadingGeneral && !!generalArticles
 
   const articleData = useMemo<BaseRow[]>(() => {
     if (!warehouseData?.batches) return []
@@ -124,9 +128,6 @@ const CostManagementPage = () => {
       )
     })
   }, [baseData, deferredSearch, type])
-
-  /* ───────────────────────────── COST LOGIC ───────────────────────────── */
-
   const {
     drafts: costDrafts,
     hasChanges,
@@ -178,15 +179,9 @@ const CostManagementPage = () => {
       }),
     [type, costDrafts, onCostChange]
   )
-
-  /* ───────────────────────────── UI ───────────────────────────── */
-
   return (
     <ContentLayout title="Gestión de Costos">
-
       <div className="flex flex-col gap-4">
-
-        {/* HEADER SIEMPRE RENDERIZADO */}
         <div className="flex items-center gap-2">
           <BackButton iconOnly variant="secondary" />
 
@@ -231,20 +226,19 @@ const CostManagementPage = () => {
           modifiedCount={getChangedRows().length}
           onSave={handleSave}
         />
-
-        {/* 🔥 SOLO LA TABLA SE ACTUALIZA VISUALMENTE */}
-        {isLoading && filteredData.length === 0 ? (
-          <LoadingPage />
+        {isInitialLoading && filteredData.length === 0 ? (
+          <div className="flex items-center justify-center min-h-[300px]">
+            <LoadingPage />
+          </div>
         ) : (
           <DataTable
             columns={columns}
             data={filteredData}
-            loading={isLoading}
+            loading={isUpdating}
           />
         )}
 
       </div>
-
     </ContentLayout>
   )
 }

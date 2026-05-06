@@ -38,13 +38,13 @@ export function getGeneralCostColumns({
     {
       accessorKey: 'description',
       header: ({ column }) => (
-        <div className="flex justify-center w-full text-center">
+        <div className="flex justify-center text-center w-full max-w-[320px] mx-auto">
           <DataTableColumnHeader filter column={column} title="Descripción" />
         </div>
       ),
       cell: ({ row }) => (
-        <div className="flex justify-center text-center font-medium w-full">
-          <span className="truncate max-w-[420px] text-sm">
+        <div className="flex justify-center text-center w-full">
+          <span className="block max-w-[320px] whitespace-normal break-words text-sm font-semibold text-foreground text-center">
             {row.original.description ?? '—'}
           </span>
         </div>
@@ -59,8 +59,10 @@ export function getGeneralCostColumns({
         </div>
       ),
       cell: ({ row }) => (
-        <div className="flex justify-center text-center text-sm text-muted-foreground w-full">
-          {row.original.brand_model ?? '—'}
+        <div className="flex justify-center text-center w-full">
+          <span className="block max-w-[240px] whitespace-normal break-words text-sm text-muted-foreground text-center">
+            {row.original.brand_model ?? '—'}
+          </span>
         </div>
       ),
     },
@@ -73,8 +75,10 @@ export function getGeneralCostColumns({
         </div>
       ),
       cell: ({ row }) => (
-        <div className="flex justify-center text-center text-xs text-muted-foreground w-full">
-          {row.original.variant_type ?? '—'}
+        <div className="flex justify-center text-center w-full">
+          <span className="block max-w-[240px] whitespace-normal break-words text-sm text-muted-foreground text-center">
+            {row.original.variant_type ?? '—'}
+          </span>
         </div>
       ),
     },

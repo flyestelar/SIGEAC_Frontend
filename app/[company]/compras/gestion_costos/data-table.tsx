@@ -41,6 +41,10 @@ function DataTableInner<TData>({
   const [sorting, setSorting] = useState<SortingState>([])
   const [columnVisibility, setColumnVisibility] =
     useState<VisibilityState>({})
+  const [pagination, setPagination] = useState({
+    pageIndex: 0,
+    pageSize: 15,
+  })
 
   const stableData = useMemo(() => data, [data])
 
@@ -51,10 +55,12 @@ function DataTableInner<TData>({
     state: {
       sorting,
       columnVisibility,
+      pagination,
     },
 
     onSortingChange: setSorting,
     onColumnVisibilityChange: setColumnVisibility,
+    onPaginationChange: setPagination,
 
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
