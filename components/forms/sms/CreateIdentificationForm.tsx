@@ -367,7 +367,7 @@ export default function CreateDangerIdentificationForm({
                         initialFocus
                         fromYear={2000}
                         toYear={new Date().getFullYear()}
-                        captionLayout="dropdown-buttons"
+                        captionLayout="dropdown"
                       />
                     </PopoverContent>
                   </Popover>
@@ -610,7 +610,7 @@ export default function CreateDangerIdentificationForm({
                 <Plus className="h-4 w-4" />
               </Button>
             </div>
-            {analyses.length > 0 && (
+            {analyses.length > 0 ? (
               <div className="flex flex-col gap-1.5 pt-2">
                 {analyses.map((item, index) => (
                   <div key={index} className="flex items-center justify-between gap-2 bg-muted/50 border rounded-md px-3 py-1.5">
@@ -624,7 +624,9 @@ export default function CreateDangerIdentificationForm({
                   </div>
                 ))}
               </div>
-            )}
+            ) : form.formState.isSubmitted ? (
+              <p className="text-xs text-destructive">Debe agregar al menos un análisis de causa raíz</p>
+            ) : null}
           </FormItem>
           <FormField
             control={form.control}

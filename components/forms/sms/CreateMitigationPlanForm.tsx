@@ -142,29 +142,30 @@ export default function CreateMitigationPlanForm({
             control={form.control}
             name="responsible"
             render={({ field }) => (
-              <FormItem className="w-full">
-                <FormLabel>Area de Responsable</FormLabel>
-                <Select
-                  onValueChange={field.onChange}
-                  defaultValue={field.value}
-                >
+              <FormItem>
+                <FormLabel className="text-[11px] font-semibold tracking-[0.1em] uppercase text-muted-foreground">Área</FormLabel>
+                <Select onValueChange={field.onChange} value={field.value}>
                   <FormControl>
-                    <SelectTrigger>
+                    <SelectTrigger className="h-9 text-sm">
                       <SelectValue placeholder="Seleccionar área" />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value="SMS">DIRECCIÓN DE SMS</SelectItem>
-                    <SelectItem value="OPERACIONES">OPERACIONES</SelectItem>
-                    <SelectItem value="MANTENIMIENTO">MANTENIMIENTO</SelectItem>
-                    <SelectItem value="ADMINISTRACION_RRHH">
-                      ADMINISTRACION Y RRHH
-                    </SelectItem>
-                    <SelectItem value="CONTROL_CALIDAD">
-                      CONTROL DE CALIDAD
-                    </SelectItem>
-                    <SelectItem value="IT">TECNOLOGIA E INFORMACION</SelectItem>
-                    <SelectItem value="AVSEC">AVSEC</SelectItem>
+                    {[
+                      ["ANONIMO","ANÓNIMO"],["APTO","APTO"],["DISPATCH","DISPATCH"],["GSE","GSE"],
+                      ["GTE. EST.","GTE. EST."],["SUMINISTRO","SUMINISTRO"],["INAC","INAC"],
+                      ["MTTO","MANTENIMIENTO"],["ING","INGENIERÍA"],["INST. CAP","INST. CAP"],
+                      ["N/A","NO APLICA"],["OMA","OMA"],["OPS","OPS"],["QMS","QMS"],
+                      ["RR.HH","RECURSOS HUMANOS"],["SGC","SGC"],["SMS","SMS"],
+                      ["TDC","TDC"],["TDM","TDM"],["TFC","TFC"],["CARG","CARG"],
+                      ["QMS_AVSEC","QMS AVSEC"],["GTE_EQUIPAJE","GTE EQUIPAJE"],
+                      ["TALLER_SUPERVIVENCIA","TALLER DE SUPERVIVENCIA"],["NDT","NDT"],
+                      ["AUDITORIA_INTERNA","AUDITORÍA INTERNA"],["AEROPUERTO","AEROPUERTO"],
+                      ["SSL","SSL"],["TECNOLOGIA","TECNOLOGÍA"],["INFRAESTRUCTURA","INFRAESTRUCTURA"],
+                      ["AVSEC","AVSEC"],
+                    ].map(([v, l]) => (
+                      <SelectItem key={v} value={v}>{l}</SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
                 <FormMessage />
