@@ -69,7 +69,7 @@ export default function EditAirworthinessDirectiveForm({ directive, onSuccess }:
         subject_description: values.subject_description || null,
         issue_date: values.issue_date || null,
         effective_date: values.effective_date || null,
-        is_recurring: values.is_recurring,
+        is_recurring: +values.is_recurring as any,
         pdf_document: values.pdf_document ?? null,
       },
     });
