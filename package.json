@@ -11,6 +11,7 @@
     "knip": "knip"
   },
   "dependencies": {
+    "@hey-api/client-axios": "^0.9.1",
     "@hookform/resolvers": "^3.9.0",
     "@react-pdf/renderer": "^4.1.5",
     "@schedule-x/calendar": "^2.36.0",
