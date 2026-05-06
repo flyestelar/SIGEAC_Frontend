@@ -150,35 +150,7 @@ export const useUpdateVoluntaryReport = () => {
     };
 };
 
-export const useAcceptVoluntaryReport = () => {
-    const queryClient = useQueryClient();
 
-    const acceptVoluntaryReportMutation = useMutation({
-        mutationFn: async ({ company, id, data }: UpdateVoluntaryReportData) => {
-            const response = await axiosInstance.patch(
-                `/${company}/sms/accept-voluntary-reports/${id}`,
-                data,
-            );
-            return response.data;
-        },
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["voluntary-reports"] });
-            queryClient.invalidateQueries({ queryKey: ["voluntary-report"] });
-            toast.success("Aceptado!", {
-                description: `El reporte voluntario ha sido aceptado.`,
-            });
-        },
-        onError: (error) => {
-            toast.error("Oops!", {
-                description: "No se pudo aceptar el reporte voluntario...",
-            });
-            console.log(error);
-        },
-    });
-    return {
-        acceptVoluntaryReport: acceptVoluntaryReportMutation,
-    };
-};
 
 export const useGetNextReportNumber = (company: string | null) => {
     return useQuery<NextNumberResponse>({
@@ -195,3 +167,39 @@ export const useGetNextReportNumber = (company: string | null) => {
     });
 };
 
+
+
+// En tu archivo de actions.ts
+export const useAcceptVoluntaryReport = () => {
+    const queryClient = useQueryClient();
+
+    const acceptMutation = useMutation({
+        mutationKey: ["accept-rvp"],
+        mutationFn: async ({
+            company,
+            id,
+        }: {
+            company: string | null;
+            id: string | number;
+        }) => {
+            // Asegúrate de que el endpoint sea el correcto
+            await axiosInstance.patch(`/${company}/sms/aeronautical/accept-report/${id}`);
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["voluntary-reports"] });
+            toast.success("¡Aceptado!", {
+                description: `¡El reporte ha sido aceptado correctamente!`,
+            });
+        },
+        onError: () => {
+            toast.error("Oops!", {
+                description: "¡Hubo un error al aceptar el reporte!",
+            });
+        },
+    });
+
+    return {
+        // CAMBIA ESTO:
+        acceptVoluntaryReport: acceptMutation,
+    };
+};
