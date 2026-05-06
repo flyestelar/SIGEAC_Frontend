@@ -255,7 +255,7 @@ export function CreateGenVolReport({
     return (
         <Form {...form}>
             <form
-                onSubmit={form.handleSubmit(onSubmit, onError)}
+                onSubmit={form.handleSubmit(onSubmit)}
                 className="flex flex-col space-y-6 w-full pb-4"
             >
                 {/* Header */}

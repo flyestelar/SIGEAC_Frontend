@@ -9,6 +9,7 @@ import { VoluntaryReport } from "@/types/sms/mantenimiento";
 import { Badge } from "@/components/ui/badge";
 import { getBadgeStatusClass } from "@/lib/sms/utils";
 import { ReportDetailActions } from "./_components/report-detail-actions";
+import { VoluntaryReportDropdownActions } from "@/components/dropdowns/mantenimiento/sms/VoluntaryReportDropdownActions";
 
 export const columns: ColumnDef<VoluntaryReport>[] = [
 
@@ -75,7 +76,7 @@ export const columns: ColumnDef<VoluntaryReport>[] = [
         header: () => <span className="sr-only">Acciones</span>,
         cell: ({ row }) => (
             <div className="flex justify-center">
-                <ReportDetailActions id={row.original.id} kind="RVP" />
+                <VoluntaryReportDropdownActions id={row.original.id} kind="RVP" />
             </div>
         ),
     },
