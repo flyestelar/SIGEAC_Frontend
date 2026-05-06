@@ -110,7 +110,7 @@ interface FormProps {
 
 export function ComponentDispatchForm({ onClose }: FormProps) {
   const { user } = useAuth();
-  const { selectedCompany } = useCompanyStore();
+  const { selectedCompany, selectedStation } = useCompanyStore();
   const { createDispatchRequest } = useCreateDispatchRequest();
 
   const [openComponents, setOpenComponents] = useState(false);
@@ -124,7 +124,11 @@ export function ComponentDispatchForm({ onClose }: FormProps) {
     isLoading: isBatchesLoading,
     isError: isBatchesError,
   } = useGetBatchesWithInWarehouseArticles('COMPONENTE');
-  const { data: employees, isLoading: employeesLoading, isError: employeesError } = useGetEmployeesByDepartment('MANP');
+  const {
+    data: employees,
+    isLoading: employeesLoading,
+    isError: employeesError,
+  } = useGetEmployeesByDepartment('MANP', selectedStation, selectedCompany?.slug);
   const {
     data: warehouseEmployees,
     isLoading: warehouseEmployeesLoading,

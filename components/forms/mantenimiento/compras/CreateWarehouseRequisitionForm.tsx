@@ -238,7 +238,11 @@ export function CreateWarehouseRequisitionForm({ onClose, initialData, isEditing
     isLoading: isAircraftsLoading,
     isError: isAircraftsError,
   } = useGetAircrafts(selectedCompany?.slug);
-  const { data: employees, isLoading: employeesLoading, isError: employeesError } = useGetEmployeesByDepartment('MANP');
+  const {
+    data: employees,
+    isLoading: employeesLoading,
+    isError: employeesError,
+  } = useGetEmployeesByDepartment('MANP', selectedStation, selectedCompany?.slug);
 
   const form = useForm<FormSchemaType>({
     resolver: zodResolver(FormSchema),

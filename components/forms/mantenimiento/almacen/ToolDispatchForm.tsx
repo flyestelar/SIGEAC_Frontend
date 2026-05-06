@@ -111,7 +111,7 @@ interface FormProps {
 
 export function ToolDispatchForm({ onClose }: FormProps) {
   const { user } = useAuth();
-  const { selectedCompany } = useCompanyStore();
+  const { selectedCompany, selectedStation } = useCompanyStore();
   const { createDispatchRequest } = useCreateDispatchRequest();
 
   const [openTools, setOpenTools] = useState(false);
@@ -125,7 +125,11 @@ export function ToolDispatchForm({ onClose }: FormProps) {
     isLoading: isBatchesLoading,
     isError: isBatchesError,
   } = useGetBatchesWithInWarehouseArticles('HERRAMIENTA');
-  const { data: employees, isLoading: employeesLoading, isError: employeesError } = useGetEmployeesByDepartment('MANP');
+  const {
+    data: employees,
+    isLoading: employeesLoading,
+    isError: employeesError,
+  } = useGetEmployeesByDepartment('MANP', selectedStation, selectedCompany?.slug);
   const {
     data: warehouseEmployees,
     isLoading: warehouseEmployeesLoading,
