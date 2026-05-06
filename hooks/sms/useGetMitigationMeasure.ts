@@ -10,7 +10,7 @@ const fetchMitigationMeasure = async ({
   plan_id: string;
 }) => {
   const { data } = await axiosInstance.get(
-    `${company}/sms/plan/${plan_id}/measure`
+    `${company}/sms/mitigation-plans/${plan_id}/measures`
   );
   return data;
 };
