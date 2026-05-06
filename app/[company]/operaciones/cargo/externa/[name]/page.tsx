@@ -120,15 +120,6 @@ const ExternalAircraftCargoPage = () => {
           </div>
 
           <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              onClick={() => exportToExcel(name, month, year, name, true)}
-              disabled={isExporting || isLoading || !data?.length}
-            >
-              <Download className="size-4 mr-2" />
-              {isExporting ? "Exportando..." : "Exportar Excel"}
-            </Button>
-
             {canWrite && isCurrentMonth && (
               <Button asChild>
                 <Link
@@ -139,6 +130,14 @@ const ExternalAircraftCargoPage = () => {
                 </Link>
               </Button>
             )}
+            <Button
+              variant="outline"
+              onClick={() => exportToExcel(name, month, year, name, true)}
+              disabled={isExporting || isLoading || !data?.length}
+            >
+              <Download className="size-4 mr-2" />
+              {isExporting ? "Exportando..." : "Exportar Excel"}
+            </Button>
           </div>
         </div>
 
