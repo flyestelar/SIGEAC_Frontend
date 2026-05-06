@@ -55,6 +55,8 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
+import { useExportCargoByAircraft } from "@/hooks/operaciones/cargo/useExportCargoByAircraft";
+import { Download } from "lucide-react";
 
 const AircraftCard = ({
   aircraft,
@@ -76,6 +78,7 @@ const AircraftCard = ({
   const canWrite = userRoles.some((r) =>
     ["OPERADOR_CARGA", "SUPERUSER"].includes(r),
   );
+
   const { bulkRename, isRenaming, bulkDelete, isDeleting } =
     useManageExternalAircraft(company);
 
@@ -293,7 +296,9 @@ const CargoPage = () => {
   const canWrite = userRoles.some((r) =>
     ["OPERADOR_CARGA", "SUPERUSER"].includes(r),
   );
-
+  const { exportAll, isExporting } = useExportCargoByAircraft(
+    selectedCompany?.slug,
+  );
   return (
     <ContentLayout title="Carga">
       <div className="flex flex-col gap-4">
@@ -334,7 +339,7 @@ const CargoPage = () => {
             />
           </div>
 
-          <div className="flex justify-end">
+          <div className="flex justify-end gap-2">
             {canWrite && (
               <Button asChild>
                 <Link
@@ -349,6 +354,14 @@ const CargoPage = () => {
                 </Link>
               </Button>
             )}
+            <Button
+              variant="outline"
+              onClick={() => exportAll(month, year)}
+              disabled={isExporting || isLoading}
+            >
+              <Download className="size-4 mr-2" />
+              {isExporting ? "Exportando..." : "Exportar Todo"}
+            </Button>
           </div>
         </div>
 
