@@ -16,7 +16,6 @@ export type ArticleCostRow = {
 }
 
 export type ArticleCostColumnsArgs = {
-  costDrafts: Record<number, string | number | undefined>
   onCostChange: (id: number, value: string) => void
 }
 
@@ -27,7 +26,6 @@ const isModified = (
 ) => drafts[id] !== undefined && drafts[id] !== current
 
 export function getArticleCostColumns({
-  costDrafts,
   onCostChange,
 }: ArticleCostColumnsArgs): ColumnDef<ArticleCostRow>[] {
 
@@ -83,31 +81,25 @@ export function getArticleCostColumns({
 
     {
       accessorKey: 'cost',
-      size: 180,
       header: ({ column }) => (
         <div className="flex justify-center w-full text-center">
           <DataTableColumnHeader filter column={column} title="Costo Unitario" />
         </div>
       ),
 
-      cell: ({ row }) => {
+      cell: ({ row, table }) => {
         const id = row.original.id
         const current = row.original.cost
+        const meta = table.options.meta as any
+        const costDrafts = meta?.costDrafts ?? {}
         const draft = costDrafts[id]
-
-        const modified =
-          draft !== undefined &&
-          Number(draft) !== Number(current ?? 0)
+        const modified = isModified(id, costDrafts, current)
 
         const currentValue =
-          current !== undefined && current !== null
-            ? String(current)
-            : ''
+                  current !== undefined && current !== null ? String(current) : '0'
 
         const draftValue =
-          draft !== undefined && draft !== null
-            ? String(draft)
-            : ''
+                  draft !== undefined && draft !== null ? String(draft) : ''
 
         return (
           <div className="flex justify-center w-full">
@@ -117,7 +109,7 @@ export function getArticleCostColumns({
                 'bg-background/60 backdrop-blur transition-all',
                 'hover:border-muted-foreground/40',
                 modified
-                  ? 'border-amber-500 bg-amber-50/60 dark:bg-amber-950/30'
+                  ? 'border-lime-500 bg-lime-50/60 dark:bg-lime-950/30'
                   : 'border-border'
               )}
             >
@@ -134,32 +126,28 @@ export function getArticleCostColumns({
                   <Input
                     inputMode="decimal"
                     value={draftValue}
+                    autoFocus
                     onChange={(e) => onCostChange(id, e.target.value)}
-                    onBlur={(e) => {
-                      if (e.target.value === '') onCostChange(id, '')
-                    }}
                     className="h-6 w-16 border-0 bg-transparent p-0 text-sm tabular-nums shadow-none text-center font-medium text-foreground focus-visible:ring-0 focus-visible:ring-offset-0"
                   />
                 </>
               ) : (
                 <Input
                   inputMode="decimal"
-                  value={currentValue}
+                  value=""
+                  placeholder={currentValue}
                   onChange={(e) => onCostChange(id, e.target.value)}
-                  onBlur={(e) => {
-                    if (e.target.value === '') onCostChange(id, '')
-                  }}
                   className="h-6 w-20 border-0 bg-transparent p-0 text-sm tabular-nums shadow-none text-center text-muted-foreground focus-visible:ring-0 focus-visible:ring-offset-0"
                 />
               )}
 
               {modified && (
-                <div className="h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse" />
+                <div className="h-1.5 w-1.5 rounded-full bg-lime-300 animate-pulse" />
               )}
             </div>
           </div>
         )
       },
-    }
+    },
   ]
 }

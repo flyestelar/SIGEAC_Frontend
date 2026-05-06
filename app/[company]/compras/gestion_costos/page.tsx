@@ -174,10 +174,9 @@ const CostManagementPage = () => {
     () =>
       getColumns({
         type,
-        costDrafts,
         onCostChange,
       }),
-    [type, costDrafts, onCostChange]
+    [type, onCostChange]
   )
   return (
     <ContentLayout title="Gestión de Costos">
@@ -235,6 +234,7 @@ const CostManagementPage = () => {
             columns={columns}
             data={filteredData}
             loading={isUpdating}
+            costDrafts={costDrafts}
           />
         )}
 

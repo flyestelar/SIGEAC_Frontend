@@ -27,7 +27,7 @@ export type DataTableProps<TData> = {
   columns: ColumnDef<TData, any>[]
   data: TData[]
   loading?: boolean
-
+  costDrafts?: Record<number, any>
   type?: string
   category?: string
 }
@@ -36,6 +36,7 @@ function DataTableInner<TData>({
   columns,
   data,
   loading = false,
+  costDrafts,
 }: DataTableProps<TData>) {
 
   const [sorting, setSorting] = useState<SortingState>([])
@@ -57,7 +58,9 @@ function DataTableInner<TData>({
       columnVisibility,
       pagination,
     },
-
+    meta: {
+      costDrafts,
+    },
     onSortingChange: setSorting,
     onColumnVisibilityChange: setColumnVisibility,
     onPaginationChange: setPagination,
