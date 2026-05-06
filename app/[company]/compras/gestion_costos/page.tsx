@@ -180,8 +180,9 @@ const CostManagementPage = () => {
   )
   return (
     <ContentLayout title="Gestión de Costos">
-      <div className="flex flex-col gap-4">
-        <div className="flex items-center gap-2">
+      <div className="flex flex-col gap-6">
+
+        <div className="flex items-center gap-3">
           <BackButton iconOnly variant="secondary" />
 
           <Breadcrumb>
@@ -203,28 +204,56 @@ const CostManagementPage = () => {
           </Breadcrumb>
         </div>
 
-        <div className="flex items-baseline justify-between">
-          <h1 className="text-2xl font-bold">Gestión de Costos</h1>
+        <div className="flex flex-col gap-2 border-b pb-4">
+          <div className="flex items-end justify-between">
+            <div className="flex flex-col">
+              <h1 className="text-3xl font-semibold tracking-tight">
+                Gestión de Costos
+              </h1>
 
-          <span className="text-xs text-muted-foreground tabular-nums">
-            {filteredData.length} registros
-          </span>
+              <p className="text-sm text-muted-foreground">
+                Administra y actualiza los costos de artículos y recursos del sistema
+              </p>
+            </div>
+          </div>
         </div>
 
-        <CostTypeToggle
-          type={type}
-          setType={setType}
-          category={category}
-          setCategory={setCategory}
-        />
+        <div className="flex justify-center">
+          <CostTypeToggle
+            type={type}
+            setType={setType}
+            category={category}
+            setCategory={setCategory}
+          />
+        </div>
 
-        <CostToolbar search={search} setSearch={setSearch} />
+        <div
+          className="
+            flex items-center justify-between gap-4
+            px-3 py-2
+            rounded-xl border
+            bg-slate-200/40 border-slate-200/40
+            dark:bg-slate-800/70 dark:border-slate-700/60
+            backdrop-blur-md
+            dark:shadow-[0_4px_20px_rgba(0,0,0,0.35)]
+          "
+        >
+          <CostToolbar
+            search={search}
+            setSearch={setSearch}
+          />
+
+          <span className="text-xs text-muted-foreground tabular-nums">
+            {filteredData.length} artículos
+          </span>
+        </div>
 
         <CostSaveBar
           hasChanges={hasChanges}
           modifiedCount={getChangedRows().length}
           onSave={handleSave}
         />
+        
         {isInitialLoading && filteredData.length === 0 ? (
           <div className="flex items-center justify-center min-h-[300px]">
             <LoadingPage />

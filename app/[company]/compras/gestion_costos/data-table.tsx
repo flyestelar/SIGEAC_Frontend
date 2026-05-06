@@ -74,18 +74,36 @@ function DataTableInner<TData>({
   const isEmpty = rows.length === 0
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-4">
 
-      <div className="rounded-md border bg-background overflow-hidden">
+      <div
+        className="
+          rounded-xl border overflow-hidden
+          bg-white dark:bg-slate-900/60
+          border-slate-200 dark:border-slate-700/60
+        "
+      >
 
         <Table>
-          <TableHeader className="sticky top-0 z-10 bg-background">
+
+          {/* HEADER */}
+          <TableHeader className="sticky top-0 z-10">
             {table.getHeaderGroups().map(headerGroup => (
-              <TableRow key={headerGroup.id}>
+              <TableRow
+                key={headerGroup.id}
+                className="
+                  bg-slate-50 dark:bg-slate-800/70
+                  border-b border-slate-200 dark:border-slate-700/60
+                "
+              >
                 {headerGroup.headers.map(header => (
                   <TableHead
                     key={header.id}
-                    className="text-xs font-medium"
+                    className="
+                      text-[11px] font-semibold uppercase tracking-wide
+                      text-muted-foreground
+                      py-3
+                    "
                   >
                     {header.isPlaceholder
                       ? null
@@ -99,12 +117,13 @@ function DataTableInner<TData>({
             ))}
           </TableHeader>
 
+          {/* BODY */}
           <TableBody>
             {loading ? (
               <TableRow>
                 <TableCell
                   colSpan={columns.length}
-                  className="h-24 text-center"
+                  className="h-24 text-center text-muted-foreground"
                 >
                   Cargando...
                 </TableCell>
@@ -119,10 +138,20 @@ function DataTableInner<TData>({
                 </TableCell>
               </TableRow>
             ) : (
-              rows.map(row => (
-                <TableRow key={row.id} className="hover:bg-muted/40">
+              rows.map((row, index) => (
+                <TableRow
+                  key={row.id}
+                  className="
+                    border-b border-slate-200/70 dark:border-slate-700/50
+                    hover:bg-slate-50 dark:hover:bg-slate-800/60
+                    transition-colors
+                  "
+                >
                   {row.getVisibleCells().map(cell => (
-                    <TableCell key={cell.id} className="py-2">
+                    <TableCell
+                      key={cell.id}
+                      className="py-2 text-sm leading-tight"
+                    >
                       {flexRender(
                         cell.column.columnDef.cell,
                         cell.getContext()

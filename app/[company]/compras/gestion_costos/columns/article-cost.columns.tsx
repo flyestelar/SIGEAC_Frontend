@@ -5,7 +5,6 @@ import { DataTableColumnHeader } from '@/components/tables/DataTableHeader'
 import { Input } from '@/components/ui/input'
 import { cn } from '@/lib/utils'
 import React from 'react'
-import { DollarSign } from 'lucide-react'
 
 export type ArticleCostRow = {
   id: number
@@ -30,16 +29,18 @@ export function getArticleCostColumns({
 }: ArticleCostColumnsArgs): ColumnDef<ArticleCostRow>[] {
 
   return [
+
     {
       accessorKey: 'part_number',
+      size: 220,
       header: ({ column }) => (
-        <div className="flex justify-center text-center w-full">
+        <div className="flex justify-center w-full">
           <DataTableColumnHeader filter column={column} title="Part Number" />
         </div>
       ),
       cell: ({ row }) => (
         <div className="flex justify-center w-full">
-          <span className="block max-w-[220px] whitespace-normal break-words text-sm font-semibold text-foreground text-center">
+          <span className="block max-w-[200px] break-words text-sm font-semibold text-foreground text-center">
             {row.original.part_number ?? '—'}
           </span>
         </div>
@@ -48,15 +49,15 @@ export function getArticleCostColumns({
 
     {
       accessorKey: 'batch_name',
+      size: 320,
       header: ({ column }) => (
-        <div className="flex justify-center text-center w-full max-w-[320px] mx-auto">
+        <div className="flex justify-center w-full">
           <DataTableColumnHeader column={column} title="Descripción" />
         </div>
       ),
-
       cell: ({ row }) => (
         <div className="flex justify-center w-full">
-          <span className="block max-w-[320px] whitespace-normal break-words text-sm text-muted-foreground text-center">
+          <span className="block max-w-[300px] break-words text-sm text-slate-600 dark:text-slate-300 text-center">
             {row.original.batch_name ?? '—'}
           </span>
         </div>
@@ -65,14 +66,15 @@ export function getArticleCostColumns({
 
     {
       accessorKey: 'serial',
+      size: 220,
       header: ({ column }) => (
-        <div className="flex justify-center text-center w-full">
+        <div className="flex justify-center w-full">
           <DataTableColumnHeader column={column} title="Serial / Lote" />
         </div>
       ),
       cell: ({ row }) => (
         <div className="flex justify-center w-full">
-          <span className="block max-w-[220px] whitespace-normal break-words text-sm text-muted-foreground text-center">
+          <span className="block max-w-[200px] break-words text-sm text-slate-500 dark:text-slate-400 text-center">
             {row.original.serial ?? '—'}
           </span>
         </div>
@@ -81,8 +83,9 @@ export function getArticleCostColumns({
 
     {
       accessorKey: 'cost',
+      size: 140,
       header: ({ column }) => (
-        <div className="flex justify-center w-full text-center">
+        <div className="flex justify-center w-full">
           <DataTableColumnHeader filter column={column} title="Costo Unitario" />
         </div>
       ),
@@ -96,21 +99,20 @@ export function getArticleCostColumns({
         const modified = isModified(id, costDrafts, current)
 
         const currentValue =
-                  current !== undefined && current !== null ? String(current) : '0'
+          current !== undefined && current !== null ? String(current) : '0'
 
         const draftValue =
-                  draft !== undefined && draft !== null ? String(draft) : ''
+          draft !== undefined && draft !== null ? String(draft) : ''
 
         return (
           <div className="flex justify-center w-full">
             <div
               className={cn(
-                'group flex items-center gap-1.5 rounded-md border px-2 py-1',
-                'bg-background/60 backdrop-blur transition-all',
-                'hover:border-muted-foreground/40',
+                'group flex items-center gap-1.5 rounded-md border px-2 py-1 transition-all',
+                'bg-white/70 dark:bg-slate-900/40 backdrop-blur-sm',
                 modified
-                  ? 'border-lime-500 bg-lime-50/60 dark:bg-lime-950/30'
-                  : 'border-border'
+                  ? 'border-emerald-500/60 bg-emerald-50/70 dark:bg-emerald-900/20'
+                  : 'border-slate-200 dark:border-slate-700/60'
               )}
             >
               <span className="text-xs text-muted-foreground">$</span>
@@ -128,7 +130,12 @@ export function getArticleCostColumns({
                     value={draftValue}
                     autoFocus
                     onChange={(e) => onCostChange(id, e.target.value)}
-                    className="h-6 w-16 border-0 bg-transparent p-0 text-sm tabular-nums shadow-none text-center font-medium text-foreground focus-visible:ring-0 focus-visible:ring-offset-0"
+                    className="
+                      h-6 w-16 border-0 bg-transparent p-0
+                      text-sm tabular-nums text-center font-medium
+                      text-foreground
+                      focus-visible:ring-0 focus-visible:ring-offset-0
+                    "
                   />
                 </>
               ) : (
@@ -137,12 +144,17 @@ export function getArticleCostColumns({
                   value=""
                   placeholder={currentValue}
                   onChange={(e) => onCostChange(id, e.target.value)}
-                  className="h-6 w-20 border-0 bg-transparent p-0 text-sm tabular-nums shadow-none text-center text-muted-foreground focus-visible:ring-0 focus-visible:ring-offset-0"
+                  className="
+                    h-6 w-16 border-0 bg-transparent p-0
+                    text-sm tabular-nums text-center
+                    text-muted-foreground
+                    focus-visible:ring-0 focus-visible:ring-offset-0
+                  "
                 />
               )}
 
               {modified && (
-                <div className="h-1.5 w-1.5 rounded-full bg-lime-300 animate-pulse" />
+                <div className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
               )}
             </div>
           </div>

@@ -15,10 +15,9 @@ const CostToolbar = ({
   placeholder = 'Buscar artículo o general...'
 }: Props) => {
   return (
-    <div className="flex items-center justify-end gap-2">
+    <div className="flex items-center gap-2">
 
-      {/* Search */}
-      <div className="relative w-64">
+      <div className="relative w-64 sm:w-72">
         <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground" />
 
         <Input
@@ -27,13 +26,14 @@ const CostToolbar = ({
           placeholder={placeholder}
           className="
             pl-8 h-8 text-xs
-            bg-background
-            border-border
+            bg-white/80 dark:bg-slate-900/60
+            border-slate-200/60 dark:border-slate-700/60
             focus-visible:ring-1
-            focus-visible:ring-amber-500/40
+            focus-visible:ring-[#439A97]/40
           "
         />
       </div>
+      
     </div>
   )
 }
