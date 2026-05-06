@@ -25,16 +25,22 @@ type BulkUpdatePayload = {
 /* =========================
    API CALLS
 ========================= */
-const QUERY_KEYS = {
-  articles: ["warehouse-articles"],
-  general: ["general-articles"],
-}
 const invalidateArticles = (queryClient: any) => {
-  queryClient.invalidateQueries({ queryKey: QUERY_KEYS.articles })
-}
+  queryClient.invalidateQueries({
+    queryKey: ["warehouse-articles"],
+    exact: false,
+  })
 
+  queryClient.invalidateQueries({
+    queryKey: ["warehouse-articles-all"],
+    exact: false,
+  })
+}
 const invalidateGeneral = (queryClient: any) => {
-  queryClient.invalidateQueries({ queryKey: QUERY_KEYS.general })
+  queryClient.invalidateQueries({
+    queryKey: ["general-articles"],
+    exact: false,
+  })
 }
 
 // 🔹 ARTICLE

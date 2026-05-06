@@ -113,6 +113,9 @@ export const useGetWarehouseArticlesByCategory = (
         queryKey: ["warehouse-articles", selectedCompany?.slug, selectedStation, page, per_page, category, part_number, is_hazardous],
         queryFn: () => fetchWarehouseArticlesByCategory(selectedStation, category, selectedCompany?.slug, status, page, per_page, part_number, is_hazardous),
         enabled: enabled && !!selectedCompany && !!selectedStation,
+        staleTime: 0,
+        refetchOnMount: true,
+        refetchOnWindowFocus: false,    
     });
 };
 
@@ -177,7 +180,7 @@ export const useGetAllWarehouseArticlesByCategory = (
 
     enabled: enabled && !!selectedCompany && !!selectedStation,
 
-    staleTime: 2 * 60 * 1000,
+    staleTime: 0,
     retry: false,
   })
 }
