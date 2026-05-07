@@ -166,14 +166,22 @@ const ShowVoluntaryReport = () => {
         }
         .rvp-back {
           display: inline-flex; align-items: center; gap: 6px;
-          font-size: 12px; font-weight: 500;
-          color: #94a3b8; cursor: pointer;
-          background: none; border: none; padding: 0;
+          font-size: 12px; font-weight: 600;
+          color: #cbd5e1; cursor: pointer;
+          background: rgba(255,255,255,0.06);
+          border: 1px solid rgba(148,163,184,0.35);
+          border-radius: 8px;
+          padding: 6px 14px;
           font-family: 'Sora', sans-serif;
-          transition: color 0.15s;
+          transition: background 0.15s, border-color 0.15s, color 0.15s;
           margin-bottom: 16px;
+          letter-spacing: 0.01em;
         }
-        .rvp-back:hover { color: #f1f5f9; }
+        .rvp-back:hover {
+          color: #f1f5f9;
+          background: rgba(255,255,255,0.12);
+          border-color: rgba(148,163,184,0.6);
+        }
 
         /* cards */
         .rvp-card {
@@ -313,7 +321,7 @@ const ShowVoluntaryReport = () => {
           className="rvp-back"
           onClick={() => router.push(`/${selectedCompany?.slug}/sms/reportes`)}
         >
-          <ArrowLeft className="w-3.5 h-3.5" />
+          <ArrowLeft className="w-4 h-4" />
           Volver a reportes
         </button>
 
