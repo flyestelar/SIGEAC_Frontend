@@ -74,6 +74,10 @@ const RequisitionsPage = () => {
       return (
         req.order_number?.toLowerCase?.().includes(q) ||
         req.status?.toLowerCase?.().includes(q) ||
+        req.justification?.toLowerCase?.().includes(q) ||
+        req.requested_by?.toLowerCase?.().includes(q) ||
+        req.submission_date?.toLowerCase?.().includes(q) ||
+        req.type?.toLowerCase?.().includes(q) ||
         req.created_by?.username?.toLowerCase?.().includes(q)
       )
     })
@@ -170,7 +174,7 @@ const RequisitionsPage = () => {
               tabular-nums
             "
           >
-            {filteredRequisitions.length} requisiciones
+            {filteredRequisitions.length} {filteredRequisitions.length === 1 ? 'requisición' : 'requisiciones'}
           </span>
         </div>
 

@@ -11,6 +11,7 @@ export type ArticleCostRow = {
   batch_name?: string
   part_number?: string
   serial?: string
+  unit_label?: string
   cost?: number
 }
 
@@ -90,6 +91,23 @@ export function getArticleCostColumns({
         </div>
       ),
     },
+
+    // {
+    //   accessorKey: 'unit_label',
+    //   size: 120,
+    //   header: ({ column }) => (
+    //     <div className="flex justify-center w-full">
+    //       <DataTableColumnHeader column={column} title="Unidad" />
+    //     </div>
+    //   ),
+    //   cell: ({ row }) => (
+    //     <div className="flex justify-center w-full">
+    //       <span className="block text-sm text-slate-500 dark:text-slate-400 text-center">
+    //         {row.original.unit_label ?? '—'}
+    //       </span>
+    //     </div>
+    //   ),
+    // },
 
     {
       accessorKey: 'cost',

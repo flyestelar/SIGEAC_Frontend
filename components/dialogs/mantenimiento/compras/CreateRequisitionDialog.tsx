@@ -18,6 +18,8 @@ import {
   TabsTrigger,
 } from "@/components/ui/tabs"
 
+import { Boxes, Package } from "lucide-react"
+
 import { useAuth } from "@/contexts/AuthContext"
 
 import { CreateEngineeringBatchRequisitionForm } from "@/components/forms/mantenimiento/compras/CreateEngineeringBatchRequisitionForm"
@@ -128,7 +130,7 @@ export function CreateRequisitionDialog() {
                 <TabsTrigger
                   value="batch"
                   className="
-                    flex gap-2 text-xs rounded-lg
+                    flex items-center gap-2 text-xs rounded-lg
                     transition-all duration-200
 
                     data-[state=active]:bg-background
@@ -139,13 +141,14 @@ export function CreateRequisitionDialog() {
                     data-[state=active]:text-teal-600
                   "
                 >
+                  <Boxes className="size-4" />
                   Lote
                 </TabsTrigger>
 
                 <TabsTrigger
                   value="articulo"
                   className="
-                    flex gap-2 text-xs rounded-lg
+                    flex items-center gap-2 text-xs rounded-lg
                     transition-all duration-200
 
                     data-[state=active]:bg-background
@@ -156,6 +159,7 @@ export function CreateRequisitionDialog() {
                     data-[state=active]:text-teal-600
                   "
                 >
+                  <Package className="size-4" />
                   Artículo
                 </TabsTrigger>
 

@@ -165,21 +165,30 @@ export const getColumns = (
                 font-semibold
                 tracking-wide
                 shadow-sm
+                transition-colors duration-150
+                cursor-default
+                hover:scale-100
+                hover:translate-y-0
               `,
-              process &&
-                `
-                  border-yellow-500/30
-                  bg-yellow-500/10
-                  text-yellow-700
-                  dark:text-yellow-300
-                `,
-              approved &&
-                `
-                  border-emerald-500/30
-                  bg-emerald-500/10
-                  text-emerald-700
-                  dark:text-emerald-300
-                `,
+
+              process && `
+                border-yellow-500/30
+                bg-yellow-500/10
+                text-yellow-700
+                dark:text-yellow-300
+                hover:bg-yellow-500/15
+                dark:hover:text-yellow-200
+              `,
+
+              approved && `
+                border-emerald-500/30
+                bg-emerald-500/10
+                text-emerald-700
+                dark:text-emerald-300
+                hover:bg-emerald-500/15
+                dark:hover:text-emerald-200
+              `,
+
               !process &&
                 !approved &&
                 `
@@ -187,6 +196,8 @@ export const getColumns = (
                   bg-red-500/10
                   text-red-700
                   dark:text-red-300
+                  hover:bg-red-500/15
+                  dark:hover:text-red-200
                 `
             )}
           >
@@ -194,7 +205,7 @@ export const getColumns = (
           </Badge>
         </div>
       )
-    },
+    }
   },
 
   {

@@ -48,6 +48,7 @@ type BaseRow = {
   description?: string
   brand_model?: string
   variant_type?: string
+  unit_label?: string
 }
 
 const CostManagementPage = () => {
@@ -87,6 +88,7 @@ const CostManagementPage = () => {
         batch_name: batch.name,
         part_number: article.part_number,
         serial: article.serial,
+        unit_label: article.unit?.label,
         cost: Number(article.cost ?? 0),
       }))
     )
@@ -101,6 +103,7 @@ const CostManagementPage = () => {
         brand_model: a.brand_model,
         variant_type: a.variant_type,
         cost: Number(a.cost ?? 0),
+        unit_label: a.general_primary_unit?.label,
       }))
     }
 
@@ -116,6 +119,7 @@ const CostManagementPage = () => {
       if (type === 'ARTICLE') {
         return (
           item.part_number?.toLowerCase?.().includes(q) ||
+          item.serial?.toLowerCase?.().includes(q) ||
           item.batch_name?.toLowerCase?.().includes(q)
         )
       }
@@ -244,7 +248,7 @@ const CostManagementPage = () => {
           />
 
           <span className="text-xs text-muted-foreground tabular-nums">
-            {filteredData.length} artículos
+            {filteredData.length} {filteredData.length === 1 ? 'artículo' : 'artículos'}
           </span>
         </div>
 
