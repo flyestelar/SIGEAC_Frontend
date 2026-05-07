@@ -202,8 +202,26 @@ export default function CreateHazardNotification({
                                             </Button>
                                         </FormControl>
                                     </PopoverTrigger>
-                                    <PopoverContent className="w-auto p-0" align="start">
-                                        <Calendar mode="single" selected={field.value} onSelect={field.onChange} initialFocus />
+                                     <PopoverContent className="w-auto p-0" align="start">
+                                        <Calendar
+                                            mode="single"
+                                            selected={field.value}
+                                            onSelect={field.onChange}
+                                            initialFocus
+                                            fromYear={1980}
+                                            toYear={new Date().getFullYear() + 20}
+                                            captionLayout="dropdown-buttons"
+                                            components={{
+                                                Dropdown: (props) => (
+                                                    <select
+                                                        {...props}
+                                                        className="bg-popover text-popover-foreground"
+                                                    >
+                                                        {props.children}
+                                                    </select>
+                                                ),
+                                            }}
+                                        />
                                     </PopoverContent>
                                 </Popover>
                                 <FormMessage />

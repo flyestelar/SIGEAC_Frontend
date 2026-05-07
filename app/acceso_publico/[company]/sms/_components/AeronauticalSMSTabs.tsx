@@ -13,7 +13,6 @@ import {
     Eye,
     FileText,
     Shield,
-    ShieldCheck,
     Target,
     Users,
 } from "lucide-react";
@@ -37,6 +36,8 @@ import {
     policyCardsData,
     smsConcepts,
 } from "@/lib/constants/sms-data";
+import { PillarCard } from "./PillarCard";
+import { PersonCard } from "./PersonCard";
 
 interface SMSTabsProps {
     company: string;
@@ -101,18 +102,12 @@ export const AeronauticalSMSTabs = ({ company, surveyNumbers }: SMSTabsProps) =>
 
     const corporatePillars = [
         {
-            icon: Building2,
             title: "Misión",
-            description:
-                "Proveer servicios de transporte aéreo de alta calidad, garantizando seguridad, puntualidad y excelencia operativa con impacto sostenible.",
-            image: `${storageBaseUrl}images/sms/sms_airplane_page.png`,
+            image: `${storageBaseUrl}images/sms/mision_h74.png`,
         },
         {
-            icon: Eye,
             title: "Visión",
-            description:
-                "Consolidarnos como referencia nacional e internacional en servicios aéreos, distinguidos por innovación, calidad y seguridad operacional.",
-            image: `${storageBaseUrl}images/sms/h74_sms_logo.png`,
+            image: `${storageBaseUrl}images/sms/vision_h74.png`,
         },
 
     ];
@@ -142,35 +137,31 @@ export const AeronauticalSMSTabs = ({ company, surveyNumbers }: SMSTabsProps) =>
     const keyPersonnel = [
         {
             initials: "DE",
-            role: "Director de Emergencia",
-            tag: "Coordinación crítica",
+            role: "EJECUTIVO RESPONSABLE",
             description:
                 "Coordina la respuesta integral, activa los protocolos y lidera la toma de decisiones durante eventos críticos.",
-            image: `${storageBaseUrl}images/sms/h74_sms_logo.png`,
+            image: `${storageBaseUrl}images/sms/ejecutivo_responsable.png`,
         },
         {
             initials: "SMS",
-            role: "Responsable del Sistema SMS",
-            tag: "Gestión del sistema",
+            role: "GERENTE SMS",
             description:
                 "Supervisa la cultura de reporte, el análisis de riesgos y la mejora continua de la seguridad operacional.",
-            image: `${storageBaseUrl}images/sms/LOGO.png`,
+            image: `${storageBaseUrl}images/sms/gerente_sms.png`,
         },
         {
             initials: "OPS",
-            role: "Jefatura de Operaciones",
-            tag: "Control operacional",
+            role: "COORDINADORA SMS",
             description:
                 "Asegura la ejecución segura de las operaciones y la alineación del personal con los estándares operacionales.",
-            image: `${storageBaseUrl}images/sms/sms_airplane_page.png`,
+            image: `${storageBaseUrl}images/sms/coordinadora_sms.png`,
         },
         {
             initials: "MNT",
-            role: "Jefatura de Mantenimiento",
-            tag: "Soporte técnico",
+            role: "ANALISTA SMS",
             description:
                 "Garantiza la condición aeronavegable, la prevención técnica y la trazabilidad de las acciones correctivas.",
-            image: `${storageBaseUrl}images/sms/risk_icon.png`,
+            image: `${storageBaseUrl}images/sms/analista_sms.png`,
         },
     ];
 
@@ -233,31 +224,13 @@ export const AeronauticalSMSTabs = ({ company, surveyNumbers }: SMSTabsProps) =>
                                 </div>
 
                                 <div className="grid gap-4 md:grid-cols-2">
-                                    {corporatePillars.map((pillar) => {
-                                        const Icon = pillar.icon;
-
-                                        return (
-                                            <Card
-                                                key={pillar.title}
-                                                className="border-border/60 bg-gradient-to-br from-background via-background to-muted/40"
-                                            >
-                                                <CardContent className="space-y-4 p-5">
-                                                    <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-yellow-500/15 text-yellow-600 dark:text-yellow-400">
-                                                        <Icon className="h-5 w-5" />
-                                                    </div>
-                                                    <div className="space-y-2">
-                                                        <h3 className="text-base font-semibold">
-                                                            {pillar.title}
-                                                        </h3>
-                                                        <p className="text-sm leading-6 text-muted-foreground">
-                                                            {pillar.description}
-                                                        </p>
-                                                    </div>
-                                                </CardContent>
-                                            </Card>
-                                        );
-                                    })}
-                                </div>
+                                    {corporatePillars.map((pillar) => (
+                                        <PillarCard
+                                            key={pillar.title}
+                                            title={pillar.title}
+                                            image={pillar.image}
+                                        />
+                                    ))}                                </div>
                             </CardContent>
                         </Card>
 
@@ -433,45 +406,16 @@ export const AeronauticalSMSTabs = ({ company, surveyNumbers }: SMSTabsProps) =>
                             presencia visual más ejecutiva.
                         </p>
                     </CardHeader>
-                    <CardContent className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
+                    <CardContent className="grid gap-5 sm:grid-cols-1 xl:grid-cols-2 2xl:grid-cols-2">
                         {keyPersonnel.map((person) => (
-                            <Card
+                            <PersonCard
                                 key={person.role}
-                                className="border-border/60 bg-gradient-to-b from-background to-muted/30 shadow-sm"
-                            >
-                                <CardContent className="flex h-full flex-col items-start p-6">
-                                    <div className="relative mb-5 self-center xl:self-start">
-                                        <div className="absolute inset-0 rounded-full bg-yellow-500/20 blur-xl" />
-                                        <div className="relative rounded-full border-4 border-yellow-500/25 p-1 shadow-lg">
-                                            <Avatar className="h-28 w-28 border-4 border-background shadow-md">
-                                                <AvatarImage
-                                                    src={person.image}
-                                                    alt={person.role}
-                                                    className="object-cover"
-                                                />
-                                                <AvatarFallback className="bg-yellow-500/15 text-lg font-semibold text-yellow-700 dark:text-yellow-300">
-                                                    {person.initials}
-                                                </AvatarFallback>
-                                            </Avatar>
-                                        </div>
-                                    </div>
-
-                                    <Badge
-                                        variant="outline"
-                                        className="mb-3 rounded-full border-yellow-500/30 bg-yellow-500/10 px-3 py-1"
-                                    >
-                                        {person.tag}
-                                    </Badge>
-
-                                    <h3 className="text-base font-semibold">{person.role}</h3>
-                                    <p className="mt-3 text-sm leading-6 text-muted-foreground">
-                                        {person.description}
-                                    </p>
-                                </CardContent>
-                            </Card>
+                                role={person.role}
+                                image={person.image}
+                                description={person.description}
+                            />
                         ))}
-                    </CardContent>
-                </Card>
+                    </CardContent>                </Card>
             </TabsContent>
 
             <TabsContent value="estrategias" className="mt-6 space-y-4">
