@@ -23,7 +23,7 @@ export const useGetMitigationMeasure = ({
   plan_id: string;
 }) => {
   return useQuery<MitigationMeasure[]>({
-    queryKey: ["mitigation-measures"],
+    queryKey: ["mitigation-measures", plan_id],
     queryFn: () => fetchMitigationMeasure({ company, plan_id }),
     staleTime: 1000 * 60 * 5, // 5 minutos
     enabled: !!company,
