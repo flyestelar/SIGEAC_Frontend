@@ -172,6 +172,8 @@ const QuoteDropdownActions = ({ quote }: { quote: Quote }) => {
               duration-150
               rounded-lg border bg-background/95 backdrop-blur-sm
               shadow-lg p-2
+              overflow-visible
+              z-[999]
             "
           >
 
