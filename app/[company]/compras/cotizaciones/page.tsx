@@ -36,28 +36,53 @@ const QuotesOrdersPage = () => {
   )
 
   const [search, setSearch] = useState('')
+  const [status, setStatus] = useState('ALL')
+
   const deferredSearch = useDeferredValue(search)
 
   const filteredQuotes = useMemo(() => {
     if (!quotes) return []
 
-    const baseData = quotes
+    let filtered = [...quotes]
 
-    if (!deferredSearch.trim()) return baseData
+    if (status !== 'ALL') {
+      filtered = filtered.filter(
+        (quote: any) => quote.status === status
+      )
+    }
+
+    if (!deferredSearch.trim()) {
+      return filtered
+    }
 
     const q = deferredSearch.toLowerCase()
 
-    return baseData.filter((quote: any) => {
+    return filtered.filter((quote: any) => {
       return (
-        quote.order_number?.toLowerCase?.().includes(q) ||
-        quote.requisition_order.order_number?.toLowerCase?.().includes(q) ||
-        quote.created_by?.username?.toLowerCase?.().includes(q) ||
-        quote.quote_date?.toLowerCase?.().includes(q) ||
-        quote.vendor.name?.toLowerCase?.().includes(q) ||
-        quote.justification?.toLowerCase?.().includes(q)
+        quote.quote_number?.toLowerCase?.().includes(q) ||
+
+        quote.requisition_order?.order_number
+          ?.toLowerCase?.()
+          .includes(q) ||
+
+        quote.created_by?.username
+          ?.toLowerCase?.()
+          .includes(q) ||
+
+        quote.quote_date
+          ?.toLowerCase?.()
+          .includes(q) ||
+
+        quote.vendor?.name
+          ?.toLowerCase?.()
+          .includes(q) ||
+
+        quote.justification
+          ?.toLowerCase?.()
+          .includes(q)
       )
     })
-  }, [quotes, deferredSearch])
+  }, [quotes, deferredSearch, status])
 
   const columns = useMemo(
     () => getColumns(selectedCompany ?? undefined),
@@ -132,6 +157,8 @@ const QuotesOrdersPage = () => {
           <QuotesToolBar
             search={search}
             setSearch={setSearch}
+            status={status}
+            setStatus={setStatus}
           />
 
           <span

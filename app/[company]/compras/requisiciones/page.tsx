@@ -43,6 +43,8 @@ const RequisitionsPage = () => {
   )
 
   const [search, setSearch] = useState('')
+  const [status, setStatus] = useState('ALL')
+  const [type, setType] = useState('ALL')
 
   const deferredSearch = useDeferredValue(search)
 
@@ -66,12 +68,11 @@ const RequisitionsPage = () => {
           (req) => req.created_by?.id === user?.id
         )
 
-    if (!deferredSearch.trim()) return baseData
-
     const q = deferredSearch.toLowerCase()
 
     return baseData.filter((req: any) => {
-      return (
+      const matchesSearch =
+        !deferredSearch.trim() ||
         req.order_number?.toLowerCase?.().includes(q) ||
         req.status?.toLowerCase?.().includes(q) ||
         req.justification?.toLowerCase?.().includes(q) ||
@@ -79,9 +80,28 @@ const RequisitionsPage = () => {
         req.submission_date?.toLowerCase?.().includes(q) ||
         req.type?.toLowerCase?.().includes(q) ||
         req.created_by?.username?.toLowerCase?.().includes(q)
+
+      const matchesStatus =
+        status === 'ALL' ||
+        req.status === status
+
+      const matchesType =
+        type === 'ALL' ||
+        req.type === type
+
+      return (
+        matchesSearch &&
+        matchesStatus &&
+        matchesType
       )
     })
-  }, [requisitions, user, deferredSearch])
+  }, [
+    requisitions,
+    user,
+    deferredSearch,
+    status,
+    type,
+  ])
 
   const columns = useMemo(
     () => getColumns(selectedCompany ?? undefined),
@@ -146,7 +166,7 @@ const RequisitionsPage = () => {
                 dentro del sistema de compras y abastecimiento.
               </p>
             </div>
-            
+
           </div>
         </div>
 
@@ -164,6 +184,10 @@ const RequisitionsPage = () => {
           <RequisitionToolBar
             search={search}
             setSearch={setSearch}
+            status={status}
+            setStatus={setStatus}
+            type={type}
+            setType={setType}
           />
 
           <span
@@ -174,7 +198,10 @@ const RequisitionsPage = () => {
               tabular-nums
             "
           >
-            {filteredRequisitions.length} {filteredRequisitions.length === 1 ? 'requisición' : 'requisiciones'}
+            {filteredRequisitions.length}{' '}
+            {filteredRequisitions.length === 1
+              ? 'requisición'
+              : 'requisiciones'}
           </span>
         </div>
 
