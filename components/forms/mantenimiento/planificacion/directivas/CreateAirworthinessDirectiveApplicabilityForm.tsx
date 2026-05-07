@@ -1,123 +1,120 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Loader2, Save, Trash2 } from 'lucide-react';
+import { Loader2, Save } from 'lucide-react';
 import { useMemo } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import { z } from 'zod';
 
 import { Button } from '@/components/ui/button';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import {
-  useCreateAirworthinessDirectiveApplicability,
-  useDeleteAirworthinessDirectiveApplicability,
-  useUpdateAirworthinessDirectiveApplicability,
+  useCreateAirworthinessDirectiveApplicabilitiesBulk,
 } from '@/hooks/planificacion/directivas/queries';
 import { useGetMaintenanceAircrafts } from '@/hooks/planificacion/useGetMaintenanceAircrafts';
 import { useCompanySlug } from '@/stores/CompanyStore';
-import type { AirworthinessDirectiveApplicabilityResource } from '@api/types';
 import { useState } from 'react';
 
-const applicabilitySchema = z.object({
-  aircraft_id: z.string().min(1, 'La aeronave es obligatoria'),
-  is_applicable: z.boolean().default(true),
-  non_applicability_reason: z.string().trim().optional(),
-  amoc_approved_method: z.string().trim().optional(),
-});
+const createApplicabilitySchema = z
+  .object({
+    aircraft_ids: z.array(z.string()).default([]),
+    is_applicable: z.boolean().default(true),
+    non_applicability_reason: z.string().trim().optional(),
+    amoc_approved_method: z.string().trim().optional(),
+  })
+  .superRefine((values, ctx) => {
+    if (values.aircraft_ids.length === 0) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Seleccione al menos una aeronave',
+        path: ['aircraft_ids'],
+      });
+    }
 
-type ApplicabilityFormValues = z.infer<typeof applicabilitySchema>;
+    if (!values.is_applicable && !values.non_applicability_reason?.trim()) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'El motivo de no aplicabilidad es obligatorio',
+        path: ['non_applicability_reason'],
+      });
+    }
+  });
+
+type CreateApplicabilityFormValues = {
+  aircraft_ids: string[];
+  is_applicable: boolean;
+  non_applicability_reason?: string;
+  amoc_approved_method?: string;
+};
 
 export default function CreateAirworthinessDirectiveApplicabilityForm({
   directiveId,
   existingAircraftIds,
-  applicability,
   onSuccess,
 }: {
   directiveId: number;
   existingAircraftIds: number[];
-  applicability?: AirworthinessDirectiveApplicabilityResource;
   onSuccess: () => void;
 }) {
   const companySlug = useCompanySlug();
-  const isEditing = Boolean(applicability);
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const createApplicability = useCreateAirworthinessDirectiveApplicability(directiveId);
-  const updateApplicability = useUpdateAirworthinessDirectiveApplicability(directiveId);
-  const deleteApplicability = useDeleteAirworthinessDirectiveApplicability(directiveId);
+  const [selectedCount, setSelectedCount] = useState(0);
+  const createApplicabilitiesBulk = useCreateAirworthinessDirectiveApplicabilitiesBulk(directiveId);
   const { data: aircraftResponse, isLoading: isAircraftLoading } = useGetMaintenanceAircrafts(companySlug);
 
-  const form = useForm<ApplicabilityFormValues>({
-    resolver: zodResolver(applicabilitySchema),
+  const form = useForm<CreateApplicabilityFormValues>({
+    resolver: zodResolver(createApplicabilitySchema),
     defaultValues: {
-      aircraft_id: applicability?.aircraft_id ? String(applicability.aircraft_id) : '',
-      is_applicable: applicability?.is_applicable ?? true,
-      non_applicability_reason: applicability?.non_applicability_reason ?? '',
-      amoc_approved_method: applicability?.amoc_approved_method ?? '',
+      aircraft_ids: [],
+      is_applicable: true,
+      non_applicability_reason: '',
+      amoc_approved_method: '',
     },
   });
 
-  const availableAircraft = useMemo(() => {
-    return (aircraftResponse ?? []).filter(
-      (aircraft) => !existingAircraftIds.includes(aircraft.id) || aircraft.id === applicability?.aircraft_id,
-    );
-  }, [aircraftResponse, existingAircraftIds, applicability?.aircraft_id]);
+  const existingAircraftIdSet = useMemo(() => new Set(existingAircraftIds), [existingAircraftIds]);
+
+  const availableAircraft = useMemo(
+    () =>
+      (aircraftResponse ?? []).filter((aircraft) => {
+        const aircraftId = aircraft.id;
+        return aircraftId == null || !existingAircraftIdSet.has(aircraftId);
+      }),
+    [aircraftResponse, existingAircraftIdSet],
+  );
 
   const isApplicable = useWatch({ control: form.control, name: 'is_applicable' });
 
   const resetForm = () => {
     form.reset({
-      aircraft_id: applicability?.aircraft_id ? String(applicability.aircraft_id) : '',
-      is_applicable: applicability?.is_applicable ?? true,
-      non_applicability_reason: applicability?.non_applicability_reason ?? '',
-      amoc_approved_method: applicability?.amoc_approved_method ?? '',
+      aircraft_ids: [],
+      is_applicable: true,
+      non_applicability_reason: '',
+      amoc_approved_method: '',
     });
+    setSelectedCount(0);
   };
 
-  const onSubmit = async (values: ApplicabilityFormValues) => {
+  const onSubmit = async (values: CreateApplicabilityFormValues) => {
     const payload = {
-      aircraft_id: Number(values.aircraft_id),
       is_applicable: values.is_applicable,
       non_applicability_reason: values.is_applicable ? null : values.non_applicability_reason || null,
       amoc_approved_method: values.amoc_approved_method || null,
     };
 
-    if (isEditing && applicability) {
-      await updateApplicability.mutateAsync({
-        path: { directiveId, applicabilityId: applicability.id },
-        body: payload,
-      });
-    } else {
-      await createApplicability.mutateAsync({
-        path: { directiveId },
-        body: payload,
-      });
-    }
-
-    resetForm();
-    onSuccess();
-  };
-
-  const onDelete = async () => {
-    if (!applicability) return;
-
-    await deleteApplicability.mutateAsync({
-      path: { directiveId, applicabilityId: applicability.id },
+    await createApplicabilitiesBulk.mutateAsync({
+      path: { directiveId },
+      body: {
+        applicabilities: values.aircraft_ids.map((aircraftId) => ({
+          aircraft_id: Number(aircraftId),
+          ...payload,
+        })),
+      },
     });
 
-    setIsDeleteDialogOpen(false);
+    resetForm();
     onSuccess();
   };
 
@@ -130,24 +127,50 @@ export default function CreateAirworthinessDirectiveApplicabilityForm({
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
         <FormField
           control={form.control}
-          name="aircraft_id"
+          name="aircraft_ids"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Aeronave</FormLabel>
-              <Select onValueChange={field.onChange} value={field.value} disabled={isAircraftLoading || isEditing}>
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder={isAircraftLoading ? 'Cargando aeronaves...' : 'Seleccione aeronave'} />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  {availableAircraft.map((aircraft) => (
-                    <SelectItem key={aircraft.id} value={String(aircraft.id)}>
-                      {aircraft.acronym} - {aircraft.aircraft_type?.full_name ?? aircraft.model}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <FormLabel>Aeronaves</FormLabel>
+              <FormControl>
+                <div className="max-h-64 space-y-2 overflow-y-auto rounded-md border p-3">
+                  {availableAircraft.map((aircraft) => {
+                    const aircraftId = String(aircraft.id);
+                    const selectedIds = Array.isArray(field.value) ? field.value : [];
+                    const isChecked = selectedIds.includes(aircraftId);
+
+                    return (
+                      <label
+                        key={aircraft.id}
+                        className="flex cursor-pointer items-start gap-3 rounded-md border px-3 py-2 transition-colors hover:bg-accent/40"
+                      >
+                        <Checkbox
+                          checked={isChecked}
+                          onCheckedChange={(checked) => {
+                            const nextSelectedIds = checked
+                              ? [...selectedIds, aircraftId]
+                              : selectedIds.filter((value) => value !== aircraftId);
+
+                            field.onChange(nextSelectedIds);
+                            setSelectedCount(nextSelectedIds.length);
+                          }}
+                          disabled={isAircraftLoading}
+                        />
+                        <div className="space-y-1">
+                          <p className="text-sm font-medium">{aircraft.acronym}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {aircraft.aircraft_type?.full_name ?? aircraft.model}
+                          </p>
+                        </div>
+                      </label>
+                    );
+                  })}
+                </div>
+              </FormControl>
+              <p className="text-xs text-muted-foreground">
+                {selectedCount === 0
+                  ? 'Seleccione una o varias aeronaves.'
+                  : `${selectedCount} aeronave${selectedCount === 1 ? '' : 's'} seleccionada${selectedCount === 1 ? '' : 's'}.`}
+              </p>
               <FormMessage />
             </FormItem>
           )}
@@ -208,46 +231,9 @@ export default function CreateAirworthinessDirectiveApplicabilityForm({
         />
 
         <div className="flex justify-end gap-2">
-          {isEditing && applicability && (
-            <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-              <Button
-                type="button"
-                variant="destructive"
-                className="gap-2"
-                onClick={() => setIsDeleteDialogOpen(true)}
-                disabled={deleteApplicability.isPending}
-              >
-                {deleteApplicability.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
-                Eliminar
-              </Button>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Eliminar aplicabilidad</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    Esta acción no se puede deshacer. La aplicabilidad se eliminará de forma permanente.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel disabled={deleteApplicability.isPending}>Cancelar</AlertDialogCancel>
-                  <AlertDialogAction onClick={onDelete} disabled={deleteApplicability.isPending}>
-                    {deleteApplicability.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                    Eliminar
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-          )}
-          <Button
-            type="submit"
-            className="gap-2"
-            disabled={createApplicability.isPending || updateApplicability.isPending || availableAircraft.length === 0}
-          >
-            {createApplicability.isPending || updateApplicability.isPending ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <Save className="h-4 w-4" />
-            )}
-            {isEditing ? 'Guardar cambios' : 'Guardar aplicabilidad'}
+          <Button type="submit" className="gap-2" disabled={createApplicabilitiesBulk.isPending || availableAircraft.length === 0}>
+            {createApplicabilitiesBulk.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+            Guardar aplicabilidades
           </Button>
         </div>
       </form>

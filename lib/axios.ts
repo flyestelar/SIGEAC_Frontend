@@ -1,6 +1,7 @@
+import { toast } from 'sonner';
 import { useCompanyStore } from '@/stores/CompanyStore';
 import { client } from '@api/client';
-import axios, { InternalAxiosRequestConfig } from 'axios';
+import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
 import Cookies from 'js-cookie';
 
 const axiosInstance = axios.create({
@@ -38,3 +39,12 @@ axiosInstance.interceptors.request.use(requestInterceptor);
 client.instance.interceptors.request.use(requestInterceptor);
 
 export default axiosInstance;
+
+export function axiosErrorToast({ title, defaultDescription }: { title?: string; defaultDescription?: string }) {
+  return (error: AxiosError<{ message?: string }>) => {
+    const message = error.response?.data?.message || defaultDescription || 'Ha ocurrido un error inesperado. Intente nuevamente más tarde.';
+    toast.error(title ?? 'Ha ocurrido un error', {
+      description: message,
+    });
+  };
+}

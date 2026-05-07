@@ -320,7 +320,17 @@ export default function AirworthinessDirectiveDetailPage() {
   const deleteApplicability = useDeleteAirworthinessDirectiveApplicability(
     Number.isFinite(directiveId) ? directiveId : undefined,
   );
-  const existingAircraftIds = useMemo(() => applicabilities.map((item) => item.aircraft_id), [applicabilities]);
+  const existingAircraftIds = useMemo(
+    () =>
+      Array.from(
+        new Set(
+          applicabilities
+            .map((item) => item.aircraft?.id ?? item.aircraft_id)
+            .filter((aircraftId): aircraftId is number => Number.isFinite(aircraftId)),
+        ),
+      ),
+    [applicabilities],
+  );
 
   const openCreateApplicability = () => {
     setApplicabilityToEdit(undefined);

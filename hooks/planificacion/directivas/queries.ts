@@ -1,4 +1,6 @@
+import { axiosErrorToast } from '@/lib/axios';
 import {
+  airworthinessDirectiveApplicabilitiesBulkStoreMutation,
   airworthinessDirectiveApplicabilitiesDestroyMutation,
   airworthinessDirectiveApplicabilitiesIndexOptions,
   airworthinessDirectiveApplicabilitiesIndexQueryKey,
@@ -16,6 +18,7 @@ import {
   airworthinessDirectivesIndexOptions,
   airworthinessDirectivesIndexQueryKey,
   airworthinessDirectivesShowOptions,
+  airworthinessDirectivesShowQueryKey,
   airworthinessDirectivesStoreMutation,
   airworthinessDirectivesUpdateMutation,
 } from '@api/queries';
@@ -93,12 +96,10 @@ export const useCreateAirworthinessDirective = () => {
         description: 'La directiva fue registrada correctamente.',
       });
     },
-    onError: (error) => {
-      const message = error.response?.data?.message || 'No se pudo registrar la directiva.';
-      toast.error('Error al crear directiva', {
-        description: message,
-      });
-    },
+    onError: axiosErrorToast({
+      title: 'Error al crear directiva',
+      defaultDescription: 'No se pudo registrar la directiva.',
+    }),
   });
 };
 
@@ -110,16 +111,16 @@ export const useUpdateAirworthinessDirective = (id: number | undefined) => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: airworthinessDirectivesIndexQueryKey() });
       queryClient.invalidateQueries({
-        queryKey: airworthinessDirectivesShowOptions({ path: { id: id ?? 0 } }).queryKey,
+        queryKey: airworthinessDirectivesShowQueryKey({ path: { id: id ?? 0 } }),
       });
       toast.success('Directiva actualizada', {
         description: 'Los datos de la directiva fueron actualizados correctamente.',
       });
     },
-    onError: (error) => {
-      const message = error.response?.data?.message || 'No se pudo actualizar la directiva.';
-      toast.error('Error al actualizar directiva', { description: message });
-    },
+    onError: axiosErrorToast({
+      title: 'Error al actualizar directiva',
+      defaultDescription: 'No se pudo actualizar la directiva.',
+    }),
   });
 };
 
@@ -135,20 +136,49 @@ export const useCreateAirworthinessDirectiveApplicability = (directiveId: number
         }),
       });
       queryClient.invalidateQueries({
-        queryKey: airworthinessDirectivesShowOptions({
+        queryKey: airworthinessDirectivesShowQueryKey({
           path: { id: directiveId ?? 0 },
-        }).queryKey,
+        }),
       });
       toast.success('Aplicabilidad creada', {
         description: 'La aplicabilidad fue registrada correctamente.',
       });
     },
-    onError: (error) => {
-      const message = error.response?.data?.message || 'No se pudo registrar la aplicabilidad.';
-      toast.error('Error al crear aplicabilidad', {
-        description: message,
+    onError: axiosErrorToast({
+      title: 'Error al crear aplicabilidad',
+      defaultDescription: 'No se pudo registrar la aplicabilidad.',
+    }),
+  });
+};
+
+export const useCreateAirworthinessDirectiveApplicabilitiesBulk = (directiveId: number | undefined) => {
+  return useMutation({
+    ...airworthinessDirectiveApplicabilitiesBulkStoreMutation(),
+    onSuccess(data, variables, onMutateResult, { client }) {
+      client.invalidateQueries({
+        queryKey: airworthinessDirectiveApplicabilitiesIndexQueryKey({
+          path: { directiveId: directiveId ?? 0 },
+        }),
+      });
+      client.invalidateQueries({
+        queryKey: airworthinessDirectivesShowQueryKey({
+          path: { id: directiveId ?? 0 },
+        }),
+      });
+
+      const createdCount = variables.body.applicabilities.length;
+
+      toast.success(createdCount > 1 ? 'Aplicabilidades creadas' : 'Aplicabilidad creada', {
+        description:
+          createdCount > 1
+            ? 'Las aplicabilidades fueron registradas correctamente.'
+            : 'La aplicabilidad fue registrada correctamente.',
       });
     },
+    onError: axiosErrorToast({
+      title: 'Error al crear aplicabilidades',
+      defaultDescription: 'No se pudieron registrar las aplicabilidades.',
+    }),
   });
 };
 
@@ -172,20 +202,18 @@ export const useUpdateAirworthinessDirectiveApplicability = (directiveId: number
         }),
       });
       queryClient.invalidateQueries({
-        queryKey: airworthinessDirectivesShowOptions({
+        queryKey: airworthinessDirectivesShowQueryKey({
           path: { id: directiveId ?? 0 },
-        }).queryKey,
+        }),
       });
       toast.success('Aplicabilidad actualizada', {
         description: 'La aplicabilidad fue actualizada correctamente.',
       });
     },
-    onError: (error) => {
-      const message = error.response?.data?.message || 'No se pudo actualizar la aplicabilidad.';
-      toast.error('Error al actualizar aplicabilidad', {
-        description: message,
-      });
-    },
+    onError: axiosErrorToast({
+      title: 'Error al actualizar aplicabilidad',
+      defaultDescription: 'No se pudo actualizar la aplicabilidad.',
+    }),
   });
 };
 
@@ -201,9 +229,9 @@ export const useDeleteAirworthinessDirectiveApplicability = (directiveId: number
         }),
       });
       queryClient.invalidateQueries({
-        queryKey: airworthinessDirectivesShowOptions({
+        queryKey: airworthinessDirectivesShowQueryKey({
           path: { id: directiveId ?? 0 },
-        }).queryKey,
+        }),
       });
       queryClient.invalidateQueries({
         queryKey: airworthinessDirectiveApplicabilitiesShowQueryKey({
@@ -217,12 +245,10 @@ export const useDeleteAirworthinessDirectiveApplicability = (directiveId: number
         description: 'La aplicabilidad fue eliminada correctamente.',
       });
     },
-    onError: (error) => {
-      const message = error.response?.data?.message || 'No se pudo eliminar la aplicabilidad.';
-      toast.error('Error al eliminar aplicabilidad', {
-        description: message,
-      });
-    },
+    onError: axiosErrorToast({
+      title: 'Error al eliminar aplicabilidad',
+      defaultDescription: 'No se pudo eliminar la aplicabilidad.',
+    }),
   });
 };
 
@@ -238,20 +264,18 @@ export const useCreateAirworthinessDirectiveComplianceControl = (directiveId: nu
         }),
       });
       queryClient.invalidateQueries({
-        queryKey: airworthinessDirectivesShowOptions({
+        queryKey: airworthinessDirectivesShowQueryKey({
           path: { id: directiveId ?? 0 },
-        }).queryKey,
+        }),
       });
       toast.success('Control creado', {
         description: 'El control de cumplimiento fue registrado correctamente.',
       });
     },
-    onError: (error) => {
-      const message = error.response?.data?.message || 'No se pudo registrar el control de cumplimiento.';
-      toast.error('Error al crear control', {
-        description: message,
-      });
-    },
+    onError: axiosErrorToast({
+      title: 'Error al crear control',
+      defaultDescription: 'No se pudo registrar el control de cumplimiento.',
+    }),
   });
 };
 
@@ -267,20 +291,18 @@ export const useUpdateAirworthinessDirectiveComplianceControl = (directiveId: nu
         }),
       });
       queryClient.invalidateQueries({
-        queryKey: airworthinessDirectivesShowOptions({
+        queryKey: airworthinessDirectivesShowQueryKey({
           path: { id: directiveId ?? 0 },
-        }).queryKey,
+        }),
       });
       toast.success('Control actualizado', {
         description: 'El control de cumplimiento fue actualizado correctamente.',
       });
     },
-    onError: (error) => {
-      const message = error.response?.data?.message || 'No se pudo actualizar el control de cumplimiento.';
-      toast.error('Error al actualizar control', {
-        description: message,
-      });
-    },
+    onError: axiosErrorToast({
+      title: 'Error al actualizar control',
+      defaultDescription: 'No se pudo actualizar el control de cumplimiento.',
+    }),
   });
 };
 
@@ -296,20 +318,18 @@ export const useDeleteAirworthinessDirectiveComplianceControl = (directiveId: nu
         }),
       });
       queryClient.invalidateQueries({
-        queryKey: airworthinessDirectivesShowOptions({
+        queryKey: airworthinessDirectivesShowQueryKey({
           path: { id: directiveId ?? 0 },
-        }).queryKey,
+        }),
       });
       toast.success('Control eliminado', {
         description: 'El control de cumplimiento fue eliminado correctamente.',
       });
     },
-    onError: (error) => {
-      const message = error.response?.data?.message || 'No se pudo eliminar el control de cumplimiento.';
-      toast.error('Error al eliminar control', {
-        description: message,
-      });
-    },
+    onError: axiosErrorToast({
+      title: 'Error al eliminar control',
+      defaultDescription: 'No se pudo eliminar el control de cumplimiento.',
+    }),
   });
 };
 
@@ -330,19 +350,17 @@ export const useCreateAirworthinessDirectiveComplianceExecution = (directiveId: 
         }),
       });
       queryClient.invalidateQueries({
-        queryKey: airworthinessDirectivesShowOptions({
+        queryKey: airworthinessDirectivesShowQueryKey({
           path: { id: directiveId ?? 0 },
-        }).queryKey,
+        }),
       });
       toast.success('Cumplimiento registrado', {
         description: 'La ejecución fue registrada correctamente.',
       });
     },
-    onError: (error) => {
-      const message = error.response?.data?.message || 'No se pudo registrar la ejecución de cumplimiento.';
-      toast.error('Error al registrar cumplimiento', {
-        description: message,
-      });
-    },
+    onError: axiosErrorToast({
+      title: 'Error al registrar cumplimiento',
+      defaultDescription: 'No se pudo registrar la ejecución de cumplimiento.',
+    }),
   });
 };
