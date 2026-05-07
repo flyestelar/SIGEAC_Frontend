@@ -373,9 +373,10 @@ const ShowSMSActivity = () => {
                         <DialogTrigger asChild>
                           <div className="relative group w-full max-w-sm h-64 mx-auto cursor-pointer">
                             <Image
-                              src={activity.image}
+                              src={`${process.env.NEXT_PUBLIC_STORAGE_BASE_URL}${activity.image}`}
                               alt="Imagen de la actividad"
                               fill
+                              unoptimized
                               className="w-full h-full object-contain rounded-md border group-hover:border-gray-400 transition-all"
                             />
                             <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 bg-black/20 transition-opacity rounded-md">
@@ -391,8 +392,9 @@ const ShowSMSActivity = () => {
                           </DialogHeader>
                           <div className="relative h-[60vh] flex justify-center">
                             <Image
-                              src={activity.image}
+                              src={`${process.env.NEXT_PUBLIC_STORAGE_BASE_URL}${activity.image}`}
                               fill
+                              unoptimized
                               alt="Imagen completa de la actividad"
                               className="max-w-full max-h-full object-contain rounded-lg border"
                             />
@@ -408,7 +410,9 @@ const ShowSMSActivity = () => {
                         Documento Adjunto
                       </h3>
                       <a
-                        href={activity.document}
+                        href={`${process.env.NEXT_PUBLIC_STORAGE_BASE_URL}${activity.document}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
                         download={`ACT-${activity.activity_number}.pdf`}
                         className="inline-flex items-center px-5 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700"
                       >
