@@ -26,7 +26,7 @@ export const PersonCard = ({ role, image, description }: PersonProps) => {
                             src={image}
                             alt={role}
                             fill
-                            className="object-cover"
+                            className="object-contain p-[1px] rounded-lg border border-yellow-500/20 shadow-sm"
                             priority
                         />
                     </div>
