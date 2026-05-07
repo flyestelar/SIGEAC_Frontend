@@ -1,4 +1,5 @@
 import axiosInstance from "@/lib/axios";
+import { isAxiosError } from "axios";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
@@ -49,10 +50,10 @@ export const useCreateMitigationPlan = () => {
       });
     },
     onError: (error) => {
-      toast.error("Oops!", {
-        description: "No se pudo crear el plan de mitigation...",
-      });
-      console.log(error);
+      const message = isAxiosError(error)
+        ? error.response?.data?.message ?? "No se pudo crear el plan de mitigación."
+        : "No se pudo crear el plan de mitigación.";
+      toast.error("Error", { description: message });
     },
   });
   return {
@@ -80,10 +81,11 @@ export const useDeleteMitigationPlan = () => {
         description: `¡El plan de mitigacion ha sido eliminada correctamente!`,
       });
     },
-    onError: (e) => {
-      toast.error("Oops!", {
-        description: "¡Hubo un error al eliminar el plan de mitigacion!",
-      });
+    onError: (error) => {
+      const message = isAxiosError(error)
+        ? error.response?.data?.message ?? "No se pudo eliminar el plan de mitigación."
+        : "No se pudo eliminar el plan de mitigación.";
+      toast.error("Error", { description: message });
     },
   });
 
@@ -107,10 +109,10 @@ export const useUpdateMitigationPlan = () => {
       });
     },
     onError: (error) => {
-      toast.error("Oops!", {
-        description: "No se pudo actualizar el plan de mitigacion...",
-      });
-      console.log(error);
+      const message = isAxiosError(error)
+        ? error.response?.data?.message ?? "No se pudo actualizar el plan de mitigación."
+        : "No se pudo actualizar el plan de mitigación.";
+      toast.error("Error", { description: message });
     },
   });
   return {
@@ -139,10 +141,10 @@ export const useCloseReport = () => {
       });
     },
     onError: (error) => {
-      toast.error("Oops!", {
-        description: "No se pudo cerrar el reporte...",
-      });
-      console.log(error);
+      const message = isAxiosError(error)
+        ? error.response?.data?.message ?? "No se pudo cerrar el reporte."
+        : "No se pudo cerrar el reporte.";
+      toast.error("Error", { description: message });
     },
   });
   return {
@@ -166,15 +168,15 @@ export const useOpenReport = () => {
       queryClient.invalidateQueries({ queryKey: ["voluntary-reports"] });
       queryClient.invalidateQueries({ queryKey: ["obligatory-reports"] });
       queryClient.invalidateQueries({ queryKey: ["analysis"] });
-      toast.success("Reporte Cerrado!", {
+      toast.success("Reporte Abierto!", {
         description: `Se ha abierto el reporte correctamente.`,
       });
     },
     onError: (error) => {
-      toast.error("Oops!", {
-        description: "No se pudo abrir el reporte...",
-      });
-      console.log(error);
+      const message = isAxiosError(error)
+        ? error.response?.data?.message ?? "No se pudo abrir el reporte."
+        : "No se pudo abrir el reporte.";
+      toast.error("Error", { description: message });
     },
   });
   return {

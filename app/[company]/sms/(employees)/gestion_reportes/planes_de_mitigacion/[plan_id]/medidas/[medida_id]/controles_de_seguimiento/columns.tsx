@@ -107,6 +107,28 @@ export const columns: ColumnDef<FollowUpControl>[] = [
     },
   },
   {
+    accessorKey: "sms_activity",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Actividad Vinculada" />
+    ),
+    meta: { title: "Actividad Vinculada" },
+    cell: ({ row }) => {
+      const activity = row.original.sms_activity;
+      if (!activity)
+        return <p className="text-center text-muted-foreground">—</p>;
+      return (
+        <div className="flex flex-col items-center text-center gap-0.5">
+          <span className="font-mono text-xs text-muted-foreground">
+            {activity.activity_number}
+          </span>
+          <span className="text-sm font-medium">
+            {activity.title || activity.activity_name}
+          </span>
+        </div>
+      );
+    },
+  },
+  {
     id: "actions",
     cell: ({ row }) => {
       const FollowUpControl = row.original;

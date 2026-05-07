@@ -27,10 +27,18 @@ import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 
 import { useCreateFollowUpControl } from "@/actions/sms/controles_de_seguimiento/actions";
+import { useGetActivitiesByMeasure } from "@/hooks/sms/useGetActivitiesByMeasure";
 import { Separator } from "@radix-ui/react-select";
 import { useParams } from "next/navigation";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import Image from "next/image";
 import { useCompanyStore } from "@/stores/CompanyStore";
 const FormSchema = z.object({
@@ -42,6 +50,8 @@ const FormSchema = z.object({
   date: z
     .date()
     .refine((val) => !isNaN(val.getTime()), { message: "Invalid Date" }),
+
+  sms_activity_id: z.number().nullable().optional(),
 
   image: z
     .instanceof(File)
@@ -77,9 +87,13 @@ export default function CreateFollowUpControlForm({ onClose, id }: FormProps) {
   const { selectedCompany } = useCompanyStore();
 
   const { createFollowUpControl } = useCreateFollowUpControl();
+  const { data: activities } = useGetActivitiesByMeasure({
+    company: selectedCompany?.slug,
+    measure_id: id,
+  });
   const form = useForm<FormSchemaType>({
     resolver: zodResolver(FormSchema),
-    defaultValues: { date: new Date() },
+    defaultValues: { date: new Date(), sms_activity_id: null },
   });
 
   const onSubmit = async (data: FormSchemaType) => {
@@ -119,6 +133,37 @@ export default function CreateFollowUpControlForm({ onClose, id }: FormProps) {
             </FormItem>
           )}
         />
+        <FormField
+          control={form.control}
+          name="sms_activity_id"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Actividad SMS Vinculada (opcional)</FormLabel>
+              <Select
+                onValueChange={(val) =>
+                  field.onChange(val === "none" ? null : Number(val))
+                }
+                value={field.value != null ? String(field.value) : "none"}
+              >
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Sin actividad vinculada" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <SelectItem value="none">Sin actividad vinculada</SelectItem>
+                  {activities?.map((a) => (
+                    <SelectItem key={a.id} value={String(a.id)}>
+                      {a.activity_number} — {a.title || a.activity_name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
         <FormField
           control={form.control}
           name="date"

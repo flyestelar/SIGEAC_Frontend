@@ -129,6 +129,9 @@ import type {
   AircraftUpdateData,
   AircraftUpdateErrors,
   AircraftUpdateResponses,
+  AirworthinessDirectiveApplicabilitiesBulkStoreData,
+  AirworthinessDirectiveApplicabilitiesBulkStoreErrors,
+  AirworthinessDirectiveApplicabilitiesBulkStoreResponses,
   AirworthinessDirectiveApplicabilitiesDestroyData,
   AirworthinessDirectiveApplicabilitiesDestroyErrors,
   AirworthinessDirectiveApplicabilitiesDestroyResponses,
@@ -195,6 +198,9 @@ import type {
   AnalysisIndexData,
   AnalysisIndexErrors,
   AnalysisIndexResponses,
+  AnalysisOpenReportData,
+  AnalysisOpenReportErrors,
+  AnalysisOpenReportResponses,
   AnalysisShowAnalysisWithPlanData,
   AnalysisShowAnalysisWithPlanErrors,
   AnalysisShowAnalysisWithPlanResponses,
@@ -737,6 +743,12 @@ import type {
   FollowUpControllIndexData,
   FollowUpControllIndexErrors,
   FollowUpControllIndexResponses,
+  FollowUpControllServeDocumentData,
+  FollowUpControllServeDocumentErrors,
+  FollowUpControllServeDocumentResponses,
+  FollowUpControllServeImageData,
+  FollowUpControllServeImageErrors,
+  FollowUpControllServeImageResponses,
   FollowUpControllStoreData,
   FollowUpControllStoreErrors,
   FollowUpControllStoreResponses,
@@ -896,6 +908,9 @@ import type {
   MitigationMeasureDestroyData,
   MitigationMeasureDestroyErrors,
   MitigationMeasureDestroyResponses,
+  MitigationMeasureGetActivitiesByMeasureIdData,
+  MitigationMeasureGetActivitiesByMeasureIdErrors,
+  MitigationMeasureGetActivitiesByMeasureIdResponses,
   MitigationMeasureGetMitigationMeasureByPlanIdData,
   MitigationMeasureGetMitigationMeasureByPlanIdErrors,
   MitigationMeasureGetMitigationMeasureByPlanIdResponses,
@@ -1327,6 +1342,9 @@ import type {
   SMsActivityUpdateCalendarActivityData,
   SMsActivityUpdateCalendarActivityErrors,
   SMsActivityUpdateCalendarActivityResponses,
+  SmsFollowUpControlsFileData,
+  SmsFollowUpControlsFileErrors,
+  SmsFollowUpControlsFileResponses,
   SmsObligatoryReportsFileData,
   SmsObligatoryReportsFileErrors,
   SmsObligatoryReportsFileResponses,
@@ -2342,6 +2360,24 @@ export const airworthinessDirectiveApplicabilitiesStore = <ThrowOnError extends 
     },
   });
 
+export const airworthinessDirectiveApplicabilitiesBulkStore = <ThrowOnError extends boolean = false>(
+  options: Options<AirworthinessDirectiveApplicabilitiesBulkStoreData, ThrowOnError>,
+) =>
+  (options.client ?? client).post<
+    AirworthinessDirectiveApplicabilitiesBulkStoreResponses,
+    AirworthinessDirectiveApplicabilitiesBulkStoreErrors,
+    ThrowOnError
+  >({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/airworthiness-directives/{directiveId}/applicabilities/bulk',
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    },
+  });
+
 export const airworthinessDirectiveApplicabilitiesDestroy = <ThrowOnError extends boolean = false>(
   options: Options<AirworthinessDirectiveApplicabilitiesDestroyData, ThrowOnError>,
 ) =>
@@ -2566,12 +2602,13 @@ export const airworthinessDirectivesUpdate = <ThrowOnError extends boolean = fal
     AirworthinessDirectivesUpdateErrors,
     ThrowOnError
   >({
+    ...formDataBodySerializer,
     responseType: 'json',
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/airworthiness-directives/{id}',
     ...options,
     headers: {
-      'Content-Type': 'application/json',
+      'Content-Type': null,
       ...options.headers,
     },
   });
@@ -2631,8 +2668,19 @@ export const analysisCloseReport = <ThrowOnError extends boolean = false>(
   options: Options<AnalysisCloseReportData, ThrowOnError>,
 ) =>
   (options.client ?? client).patch<AnalysisCloseReportResponses, AnalysisCloseReportErrors, ThrowOnError>({
+    responseType: 'json',
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/{company}/sms/close-report/{mitigation_id}',
+    ...options,
+  });
+
+export const analysisOpenReport = <ThrowOnError extends boolean = false>(
+  options: Options<AnalysisOpenReportData, ThrowOnError>,
+) =>
+  (options.client ?? client).patch<AnalysisOpenReportResponses, AnalysisOpenReportErrors, ThrowOnError>({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/{company}/sms/open-report/{mitigation_id}',
     ...options,
   });
 
@@ -5104,6 +5152,16 @@ export const flightControlUpdate = <ThrowOnError extends boolean = false>(
     ...options,
   });
 
+export const smsFollowUpControlsFile = <ThrowOnError extends boolean = false>(
+  options: Options<SmsFollowUpControlsFileData, ThrowOnError>,
+) =>
+  (options.client ?? client).get<SmsFollowUpControlsFileResponses, SmsFollowUpControlsFileErrors, ThrowOnError>({
+    responseType: 'blob',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/{_company}/sms/follow-up-controls/{id}/file/{type}',
+    ...options,
+  });
+
 export const followUpControllIndex = <ThrowOnError extends boolean = false>(
   options: Options<FollowUpControllIndexData, ThrowOnError>,
 ) =>
@@ -5159,7 +5217,31 @@ export const followUpControllGetFollowUpControlByMeasureId = <ThrowOnError exten
   >({
     responseType: 'json',
     security: [{ scheme: 'bearer', type: 'http' }],
-    url: '/{company}/sms/follow-up-controls/by-measure/{measure_id}',
+    url: '/{_company}/sms/follow-up-controls/by-measure/{measure_id}',
+    ...options,
+  });
+
+export const followUpControllServeImage = <ThrowOnError extends boolean = false>(
+  options: Options<FollowUpControllServeImageData, ThrowOnError>,
+) =>
+  (options.client ?? client).get<FollowUpControllServeImageResponses, FollowUpControllServeImageErrors, ThrowOnError>({
+    responseType: 'blob',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/{company}/sms/image/{filePath}',
+    ...options,
+  });
+
+export const followUpControllServeDocument = <ThrowOnError extends boolean = false>(
+  options: Options<FollowUpControllServeDocumentData, ThrowOnError>,
+) =>
+  (options.client ?? client).get<
+    FollowUpControllServeDocumentResponses,
+    FollowUpControllServeDocumentErrors,
+    ThrowOnError
+  >({
+    responseType: 'blob',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/{company}/sms/document/{filePath}',
     ...options,
   });
 
@@ -5868,6 +5950,20 @@ export const mitigationMeasureStore = <ThrowOnError extends boolean = false>(
       'Content-Type': 'application/json',
       ...options.headers,
     },
+  });
+
+export const mitigationMeasureGetActivitiesByMeasureId = <ThrowOnError extends boolean = false>(
+  options: Options<MitigationMeasureGetActivitiesByMeasureIdData, ThrowOnError>,
+) =>
+  (options.client ?? client).get<
+    MitigationMeasureGetActivitiesByMeasureIdResponses,
+    MitigationMeasureGetActivitiesByMeasureIdErrors,
+    ThrowOnError
+  >({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/{company}/sms/mitigation-measures/{id}/activities',
+    ...options,
   });
 
 export const mitigationMeasureDestroy = <ThrowOnError extends boolean = false>(
@@ -8869,26 +8965,29 @@ export const workOrdersShow = <ThrowOnError extends boolean = false>(
 
 /**
  * Store a newly created resource in storage
+ *
+ * ⚠️ Cannot generate request documentation: include(D:\ESTELAR\SIGEAC_Backend\vendor\composer/../../app/Models/Planification/WorkOrderTask.php): Failed to open stream: No such file or directory
  */
 export const workOrderTaskEventStore = <ThrowOnError extends boolean = false>(
-  options: Options<WorkOrderTaskEventStoreData, ThrowOnError>,
+  options?: Options<WorkOrderTaskEventStoreData, ThrowOnError>,
 ) =>
-  (options.client ?? client).post<WorkOrderTaskEventStoreResponses, WorkOrderTaskEventStoreErrors, ThrowOnError>({
-    responseType: 'json',
+  (options?.client ?? client).post<WorkOrderTaskEventStoreResponses, WorkOrderTaskEventStoreErrors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/{company}/{work_order_task}/store-work-order-task-event',
     ...options,
   });
 
+/**
+ * ⚠️ Cannot generate request documentation: include(D:\ESTELAR\SIGEAC_Backend\vendor\composer/../../app/Models/Planification/WorkOrderTask.php): Failed to open stream: No such file or directory
+ */
 export const workOrderTaskEventShowEventsByWorkOrderTask = <ThrowOnError extends boolean = false>(
-  options: Options<WorkOrderTaskEventShowEventsByWorkOrderTaskData, ThrowOnError>,
+  options?: Options<WorkOrderTaskEventShowEventsByWorkOrderTaskData, ThrowOnError>,
 ) =>
-  (options.client ?? client).get<
+  (options?.client ?? client).get<
     WorkOrderTaskEventShowEventsByWorkOrderTaskResponses,
     WorkOrderTaskEventShowEventsByWorkOrderTaskErrors,
     ThrowOnError
   >({
-    responseType: 'json',
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/{company}/{work_order_task}/show-events-by-work-order-task',
     ...options,

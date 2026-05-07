@@ -16,7 +16,7 @@ const fetchMeasureFollowUpControl = async ({ company, measure_id }: data) => {
 
 export const useGetMeasureFollowUpControl = (data: data) => {
   return useQuery<FollowUpControl[]>({
-    queryKey: ["follow-up-controls"],
+    queryKey: ["follow-up-controls", measure_id],
     queryFn: () => fetchMeasureFollowUpControl(data),
     staleTime: 1000 * 60 * 5, // 5 minutos
   });

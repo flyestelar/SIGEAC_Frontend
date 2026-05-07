@@ -56,6 +56,7 @@ export default function CreateDangerIdentificationDialog({
               initialData={initialData}
               isEditing={isEditing}
               reportType={reportType}
+              onClose={() => setOpen(false)}
             />
           </div>
         </DialogContent>

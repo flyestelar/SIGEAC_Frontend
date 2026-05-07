@@ -451,7 +451,10 @@ const ShowVoluntaryReport = () => {
                 <SectionCard icon={AlertTriangle} title="Posibles Consecuencias">
                   {voluntaryReport.possible_consequences ? (
                     <div className="pt-2">
-                      {voluntaryReport.possible_consequences.split(",").map(
+                      {(Array.isArray(voluntaryReport.possible_consequences)
+                        ? voluntaryReport.possible_consequences as string[]
+                        : (voluntaryReport.possible_consequences as string).split("~")
+                      ).map(
                         (c, i) => c.trim() && (
                           <div key={i} className="rvp-consequence">
                             <ChevronRight className="rvp-chevron w-4 h-4" />

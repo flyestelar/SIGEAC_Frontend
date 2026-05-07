@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/form";
 
 import { useUpdateFollowUpControl } from "@/actions/sms/controles_de_seguimiento/actions";
+import { useGetActivitiesByMeasure } from "@/hooks/sms/useGetActivitiesByMeasure";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { FollowUpControl } from "@/types";
@@ -23,6 +24,13 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import Image from "next/image";
 import { useCompanyStore } from "@/stores/CompanyStore";
@@ -32,6 +40,7 @@ const FormSchema = z.object({
   date: z
     .date()
     .refine((val) => !isNaN(val.getTime()), { message: "Invalid Date" }),
+  sms_activity_id: z.number().nullable().optional(),
   image: z
     .instanceof(File)
     .refine((file) => file.size <= 5 * 1024 * 1024, "Max 5MB")
@@ -76,14 +85,17 @@ export function EditFollowUpControlForm({ onClose, initialData }: FormProps) {
     plan_id: string;
     medida_id: string;
   }>();
-  console.log("plan id ", plan_id);
-  console.log("measuer id", medida_id);
   const { updateFollowUpControl } = useUpdateFollowUpControl();
+  const { data: activities } = useGetActivitiesByMeasure({
+    company: selectedCompany?.slug,
+    measure_id: medida_id,
+  });
   const form = useForm<FormSchemaType>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
       description: initialData.description || "",
       date: initialData.date ? new Date(initialData.date) : new Date(),
+      sms_activity_id: initialData.sms_activity_id ?? null,
     },
   });
 
@@ -95,6 +107,7 @@ export function EditFollowUpControlForm({ onClose, initialData }: FormProps) {
         ...data,
         id: initialData.id,
         mitigation_measure_id: medida_id,
+        sms_activity_id: data.sms_activity_id ?? null,
       },
     };
     await updateFollowUpControl.mutateAsync(formattedData);
@@ -120,6 +133,37 @@ export function EditFollowUpControlForm({ onClose, initialData }: FormProps) {
                 <Input placeholder="" {...field} />
               </FormControl>
               <FormMessage className="text-xs" />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="sms_activity_id"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Actividad SMS Vinculada (opcional)</FormLabel>
+              <Select
+                onValueChange={(val) =>
+                  field.onChange(val === "none" ? null : Number(val))
+                }
+                value={field.value != null ? String(field.value) : "none"}
+              >
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Sin actividad vinculada" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <SelectItem value="none">Sin actividad vinculada</SelectItem>
+                  {activities?.map((a) => (
+                    <SelectItem key={a.id} value={String(a.id)}>
+                      {a.activity_number} — {a.title || a.activity_name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FormMessage />
             </FormItem>
           )}
         />

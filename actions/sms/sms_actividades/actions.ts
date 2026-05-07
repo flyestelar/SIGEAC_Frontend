@@ -2,17 +2,18 @@ import axiosInstance from "@/lib/axios";
 import { useCompanyStore } from "@/stores/CompanyStore";
 import { SmsActivityRequest } from "@/.gen/api/types.gen";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { isAxiosError } from "axios";
 import { format } from "date-fns";
 import { toast } from "sonner";
 
 // El formulario maneja fechas como Date; el backend espera strings yyyy-MM-dd
 type ActivityFormDates = { start_date: Date; end_date: Date };
-type SMSActivityData = Omit<SmsActivityRequest, 'start_date' | 'end_date'> & ActivityFormDates;
+type SMSActivityData = Omit<SmsActivityRequest, 'start_date' | 'end_date'> & ActivityFormDates & { mitigation_measure_id?: number | null };
 
 interface UpdateSMSActivityData {
   company: string | null;
   id: string;
-  data: Omit<SMSActivityData, 'status'> & { status: string };
+  data: Omit<SMSActivityData, 'status'> & { status: string; mitigation_measure_id?: number | null };
 }
 
 interface NextActivityNumber {
@@ -44,7 +45,8 @@ export const useCreateSMSActivity = () => {
       formData.append("authorized_by", data.authorized_by);
       formData.append("planned_by", data.planned_by);
       if (data.executed_by) formData.append("executed_by", data.executed_by);
-      if (data.bulletin_id != null) formData.append("bulletin_id", data.bulletin_id.toString());
+      if (data.mitigation_measure_id != null)
+        formData.append("mitigation_measure_id", data.mitigation_measure_id.toString());
       if (data.image instanceof File) formData.append("image", data.image);
       if (data.document instanceof File) formData.append("document", data.document);
 
@@ -131,7 +133,8 @@ export const useUpdateSMSActivity = () => {
       formData.append("planned_by", data.planned_by);
       formData.append("status", data.status);
       if (data.executed_by) formData.append("executed_by", data.executed_by);
-      if (data.bulletin_id != null) formData.append("bulletin_id", data.bulletin_id.toString());
+      if (data.mitigation_measure_id != null)
+        formData.append("mitigation_measure_id", data.mitigation_measure_id.toString());
       if (data.image instanceof File) formData.append("image", data.image);
       if (data.document instanceof File) formData.append("document", data.document);
 
@@ -222,10 +225,10 @@ export const useCloseSMSActivity = () => {
       });
     },
     onError: (error) => {
-      toast.error("Oops!", {
-        description: "No se pudo cerrar la actividad...",
-      });
-      console.log(error);
+      const message = isAxiosError(error)
+        ? error.response?.data?.message ?? "No se pudo cerrar la actividad."
+        : "No se pudo cerrar la actividad.";
+      toast.error("Error", { description: message });
     },
   });
   return {

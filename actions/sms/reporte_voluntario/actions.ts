@@ -16,7 +16,7 @@ interface VoluntaryReportData {
     danger_type: string;
     is_anonymous: boolean | 0 | 1;
     description: string;
-    possible_consequences: string;
+    possible_consequences: string[];
     recommendations: string;
     status: 'ABIERTO' | 'PROCESO' | 'CERRADO';
     reporter_name?: string | null;
@@ -39,7 +39,7 @@ interface UpdateVoluntaryReportData {
     finding_location_other: string;
     danger_type: string;
     description: string;
-    possible_consequences: string;
+    possible_consequences: string[];
     recommendations: string;
     danger_identification_id: number | null;
     status: string;
@@ -125,7 +125,7 @@ export const useUpdateVoluntaryReport = () => {
   const updateVoluntaryReportMutation = useMutation({
     mutationKey: ['voluntary-reports'],
     mutationFn: async ({ company, id, data }: UpdateVoluntaryReportData) => {
-      const response = await axiosInstance.post(`/${company}/sms/update-voluntary-reports/${id}`, data, {
+      const response = await axiosInstance.post(`/${company}/sms/voluntary-reports/update/${id}`, data, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },

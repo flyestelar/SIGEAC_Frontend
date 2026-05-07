@@ -21,6 +21,14 @@ import {
   useDeleteBulletinDocument,
   useUpdateBulletin,
 } from "@/actions/sms/boletin/actions";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useGetSMSActivities } from "@/hooks/sms/useGetSMSActivities";
 import { Calendar } from "@/components/ui/calendar";
 import {
   Popover,
@@ -52,6 +60,7 @@ export function CreateSafetyBulletinForm({
   const { createBulletin } = useCreateBulletin();
   const { updateBulletin } = useUpdateBulletin();
   const { deleteBulletinDocument } = useDeleteBulletinDocument();
+  const { data: activities } = useGetSMSActivities(selectedCompany?.slug);
   const [documentMarkedForDeletion, setDocumentMarkedForDeletion] = useState(false);
 
   const baseDocumentSchema = z
@@ -63,6 +72,9 @@ export function CreateSafetyBulletinForm({
     );
 
   const FormSchema = z.object({
+    sms_activity_id: isEditing
+      ? z.number().nullable().optional()
+      : z.number({ required_error: "Debes seleccionar una actividad" }),
     title: z.string(),
     description: z.string(),
     date: z
@@ -86,6 +98,7 @@ export function CreateSafetyBulletinForm({
   const form = useForm<FormSchemaType>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
+      sms_activity_id: (initialData as any)?.sms_activity_id ?? undefined,
       title: initialData?.title,
       description: initialData?.description,
       date: initialData?.date
@@ -109,6 +122,7 @@ export function CreateSafetyBulletinForm({
         company: selectedCompany!.slug,
         id: initialData.id,
         data: {
+          sms_activity_id: data.sms_activity_id ?? null,
           title: data.title,
           description: data.description,
           date: data.date,
@@ -119,19 +133,17 @@ export function CreateSafetyBulletinForm({
       await updateBulletin.mutateAsync(value);
     } else {
         try {
-          // Creamos un objeto limpio donde convertimos null a undefined
           const cleanData = {
             ...data,
+            sms_activity_id: data.sms_activity_id as number,
             image: data.image ?? undefined,
             document: data.document ?? undefined,
           };
 
           await createBulletin.mutateAsync({
             company: selectedCompany!.slug,
-            data: cleanData, // Pasamos el objeto limpio aquí
+            data: cleanData,
           });
-          
-          console.log("data", cleanData);
         } catch (error) {
           console.error("Error al crear el boletin:", error);
         }
@@ -150,6 +162,36 @@ export function CreateSafetyBulletinForm({
         </FormLabel>
 
         <div className="flex flex-col gap-2 items-center justify-center  ">
+          <FormField
+            control={form.control}
+            name="sms_activity_id"
+            render={({ field }) => (
+              <FormItem className="w-full">
+                <FormLabel>Actividad SMS {!isEditing && <span className="text-destructive">*</span>}</FormLabel>
+                <Select
+                  onValueChange={(val) =>
+                    field.onChange(val === "none" ? null : Number(val))
+                  }
+                  value={field.value != null ? String(field.value) : "none"}
+                >
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Seleccione una actividad" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {isEditing && <SelectItem value="none">Sin actividad vinculada</SelectItem>}
+                    {activities?.map((a) => (
+                      <SelectItem key={a.id} value={String(a.id)}>
+                        {a.activity_number} — {a.title || a.activity_name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage className="text-xs" />
+              </FormItem>
+            )}
+          />
           <div className="flex  justify-center items-center w-full gap-10">
             <FormField
               control={form.control}

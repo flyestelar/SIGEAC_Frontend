@@ -53,6 +53,7 @@ import {
   aircraftTypesStore,
   aircraftTypesUpdate,
   aircraftUpdate,
+  airworthinessDirectiveApplicabilitiesBulkStore,
   airworthinessDirectiveApplicabilitiesDestroy,
   airworthinessDirectiveApplicabilitiesIndex,
   airworthinessDirectiveApplicabilitiesShow,
@@ -75,6 +76,7 @@ import {
   analysisGetTotalPostRiskCountByDateRange,
   analysisGetTotalRiskCountByDateRange,
   analysisIndex,
+  analysisOpenReport,
   analysisShowAnalysisWithPlan,
   analysisStore,
   analysisUpdate,
@@ -256,6 +258,8 @@ import {
   followUpControllDestroy,
   followUpControllGetFollowUpControlByMeasureId,
   followUpControllIndex,
+  followUpControllServeDocument,
+  followUpControllServeImage,
   followUpControllStore,
   followUpControllUpdate,
   generalLocationIndex0,
@@ -309,6 +313,7 @@ import {
   manufacturerStore,
   manufacturerUpdate,
   mitigationMeasureDestroy,
+  mitigationMeasureGetActivitiesByMeasureId,
   mitigationMeasureGetMitigationMeasureByPlanId,
   mitigationMeasureIndex,
   mitigationMeasureStore,
@@ -454,6 +459,7 @@ import {
   sMsActivityShow,
   sMsActivityStore,
   sMsActivityUpdateCalendarActivity,
+  smsFollowUpControlsFile,
   smsObligatoryReportsFile,
   smsSMsActivityGetActivitiesStats0,
   smsSMsActivityGetActivitiesStats02,
@@ -664,6 +670,9 @@ import type {
   AircraftUpdateData,
   AircraftUpdateError,
   AircraftUpdateResponse,
+  AirworthinessDirectiveApplicabilitiesBulkStoreData,
+  AirworthinessDirectiveApplicabilitiesBulkStoreError,
+  AirworthinessDirectiveApplicabilitiesBulkStoreResponse,
   AirworthinessDirectiveApplicabilitiesDestroyData,
   AirworthinessDirectiveApplicabilitiesDestroyError,
   AirworthinessDirectiveApplicabilitiesDestroyResponse,
@@ -714,6 +723,7 @@ import type {
   AirworthinessDirectivesUpdateResponse,
   AnalysisCloseReportData,
   AnalysisCloseReportError,
+  AnalysisCloseReportResponse,
   AnalysisGetPostRiskCountByDateRangeData,
   AnalysisGetPostRiskCountByDateRangeError,
   AnalysisGetPostRiskCountByDateRangeResponse,
@@ -729,6 +739,9 @@ import type {
   AnalysisIndexData,
   AnalysisIndexError,
   AnalysisIndexResponse,
+  AnalysisOpenReportData,
+  AnalysisOpenReportError,
+  AnalysisOpenReportResponse,
   AnalysisShowAnalysisWithPlanData,
   AnalysisShowAnalysisWithPlanError,
   AnalysisShowAnalysisWithPlanResponse,
@@ -1247,6 +1260,12 @@ import type {
   FollowUpControllIndexData,
   FollowUpControllIndexError,
   FollowUpControllIndexResponse,
+  FollowUpControllServeDocumentData,
+  FollowUpControllServeDocumentError,
+  FollowUpControllServeDocumentResponse,
+  FollowUpControllServeImageData,
+  FollowUpControllServeImageError,
+  FollowUpControllServeImageResponse,
   FollowUpControllStoreData,
   FollowUpControllStoreError,
   FollowUpControllStoreResponse,
@@ -1404,6 +1423,9 @@ import type {
   MitigationMeasureDestroyData,
   MitigationMeasureDestroyError,
   MitigationMeasureDestroyResponse,
+  MitigationMeasureGetActivitiesByMeasureIdData,
+  MitigationMeasureGetActivitiesByMeasureIdError,
+  MitigationMeasureGetActivitiesByMeasureIdResponse,
   MitigationMeasureGetMitigationMeasureByPlanIdData,
   MitigationMeasureGetMitigationMeasureByPlanIdError,
   MitigationMeasureGetMitigationMeasureByPlanIdResponse,
@@ -1827,6 +1849,9 @@ import type {
   SMsActivityUpdateCalendarActivityData,
   SMsActivityUpdateCalendarActivityError,
   SMsActivityUpdateCalendarActivityResponse,
+  SmsFollowUpControlsFileData,
+  SmsFollowUpControlsFileError,
+  SmsFollowUpControlsFileResponse,
   SmsObligatoryReportsFileData,
   SmsObligatoryReportsFileError,
   SmsObligatoryReportsFileResponse,
@@ -2067,10 +2092,8 @@ import type {
   WorkOrdersStoreResponse,
   WorkOrderTaskEventShowEventsByWorkOrderTaskData,
   WorkOrderTaskEventShowEventsByWorkOrderTaskError,
-  WorkOrderTaskEventShowEventsByWorkOrderTaskResponse,
   WorkOrderTaskEventStoreData,
   WorkOrderTaskEventStoreError,
-  WorkOrderTaskEventStoreResponse,
   WorkshopsDestroyData,
   WorkshopsDestroyError,
   WorkshopsDestroyResponse,
@@ -3369,6 +3392,30 @@ export const airworthinessDirectiveApplicabilitiesStoreMutation = (
   return mutationOptions;
 };
 
+export const airworthinessDirectiveApplicabilitiesBulkStoreMutation = (
+  options?: Partial<Options<AirworthinessDirectiveApplicabilitiesBulkStoreData>>,
+): UseMutationOptions<
+  AirworthinessDirectiveApplicabilitiesBulkStoreResponse,
+  AxiosError<AirworthinessDirectiveApplicabilitiesBulkStoreError>,
+  Options<AirworthinessDirectiveApplicabilitiesBulkStoreData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    AirworthinessDirectiveApplicabilitiesBulkStoreResponse,
+    AxiosError<AirworthinessDirectiveApplicabilitiesBulkStoreError>,
+    Options<AirworthinessDirectiveApplicabilitiesBulkStoreData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await airworthinessDirectiveApplicabilitiesBulkStore({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
 export const airworthinessDirectiveApplicabilitiesDestroyMutation = (
   options?: Partial<Options<AirworthinessDirectiveApplicabilitiesDestroyData>>,
 ): UseMutationOptions<
@@ -3963,14 +4010,42 @@ export const analysisShowAnalysisWithPlanOptions = (options: Options<AnalysisSho
 
 export const analysisCloseReportMutation = (
   options?: Partial<Options<AnalysisCloseReportData>>,
-): UseMutationOptions<unknown, AxiosError<AnalysisCloseReportError>, Options<AnalysisCloseReportData>> => {
+): UseMutationOptions<
+  AnalysisCloseReportResponse,
+  AxiosError<AnalysisCloseReportError>,
+  Options<AnalysisCloseReportData>
+> => {
   const mutationOptions: UseMutationOptions<
-    unknown,
+    AnalysisCloseReportResponse,
     AxiosError<AnalysisCloseReportError>,
     Options<AnalysisCloseReportData>
   > = {
     mutationFn: async (fnOptions) => {
       const { data } = await analysisCloseReport({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+export const analysisOpenReportMutation = (
+  options?: Partial<Options<AnalysisOpenReportData>>,
+): UseMutationOptions<
+  AnalysisOpenReportResponse,
+  AxiosError<AnalysisOpenReportError>,
+  Options<AnalysisOpenReportData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    AnalysisOpenReportResponse,
+    AxiosError<AnalysisOpenReportError>,
+    Options<AnalysisOpenReportData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await analysisOpenReport({
         ...options,
         ...fnOptions,
         throwOnError: true,
@@ -8395,6 +8470,28 @@ export const flightControlUpdateMutation = (
   return mutationOptions;
 };
 
+export const smsFollowUpControlsFileQueryKey = (options: Options<SmsFollowUpControlsFileData>) =>
+  createQueryKey('smsFollowUpControlsFile', options);
+
+export const smsFollowUpControlsFileOptions = (options: Options<SmsFollowUpControlsFileData>) =>
+  queryOptions<
+    SmsFollowUpControlsFileResponse,
+    AxiosError<SmsFollowUpControlsFileError>,
+    SmsFollowUpControlsFileResponse,
+    ReturnType<typeof smsFollowUpControlsFileQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await smsFollowUpControlsFile({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: smsFollowUpControlsFileQueryKey(options),
+  });
+
 export const followUpControllIndexQueryKey = (options: Options<FollowUpControllIndexData>) =>
   createQueryKey('followUpControllIndex', options);
 
@@ -8512,6 +8609,50 @@ export const followUpControllGetFollowUpControlByMeasureIdOptions = (
       return data;
     },
     queryKey: followUpControllGetFollowUpControlByMeasureIdQueryKey(options),
+  });
+
+export const followUpControllServeImageQueryKey = (options: Options<FollowUpControllServeImageData>) =>
+  createQueryKey('followUpControllServeImage', options);
+
+export const followUpControllServeImageOptions = (options: Options<FollowUpControllServeImageData>) =>
+  queryOptions<
+    FollowUpControllServeImageResponse,
+    AxiosError<FollowUpControllServeImageError>,
+    FollowUpControllServeImageResponse,
+    ReturnType<typeof followUpControllServeImageQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await followUpControllServeImage({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: followUpControllServeImageQueryKey(options),
+  });
+
+export const followUpControllServeDocumentQueryKey = (options: Options<FollowUpControllServeDocumentData>) =>
+  createQueryKey('followUpControllServeDocument', options);
+
+export const followUpControllServeDocumentOptions = (options: Options<FollowUpControllServeDocumentData>) =>
+  queryOptions<
+    FollowUpControllServeDocumentResponse,
+    AxiosError<FollowUpControllServeDocumentError>,
+    FollowUpControllServeDocumentResponse,
+    ReturnType<typeof followUpControllServeDocumentQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await followUpControllServeDocument({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: followUpControllServeDocumentQueryKey(options),
   });
 
 export const hardTimeCategoryIndexQueryKey = (options?: Options<HardTimeCategoryIndexData>) =>
@@ -9857,6 +9998,31 @@ export const mitigationMeasureStoreMutation = (
   };
   return mutationOptions;
 };
+
+export const mitigationMeasureGetActivitiesByMeasureIdQueryKey = (
+  options: Options<MitigationMeasureGetActivitiesByMeasureIdData>,
+) => createQueryKey('mitigationMeasureGetActivitiesByMeasureId', options);
+
+export const mitigationMeasureGetActivitiesByMeasureIdOptions = (
+  options: Options<MitigationMeasureGetActivitiesByMeasureIdData>,
+) =>
+  queryOptions<
+    MitigationMeasureGetActivitiesByMeasureIdResponse,
+    AxiosError<MitigationMeasureGetActivitiesByMeasureIdError>,
+    MitigationMeasureGetActivitiesByMeasureIdResponse,
+    ReturnType<typeof mitigationMeasureGetActivitiesByMeasureIdQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await mitigationMeasureGetActivitiesByMeasureId({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: mitigationMeasureGetActivitiesByMeasureIdQueryKey(options),
+  });
 
 export const mitigationMeasureDestroyMutation = (
   options?: Partial<Options<MitigationMeasureDestroyData>>,
@@ -15212,16 +15378,14 @@ export const workOrdersShowOptions = (options: Options<WorkOrdersShowData>) =>
 
 /**
  * Store a newly created resource in storage
+ *
+ * ⚠️ Cannot generate request documentation: include(D:\ESTELAR\SIGEAC_Backend\vendor\composer/../../app/Models/Planification/WorkOrderTask.php): Failed to open stream: No such file or directory
  */
 export const workOrderTaskEventStoreMutation = (
   options?: Partial<Options<WorkOrderTaskEventStoreData>>,
-): UseMutationOptions<
-  WorkOrderTaskEventStoreResponse,
-  AxiosError<WorkOrderTaskEventStoreError>,
-  Options<WorkOrderTaskEventStoreData>
-> => {
+): UseMutationOptions<unknown, AxiosError<WorkOrderTaskEventStoreError>, Options<WorkOrderTaskEventStoreData>> => {
   const mutationOptions: UseMutationOptions<
-    WorkOrderTaskEventStoreResponse,
+    unknown,
     AxiosError<WorkOrderTaskEventStoreError>,
     Options<WorkOrderTaskEventStoreData>
   > = {
@@ -15238,16 +15402,19 @@ export const workOrderTaskEventStoreMutation = (
 };
 
 export const workOrderTaskEventShowEventsByWorkOrderTaskQueryKey = (
-  options: Options<WorkOrderTaskEventShowEventsByWorkOrderTaskData>,
+  options?: Options<WorkOrderTaskEventShowEventsByWorkOrderTaskData>,
 ) => createQueryKey('workOrderTaskEventShowEventsByWorkOrderTask', options);
 
+/**
+ * ⚠️ Cannot generate request documentation: include(D:\ESTELAR\SIGEAC_Backend\vendor\composer/../../app/Models/Planification/WorkOrderTask.php): Failed to open stream: No such file or directory
+ */
 export const workOrderTaskEventShowEventsByWorkOrderTaskOptions = (
-  options: Options<WorkOrderTaskEventShowEventsByWorkOrderTaskData>,
+  options?: Options<WorkOrderTaskEventShowEventsByWorkOrderTaskData>,
 ) =>
   queryOptions<
-    WorkOrderTaskEventShowEventsByWorkOrderTaskResponse,
+    unknown,
     AxiosError<WorkOrderTaskEventShowEventsByWorkOrderTaskError>,
-    WorkOrderTaskEventShowEventsByWorkOrderTaskResponse,
+    unknown,
     ReturnType<typeof workOrderTaskEventShowEventsByWorkOrderTaskQueryKey>
   >({
     queryFn: async ({ queryKey, signal }) => {

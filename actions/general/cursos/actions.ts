@@ -1,5 +1,6 @@
 import axiosInstance from "@/lib/axios";
 import { StoreCourseRequest, UpdateCourseRequest } from "@/.gen/api/types.gen";
+import { isAxiosError } from "axios";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
@@ -19,7 +20,6 @@ export const useCreateCourse = () => {
   const queryClient = useQueryClient();
   const createMutation = useMutation({
     mutationFn: async ({ company, location_id, course }: CourseData) => {
-      console.log("data from create course", course);
       await axiosInstance.post(
         `/general/${company}/${location_id}/create-course`,
         course,
@@ -33,16 +33,15 @@ export const useCreateCourse = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["department-courses"] });
       queryClient.invalidateQueries({ queryKey: ["enrollment-status"] });
-
       toast.success("¡Creado!", {
-        description: ` El Curso ha sido creado correctamente.`,
+        description: "El Curso ha sido creado correctamente.",
       });
     },
     onError: (error) => {
-      toast.error("Oops!", {
-        description: "No se pudo crear el curso...",
-      });
-      console.log(error);
+      const message = isAxiosError(error)
+        ? error.response?.data?.message ?? "No se pudo crear el curso."
+        : "No se pudo crear el curso.";
+      toast.error("Error", { description: message });
     },
   });
   return {
@@ -109,7 +108,6 @@ export const useUpdateCourse = () => {
   const queryClient = useQueryClient();
   const updateMutation = useMutation({
     mutationFn: async ({ data, company, id }: updateCourseData) => {
-      console.log(data);
       const response = await axiosInstance.patch(
         `/general/${company}/update-course/${id}`,
         data
@@ -118,15 +116,15 @@ export const useUpdateCourse = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["department-courses"] });
-      toast.success("¡Creado!", {
-        description: ` La identificacion de peligro ha sido creado correctamente.`,
+      toast.success("¡Actualizado!", {
+        description: "El curso ha sido actualizado correctamente.",
       });
     },
     onError: (error) => {
-      toast.error("Oops!", {
-        description: "No se pudo crear la identificacion de peligro...",
-      });
-      console.log(error);
+      const message = isAxiosError(error)
+        ? error.response?.data?.message ?? "No se pudo actualizar el curso."
+        : "No se pudo actualizar el curso.";
+      toast.error("Error", { description: message });
     },
   });
   return {

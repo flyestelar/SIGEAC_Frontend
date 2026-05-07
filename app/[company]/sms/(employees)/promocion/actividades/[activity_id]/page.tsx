@@ -11,7 +11,6 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useGetActivityAttendanceList } from "@/hooks/sms/useGetActivityAttendanceList";
 import { useGetSMSActivityAttendanceStats } from "@/hooks/sms/useGetSMSActivityAttendanceStats";
 import { useGetSMSActivityById } from "@/hooks/sms/useGetSMSActivityById";
 import { useCompanyStore } from "@/stores/CompanyStore";
@@ -42,6 +41,24 @@ import { useParams } from "next/navigation";
 import Image from "next/image";
 
 
+interface AttendanceData {
+  id: string;
+  attended: boolean;
+  employee_dni: string;
+  sms_activity_id: string;
+  employee: { id: string; first_name: string; last_name: string; dni: string };
+}
+
+const formatTime = (time: string | null | undefined): string => {
+  if (!time) return "N/A";
+  const [hourStr, minuteStr] = time.split(":");
+  const hour = parseInt(hourStr, 10);
+  const minute = minuteStr?.slice(0, 2) ?? "00";
+  const period = hour >= 12 ? "PM" : "AM";
+  const hour12 = hour % 12 || 12;
+  return `${hour12}:${minute} ${period}`;
+};
+
 const ShowSMSActivity = () => {
   const { selectedCompany } = useCompanyStore();
   const { activity_id } = useParams<{ activity_id: string }>();
@@ -56,19 +73,12 @@ const ShowSMSActivity = () => {
   });
 
   const {
-    data: attendedList,
-    isLoading: isAttendedListLoading,
-    isError: attendedListError,
-  } = useGetActivityAttendanceList({
-    company: selectedCompany?.slug,
-    activity_id: activity_id.toString(),
-  });
-
-  const {
     data: AttendanceStats,
     isLoading: isAttendanceStatsLoading,
     isError: isAttendanceStatsError,
   } = useGetSMSActivityAttendanceStats(activity_id);
+
+  const attendedList = (activity as any)?.attendance as AttendanceData[] | undefined;
 
   const PieChartData = AttendanceStats
     ? [
@@ -263,14 +273,14 @@ const ShowSMSActivity = () => {
                         <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
                           Hora Inicio:
                         </p>
-                        <p className="font-semibold">{activity.start_time}</p>
+                        <p className="font-semibold">{formatTime(activity.start_time)}</p>
                       </div>
                       <div>
                         <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
                           Hora Final:
                         </p>
                         <p className="font-semibold">
-                          {activity.end_time || "N/A"}
+                          {formatTime(activity.end_time)}
                         </p>
                       </div>
                     </div>
@@ -307,7 +317,7 @@ const ShowSMSActivity = () => {
                   </h3>
                   {activity.topics ? (
                     <ul className="space-y-2">
-                      {activity.topics.split(",").map(
+                      {activity.topics.split("~").map(
                         (topic, index) =>
                           topic.trim() && (
                             <li key={index} className="flex items-start gap-2">
@@ -424,11 +434,11 @@ const ShowSMSActivity = () => {
                   </Badge>
                 </div>
 
-                {isAttendedListLoading ? (
+                {isActivityLoading ? (
                   <div className="flex justify-center py-8">
                     <Loader2 className="size-8 animate-spin text-blue-500" />
                   </div>
-                ) : attendedListError ? (
+                ) : activityError ? (
                   <div className="flex items-center gap-3 rounded-lg border border-red-200 bg-red-100 p-4 dark:border-red-800 dark:bg-red-900/20">
                     <AlertCircle className="h-5 w-5 text-red-500" />
                     <p className="text-red-700 dark:text-red-300">
@@ -455,7 +465,7 @@ const ShowSMSActivity = () => {
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-gray-800">
-                        {attendedList.map((attended) => (
+                        {attendedList.map((attended: AttendanceData) => (
                           <tr
                             key={attended.id}
                             className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
@@ -506,11 +516,11 @@ const ShowSMSActivity = () => {
                   </div>
                 </div>
 
-                {isAttendedListLoading ? (
+                {isActivityLoading ? (
                   <div className="flex justify-center py-8">
                     <Loader2 className="size-8 animate-spin text-blue-500" />
                   </div>
-                ) : attendedListError ? (
+                ) : activityError ? (
                   <div className="flex items-center gap-3 rounded-lg border border-red-200 bg-red-100 p-4 dark:border-red-800 dark:bg-red-900/20">
                     <AlertCircle className="h-5 w-5 text-red-500" />
                     <p className="text-red-700 dark:text-red-300">
@@ -537,7 +547,7 @@ const ShowSMSActivity = () => {
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-gray-800">
-                        {attendedList.map((attended) => (
+                        {attendedList.map((attended: AttendanceData) => (
                           <tr
                             key={attended.id}
                             className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
@@ -643,7 +653,7 @@ const ShowSMSActivity = () => {
         )}
 
         {/* 🔽 Botón Descargar Minuta al FINAL */}
-        {activity && (
+        {/* {activity && (
           <div className="mt-10 flex justify-center">
             <Button
               size="lg"
@@ -655,7 +665,7 @@ const ShowSMSActivity = () => {
               Descargar Minuta PDF
             </Button>
           </div>
-        )}
+        )} */}
 
         {activityError && (
           <div className="mt-8 flex items-center gap-3 rounded-lg border border-red-200 bg-red-100 p-4 dark:border-red-800 dark:bg-red-900/20">

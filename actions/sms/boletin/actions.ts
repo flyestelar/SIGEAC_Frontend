@@ -5,6 +5,7 @@ import { toast } from "sonner";
 interface BulletinData {
   company: string;
   data: {
+    sms_activity_id: number;
     date: Date;
     title: string;
     description: string;
@@ -17,6 +18,7 @@ interface UpdateBulletinData {
   company: string;
   id: number | string;
   data: {
+    sms_activity_id?: number | null;
     date: Date;
     title: string;
     description: string;

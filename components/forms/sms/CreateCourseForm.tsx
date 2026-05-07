@@ -60,7 +60,7 @@ export function CreateCourseForm({
     .object({
       name: z.string(),
       description: z.string(),
-      course_type: z.string(),
+      course_type: z.string().min(1, "Debes seleccionar un tipo de curso"),
       instructor: z.string().optional(),
       end_date: z
         .date()
@@ -244,14 +244,7 @@ export function CreateCourseForm({
                         initialFocus
                         fromYear={1988}
                         toYear={new Date().getFullYear() + 5}
-                        captionLayout="dropdown-buttons"
-                        components={{
-                          Dropdown: (props) => (
-                            <select {...props} className="bg-popover text-popover-foreground">
-                              {props.children}
-                            </select>
-                          ),
-                        }}
+                        captionLayout="dropdown"
                       />
                     </PopoverContent>
                   </Popover>
@@ -292,14 +285,7 @@ export function CreateCourseForm({
                         initialFocus
                         fromYear={1980}
                         toYear={new Date().getFullYear() + 5}
-                        captionLayout="dropdown-buttons"
-                        components={{
-                          Dropdown: (props) => (
-                            <select {...props} className="bg-popover text-popover-foreground">
-                              {props.children}
-                            </select>
-                          ),
-                        }}
+                        captionLayout="dropdown"
                       />
                     </PopoverContent>
                   </Popover>

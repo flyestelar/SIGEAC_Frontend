@@ -113,14 +113,7 @@ export function CreateVoluntaryReportForm({
       .max(900, {
         message: "La descripción no debe exceder los 900 caracteres",
       }),
-    possible_consequences: z
-      .string()
-      .min(3, {
-        message: "Las consecuencias deben tener al menos 3 caracteres",
-      })
-      .max(999, {
-        message: "Las consecuencias no debe exceder los 255 caracteres",
-      }),
+    possible_consequences: z.array(z.string()),
     recommendations: z
       .string()
       .min(3, {
@@ -188,7 +181,11 @@ export function CreateVoluntaryReportForm({
       report_number: initialData?.report_number || "",
       station: initialData?.station || "",
       description: initialData?.description || "",
-      possible_consequences: initialData?.possible_consequences || "",
+      possible_consequences: Array.isArray(initialData?.possible_consequences)
+        ? initialData.possible_consequences
+        : initialData?.possible_consequences
+          ? initialData.possible_consequences.split("~").filter((item) => item.trim() !== "")
+          : [],
       recommendations: initialData?.recommendations || "",
       finding_location: initialData?.finding_location || "",
       finding_location_other: initialData?.finding_location_other || "",
@@ -224,6 +221,8 @@ export function CreateVoluntaryReportForm({
     },
   });
 
+  const findingLocation = form.watch("finding_location");
+
   useEffect(() => {
     if (initialData && isEditing) {
       if (
@@ -237,9 +236,9 @@ export function CreateVoluntaryReportForm({
 
       // Inicializar las consecuencias si hay datos iniciales
       if (initialData.possible_consequences) {
-        const initialConsequences = initialData.possible_consequences
-          .split(",")
-          .filter((item) => item.trim() !== "");
+        const initialConsequences = Array.isArray(initialData.possible_consequences)
+          ? initialData.possible_consequences
+          : initialData.possible_consequences.split("~");
         setConsequences(initialConsequences);
       }
 
@@ -254,12 +253,10 @@ export function CreateVoluntaryReportForm({
   // Agregar una consecuencia
   const addConsequence = () => {
     if (newConsequence.trim() !== "") {
-      setConsequences([...consequences, newConsequence.trim()]);
-      setNewConsequence("");
-
-      // Actualizar el campo del formulario
       const updatedConsequences = [...consequences, newConsequence.trim()];
-      form.setValue("possible_consequences", updatedConsequences.join(","));
+      setConsequences(updatedConsequences);
+      setNewConsequence("");
+      form.setValue("possible_consequences", updatedConsequences);
     }
   };
 
@@ -267,9 +264,7 @@ export function CreateVoluntaryReportForm({
   const removeConsequence = (index: number) => {
     const updatedConsequences = consequences.filter((_, i) => i !== index);
     setConsequences(updatedConsequences);
-
-    // Actualizar el campo del formulario
-    form.setValue("possible_consequences", updatedConsequences.join(","));
+    form.setValue("possible_consequences", updatedConsequences);
   };
 
   // Manejar la tecla Enter en el input
@@ -545,26 +540,28 @@ export function CreateVoluntaryReportForm({
                         <SelectItem value="AREA_ADMON">AREA ADMON</SelectItem>
                         <SelectItem value="AERONAVE">AERONAVE</SelectItem>
                         <SelectItem value="AEROPUERTO">AEROPUERTO</SelectItem>
-                        <SelectItem value="N/A">NO APLICA</SelectItem>
+                        <SelectItem value="OTRO">OTRO</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-              <FormField
-                control={form.control}
-                name="finding_location_other"
-                render={({ field }) => (
-                  <FormItem className="col-span-2">
-                    <FormLabel>Otro Lugar de Identificación</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Especificar" {...field} />
-                    </FormControl>
-                    <FormMessage className="text-xs" />
-                  </FormItem>
-                )}
-              />
+              {findingLocation === "OTRO" && (
+                <FormField
+                  control={form.control}
+                  name="finding_location_other"
+                  render={({ field }) => (
+                    <FormItem className="col-span-2">
+                      <FormLabel>Otro Lugar de Identificación</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Especificar" {...field} />
+                      </FormControl>
+                      <FormMessage className="text-xs" />
+                    </FormItem>
+                  )}
+                />
+              )}
             </div>
           </div>
 
@@ -903,11 +900,14 @@ export function CreateVoluntaryReportForm({
                             src={
                               field.value instanceof File
                                 ? URL.createObjectURL(field.value)
-                                : initialData?.image || ""
+                                : initialData!.image!.startsWith("http")
+                                  ? initialData!.image!
+                                  : `${process.env.NEXT_PUBLIC_STORAGE_BASE_URL}${initialData!.image}`
                             }
                             alt="Preview"
                             fill
                             className="object-contain"
+                            onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
                           />
                         </div>
                       )}

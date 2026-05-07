@@ -7,13 +7,6 @@ import { ContentLayout } from "@/components/layout/ContentLayout";
 import LoadingPage from "@/components/misc/LoadingPage";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
 import { useGetDangerIdentificationById } from "@/hooks/sms/useGetDangerIdentificationById";
 import { useCompanyStore } from "@/stores/CompanyStore";
 import {
@@ -68,27 +61,13 @@ const ShowDangerIdentification = () => {
       <div className="flex justify-evenly flex-wrap gap-4 mb-6">
         {dangerIdentification && status === "ABIERTO" && (
           <>
-            <Dialog>
-              <DialogTrigger asChild>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="hidden h-8 lg:flex"
-                >
-                  Editar Identificación
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="max-h-[90vh] overflow-y-auto">
-                <DialogHeader></DialogHeader>
-                <CreateDangerIdentificationDialog
-                  title="Editar Identificación"
-                  id={id}
-                  isEditing={true}
-                  initialData={dangerIdentification}
-                  reportType={reportType}
-                />
-              </DialogContent>
-            </Dialog>
+            <CreateDangerIdentificationDialog
+              title="Editar Identificación"
+              id={id}
+              isEditing={true}
+              initialData={dangerIdentification}
+              reportType={reportType}
+            />
 
             <div className="flex items-center">
               <DeleteDangerIdentificationDialog
@@ -226,7 +205,7 @@ const ShowDangerIdentification = () => {
                   </h3>
                   <ul className="space-y-3">
                     {dangerIdentification.possible_consequences
-                      .split(",")
+                      .split("~")
                       .map((consequence, index) => (
                         <li key={index} className="flex items-start gap-3">
                           <ChevronRight className="w-5 h-5 mt-1 flex-shrink-0 text-gray-500" />
@@ -248,7 +227,7 @@ const ShowDangerIdentification = () => {
                   </h3>
                   <ul className="space-y-3">
                     {dangerIdentification.current_defenses
-                      .split(",")
+                      .split("~")
                       .map((defense, index) => (
                         <li key={index} className="flex items-start gap-3">
                           <ChevronRight className="w-5 h-5 mt-1 flex-shrink-0 text-gray-500" />
@@ -270,7 +249,7 @@ const ShowDangerIdentification = () => {
               </h3>
               <ul className="space-y-3">
                 {dangerIdentification.root_cause_analysis
-                  .split(",")
+                  .split("~")
                   .map((analysis, index) => (
                     <li key={index} className="flex items-start gap-3">
                       <ChevronRight className="w-5 h-5 mt-1 flex-shrink-0 text-gray-500" />

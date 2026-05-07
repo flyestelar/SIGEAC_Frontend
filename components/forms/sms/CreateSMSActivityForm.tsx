@@ -25,13 +25,15 @@ import {
 import {
     Select,
     SelectContent,
+    SelectGroup,
     SelectItem,
+    SelectLabel,
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useGetEmployeesByDepartment } from "@/hooks/sistema/useGetEmployeesByDepartament";
-import { useGetSafetyBulletins } from "@/hooks/sms/boletin/useGetSafetyBulletins";
+import { useGetMitigationTable } from "@/hooks/sms/useGetMitigationTable";
 import { cn } from "@/lib/utils";
 import { useCompanyStore } from "@/stores/CompanyStore";
 import { SmsActivityResource } from "@/.gen/api/types.gen";
@@ -65,7 +67,7 @@ const FormSchema = z
         authorized_by: z.string(),
         planned_by: z.string(),
         executed_by: z.string().optional(),
-        bulletin_id: z.number().nullable().optional(),
+        mitigation_measure_id: z.number().nullable().optional(),
         title: z.string(),
         image: z.any().optional(),
         document: z.any().optional(),
@@ -102,7 +104,18 @@ export default function CreateSMSActivityForm({
     const { selectedCompany, selectedStation } = useCompanyStore();
     const { data: employees, isLoading: isLoadingEmployees } =
         useGetEmployeesByDepartment("SMS", selectedStation, selectedCompany?.slug);
-    const { data: bulletins } = useGetSafetyBulletins(selectedCompany?.slug);
+    const { data: mitigationTable } = useGetMitigationTable(selectedCompany?.slug);
+
+    const measureGroups = (mitigationTable ?? [])
+        .filter((mt) => (mt.mitigation_plan?.measures?.length ?? 0) > 0)
+        .map((mt) => {
+            const reportLabel = mt.voluntary_report?.report_number
+                ? `RVP-${mt.voluntary_report.report_number}`
+                : mt.obligatory_report?.report_number
+                    ? `RO-${mt.obligatory_report.report_number}`
+                    : "Sin reporte";
+            return { reportLabel, measures: mt.mitigation_plan!.measures };
+        });
 
     const { createSMSActivity } = useCreateSMSActivity();
     const { updateSMSActivity } = useUpdateSMSActivity();
@@ -137,7 +150,7 @@ export default function CreateSMSActivityForm({
             authorized_by: initialData?.authorized_by?.dni?.toString(),
             planned_by: initialData?.planned_by?.dni?.toString(),
             executed_by: initialData?.executed_by || "",
-            bulletin_id: initialData?.bulletin_id ?? null,
+            mitigation_measure_id: (initialData as any)?.mitigation_measure_id ?? null,
         },
     });
 
@@ -169,7 +182,7 @@ export default function CreateSMSActivityForm({
                 authorized_by: initialData.authorized_by?.dni?.toString(),
                 planned_by: initialData.planned_by?.dni?.toString(),
                 executed_by: initialData.executed_by || "",
-                bulletin_id: initialData.bulletin_id ?? null,
+                mitigation_measure_id: (initialData as any)?.mitigation_measure_id ?? null,
             });
         } else if (!isEditing && nextNumberData?.next_number) {
             form.setValue("activity_number", nextNumberData.next_number);
@@ -237,7 +250,7 @@ export default function CreateSMSActivityForm({
         <Form {...form}>
             <form
                 onSubmit={form.handleSubmit(onSubmit)}
-                className="flex flex-col gap-4 max-h-[80vh] overflow-y-auto p-2"
+                className="flex flex-col gap-4 flex-1 min-h-0 overflow-y-auto p-2"
             >
                 {/* Fila 1: Número | Título | Nombre */}
                 <div className="grid grid-cols-3 gap-4">
@@ -323,14 +336,7 @@ export default function CreateSMSActivityForm({
                                             initialFocus
                                             fromYear={1988}
                                             toYear={new Date().getFullYear() + 5}
-                                            captionLayout="dropdown-buttons"
-                                            components={{
-                                                Dropdown: (props) => (
-                                                    <select {...props} className="bg-popover text-popover-foreground">
-                                                        {props.children}
-                                                    </select>
-                                                ),
-                                            }}
+                                            captionLayout="dropdown"
                                         />
                                     </PopoverContent>
                                 </Popover>
@@ -370,14 +376,7 @@ export default function CreateSMSActivityForm({
                                             initialFocus
                                             fromYear={1988}
                                             toYear={new Date().getFullYear() + 5}
-                                            captionLayout="dropdown-buttons"
-                                            components={{
-                                                Dropdown: (props) => (
-                                                    <select {...props} className="bg-popover text-popover-foreground">
-                                                        {props.children}
-                                                    </select>
-                                                ),
-                                            }}
+                                            captionLayout="dropdown"
                                         />
                                     </PopoverContent>
                                 </Popover>
@@ -457,37 +456,46 @@ export default function CreateSMSActivityForm({
                             </FormItem>
                         )}
                     />
-                    <FormField
-                        control={form.control}
-                        name="bulletin_id"
-                        render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Boletín de Seguridad</FormLabel>
-                                <Select
-                                    onValueChange={(val) =>
-                                        field.onChange(val === "none" ? null : Number(val))
-                                    }
-                                    value={field.value != null ? field.value.toString() : "none"}
-                                >
-                                    <FormControl>
-                                        <SelectTrigger>
-                                            <SelectValue placeholder="Sin boletín" />
-                                        </SelectTrigger>
-                                    </FormControl>
-                                    <SelectContent>
-                                        <SelectItem value="none">Sin boletín</SelectItem>
-                                        {bulletins?.map((bulletin) => (
-                                            <SelectItem key={bulletin.id} value={bulletin.id.toString()}>
-                                                {bulletin.title}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                                <FormMessage className="text-xs" />
-                            </FormItem>
-                        )}
-                    />
                 </div>
+
+                {/* Medida de mitigación vinculada */}
+                <FormField
+                    control={form.control}
+                    name="mitigation_measure_id"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Medida de Mitigación Vinculada (opcional)</FormLabel>
+                            <Select
+                                onValueChange={(val) =>
+                                    field.onChange(val === "none" ? null : Number(val))
+                                }
+                                value={field.value != null ? field.value.toString() : "none"}
+                            >
+                                <FormControl>
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Sin medida vinculada" />
+                                    </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                    <SelectItem value="none">Sin medida vinculada</SelectItem>
+                                    {measureGroups.map(({ reportLabel, measures }) => (
+                                        <SelectGroup key={reportLabel}>
+                                            <SelectLabel className="font-mono text-xs text-amber-600">
+                                                {reportLabel}
+                                            </SelectLabel>
+                                            {measures.map((measure) => (
+                                                <SelectItem key={measure.id} value={measure.id.toString()}>
+                                                    {measure.description}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectGroup>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                            <FormMessage className="text-xs" />
+                        </FormItem>
+                    )}
+                />
 
                 {/* Fila 4: Temas Abordados */}
                 <FormItem>
@@ -702,7 +710,11 @@ export default function CreateSMSActivityForm({
                     />
                 </div>
 
-                <Button type="submit" className="w-full">Enviar</Button>
+                <Button type="submit" disabled={createSMSActivity.isPending || updateSMSActivity.isPending} className="w-full">
+                    {(createSMSActivity.isPending || updateSMSActivity.isPending)
+                        ? <Loader2 className="size-4 animate-spin" />
+                        : isEditing ? "Guardar cambios" : "Registrar actividad"}
+                </Button>
             </form>
         </Form>
     );
