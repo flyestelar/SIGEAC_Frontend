@@ -80,10 +80,12 @@ export const getColumns = (
         <span
           className="
             block max-w-[400px]
-            truncate
-            text-sm
-            text-slate-600 dark:text-slate-300
+            text-sm text-slate-600 dark:text-slate-300
             text-center
+
+            whitespace-normal
+            break-words
+            leading-snug
           "
           title={row.original.justification ?? ''}
         >
