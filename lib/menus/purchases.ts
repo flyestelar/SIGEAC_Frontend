@@ -60,7 +60,7 @@ export function buildPurchasesGroup({ pathname, currentCompany }: MenuContext): 
                     "ASISTENTE_COMPRAS",
                     "SUPERUSER",
                     "JEFE_ADMINISTRACION",
-                    "ANALISTA_ADMINISTRACION"
+                    "ANALISTA_ADMINISTRACION",
                 ],
                 submenus: [],
             },
