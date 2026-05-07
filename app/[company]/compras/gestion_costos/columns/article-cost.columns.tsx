@@ -20,9 +20,19 @@ export type ArticleCostColumnsArgs = {
 
 const isModified = (
   id: number,
-  drafts: Record<number, any>,
+  drafts: Record<number, string | number | undefined>,
   current?: number
-) => drafts[id] !== undefined && drafts[id] !== current
+) => {
+  const draft = drafts[id]
+
+  if (draft === undefined || draft === null) return false
+
+  const draftStr = String(draft)
+  const currentStr =
+    current !== undefined && current !== null ? String(current) : ''
+
+  return draftStr !== currentStr || draftStr === '0'
+}
 
 export function getArticleCostColumns({
   onCostChange,

@@ -24,8 +24,14 @@ const isModified = (
   current?: number
 ) => {
   const draft = drafts[id]
-  if (draft === undefined) return false
-  return Number(draft) !== Number(current ?? 0)
+
+  if (draft === undefined || draft === null) return false
+
+  const draftStr = String(draft)
+  const currentStr =
+    current !== undefined && current !== null ? String(current) : ''
+
+  return draftStr !== currentStr || draftStr === '0'
 }
 
 export function getGeneralCostColumns({
@@ -106,7 +112,9 @@ export function getGeneralCostColumns({
           current !== undefined && current !== null ? String(current) : '0'
 
         const draftValue =
-          draft !== undefined && draft !== null ? String(draft) : ''
+          draft !== undefined && draft !== null
+            ? String(draft)
+            : ''
 
         return (
           <div className="flex justify-center w-full">
