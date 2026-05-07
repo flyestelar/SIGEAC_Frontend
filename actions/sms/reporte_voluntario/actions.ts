@@ -1,7 +1,18 @@
 import { VoluntaryReportStoreResponse } from '@/.gen/api/types.gen';
 import axiosInstance from '@/lib/axios';
+import { isAxiosError } from 'axios';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
+
+const extractErrorMessage = (error: unknown, fallback: string): string => {
+  if (!isAxiosError(error)) return fallback;
+  const data = error.response?.data;
+  if (data?.errors) {
+    const messages = Object.values(data.errors as Record<string, string[]>).flat();
+    if (messages.length) return messages.join(' ');
+  }
+  return data?.message ?? fallback;
+};
 
 interface VoluntaryReportData {
   company: string | null;
@@ -78,10 +89,7 @@ export const useCreateVoluntaryReport = () => {
       });
     },
     onError: (error) => {
-      toast.error('Oops!', {
-        description: 'No se pudo crear el reporte...',
-      });
-      console.log(error);
+      toast.error('Error', { description: extractErrorMessage(error, 'No se pudo crear el reporte.') });
     },
   });
   return {
@@ -107,10 +115,8 @@ export const useDeleteVoluntaryReport = () => {
         description: `¡El reporte ha sido eliminada correctamente!`,
       });
     },
-    onError: (e) => {
-      toast.error('Oops!', {
-        description: '¡Hubo un error al eliminar el reporte!',
-      });
+    onError: (error) => {
+      toast.error('Error', { description: extractErrorMessage(error, 'No se pudo eliminar el reporte.') });
     },
   });
 
@@ -140,10 +146,7 @@ export const useUpdateVoluntaryReport = () => {
       });
     },
     onError: (error) => {
-      toast.error('Oops!', {
-        description: 'No se pudo actualizar el reporte voluntario...',
-      });
-      console.log(error);
+      toast.error('Error', { description: extractErrorMessage(error, 'No se pudo actualizar el reporte voluntario.') });
     },
   });
   return {
@@ -167,10 +170,7 @@ export const useAcceptVoluntaryReport = () => {
       });
     },
     onError: (error) => {
-      toast.error('Oops!', {
-        description: 'No se pudo aceptar el reporte voluntario...',
-      });
-      console.log(error);
+      toast.error('Error', { description: extractErrorMessage(error, 'No se pudo aceptar el reporte voluntario.') });
     },
   });
   return {

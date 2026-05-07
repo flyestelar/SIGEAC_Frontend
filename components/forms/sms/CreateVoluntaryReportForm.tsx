@@ -61,7 +61,7 @@ export function CreateVoluntaryReportForm({
   const { selectedCompany } = useCompanyStore();
   const { createVoluntaryReport } = useCreateVoluntaryReport();
   const { updateVoluntaryReport } = useUpdateVoluntaryReport();
-  const [isAnonymous, setIsAnonymous] = useState(true);
+  const [isAnonymous, setIsAnonymous] = useState(initialData ? (initialData.is_anonymous ?? true) : true);
   const router = useRouter();
   const [consequences, setConsequences] = useState<string[]>([]);
   const [newConsequence, setNewConsequence] = useState("");
@@ -182,15 +182,15 @@ export function CreateVoluntaryReportForm({
       station: initialData?.station || "",
       description: initialData?.description || "",
       possible_consequences: Array.isArray(initialData?.possible_consequences)
-        ? initialData.possible_consequences
+        ? (initialData.possible_consequences as string[])
         : initialData?.possible_consequences
-          ? initialData.possible_consequences.split("~").filter((item) => item.trim() !== "")
+          ? (initialData.possible_consequences as string).split("~").filter((item) => item.trim() !== "")
           : [],
       recommendations: initialData?.recommendations || "",
       finding_location: initialData?.finding_location || "",
       finding_location_other: initialData?.finding_location_other || "",
       danger_type: initialData?.danger_type || "",
-      is_anonymous: initialData ? !initialData.is_anonymous : true,
+      is_anonymous: initialData?.is_anonymous ?? true,
       identification_date: initialData?.identification_date
         ? addDays(new Date(initialData.identification_date), 1)
         : new Date(),
@@ -225,20 +225,15 @@ export function CreateVoluntaryReportForm({
 
   useEffect(() => {
     if (initialData && isEditing) {
-      if (
-        initialData.reporter_email &&
-        initialData.reporter_name &&
-        initialData.reporter_last_name &&
-        initialData.reporter_phone
-      ) {
-        setIsAnonymous(false);
-      }
+      const anonymous = initialData.is_anonymous ?? true;
+      setIsAnonymous(anonymous);
+      form.setValue("is_anonymous", anonymous);
 
       // Inicializar las consecuencias si hay datos iniciales
       if (initialData.possible_consequences) {
         const initialConsequences = Array.isArray(initialData.possible_consequences)
-          ? initialData.possible_consequences
-          : initialData.possible_consequences.split("~");
+          ? (initialData.possible_consequences as string[])
+          : (initialData.possible_consequences as string).split("~").filter(Boolean);
         setConsequences(initialConsequences);
       }
 
@@ -688,7 +683,10 @@ export function CreateVoluntaryReportForm({
                 name="is_anonymous"
                 checked={isAnonymous}
                 onCheckedChange={(checked) => {
-                  if (typeof checked === "boolean") setIsAnonymous(checked);
+                  if (typeof checked === "boolean") {
+                    setIsAnonymous(checked);
+                    form.setValue("is_anonymous", checked);
+                  }
                 }}
               />
               <Label htmlFor="anonymous-report" className="text-sm">
