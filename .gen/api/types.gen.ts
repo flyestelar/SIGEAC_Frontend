@@ -1310,6 +1310,18 @@ export type StoreAircraftTypeRequest = {
 };
 
 /**
+ * StoreAirworthinessDirectiveApplicabilityBulkRequest
+ */
+export type StoreAirworthinessDirectiveApplicabilityBulkRequest = {
+  applicabilities: Array<{
+    aircraft_id: number;
+    is_applicable?: boolean;
+    non_applicability_reason?: string | null;
+    amoc_approved_method?: string | null;
+  }>;
+};
+
+/**
  * StoreAirworthinessDirectiveApplicabilityRequest
  */
 export type StoreAirworthinessDirectiveApplicabilityRequest = {
@@ -3968,6 +3980,57 @@ export type AirworthinessDirectiveApplicabilitiesStoreResponses = {
 
 export type AirworthinessDirectiveApplicabilitiesStoreResponse =
   AirworthinessDirectiveApplicabilitiesStoreResponses[keyof AirworthinessDirectiveApplicabilitiesStoreResponses];
+
+export type AirworthinessDirectiveApplicabilitiesBulkStoreData = {
+  body: StoreAirworthinessDirectiveApplicabilityBulkRequest;
+  path: {
+    directiveId: number;
+  };
+  query?: never;
+  url: '/airworthiness-directives/{directiveId}/applicabilities/bulk';
+};
+
+export type AirworthinessDirectiveApplicabilitiesBulkStoreErrors = {
+  /**
+   * Unauthenticated
+   */
+  401: {
+    /**
+     * Error overview.
+     */
+    message: string;
+  };
+  /**
+   * Validation error
+   */
+  422: {
+    /**
+     * Errors overview.
+     */
+    message: string;
+    /**
+     * A detailed description of each field that failed validation.
+     */
+    errors: {
+      [key: string]: Array<string>;
+    };
+  };
+};
+
+export type AirworthinessDirectiveApplicabilitiesBulkStoreError =
+  AirworthinessDirectiveApplicabilitiesBulkStoreErrors[keyof AirworthinessDirectiveApplicabilitiesBulkStoreErrors];
+
+export type AirworthinessDirectiveApplicabilitiesBulkStoreResponses = {
+  /**
+   * Array of `AirworthinessDirectiveApplicabilityResource`
+   */
+  201: {
+    data: Array<AirworthinessDirectiveApplicabilityResource>;
+  };
+};
+
+export type AirworthinessDirectiveApplicabilitiesBulkStoreResponse =
+  AirworthinessDirectiveApplicabilitiesBulkStoreResponses[keyof AirworthinessDirectiveApplicabilitiesBulkStoreResponses];
 
 export type AirworthinessDirectiveApplicabilitiesDestroyData = {
   body?: never;
@@ -11164,6 +11227,37 @@ export type FlightControlUpdateResponses = {
 
 export type FlightControlUpdateResponse = FlightControlUpdateResponses[keyof FlightControlUpdateResponses];
 
+export type SmsFollowUpControlsFileData = {
+  body?: never;
+  path: {
+    _company: string;
+    id: number;
+    type: string;
+  };
+  query?: never;
+  url: '/{_company}/sms/follow-up-controls/{id}/file/{type}';
+};
+
+export type SmsFollowUpControlsFileErrors = {
+  /**
+   * Not found
+   */
+  404: {
+    /**
+     * Error overview.
+     */
+    message: string;
+  };
+};
+
+export type SmsFollowUpControlsFileError = SmsFollowUpControlsFileErrors[keyof SmsFollowUpControlsFileErrors];
+
+export type SmsFollowUpControlsFileResponses = {
+  200: Blob | File;
+};
+
+export type SmsFollowUpControlsFileResponse = SmsFollowUpControlsFileResponses[keyof SmsFollowUpControlsFileResponses];
+
 export type FollowUpControllIndexData = {
   body?: never;
   path: {
@@ -11322,11 +11416,11 @@ export type FollowUpControllDestroyResponse = FollowUpControllDestroyResponses[k
 export type FollowUpControllGetFollowUpControlByMeasureIdData = {
   body?: never;
   path: {
-    company: string;
-    measure_id: string;
+    _company: string;
+    measure_id: number;
   };
   query?: never;
-  url: '/{company}/sms/follow-up-controls/by-measure/{measure_id}';
+  url: '/{_company}/sms/follow-up-controls/by-measure/{measure_id}';
 };
 
 export type FollowUpControllGetFollowUpControlByMeasureIdErrors = {
@@ -11345,11 +11439,83 @@ export type FollowUpControllGetFollowUpControlByMeasureIdError =
   FollowUpControllGetFollowUpControlByMeasureIdErrors[keyof FollowUpControllGetFollowUpControlByMeasureIdErrors];
 
 export type FollowUpControllGetFollowUpControlByMeasureIdResponses = {
-  200: Array<FollowUpControl>;
+  200: Array<{
+    image: string | null;
+    document: string | null;
+  }>;
 };
 
 export type FollowUpControllGetFollowUpControlByMeasureIdResponse =
   FollowUpControllGetFollowUpControlByMeasureIdResponses[keyof FollowUpControllGetFollowUpControlByMeasureIdResponses];
+
+export type FollowUpControllServeImageData = {
+  body?: never;
+  path: {
+    company: string;
+    filePath: string;
+  };
+  query?: never;
+  url: '/{company}/sms/image/{filePath}';
+};
+
+export type FollowUpControllServeImageErrors = {
+  /**
+   * Unauthenticated
+   */
+  401: {
+    /**
+     * Error overview.
+     */
+    message: string;
+  };
+  404: {
+    error: 'Imagen no encontrada';
+  };
+};
+
+export type FollowUpControllServeImageError = FollowUpControllServeImageErrors[keyof FollowUpControllServeImageErrors];
+
+export type FollowUpControllServeImageResponses = {
+  200: Blob | File;
+};
+
+export type FollowUpControllServeImageResponse =
+  FollowUpControllServeImageResponses[keyof FollowUpControllServeImageResponses];
+
+export type FollowUpControllServeDocumentData = {
+  body?: never;
+  path: {
+    company: string;
+    filePath: string;
+  };
+  query?: never;
+  url: '/{company}/sms/document/{filePath}';
+};
+
+export type FollowUpControllServeDocumentErrors = {
+  /**
+   * Unauthenticated
+   */
+  401: {
+    /**
+     * Error overview.
+     */
+    message: string;
+  };
+  404: {
+    error: 'Documento no encontrado';
+  };
+};
+
+export type FollowUpControllServeDocumentError =
+  FollowUpControllServeDocumentErrors[keyof FollowUpControllServeDocumentErrors];
+
+export type FollowUpControllServeDocumentResponses = {
+  200: Blob | File;
+};
+
+export type FollowUpControllServeDocumentResponse =
+  FollowUpControllServeDocumentResponses[keyof FollowUpControllServeDocumentResponses];
 
 export type HardTimeCategoryIndexData = {
   body?: never;

@@ -129,6 +129,9 @@ import type {
   AircraftUpdateData,
   AircraftUpdateErrors,
   AircraftUpdateResponses,
+  AirworthinessDirectiveApplicabilitiesBulkStoreData,
+  AirworthinessDirectiveApplicabilitiesBulkStoreErrors,
+  AirworthinessDirectiveApplicabilitiesBulkStoreResponses,
   AirworthinessDirectiveApplicabilitiesDestroyData,
   AirworthinessDirectiveApplicabilitiesDestroyErrors,
   AirworthinessDirectiveApplicabilitiesDestroyResponses,
@@ -737,6 +740,12 @@ import type {
   FollowUpControllIndexData,
   FollowUpControllIndexErrors,
   FollowUpControllIndexResponses,
+  FollowUpControllServeDocumentData,
+  FollowUpControllServeDocumentErrors,
+  FollowUpControllServeDocumentResponses,
+  FollowUpControllServeImageData,
+  FollowUpControllServeImageErrors,
+  FollowUpControllServeImageResponses,
   FollowUpControllStoreData,
   FollowUpControllStoreErrors,
   FollowUpControllStoreResponses,
@@ -1327,6 +1336,9 @@ import type {
   SMsActivityUpdateCalendarActivityData,
   SMsActivityUpdateCalendarActivityErrors,
   SMsActivityUpdateCalendarActivityResponses,
+  SmsFollowUpControlsFileData,
+  SmsFollowUpControlsFileErrors,
+  SmsFollowUpControlsFileResponses,
   SmsObligatoryReportsFileData,
   SmsObligatoryReportsFileErrors,
   SmsObligatoryReportsFileResponses,
@@ -2335,6 +2347,24 @@ export const airworthinessDirectiveApplicabilitiesStore = <ThrowOnError extends 
     responseType: 'json',
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/airworthiness-directives/{directiveId}/applicabilities',
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    },
+  });
+
+export const airworthinessDirectiveApplicabilitiesBulkStore = <ThrowOnError extends boolean = false>(
+  options: Options<AirworthinessDirectiveApplicabilitiesBulkStoreData, ThrowOnError>,
+) =>
+  (options.client ?? client).post<
+    AirworthinessDirectiveApplicabilitiesBulkStoreResponses,
+    AirworthinessDirectiveApplicabilitiesBulkStoreErrors,
+    ThrowOnError
+  >({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/airworthiness-directives/{directiveId}/applicabilities/bulk',
     ...options,
     headers: {
       'Content-Type': 'application/json',
@@ -5105,6 +5135,16 @@ export const flightControlUpdate = <ThrowOnError extends boolean = false>(
     ...options,
   });
 
+export const smsFollowUpControlsFile = <ThrowOnError extends boolean = false>(
+  options: Options<SmsFollowUpControlsFileData, ThrowOnError>,
+) =>
+  (options.client ?? client).get<SmsFollowUpControlsFileResponses, SmsFollowUpControlsFileErrors, ThrowOnError>({
+    responseType: 'blob',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/{_company}/sms/follow-up-controls/{id}/file/{type}',
+    ...options,
+  });
+
 export const followUpControllIndex = <ThrowOnError extends boolean = false>(
   options: Options<FollowUpControllIndexData, ThrowOnError>,
 ) =>
@@ -5160,7 +5200,31 @@ export const followUpControllGetFollowUpControlByMeasureId = <ThrowOnError exten
   >({
     responseType: 'json',
     security: [{ scheme: 'bearer', type: 'http' }],
-    url: '/{company}/sms/follow-up-controls/by-measure/{measure_id}',
+    url: '/{_company}/sms/follow-up-controls/by-measure/{measure_id}',
+    ...options,
+  });
+
+export const followUpControllServeImage = <ThrowOnError extends boolean = false>(
+  options: Options<FollowUpControllServeImageData, ThrowOnError>,
+) =>
+  (options.client ?? client).get<FollowUpControllServeImageResponses, FollowUpControllServeImageErrors, ThrowOnError>({
+    responseType: 'blob',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/{company}/sms/image/{filePath}',
+    ...options,
+  });
+
+export const followUpControllServeDocument = <ThrowOnError extends boolean = false>(
+  options: Options<FollowUpControllServeDocumentData, ThrowOnError>,
+) =>
+  (options.client ?? client).get<
+    FollowUpControllServeDocumentResponses,
+    FollowUpControllServeDocumentErrors,
+    ThrowOnError
+  >({
+    responseType: 'blob',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/{company}/sms/document/{filePath}',
     ...options,
   });
 

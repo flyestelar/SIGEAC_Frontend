@@ -53,6 +53,7 @@ import {
   aircraftTypesStore,
   aircraftTypesUpdate,
   aircraftUpdate,
+  airworthinessDirectiveApplicabilitiesBulkStore,
   airworthinessDirectiveApplicabilitiesDestroy,
   airworthinessDirectiveApplicabilitiesIndex,
   airworthinessDirectiveApplicabilitiesShow,
@@ -256,6 +257,8 @@ import {
   followUpControllDestroy,
   followUpControllGetFollowUpControlByMeasureId,
   followUpControllIndex,
+  followUpControllServeDocument,
+  followUpControllServeImage,
   followUpControllStore,
   followUpControllUpdate,
   generalLocationIndex0,
@@ -454,6 +457,7 @@ import {
   sMsActivityShow,
   sMsActivityStore,
   sMsActivityUpdateCalendarActivity,
+  smsFollowUpControlsFile,
   smsObligatoryReportsFile,
   smsSMsActivityGetActivitiesStats0,
   smsSMsActivityGetActivitiesStats02,
@@ -664,6 +668,9 @@ import type {
   AircraftUpdateData,
   AircraftUpdateError,
   AircraftUpdateResponse,
+  AirworthinessDirectiveApplicabilitiesBulkStoreData,
+  AirworthinessDirectiveApplicabilitiesBulkStoreError,
+  AirworthinessDirectiveApplicabilitiesBulkStoreResponse,
   AirworthinessDirectiveApplicabilitiesDestroyData,
   AirworthinessDirectiveApplicabilitiesDestroyError,
   AirworthinessDirectiveApplicabilitiesDestroyResponse,
@@ -1247,6 +1254,12 @@ import type {
   FollowUpControllIndexData,
   FollowUpControllIndexError,
   FollowUpControllIndexResponse,
+  FollowUpControllServeDocumentData,
+  FollowUpControllServeDocumentError,
+  FollowUpControllServeDocumentResponse,
+  FollowUpControllServeImageData,
+  FollowUpControllServeImageError,
+  FollowUpControllServeImageResponse,
   FollowUpControllStoreData,
   FollowUpControllStoreError,
   FollowUpControllStoreResponse,
@@ -1827,6 +1840,9 @@ import type {
   SMsActivityUpdateCalendarActivityData,
   SMsActivityUpdateCalendarActivityError,
   SMsActivityUpdateCalendarActivityResponse,
+  SmsFollowUpControlsFileData,
+  SmsFollowUpControlsFileError,
+  SmsFollowUpControlsFileResponse,
   SmsObligatoryReportsFileData,
   SmsObligatoryReportsFileError,
   SmsObligatoryReportsFileResponse,
@@ -3359,6 +3375,30 @@ export const airworthinessDirectiveApplicabilitiesStoreMutation = (
   > = {
     mutationFn: async (fnOptions) => {
       const { data } = await airworthinessDirectiveApplicabilitiesStore({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+export const airworthinessDirectiveApplicabilitiesBulkStoreMutation = (
+  options?: Partial<Options<AirworthinessDirectiveApplicabilitiesBulkStoreData>>,
+): UseMutationOptions<
+  AirworthinessDirectiveApplicabilitiesBulkStoreResponse,
+  AxiosError<AirworthinessDirectiveApplicabilitiesBulkStoreError>,
+  Options<AirworthinessDirectiveApplicabilitiesBulkStoreData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    AirworthinessDirectiveApplicabilitiesBulkStoreResponse,
+    AxiosError<AirworthinessDirectiveApplicabilitiesBulkStoreError>,
+    Options<AirworthinessDirectiveApplicabilitiesBulkStoreData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await airworthinessDirectiveApplicabilitiesBulkStore({
         ...options,
         ...fnOptions,
         throwOnError: true,
@@ -8395,6 +8435,28 @@ export const flightControlUpdateMutation = (
   return mutationOptions;
 };
 
+export const smsFollowUpControlsFileQueryKey = (options: Options<SmsFollowUpControlsFileData>) =>
+  createQueryKey('smsFollowUpControlsFile', options);
+
+export const smsFollowUpControlsFileOptions = (options: Options<SmsFollowUpControlsFileData>) =>
+  queryOptions<
+    SmsFollowUpControlsFileResponse,
+    AxiosError<SmsFollowUpControlsFileError>,
+    SmsFollowUpControlsFileResponse,
+    ReturnType<typeof smsFollowUpControlsFileQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await smsFollowUpControlsFile({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: smsFollowUpControlsFileQueryKey(options),
+  });
+
 export const followUpControllIndexQueryKey = (options: Options<FollowUpControllIndexData>) =>
   createQueryKey('followUpControllIndex', options);
 
@@ -8512,6 +8574,50 @@ export const followUpControllGetFollowUpControlByMeasureIdOptions = (
       return data;
     },
     queryKey: followUpControllGetFollowUpControlByMeasureIdQueryKey(options),
+  });
+
+export const followUpControllServeImageQueryKey = (options: Options<FollowUpControllServeImageData>) =>
+  createQueryKey('followUpControllServeImage', options);
+
+export const followUpControllServeImageOptions = (options: Options<FollowUpControllServeImageData>) =>
+  queryOptions<
+    FollowUpControllServeImageResponse,
+    AxiosError<FollowUpControllServeImageError>,
+    FollowUpControllServeImageResponse,
+    ReturnType<typeof followUpControllServeImageQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await followUpControllServeImage({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: followUpControllServeImageQueryKey(options),
+  });
+
+export const followUpControllServeDocumentQueryKey = (options: Options<FollowUpControllServeDocumentData>) =>
+  createQueryKey('followUpControllServeDocument', options);
+
+export const followUpControllServeDocumentOptions = (options: Options<FollowUpControllServeDocumentData>) =>
+  queryOptions<
+    FollowUpControllServeDocumentResponse,
+    AxiosError<FollowUpControllServeDocumentError>,
+    FollowUpControllServeDocumentResponse,
+    ReturnType<typeof followUpControllServeDocumentQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await followUpControllServeDocument({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: followUpControllServeDocumentQueryKey(options),
   });
 
 export const hardTimeCategoryIndexQueryKey = (options?: Options<HardTimeCategoryIndexData>) =>
