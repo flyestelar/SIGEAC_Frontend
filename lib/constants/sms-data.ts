@@ -38,7 +38,7 @@ export const emergencyPlans: EmergencyPlan[] = [
     {
         //PRIMERA CARTA
         cardData: {
-            imageUrl: `images/sms/fire-extinguisher.png`,
+            imageUrl: `images/sms/plan_de_respuesta_1.png`,
             imageAlt: "icono_extintor_de_incedio",
             title: "TARJETA DE ACCION DIRECTOR DE EMERGENCIA",
             stepsTitle:
@@ -76,7 +76,7 @@ export const emergencyPlans: EmergencyPlan[] = [
     // SEGUNDA CARTA
     {
         cardData: {
-            imageUrl: `images/sms/airplane_fire.png`,
+            imageUrl: `images/sms/plan_evacuacion_2.png`,
             imageAlt: "Incendio no controlado en hangar con aeronave en servicio",
             title: "TARJETA DE ACCION PERSONAL DE GUARDIA",
             stepsTitle:
@@ -116,7 +116,7 @@ export const emergencyPlans: EmergencyPlan[] = [
     //TERCERA CARTA
     {
         cardData: {
-            imageUrl: `images/sms/fire_controled.png`,
+            imageUrl: `images/sms/curso_extintores_3.png`,
             imageAlt: "Conato de incendio en las edificaciones",
             title: "TARJETA DE ACCIÓN SMS",
             stepsTitle:
@@ -161,6 +161,107 @@ export const emergencyPlans: EmergencyPlan[] = [
             },
         ],
     },
+
+
+    //CUARTA CARTA
+    {
+        cardData: {
+            imageUrl: `images/sms/curso_primeros_auxilios_4.png`,
+            imageAlt: "Conato de incendio en las edificaciones",
+            title: "TARJETA DE ACCIÓN SMS",
+            stepsTitle:
+                "Acciones a seguir durante una emergencia de incendio en las instalaciones de la empresa.",
+            description:
+                "Garantizar la seguridad y el bienestar de las personas en caso de una emergencia; liderando y organizando el proceso de evacuación en situaciones de riesgo.",
+            actionLink: {
+                href: "#",
+                label: "Ver acción",
+            },
+        },
+        actionSteps: [
+            {
+                title: "Durante la emergencia",
+                items: [
+                    "Notificar al director de emergencia las condiciones y magnitud del incendio, y si éste puede ser controlado por medios internos.",
+
+                    "Colaborar con la labor de extinción desalojando al personal cercano del área en problema.",
+
+                    "Si el incendio es posible controlarlo con los recursos internos indicará al personal de extinción empleen los extintores más cercanos al área del problema.",
+
+                    "Prestará apoyo al director de emergencia.",
+
+                    "Coordinara las actividades de extinción de incendio, hasta la llegada de los bomberos.",
+
+                    "Garantizara la seguridad del personal verificando riesgos cercanos",
+                ],
+            },
+            {
+                title: "Después de la emergencia.",
+                items: [
+                    "Esperar indicaciones del Director de emergencia para volver o no a las actividades normales.",
+
+                    "Evaluar los daños, una vez sea entregado el informe de evaluación de daños realizado por los bomberos.",
+
+                    "Realizar el análisis de evaluación de riesgos",
+
+                    "Evaluar las medidas de mitigación existentes.",
+
+                    "Sugerir correcciones al plan de emergencia de ser necesarias.",
+                ],
+            },
+        ],
+    },
+
+    //QUINTA CARTA
+    {
+        cardData: {
+            imageUrl: `images/sms/accion_ante_sismo_5.png`,
+            imageAlt: "Conato de incendio en las edificaciones",
+            title: "TARJETA DE ACCIÓN SMS",
+            stepsTitle:
+                "Acciones a seguir durante una emergencia de incendio en las instalaciones de la empresa.",
+            description:
+                "Garantizar la seguridad y el bienestar de las personas en caso de una emergencia; liderando y organizando el proceso de evacuación en situaciones de riesgo.",
+            actionLink: {
+                href: "#",
+                label: "Ver acción",
+            },
+        },
+        actionSteps: [
+            {
+                title: "Durante la emergencia",
+                items: [
+                    "Notificar al director de emergencia las condiciones y magnitud del incendio, y si éste puede ser controlado por medios internos.",
+
+                    "Colaborar con la labor de extinción desalojando al personal cercano del área en problema.",
+
+                    "Si el incendio es posible controlarlo con los recursos internos indicará al personal de extinción empleen los extintores más cercanos al área del problema.",
+
+                    "Prestará apoyo al director de emergencia.",
+
+                    "Coordinara las actividades de extinción de incendio, hasta la llegada de los bomberos.",
+
+                    "Garantizara la seguridad del personal verificando riesgos cercanos",
+                ],
+            },
+            {
+                title: "Después de la emergencia.",
+                items: [
+                    "Esperar indicaciones del Director de emergencia para volver o no a las actividades normales.",
+
+                    "Evaluar los daños, una vez sea entregado el informe de evaluación de daños realizado por los bomberos.",
+
+                    "Realizar el análisis de evaluación de riesgos",
+
+                    "Evaluar las medidas de mitigación existentes.",
+
+                    "Sugerir correcciones al plan de emergencia de ser necesarias.",
+                ],
+            },
+        ],
+    },
+
+
 ];
 
 export const policyCardsData = [

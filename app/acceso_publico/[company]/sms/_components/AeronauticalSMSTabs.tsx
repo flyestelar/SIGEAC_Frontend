@@ -83,7 +83,7 @@ export const AeronauticalSMSTabs = ({ company, surveyNumbers }: SMSTabsProps) =>
     const companyGallery = useMemo(
         () => [
             {
-                src: `${storageBaseUrl}images/sms/sms_airplane_page.jpg`,
+                src: `${storageBaseUrl}images/sms/sms_airplane_page.png`,
                 alt: "Operaciones aeronáuticas y cultura de seguridad",
             },
             ...AeronauticalpolicyImages,
@@ -105,19 +105,16 @@ export const AeronauticalSMSTabs = ({ company, surveyNumbers }: SMSTabsProps) =>
             title: "Misión",
             description:
                 "Proveer servicios de transporte aéreo de alta calidad, garantizando seguridad, puntualidad y excelencia operativa con impacto sostenible.",
+            image: `${storageBaseUrl}images/sms/sms_airplane_page.png`,
         },
         {
             icon: Eye,
             title: "Visión",
             description:
                 "Consolidarnos como referencia nacional e internacional en servicios aéreos, distinguidos por innovación, calidad y seguridad operacional.",
+            image: `${storageBaseUrl}images/sms/h74_sms_logo.png`,
         },
-        {
-            icon: ShieldCheck,
-            title: "Compromiso SMS",
-            description:
-                "Promovemos una cultura justa, no punitiva y enfocada en prevención, aprendizaje y mejora continua en todos los niveles.",
-        },
+
     ];
 
     const reportActions = [
@@ -165,7 +162,7 @@ export const AeronauticalSMSTabs = ({ company, surveyNumbers }: SMSTabsProps) =>
             tag: "Control operacional",
             description:
                 "Asegura la ejecución segura de las operaciones y la alineación del personal con los estándares operacionales.",
-            image: `${storageBaseUrl}images/sms/sms_airplane_page.jpg`,
+            image: `${storageBaseUrl}images/sms/sms_airplane_page.png`,
         },
         {
             initials: "MNT",
@@ -235,7 +232,7 @@ export const AeronauticalSMSTabs = ({ company, surveyNumbers }: SMSTabsProps) =>
                                     </div>
                                 </div>
 
-                                <div className="grid gap-4 md:grid-cols-3">
+                                <div className="grid gap-4 md:grid-cols-2">
                                     {corporatePillars.map((pillar) => {
                                         const Icon = pillar.icon;
 
