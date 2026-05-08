@@ -9,7 +9,6 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-
 import { Input } from "@/components/ui/input";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -33,33 +32,118 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
-import { VoluntaryReport } from "@/types";
+import { VoluntaryReportResource } from "@/.gen/api/types.gen";
 import { addDays, format } from "date-fns";
 import { es } from "date-fns/locale";
-import { CalendarIcon, Loader2 } from "lucide-react";
-import Image from "next/image";
+import {
+  ArrowLeft,
+  CalendarIcon,
+  CheckCircle2,
+  ChevronRight,
+  FileText,
+  Hash,
+  Loader2,
+  MapPin,
+  Paperclip,
+  Upload,
+  User,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Label } from "@/components/ui/label";
 import { useCompanyStore } from "@/stores/CompanyStore";
 
 interface FormProps {
   onClose: () => void;
-  initialData?: VoluntaryReport;
+  initialData?: VoluntaryReportResource;
   isEditing?: boolean;
 }
-// { onClose }: FormProps
-// lo de arriba va en prop
+
+function Section({
+  num,
+  icon: Icon,
+  title,
+  children,
+}: {
+  num: string;
+  icon: React.ElementType;
+  title: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="relative rounded-lg border border-border overflow-hidden mb-2.5 border-l-[3px] border-l-amber-500">
+      <div className="flex items-center gap-0 bg-muted/40 border-b border-border">
+        <div className="flex items-center justify-center w-10 h-full py-2 border-r border-border/60 bg-amber-500/5">
+          <span className="font-mono text-[12px] font-bold text-amber-500 tabular-nums">
+            {num}
+          </span>
+        </div>
+        <div className="flex items-center gap-2 px-3 py-2 flex-1">
+          <Icon className="w-3 h-3 text-amber-600/70" />
+          <span className="text-[10px] font-semibold tracking-[0.2em] uppercase text-muted-foreground">
+            {title}
+          </span>
+        </div>
+      </div>
+      <div className="p-4 bg-background">{children}</div>
+    </div>
+  );
+}
+
+function DateField({
+  value,
+  onChange,
+  label,
+  disableFuture = true,
+}: {
+  value: Date | undefined;
+  onChange: (date: Date | undefined) => void;
+  label: string;
+  disableFuture?: boolean;
+}) {
+  return (
+    <div className="flex flex-col gap-1.5 w-full">
+      <span className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+        {label}
+      </span>
+      <Popover>
+        <PopoverTrigger asChild>
+          <Button
+            type="button"
+            variant="outline"
+            className="w-full justify-between text-left font-normal h-9 text-sm border-border hover:border-amber-500/50 hover:bg-amber-500/5 transition-colors group"
+          >
+            <span className="flex items-center gap-2">
+              <CalendarIcon className="h-3.5 w-3.5 text-amber-500/70 group-hover:text-amber-500 transition-colors" />
+              {value ? format(value, "PPP", { locale: es }) : "Seleccione fecha"}
+            </span>
+            <ChevronRight className="h-3 w-3 text-muted-foreground/50 rotate-90" />
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-auto p-0" align="start">
+          <Calendar
+            mode="single"
+            selected={value}
+            onSelect={onChange}
+            disabled={disableFuture ? (date) => date > new Date() : undefined}
+            initialFocus
+            startMonth={new Date(1980, 0)}
+            endMonth={new Date(new Date().getFullYear(), 11)}
+            captionLayout="dropdown"
+          />
+        </PopoverContent>
+      </Popover>
+    </div>
+  );
+}
+
 export function CreateGeneralVoluntaryReportForm({
   onClose,
   isEditing,
   initialData,
 }: FormProps) {
-  console.log("initial data thattt ", initialData);
   const { selectedCompany, selectedStation } = useCompanyStore();
   const { createVoluntaryReport } = useCreateVoluntaryReport();
   const { updateVoluntaryReport } = useUpdateVoluntaryReport();
@@ -96,122 +180,82 @@ export function CreateGeneralVoluntaryReportForm({
           })
           .optional(),
 
-    danger_location: z.string(),
-    danger_area: z.string(),
-    airport_location: z.string(),
+    station: z.string(),
+    finding_location: z.string(),
+    finding_location_other: z.string(),
     description: z
       .string()
-      .min(3, {
-        message: "La descripción debe tener al menos 3 caracteres",
-      })
-      .max(255, {
-        message: "La descripción no debe exceder los 255 caracteres",
-      }),
+      .min(3, { message: "La descripción debe tener al menos 3 caracteres" })
+      .max(255, { message: "La descripción no debe exceder los 255 caracteres" }),
     possible_consequences: z
       .string()
-      .min(3, {
-        message: "Las consecuencias deben tener al menos 3 caracteres",
-      })
-      .max(255, {
-        message: "Las consecuencias no debe exceder los 255 caracteres",
-      }),
+      .min(3, { message: "Las consecuencias deben tener al menos 3 caracteres" })
+      .max(255, { message: "Las consecuencias no debe exceder los 255 caracteres" }),
 
     reporter_name: z
       .string()
-      .min(3, {
-        message: "El nombre de quien reporta debe tener al menos 3 letras.",
-      })
+      .min(3, { message: "El nombre de quien reporta debe tener al menos 3 letras." })
       .max(40)
       .optional(),
     reporter_last_name: z
       .string()
-      .min(3, {
-        message: "El Apellido de quien reporta debe tener al menos 3 letras.",
-      })
+      .min(3, { message: "El Apellido de quien reporta debe tener al menos 3 letras." })
       .max(40)
       .optional(),
     reporter_phone: z
       .string()
-      .regex(/^\d{11}$/, {
-        message: "El número telefónico debe tener almenos 11 dígitos",
-      })
+      .regex(/^\d{11}$/, { message: "El número telefónico debe tener almenos 11 dígitos" })
       .optional(),
-
     reporter_email: z
       .string()
-      .min(10, {
-        message: "El correo electrónico debe tener al menos 10 caracteres",
-      })
+      .min(10, { message: "El correo electrónico debe tener al menos 10 caracteres" })
       .email({ message: "Formato de correo electrónico inválido" })
       .optional(),
     image: z
       .instanceof(File)
       .refine((file) => file.size <= 5 * 1024 * 1024, "Max 5MB")
-      .refine(
-        (file) => ["image/jpeg", "image/png"].includes(file.type),
-        "Solo JPEG/PNG"
-      )
+      .refine((file) => ["image/jpeg", "image/png"].includes(file.type), "Solo JPEG/PNG")
       .optional(),
-
     document: z
       .instanceof(File)
       .refine((file) => file.size <= 5 * 1024 * 1024, "Máximo 5MB")
-      .refine(
-        (file) => file.type === "application/pdf",
-        "Solo se permiten archivos PDF"
-      )
+      .refine((file) => file.type === "application/pdf", "Solo se permiten archivos PDF")
       .optional(),
-    // Otros campos del esquema@/components.
   });
 
   type FormSchemaType = z.infer<typeof FormSchema>;
 
   useEffect(() => {
     if (initialData && isEditing) {
-      if (
-        initialData.reporter_email &&
-        initialData.reporter_name &&
-        initialData.reporter_last_name &&
-        initialData.reporter_phone
-      ) {
-        setIsAnonymous(false);
-      }
+      setIsAnonymous(initialData.is_anonymous);
     }
-  }, [initialData, isEditing]); // Only run when these values change
+  }, [initialData, isEditing]);
 
   const form = useForm<FormSchemaType>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
       report_number: initialData?.report_number || "",
-      danger_area: initialData?.danger_area || "",
-      danger_location: initialData?.danger_location || "",
+      finding_location: initialData?.finding_location ?? "",
+      station: initialData?.station ?? "",
       description: initialData?.description || "",
-      possible_consequences: initialData?.possible_consequences || "",
-      airport_location: initialData?.airport_location || "",
-
+      possible_consequences: Array.isArray(initialData?.possible_consequences)
+        ? (initialData.possible_consequences as string[]).join("~")
+        : "",
+      finding_location_other: initialData?.finding_location_other ?? "",
       identification_date: initialData?.identification_date
         ? addDays(new Date(initialData.identification_date), 1)
         : new Date(),
-
       report_date: initialData?.report_date
         ? addDays(new Date(initialData.report_date), 1)
         : new Date(),
-
-      // Campos del reporter - solo se asignan si existen en initialData
-      ...(initialData?.reporter_name && {
-        reporter_name: initialData.reporter_name,
-      }),
-      ...(initialData?.reporter_last_name && {
-        reporter_last_name: initialData.reporter_last_name,
-      }),
-      ...(initialData?.reporter_email && {
-        reporter_email: initialData.reporter_email,
-      }),
-      ...(initialData?.reporter_phone && {
-        reporter_phone: initialData.reporter_phone,
-      }),
+      ...(initialData?.reporter_name && { reporter_name: initialData.reporter_name }),
+      ...(initialData?.reporter_last_name && { reporter_last_name: initialData.reporter_last_name }),
+      ...(initialData?.reporter_email && { reporter_email: initialData.reporter_email }),
+      ...(initialData?.reporter_phone && { reporter_phone: initialData.reporter_phone }),
     },
   });
+
+  const findingLocation = form.watch("finding_location");
 
   const onSubmit = async (data: FormSchemaType) => {
     if (isAnonymous) {
@@ -227,9 +271,14 @@ export function CreateGeneralVoluntaryReportForm({
         id: initialData.id.toString(),
         data: {
           ...data,
-          status: initialData.status,
-          danger_identification_id: initialData?.danger_identification_id,
-          location_id: selectedStation,
+          status: initialData.status ?? "ABIERTO",
+          danger_identification_id: initialData.danger_identification_id ?? null,
+          danger_type: initialData.danger_type ?? "",
+          recommendations: initialData.recommendations ?? "",
+          possible_consequences:
+            typeof data.possible_consequences === "string"
+              ? data.possible_consequences.split("~").map((s) => s.trim()).filter(Boolean)
+              : [],
         },
       };
       await updateVoluntaryReport.mutateAsync(value);
@@ -239,7 +288,16 @@ export function CreateGeneralVoluntaryReportForm({
         reportData: {
           ...data,
           location_id: selectedStation,
-          status: shouldEnableField ? "ABIERTO" : "PROCESO",
+          status: (shouldEnableField ? "ABIERTO" : "PROCESO") as "ABIERTO" | "PROCESO" | "CERRADO",
+          is_anonymous: isAnonymous,
+          danger_type: "",
+          recommendations: "",
+          identification_date: data.identification_date.toISOString().split("T")[0],
+          report_date: data.report_date.toISOString().split("T")[0],
+          possible_consequences:
+            typeof data.possible_consequences === "string"
+              ? data.possible_consequences.split("~").map((s) => s.trim()).filter(Boolean)
+              : [],
         },
       };
       try {
@@ -258,409 +316,489 @@ export function CreateGeneralVoluntaryReportForm({
     onClose();
   };
 
+  const isPending = createVoluntaryReport.isPending || updateVoluntaryReport.isPending;
+
   return (
     <Form {...form}>
-      <form
-        onSubmit={form.handleSubmit(onSubmit)}
-        className="flex flex-col space-y-3"
-      >
-        <FormLabel className="text-lg text-center">
-          Reporte Voluntario de Peligro
-        </FormLabel>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col w-full max-w-4xl mx-auto">
+        {/* Header strip */}
+        <div className="rounded-lg border border-amber-500/20 bg-amber-500/5 mb-3 overflow-hidden">
+          <div className="flex items-center justify-between px-4 py-2.5">
+            <div className="flex items-center gap-3">
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
+              <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-amber-700 dark:text-amber-400">
+                {isEditing ? "Modo edición" : "Nuevo reporte"}
+              </span>
+            </div>
+            <div className="flex items-center gap-1.5 bg-background/60 border border-amber-500/20 rounded px-2.5 py-1">
+              <span className="text-[10px] font-semibold tracking-widest text-muted-foreground uppercase">
+                Reporte Voluntario · SIGEAC
+              </span>
+            </div>
+          </div>
+        </div>
 
-        {shouldEnableField && (
-          <FormField
-            control={form.control}
-            name="report_number"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Código del Reporte Voluntario</FormLabel>
-                <FormControl>
-                  <Input placeholder="" {...field} maxLength={4} />
-                </FormControl>
-                <FormMessage className="text-xs" />
-              </FormItem>
-            )}
-          />
-        )}
-        <div className="flex gap-2 items-center justify-center  ">
-          <FormField
-            control={form.control}
-            name="identification_date"
-            render={({ field }) => (
-              <FormItem className="flex flex-col mt-2.5 w-full">
-                <FormLabel>Fecha de Identificacion</FormLabel>
-                <Popover>
-                  <PopoverTrigger asChild>
+        {/* Section 01 — Identificación */}
+        <Section num="01" icon={MapPin} title="Identificación y Ubicación">
+          <div className="space-y-3">
+            {shouldEnableField && (
+              <FormField
+                control={form.control}
+                name="report_number"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+                      <Hash className="inline w-3 h-3 mr-1 text-amber-500/70" />
+                      Código del Reporte
+                    </FormLabel>
                     <FormControl>
-                      <Button
-                        variant={"outline"}
-                        className={cn(
-                          "w-full pl-3 text-left font-normal",
-                          !field.value && "text-muted-foreground"
-                        )}
-                      >
-                        {field.value ? (
-                          format(field.value, "PPP", {
-                            locale: es,
-                          })
-                        ) : (
-                          <span>Seleccione una fecha</span>
-                        )}
-                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                      </Button>
+                      <Input
+                        placeholder="Número"
+                        {...field}
+                        maxLength={4}
+                        className="h-9 text-sm border-border focus-visible:ring-amber-500/30 focus-visible:border-amber-500/50 font-mono"
+                      />
                     </FormControl>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={field.value}
-                      onSelect={field.onChange}
-                      disabled={(date) => date > new Date()} // Solo deshabilitar fechas futuras
-                      initialFocus
-                      startMonth={new Date(1980, 0)} // Año mínimo que se mostrará
-                      endMonth={new Date(new Date().getFullYear(), 11)} // Año máximo (actual)
-                      captionLayout="dropdown" // Selectores de año/mes
-                    />
-                  </PopoverContent>
-                </Popover>
-                <FormMessage />
-              </FormItem>
+                    <FormMessage className="text-xs" />
+                  </FormItem>
+                )}
+              />
             )}
-          />
-          <FormField
-            control={form.control}
-            name="report_date"
-            render={({ field }) => (
-              <FormItem className="flex flex-col mt-2.5 w-full">
-                <FormLabel>Fecha de Reporte</FormLabel>
-                <Popover>
-                  <PopoverTrigger asChild>
+
+            <div className="grid grid-cols-2 gap-3">
+              <FormField
+                control={form.control}
+                name="station"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+                      Base / Estación
+                    </FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger className="h-9 text-sm border-border focus:ring-amber-500/30 focus:border-amber-500/50">
+                          <SelectValue placeholder="Seleccionar" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="PZO">Puerto Ordaz</SelectItem>
+                        <SelectItem value="MIQ">MIQ</SelectItem>
+                        <SelectItem value="PMV">PMV</SelectItem>
+                        <SelectItem value="MAR">MAR</SelectItem>
+                        <SelectItem value="VIG">VIG</SelectItem>
+                        <SelectItem value="BNS">BNS</SelectItem>
+                        <SelectItem value="STD">STD</SelectItem>
+                        <SelectItem value="STB">STB</SelectItem>
+                        <SelectItem value="MUN">MUN</SelectItem>
+                        <SelectItem value="SVSA">SVSA</SelectItem>
+                        <SelectItem value="MADRID">MADRID</SelectItem>
+                        <SelectItem value="CHILE">CHILE</SelectItem>
+                        <SelectItem value="HAVANA">HAVANA</SelectItem>
+                        <SelectItem value="SVZ">SVZ</SelectItem>
+                        <SelectItem value="CANAIMA">CANAIMA</SelectItem>
+                        <SelectItem value="MDPC">MDPC</SelectItem>
+                        <SelectItem value="LIMA">LIMA</SelectItem>
+                        <SelectItem value="PTY">PTY</SelectItem>
+                        <SelectItem value="SKBO">SKBO</SelectItem>
+                        <SelectItem value="N/A">NO APLICA</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="finding_location"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+                      Lugar de Identificación
+                    </FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger className="h-9 text-sm border-border focus:ring-amber-500/30 focus:border-amber-500/50">
+                          <SelectValue placeholder="Seleccionar" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="HANGAR">HANGAR</SelectItem>
+                        <SelectItem value="PLATAFORMA">PLATAFORMA</SelectItem>
+                        <SelectItem value="AREA_ADMON">AREA ADMON</SelectItem>
+                        <SelectItem value="AERONAVE">AERONAVE</SelectItem>
+                        <SelectItem value="AEROPUERTO">AEROPUERTO</SelectItem>
+                        <SelectItem value="OTRO">OTRO</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            {findingLocation === "OTRO" && (
+              <FormField
+                control={form.control}
+                name="finding_location_other"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+                      Especificar otro lugar
+                    </FormLabel>
                     <FormControl>
-                      <Button
-                        variant={"outline"}
-                        className={cn(
-                          "w-full pl-3 text-left font-normal",
-                          !field.value && "text-muted-foreground"
-                        )}
-                      >
-                        {field.value ? (
-                          format(field.value, "PPP", {
-                            locale: es,
-                          })
-                        ) : (
-                          <span>Seleccione una fecha</span>
-                        )}
-                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                      </Button>
+                      <Input
+                        placeholder="Describa el lugar"
+                        {...field}
+                        className="h-9 text-sm border-border focus-visible:ring-amber-500/30 focus-visible:border-amber-500/50"
+                      />
                     </FormControl>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={field.value}
-                      onSelect={field.onChange}
-                      disabled={(date) => date > new Date()} // Solo deshabilitar fechas futuras
-                      initialFocus
-                      startMonth={new Date(1980, 0)} // Año mínimo que se mostrará
-                      endMonth={new Date(new Date().getFullYear(), 11)} // Año máximo (actual)
-                      captionLayout="dropdown" // Selectores de año/mes
+                    <FormMessage className="text-xs" />
+                  </FormItem>
+                )}
+              />
+            )}
+          </div>
+        </Section>
+
+        {/* Section 02 — Fechas */}
+        <Section num="02" icon={CalendarIcon} title="Fechas">
+          <div className="grid grid-cols-2 gap-3">
+            <FormField
+              control={form.control}
+              name="identification_date"
+              render={({ field }) => (
+                <FormItem>
+                  <FormControl>
+                    <DateField
+                      value={field.value}
+                      onChange={field.onChange}
+                      label="Fecha de Identificación"
                     />
-                  </PopoverContent>
-                </Popover>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
-
-        <div className="flex gap-2 items-center justify-center">
-          <FormField
-            control={form.control}
-            name="danger_location"
-            render={({ field }) => (
-              <FormItem className="w-full">
-                <FormLabel>Base de Localizacion</FormLabel>
-                <Select
-                  onValueChange={field.onChange}
-                  defaultValue={field.value}
-                >
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Seleccionar localización" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    <SelectItem value="PZO">Puerto Ordaz</SelectItem>
-                    <SelectItem value="CBL">Ciudad Bolívar</SelectItem>
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="danger_area"
-            render={({ field }) => (
-              <FormItem className="w-full">
-                <FormLabel>Area de identificación</FormLabel>
-                <Select
-                  onValueChange={field.onChange}
-                  defaultValue={field.value}
-                >
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Seleccionar área" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    <SelectItem value="OPERACIONES">OPERACIONES</SelectItem>
-                    <SelectItem value="MANTENIMIENTO">MANTENIMIENTO</SelectItem>
-                    <SelectItem value="ADMINISTRACION_RRHH">
-                      ADMINISTRACION Y RRHH
-                    </SelectItem>
-                    <SelectItem value="CONTROL_CALIDAD">
-                      CONTROL DE CALIDAD
-                    </SelectItem>
-                    <SelectItem value="IT">TECNOLOGIA E INFORMACION</SelectItem>
-                    <SelectItem value="AVSEC">AVSEC</SelectItem>
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
-
-        <FormField
-          control={form.control}
-          name="airport_location"
-          render={({ field }) => (
-            <FormItem className="w-full">
-              <FormLabel>Lugar de Identificacion</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Seleccionar" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  <SelectItem value="CALLE_RODAJE">CALLE DE RODAJE</SelectItem>
-                  <SelectItem value="HANGAR13B">HANGAR13B</SelectItem>
-                  <SelectItem value="HANGAR17/18C">HANGAR17/18 C</SelectItem>
-                  <SelectItem value="AEROPUERTO_CANAIMA">
-                    AEROPUERTO CANAIMA
-                  </SelectItem>
-                  <SelectItem value="PLATAFORMA">PLATAFORMA</SelectItem>
-                  <SelectItem value="PISTA_ATERRIZAJE">
-                    PISTA DE ATERRIZAJE
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="description"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Descripcion de peligro</FormLabel>
-              <FormControl>
-                <Input placeholder="Breve descripcion del peligro" {...field} />
-              </FormControl>
-              <FormMessage className="text-xs" />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="possible_consequences"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Consecuencias segun su criterio</FormLabel>
-              <FormControl>
-                <Textarea
-                  placeholder="Si son varias, separar por una coma (,)"
-                  {...field}
-                />
-              </FormControl>
-              <FormMessage className="text-xs" />
-            </FormItem>
-          )}
-        />
-
-        <div>
-          <Checkbox
-            checked={isAnonymous}
-            onCheckedChange={(checked) => {
-              // Asegurarse de que el valor sea un booleano
-              if (typeof checked === "boolean") {
-                setIsAnonymous(checked);
-                console.log(checked);
-              }
-            }}
-            value={isAnonymous.toString()} // Convertimos el booleano a string
-          />
-          <Label className="ml-2 text-sm">Reporte anónimo</Label>
-        </div>
-
-        {!isAnonymous && (
-          <div className="grid grid-cols-2 gap-2">
-            <FormField
-              control={form.control}
-              name="reporter_name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Nombre</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Nombre de quien reporta" {...field} />
                   </FormControl>
                   <FormMessage className="text-xs" />
                 </FormItem>
               )}
             />
-
             <FormField
               control={form.control}
-              name="reporter_last_name"
+              name="report_date"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Apellido</FormLabel>
                   <FormControl>
-                    <Input placeholder="Apellido de quien reporta" {...field} />
-                  </FormControl>
-                  <FormMessage className="text-xs" />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="reporter_email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Correo electrónico</FormLabel>
-                  <FormControl>
-                    <Input placeholder="ejemplo@gmail.com" {...field} />
-                  </FormControl>
-                  <FormMessage className="text-xs" />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="reporter_phone"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Teléfono</FormLabel>
-                  <FormControl>
-                    <Input placeholder="" {...field} />
+                    <DateField
+                      value={field.value}
+                      onChange={field.onChange}
+                      label="Fecha de Reporte"
+                    />
                   </FormControl>
                   <FormMessage className="text-xs" />
                 </FormItem>
               )}
             />
           </div>
-        )}
+        </Section>
 
-        <div className="flex justify-center items-center gap-2">
-          <FormField
-            control={form.control}
-            name="image"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Imagen del Reporte</FormLabel>
-
-                <div className="flex items-center gap-4">
-                  {field.value ? (
-                    <div className="relative">
-                      <Image
-                        src={URL.createObjectURL(field.value)}
-                        alt="Preview"
-                        width={64}
-                        height={64}
-                        className="rounded-md object-contain h-16 w-auto"
-                      />
-                    </div>
-                  ) : initialData?.image &&
-                    typeof initialData.image === "string" ? (
-                    <div className="relative">
-                      <Image
-                        src={
-                          initialData.image.startsWith("data:image")
-                            ? initialData.image
-                            : `data:image/jpeg;base64,${initialData.image}`
-                        }
-                        alt="Preview"
-                        width={64}
-                        height={64}
-                        className="rounded-md object-contain h-16 w-auto"
-                      />
-                    </div>
-                  ) : null}
-
+        {/* Section 03 — Descripción */}
+        <Section num="03" icon={FileText} title="Descripción del Peligro">
+          <div className="space-y-3">
+            <FormField
+              control={form.control}
+              name="description"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+                    Descripción del peligro
+                  </FormLabel>
                   <FormControl>
                     <Input
-                      type="file"
-                      accept="image/jpeg, image/png"
-                      onChange={(e) => field.onChange(e.target.files?.[0])}
+                      placeholder="Breve descripción del peligro identificado"
+                      {...field}
+                      className="h-9 text-sm border-border focus-visible:ring-amber-500/30 focus-visible:border-amber-500/50"
                     />
                   </FormControl>
-                </div>
+                  <FormMessage className="text-xs" />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="possible_consequences"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+                    Consecuencias según su criterio
+                  </FormLabel>
+                  <FormControl>
+                    <Textarea
+                      placeholder="Si son varias, separar por una coma (,)"
+                      {...field}
+                      className="text-sm border-border focus-visible:ring-amber-500/30 focus-visible:border-amber-500/50 resize-none min-h-[80px]"
+                    />
+                  </FormControl>
+                  <FormMessage className="text-xs" />
+                </FormItem>
+              )}
+            />
+          </div>
+        </Section>
 
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+        {/* Section 04 — Reportante */}
+        <Section num="04" icon={User} title="Datos del Reportante">
+          <div className="space-y-3">
+            <div className="flex items-center gap-2.5 rounded-md border border-border bg-muted/20 px-3 py-2.5">
+              <Checkbox
+                id="anonymous-check"
+                checked={isAnonymous}
+                onCheckedChange={(checked) => {
+                  if (typeof checked === "boolean") setIsAnonymous(checked);
+                }}
+                className="border-amber-500/50 data-[state=checked]:bg-amber-500 data-[state=checked]:border-amber-500"
+              />
+              <label
+                htmlFor="anonymous-check"
+                className="text-[11px] font-medium cursor-pointer text-foreground/80 select-none"
+              >
+                Reporte anónimo — no adjuntar datos personales
+              </label>
+            </div>
 
-          <FormField
-            control={form.control}
-            name="document"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Documento PDF</FormLabel>
-                <div className="flex items-center gap-4">
-                  {field.value && (
-                    <div>
-                      <p className="text-sm text-gray-500">
-                        Archivo seleccionado:
-                      </p>
-                      <p className="font-semibold text-sm">
-                        {field.value.name}
-                      </p>
-                    </div>
+            {!isAnonymous && (
+              <div className="grid grid-cols-2 gap-3">
+                <FormField
+                  control={form.control}
+                  name="reporter_name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+                        Nombre
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="Nombre de quien reporta"
+                          {...field}
+                          className="h-9 text-sm border-border focus-visible:ring-amber-500/30 focus-visible:border-amber-500/50"
+                        />
+                      </FormControl>
+                      <FormMessage className="text-xs" />
+                    </FormItem>
                   )}
-                  <FormControl>
-                    <Input
-                      type="file"
-                      accept="application/pdf"
-                      onChange={(e) => field.onChange(e.target.files?.[0])}
-                    />
-                  </FormControl>
-                </div>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
+                />
 
-        <div className="flex justify-between items-center gap-x-4">
-          <Separator className="flex-1" />
-          <p className="text-muted-foreground">SIGEAC</p>
-          <Separator className="flex-1" />
+                <FormField
+                  control={form.control}
+                  name="reporter_last_name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+                        Apellido
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="Apellido de quien reporta"
+                          {...field}
+                          className="h-9 text-sm border-border focus-visible:ring-amber-500/30 focus-visible:border-amber-500/50"
+                        />
+                      </FormControl>
+                      <FormMessage className="text-xs" />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="reporter_email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+                        Correo electrónico
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="ejemplo@gmail.com"
+                          {...field}
+                          className="h-9 text-sm border-border focus-visible:ring-amber-500/30 focus-visible:border-amber-500/50"
+                        />
+                      </FormControl>
+                      <FormMessage className="text-xs" />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="reporter_phone"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+                        Teléfono
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="04XXXXXXXXX"
+                          {...field}
+                          className="h-9 text-sm border-border focus-visible:ring-amber-500/30 focus-visible:border-amber-500/50 font-mono"
+                        />
+                      </FormControl>
+                      <FormMessage className="text-xs" />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            )}
+          </div>
+        </Section>
+
+        {/* Section 05 — Archivos */}
+        <Section num="05" icon={Paperclip} title="Archivos Adjuntos">
+          <div className="grid grid-cols-2 gap-3">
+            <FormField
+              control={form.control}
+              name="image"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+                    Imagen (JPG / PNG)
+                  </FormLabel>
+                  <FormControl>
+                    <div
+                      className={cn(
+                        "relative rounded-md border border-dashed transition-colors",
+                        field.value instanceof File || initialData?.image
+                          ? "border-amber-500/40 bg-amber-500/5"
+                          : "border-border hover:border-amber-500/30 hover:bg-muted/30"
+                      )}
+                    >
+                      <div className="flex flex-col items-center justify-center gap-1.5 py-4 px-3 pointer-events-none">
+                        {field.value instanceof File ? (
+                          <>
+                            <CheckCircle2 className="w-5 h-5 text-amber-500" />
+                            <span className="text-[11px] font-medium text-amber-700 dark:text-amber-400 text-center truncate max-w-full">
+                              {field.value.name}
+                            </span>
+                          </>
+                        ) : initialData?.image ? (
+                          <>
+                            <CheckCircle2 className="w-5 h-5 text-amber-500" />
+                            <span className="text-[11px] font-medium text-amber-700 dark:text-amber-400">
+                              Imagen existente
+                            </span>
+                            <span className="text-[10px] text-muted-foreground">
+                              Clic para reemplazar
+                            </span>
+                          </>
+                        ) : (
+                          <>
+                            <Upload className="w-4 h-4 text-muted-foreground/60" />
+                            <span className="text-[11px] text-muted-foreground text-center">
+                              Seleccionar imagen
+                            </span>
+                            <span className="text-[10px] text-muted-foreground/60">
+                              JPEG / PNG · máx. 5MB
+                            </span>
+                          </>
+                        )}
+                      </div>
+                      <Input
+                        type="file"
+                        accept="image/jpeg, image/png"
+                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                        onChange={(e) => field.onChange(e.target.files?.[0])}
+                      />
+                    </div>
+                  </FormControl>
+                  <FormMessage className="text-xs" />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="document"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+                    Documento PDF
+                  </FormLabel>
+                  <FormControl>
+                    <div
+                      className={cn(
+                        "relative rounded-md border border-dashed transition-colors",
+                        field.value instanceof File || initialData?.document
+                          ? "border-amber-500/40 bg-amber-500/5"
+                          : "border-border hover:border-amber-500/30 hover:bg-muted/30"
+                      )}
+                    >
+                      <div className="flex flex-col items-center justify-center gap-1.5 py-4 px-3 pointer-events-none">
+                        {field.value instanceof File ? (
+                          <>
+                            <CheckCircle2 className="w-5 h-5 text-amber-500" />
+                            <span className="text-[11px] font-medium text-amber-700 dark:text-amber-400 text-center truncate max-w-full">
+                              {field.value.name}
+                            </span>
+                          </>
+                        ) : initialData?.document ? (
+                          <>
+                            <CheckCircle2 className="w-5 h-5 text-amber-500" />
+                            <span className="text-[11px] font-medium text-amber-700 dark:text-amber-400">
+                              Documento existente
+                            </span>
+                            <span className="text-[10px] text-muted-foreground">
+                              Clic para reemplazar
+                            </span>
+                          </>
+                        ) : (
+                          <>
+                            <Upload className="w-4 h-4 text-muted-foreground/60" />
+                            <span className="text-[11px] text-muted-foreground text-center">
+                              Seleccionar PDF
+                            </span>
+                            <span className="text-[10px] text-muted-foreground/60">
+                              PDF · máx. 5MB
+                            </span>
+                          </>
+                        )}
+                      </div>
+                      <Input
+                        type="file"
+                        accept="application/pdf"
+                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                        onChange={(e) => field.onChange(e.target.files?.[0])}
+                      />
+                    </div>
+                  </FormControl>
+                  <FormMessage className="text-xs" />
+                </FormItem>
+              )}
+            />
+          </div>
+        </Section>
+
+        {/* Actions */}
+        <div className="rounded-lg border border-border overflow-hidden">
+          <div className="grid grid-cols-2 divide-x divide-border">
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => router.push("/acceso_publico/estelar/sms")}
+              className="rounded-none h-10 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50"
+            >
+              <ArrowLeft className="w-3.5 h-3.5 mr-1.5" />
+              Volver
+            </Button>
+            <Button
+              type="submit"
+              disabled={isPending}
+              className="rounded-none h-10 text-sm font-semibold bg-amber-500 hover:bg-amber-600 text-amber-950 border-0"
+            >
+              {isPending ? (
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              ) : (
+                "Enviar Reporte"
+              )}
+            </Button>
+          </div>
         </div>
-        <Button disabled={createVoluntaryReport.isPending}>
-          {createVoluntaryReport.isPending ? (
-            <Loader2 className="size-4 animate-spin" />
-          ) : (
-            "Enviar Reporte"
-          )}
-        </Button>
       </form>
     </Form>
   );

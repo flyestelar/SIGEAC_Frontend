@@ -66,8 +66,6 @@ export function CreateVoluntaryReportForm({
   const [consequences, setConsequences] = useState<string[]>([]);
   const [newConsequence, setNewConsequence] = useState("");
 
-  const [previewImage, setPreviewImage] = useState<string | null>(null);
-
   const { user } = useAuth();
 
   const userRoles = user?.roles?.map((role) => role.name) || [];
@@ -279,13 +277,19 @@ export function CreateVoluntaryReportForm({
     }
 
     if (initialData && isEditing) {
+      const {
+        is_anonymous: _ia,
+        reporter_area: _ra,
+        reporter_position: _rp,
+        ...rest
+      } = data;
       const value = {
         company: selectedCompany!.slug,
         id: initialData.id.toString(),
         data: {
-          ...data,
+          ...rest,
           status: initialData.status ?? "",
-          danger_identification_id: initialData?.danger_identification_id,
+          danger_identification_id: initialData.danger_identification_id ?? null,
         },
       };
       await updateVoluntaryReport.mutateAsync(value);

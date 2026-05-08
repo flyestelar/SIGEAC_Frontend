@@ -41,20 +41,110 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
-import { useGetAircraftAcronyms } from "@/hooks/aerolinea/aeronaves/useGetAircraftAcronyms";
-import { useGetPilots } from "@/hooks/sms/useGetPilots";
+import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { useCompanyStore } from "@/stores/CompanyStore";
-import { ObligatoryReport } from "@/types";
+import { ObligatoryReportResource } from "@/.gen/api/types.gen";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
-import { CalendarIcon, Check, ChevronsUpDown, Loader2 } from "lucide-react";
-import Image from "next/image";
+import {
+  AlertTriangle,
+  ArrowLeft,
+  CalendarIcon,
+  Check,
+  CheckCircle2,
+  ChevronsUpDown,
+  FileIcon,
+  FileText,
+  ImageIcon,
+  ListChecks,
+  Loader2,
+  MapPin,
+  Paperclip,
+  Send,
+  ChevronRight,
+} from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
+
 interface FormProps {
   isEditing?: boolean;
-  initialData?: ObligatoryReport;
+  initialData?: ObligatoryReportResource;
   onClose: () => void;
+}
+
+/* ── Section wrapper ── */
+function Section({
+  num,
+  icon: Icon,
+  title,
+  children,
+}: {
+  num: string;
+  icon: React.ElementType;
+  title: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="relative rounded-lg border border-border overflow-hidden mb-2.5 border-l-[3px] border-l-amber-500">
+      <div className="flex items-center gap-0 bg-muted/40 border-b border-border">
+        <div className="flex items-center justify-center w-10 h-full py-2 border-r border-border/60 bg-amber-500/5">
+          <span className="font-mono text-[12px] font-bold text-amber-500 tabular-nums">{num}</span>
+        </div>
+        <div className="flex items-center gap-2 px-3 py-2 flex-1">
+          <Icon className="w-3 h-3 text-amber-600/70" />
+          <span className="text-[10px] font-semibold tracking-[0.2em] uppercase text-muted-foreground">{title}</span>
+        </div>
+      </div>
+      <div className="p-4 bg-background">{children}</div>
+    </div>
+  );
+}
+
+/* ── DatePicker field ── */
+function DateField({
+  label,
+  value,
+  onChange,
+}: {
+  label: string;
+  value: Date;
+  onChange: (d: Date | undefined) => void;
+}) {
+  return (
+    <div className="flex flex-col gap-1.5">
+      <span className="text-[10px] font-semibold tracking-[0.18em] uppercase text-muted-foreground block">
+        {label}
+      </span>
+      <Popover>
+        <PopoverTrigger asChild>
+          <Button
+            variant="outline"
+            className={cn(
+              "w-full justify-between text-left font-normal h-9 text-sm border-border hover:border-amber-500/50 hover:bg-amber-500/5 transition-colors group",
+              !value && "text-muted-foreground",
+            )}
+          >
+            <span className="flex items-center gap-2">
+              <CalendarIcon className="h-3.5 w-3.5 text-amber-500/70 group-hover:text-amber-500 transition-colors" />
+              {value ? format(value, "PPP", { locale: es }) : "Seleccione fecha"}
+            </span>
+            <ChevronRight className="h-3 w-3 text-muted-foreground/50 rotate-90" />
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-auto p-0" align="start">
+          <Calendar
+            mode="single"
+            selected={value}
+            onSelect={onChange}
+            initialFocus
+            startMonth={new Date(1980, 0)}
+            endMonth={new Date(new Date().getFullYear(), 11)}
+            captionLayout="dropdown"
+          />
+        </PopoverContent>
+      </Popover>
+    </div>
+  );
 }
 
 export function CreateGeneralObligatoryReportForm({
@@ -64,63 +154,21 @@ export function CreateGeneralObligatoryReportForm({
 }: FormProps) {
   const FormSchema = z
     .object({
-      incident_location: z
+      station: z.string().optional(),
+      incident_location: z.string().min(1, { message: "Seleccione el lugar del incidente" }),
+      incident_location_other: z.string().optional(),
+      description: z
         .string()
-        .min(3, {
-          message: "El lugar de incidente debe tener al menos 3 caracteres",
-        })
-        .max(50, {
-          message: "El lugar de incidente no debe exceder los 50 caracteres",
-        }),
-      description: z.string(),
+        .min(3, { message: "La descripción debe tener al menos 3 caracteres" }),
       report_date: z
         .date()
         .refine((val) => !isNaN(val.getTime()), { message: "Fecha inválida" }),
       incident_date: z
         .date()
         .refine((val) => !isNaN(val.getTime()), { message: "Fecha inválida" }),
-      incident_time: z.string().regex(/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/, {
-        message: "Formato de hora inválido (HH:mm)",
-      }),
-      flight_time: z.string().regex(/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/, {
-        message: "Formato de hora inválido (HH:mm)",
-      }),
-      pilot_id: z.string({
-        required_error: "El piloto es requerido.",
-      }),
-      copilot_id: z.string({
-        required_error: "El copiloto es requerido.",
-      }),
-      aircraft_id: z.string({
-        required_error: "La aeronave es requerida.",
-      }),
-      flight_number: z.string(),
-      flight_origin: z
-        .string()
-        .min(3, {
-          message: "El origen del vuelo debe tener al menos 3 caracteres.",
-        })
-        .max(4, {
-          message: "El origen del vuelo debe tener máximo 4 caracteres.",
-        }),
-      flight_destiny: z
-        .string()
-        .min(3, {
-          message: "El destino del vuelo debe tener al menos 3 caracteres.",
-        })
-        .max(4, {
-          message: "El destino del vuelo debe tener máximo 4 caracteres.",
-        }),
-      flight_alt_destiny: z
-        .string()
-        .min(3, {
-          message:
-            "El destino alterno de vuelo debe tener al menos 3 caracteres.",
-        })
-        .max(4, {
-          message:
-            "El destino alterno de vuelo debe tener máximo 4 caracteres.",
-        }),
+      pilot_id: z.string().optional(),
+      copilot_id: z.string().optional(),
+      aircraft_id: z.string().optional(),
       incidents: z.array(z.string()).optional(),
       other_incidents: z.preprocess(
         (val) => (val === null || val === undefined ? "" : val),
@@ -160,6 +208,7 @@ export function CreateGeneralObligatoryReportForm({
   const { createObligatoryReport } = useCreateObligatoryReport();
   const router = useRouter();
   const { company } = useParams<{ company: string }>();
+  const { selectedCompany } = useCompanyStore();
 
   const [showOtherInput, setShowOtherInput] = useState(
     initialData?.other_incidents ? true : false
@@ -168,19 +217,11 @@ export function CreateGeneralObligatoryReportForm({
   const [open, setOpen] = useState(false);
 
   const [selectedValues, setSelectedValues] = useState<string[]>(() => {
-    if (initialData?.incidents) {
-      try {
-        return JSON.parse(initialData.incidents);
-      } catch (error) {
-        return []; // Devuelve un array vacío en caso de error de parseo
-      }
+    if (Array.isArray(initialData?.incidents)) {
+      return (initialData.incidents as string[]).filter((v) => typeof v === "string");
     }
-    return []; // Devuelve un array vacío si initialData?.incidents es null o undefined
+    return [];
   });
-
-  const { data: pilots, isLoading: isLoadingPilots } = useGetPilots(company);
-  const { data: aircrafts, isLoading: isLoadingAircrafts } =
-    useGetAircraftAcronyms(company);
 
   const OPTIONS_LIST = [
     "La aereonave aterriza quedándose solo con el combustible de reserva o menos",
@@ -206,60 +247,48 @@ export function CreateGeneralObligatoryReportForm({
   const form = useForm<FormSchemaType>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
-      description: initialData?.description,
-      incident_location: initialData?.incident_location,
-      aircraft_id: initialData?.aircraft?.id.toString(),
-      pilot_id: initialData?.pilot?.id.toString(),
-      copilot_id: initialData?.copilot?.id.toString(),
-      flight_alt_destiny: initialData?.flight_alt_destiny,
-      flight_destiny: initialData?.flight_destiny,
-      flight_number: initialData?.flight_number,
-      flight_origin: initialData?.flight_origin,
-      incidents: initialData?.incidents
-        ? JSON.parse(initialData.incidents)
+      station: initialData?.station ?? "",
+      incident_location: initialData?.incident_location ?? "",
+      incident_location_other: initialData?.incident_location_other ?? "",
+      description: initialData?.description ?? "",
+      aircraft_id: initialData?.aircraft_id?.toString(),
+      pilot_id: initialData?.pilot_id?.toString(),
+      copilot_id: initialData?.copilot_id?.toString(),
+      incidents: Array.isArray(initialData?.incidents)
+        ? (initialData.incidents as string[]).filter((v) => typeof v === "string")
         : [],
       other_incidents: initialData?.other_incidents ?? "",
       report_date: initialData?.report_date
-        ? new Date(initialData?.report_date)
+        ? new Date(initialData.report_date)
         : new Date(),
       incident_date: initialData?.incident_date
-        ? new Date(initialData?.incident_date)
+        ? new Date(initialData.incident_date)
         : new Date(),
-      flight_time: initialData?.flight_time
-        ? initialData.flight_time.substring(0, 5) // Extraemos solo HH:mm
-        : "00:00",
-      incident_time: initialData?.incident_time
-        ? initialData.incident_time.substring(0, 5) // Extraemos solo HH:mm
-        : "00:00",
     },
   });
 
   const onSubmit = async (data: FormSchemaType) => {
-    const value = {
-      incident_location: data.incident_location,
-      description: data.description,
-      incident_date: data.incident_date,
-      report_date: data.report_date,
-      incident_time: `${data.incident_time}:00`, // Añadimos segundos para el backend
-      flight_time: `${data.flight_time}:00`, // Añadimos segundos para el backend
-      pilot_id: data.pilot_id,
-      copilot_id: data.copilot_id,
-      aircraft_id: data.aircraft_id,
-      flight_number: data.flight_number,
-      flight_origin: data.flight_origin,
-      flight_destiny: data.flight_destiny,
-      flight_alt_destiny: data.flight_alt_destiny,
-      incidents: data.incidents,
-      other_incidents: data.other_incidents,
-      image: data.image,
-      document: data.document,
-      status: "PROCESO",
-    };
-
     try {
-      createObligatoryReport.mutateAsync(value);
-      //router.push(`/${company}/dashboard`);
-      router.push(`https://sigeac-one.vercel.app/login`);
+      await createObligatoryReport.mutateAsync({
+        company: selectedCompany?.slug ?? company,
+        data: {
+          station: data.station ?? null,
+          incident_location: data.incident_location,
+          incident_location_other: data.incident_location_other ?? null,
+          description: data.description,
+          incident_date: data.incident_date.toISOString().split("T")[0],
+          report_date: data.report_date.toISOString().split("T")[0],
+          pilot_id: data.pilot_id ?? null,
+          copilot_id: data.copilot_id ?? null,
+          aircraft_id: data.aircraft_id ?? null,
+          incidents: data.incidents ?? null,
+          other_incidents: data.other_incidents ?? null,
+          image: data.image ?? null,
+          document: data.document ?? null,
+          status: "PROCESO" as const,
+        },
+      });
+      router.push(`/${selectedCompany?.slug ?? company}/dashboard`);
     } catch (error) {
       console.error("Error al crear reporte:", error);
     }
@@ -283,553 +312,474 @@ export function CreateGeneralObligatoryReportForm({
     <Form {...form}>
       <form
         onSubmit={form.handleSubmit(onSubmit)}
-        className="flex flex-col space-y-3 w-full"
+        className="flex flex-col w-full max-w-4xl mx-auto"
       >
-        <FormLabel className="text-lg text-center m-2 font-bold">
-          Reporte Obligatorio de suceso
-        </FormLabel>
 
-        <div className="grid grid-cols-2 gap-4 ">
-          <FormField
-            control={form.control}
-            name="incident_location"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Lugar del Incidente</FormLabel>
-                <FormControl>
-                  <Input placeholder="" {...field} maxLength={50} />
-                </FormControl>
-                <FormMessage className="text-xs" />
-              </FormItem>
+        {/* ── Header strip ── */}
+        <div className="rounded-lg border border-amber-500/20 bg-amber-500/5 mb-3 overflow-hidden">
+          <div className="flex items-center gap-3 px-4 py-2.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
+            <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-amber-700 dark:text-amber-400">
+              Reporte Obligatorio de Suceso
+            </span>
+            <Separator orientation="vertical" className="h-3.5 bg-amber-500/20" />
+            <span className="text-[10px] tracking-wide text-amber-700/60 dark:text-amber-400/60 font-medium">
+              Formulario Público · SIGEAC
+            </span>
+          </div>
+        </div>
+
+        {/* ── 01 Identificación ── */}
+        <Section num="01" icon={MapPin} title="Identificación y Ubicación">
+          <div className="grid grid-cols-2 gap-3">
+            <FormField
+              control={form.control}
+              name="station"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-[10px] font-semibold tracking-[0.18em] uppercase text-muted-foreground">
+                    Base de Localización
+                  </FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger className="h-9 text-sm border-border focus:ring-amber-500/30">
+                        <SelectValue placeholder="Seleccionar base" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="PZO">Puerto Ordaz</SelectItem>
+                      <SelectItem value="MIQ">MIQ</SelectItem>
+                      <SelectItem value="PMV">PMV</SelectItem>
+                      <SelectItem value="MAR">MAR</SelectItem>
+                      <SelectItem value="VIG">VIG</SelectItem>
+                      <SelectItem value="BNS">BNS</SelectItem>
+                      <SelectItem value="STD">STD</SelectItem>
+                      <SelectItem value="STB">STB</SelectItem>
+                      <SelectItem value="MUN">MUN</SelectItem>
+                      <SelectItem value="SVSA">SVSA</SelectItem>
+                      <SelectItem value="MADRID">MADRID</SelectItem>
+                      <SelectItem value="CHILE">CHILE</SelectItem>
+                      <SelectItem value="HAVANA">HAVANA</SelectItem>
+                      <SelectItem value="SVZ">SVZ</SelectItem>
+                      <SelectItem value="CANAIMA">CANAIMA</SelectItem>
+                      <SelectItem value="MDPC">MDPC</SelectItem>
+                      <SelectItem value="LIMA">LIMA</SelectItem>
+                      <SelectItem value="PTY">PTY</SelectItem>
+                      <SelectItem value="SKBO">SKBO</SelectItem>
+                      <SelectItem value="N/A">NO APLICA</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage className="text-xs" />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="incident_location"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-[10px] font-semibold tracking-[0.18em] uppercase text-muted-foreground">
+                    Lugar del Incidente
+                  </FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger className="h-9 text-sm border-border focus:ring-amber-500/30">
+                        <SelectValue placeholder="Seleccionar" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="HANGAR">HANGAR</SelectItem>
+                      <SelectItem value="PLATAFORMA">PLATAFORMA</SelectItem>
+                      <SelectItem value="AREA_ADMON">ÁREA ADMON</SelectItem>
+                      <SelectItem value="AERONAVE">AERONAVE</SelectItem>
+                      <SelectItem value="AEROPUERTO">AEROPUERTO</SelectItem>
+                      <SelectItem value="OTRO">OTRO</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage className="text-xs" />
+                </FormItem>
+              )}
+            />
+
+            {form.watch("incident_location") === "OTRO" && (
+              <FormField
+                control={form.control}
+                name="incident_location_other"
+                render={({ field }) => (
+                  <FormItem className="col-span-2">
+                    <FormLabel className="text-[10px] font-semibold tracking-[0.18em] uppercase text-muted-foreground">
+                      Especificación del Lugar
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="Especificar si aplica"
+                        className="h-9 text-sm border-border focus-visible:ring-amber-500/30 focus-visible:border-amber-500/50"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage className="text-xs" />
+                  </FormItem>
+                )}
+              />
             )}
-          />
+          </div>
+        </Section>
 
+        {/* ── 02 Fechas ── */}
+        <Section num="02" icon={CalendarIcon} title="Fechas del Evento">
+          <div className="grid grid-cols-2 gap-3">
+            <FormField
+              control={form.control}
+              name="incident_date"
+              render={({ field }) => (
+                <FormItem className="flex flex-col gap-0">
+                  <DateField label="Fecha del Incidente" value={field.value} onChange={field.onChange} />
+                  <FormMessage className="text-xs mt-1" />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="report_date"
+              render={({ field }) => (
+                <FormItem className="flex flex-col gap-0">
+                  <DateField label="Fecha del Reporte" value={field.value} onChange={field.onChange} />
+                  <FormMessage className="text-xs mt-1" />
+                </FormItem>
+              )}
+            />
+          </div>
+        </Section>
+
+        {/* ── 03 Descripción ── */}
+        <Section num="03" icon={FileText} title="Descripción del Suceso">
           <FormField
             control={form.control}
             name="description"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Descripcion del Suceso</FormLabel>
-                <FormControl>
-                  <Input placeholder="" {...field} />
-                </FormControl>
-                <FormMessage className="text-xs" />
-              </FormItem>
-            )}
-          />
-        </div>
-        <div className="flex flex-col sm:flex-row gap-2 items-center justify-center">
-          <FormField
-            control={form.control}
-            name="incident_date"
-            render={({ field }) => (
-              <FormItem className="flex flex-col mt-2.5 w-full">
-                <FormLabel>Fecha de Incidente</FormLabel>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <FormControl>
-                      <Button
-                        variant={"outline"}
-                        className={cn(
-                          "w-full pl-3 text-left font-normal",
-                          !field.value && "text-muted-foreground"
-                        )}
-                      >
-                        {field.value ? (
-                          format(field.value, "PPP", {
-                            locale: es,
-                          })
-                        ) : (
-                          <span>Seleccione una fecha</span>
-                        )}
-                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                      </Button>
-                    </FormControl>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={field.value}
-                      onSelect={field.onChange}
-                      initialFocus
-                      startMonth={new Date(1980, 0)} // Año mínimo que se mostrará
-                      endMonth={new Date(new Date().getFullYear(), 11)} // Año máximo (actual)
-                      captionLayout="dropdown" // Selectores de año/mes
-                    />
-                  </PopoverContent>
-                </Popover>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="report_date"
-            render={({ field }) => (
-              <FormItem className="flex flex-col mt-2.5 w-full">
-                <FormLabel>Fecha de Reporte</FormLabel>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <FormControl>
-                      <Button
-                        variant={"outline"}
-                        className={cn(
-                          "w-full pl-3 text-left font-normal",
-                          !field.value && "text-muted-foreground"
-                        )}
-                      >
-                        {field.value ? (
-                          format(field.value, "PPP", {
-                            locale: es,
-                          })
-                        ) : (
-                          <span>Seleccione una fecha</span>
-                        )}
-                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                      </Button>
-                    </FormControl>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={field.value}
-                      onSelect={field.onChange}
-
-                      initialFocus
-                      startMonth={new Date(1980, 0)} // Año mínimo que se mostrará
-                      endMonth={new Date(new Date().getFullYear(), 11)} // Año máximo (actual)
-                      captionLayout="dropdown" // Selectores de año/mes
-                    />
-                  </PopoverContent>
-                </Popover>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
-
-        <div className="flex flex-col sm:flex-row gap-2 justify-center items-center">
-          <FormField
-            control={form.control}
-            name="pilot_id"
-            render={({ field }) => (
-              <FormItem className="w-full">
-                <FormLabel>Piloto</FormLabel>
-                {isLoadingPilots ? (
-                  <div className="flex items-center gap-2 p-2 border rounded-md bg-muted">
-                    <Loader2 className="h-4 w-4 animate-spin " />
-                    <span className="text-sm">Cargando pilotos...</span>
-                  </div>
-                ) : (
-                  <Select
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                    disabled={isLoadingPilots} // Deshabilitar durante carga
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Seleccionar Piloto" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {pilots?.map((pilot) => (
-                        <SelectItem key={pilot.id} value={pilot.id.toString()}>
-                          {pilot.employee.first_name} {pilot.employee.last_name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                )}
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="copilot_id"
-            render={({ field }) => (
-              <FormItem className="w-full">
-                <FormLabel>Piloto</FormLabel>
-                {isLoadingPilots ? (
-                  <div className="flex items-center gap-2 p-2 border rounded-md bg-muted">
-                    <Loader2 className="h-4 w-4 animate-spin" />{" "}
-                    <span className="text-sm">Cargando pilotos...</span>
-                  </div>
-                ) : (
-                  <Select
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                    disabled={isLoadingPilots} // Deshabilitar durante carga
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Seleccionar Copiloto" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {pilots?.map((pilot) => (
-                        <SelectItem key={pilot.id} value={pilot.id.toString()}>
-                          {pilot.employee.first_name} {pilot.employee.last_name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                )}
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="aircraft_id"
-            render={({ field }) => (
-              <FormItem className="w-full">
-                <FormLabel>Aeronave</FormLabel>
-                {isLoadingAircrafts ? (
-                  <div className="flex items-center gap-2 p-2 border rounded-md bg-muted">
-                    <Loader2 className="h-4 w-4 animate-spin" />{" "}
-                    <span className="text-sm">Cargando Aeronaves...</span>
-                  </div>
-                ) : (
-                  <Select
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                    disabled={isLoadingAircrafts} // Deshabilitar durante carga
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Seleccionar Matricula de la Aeronave" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {aircrafts?.map((aircraft) => (
-                        <SelectItem
-                          key={aircraft.id}
-                          value={aircraft.id.toString()}
-                        >
-                          <p className="font-bold">
-                            Matricula : {aircraft.acronym}{" "}
-                          </p>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                )}
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
-        <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-          <FormField
-            control={form.control}
-            name="flight_time"
-            render={({ field }) => (
-              <FormItem className="w-full">
-                <FormLabel>Hora de vuelo</FormLabel>
-                <FormControl>
-                  <Input
-                    type="time"
-                    {...field}
-                    onChange={(e) => {
-                      // Validamos que el formato sea correcto
-                      if (
-                        e.target.value.match(/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/)
-                      ) {
-                        field.onChange(e.target.value);
-                      }
-                    }}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="incident_time"
-            render={({ field }) => (
-              <FormItem className="w-full">
-                <FormLabel>Hora del incidente</FormLabel>
-                <FormControl>
-                  <Input
-                    type="time"
-                    {...field}
-                    onChange={(e) => {
-                      // Validamos que el formato sea correcto
-                      if (
-                        e.target.value.match(/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/)
-                      ) {
-                        field.onChange(e.target.value);
-                      }
-                    }}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="flight_number"
-            render={({ field }) => (
-              <FormItem className="w-full">
-                <FormLabel>Numero de vuelo</FormLabel>
-                <FormControl>
-                  <Input
-                    placeholder="Numero del vuelo"
-                    {...field}
-                    maxLength={6}
-                  />
-                </FormControl>
-                <FormMessage className="text-xs" />
-              </FormItem>
-            )}
-          />
-        </div>
-
-        <div className="grid grid-cols-1  sm:grid-cols-3 gap-4 justify-center items-center">
-          <FormField
-            control={form.control}
-            name="flight_origin"
-            render={({ field }) => (
-              <FormItem className="w-full">
-                <FormLabel>Origen de vuelo</FormLabel>
-                <FormControl>
-                  <Input placeholder="Salida del vuelo" {...field} />
-                </FormControl>
-                <FormMessage className="text-xs" />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="flight_destiny"
-            render={({ field }) => (
-              <FormItem className="w-full">
-                <FormLabel>Destino de vuelo</FormLabel>
-                <FormControl>
-                  <Input placeholder="Destino del vuelo" {...field} />
-                </FormControl>
-                <FormMessage className="text-xs" />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="flight_alt_destiny"
-            render={({ field }) => (
-              <FormItem className="w-full">
-                <FormLabel>Destino alterno del vuelo</FormLabel>
-                <FormControl>
-                  <Input placeholder="Destino alterno del vuelo" {...field} />
-                </FormControl>
-                <FormMessage className="text-xs" />
-              </FormItem>
-            )}
-          />
-        </div>
-
-        {!showOtherInput && (
-          <FormField
-            control={form.control}
-            name="incidents"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="m-2">Incidentes:</FormLabel>
-                <FormControl>
-                  <Popover open={open} onOpenChange={setOpen}>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant="outline"
-                        role="combobox"
-                        aria-expanded={open}
-                        className="w-[300px] justify-between"
-                      >
-                        {selectedValues && selectedValues.length > 0 ? (
-                          <p>({selectedValues.length}) seleccionados</p>
-                        ) : (
-                          "Seleccionar opciones..."
-                        )}
-                        <ChevronsUpDown className="opacity-50" />
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-[300px] p-0">
-                      <Command>
-                        <CommandInput placeholder="Buscar opciones..." />
-                        <CommandList>
-                          <CommandEmpty>
-                            No se encontraron opciones.
-                          </CommandEmpty>
-                          <CommandGroup>
-                            {OPTIONS_LIST.map((option) => (
-                              <CommandItem
-                                key={option}
-                                value={option}
-                                onSelect={(currentValue) => {
-                                  const isSelected =
-                                    selectedValues.includes(currentValue);
-                                  const newValues = isSelected
-                                    ? selectedValues.filter(
-                                        (v) => v !== currentValue
-                                      )
-                                    : [...selectedValues, currentValue];
-
-                                  setSelectedValues(newValues);
-                                  field.onChange(
-                                    newValues.length > 0 ? newValues : []
-                                  ); // Actualizar el valor del campo de formulario
-                                }}
-                              >
-                                {option}
-                                {selectedValues && (
-                                  <Check
-                                    className={cn(
-                                      "ml-auto",
-                                      selectedValues.includes(option)
-                                        ? "opacity-100"
-                                        : "opacity-0"
-                                    )}
-                                  />
-                                )}
-                              </CommandItem>
-                            ))}
-                          </CommandGroup>
-                        </CommandList>
-                      </Command>
-                    </PopoverContent>
-                  </Popover>
-                </FormControl>
-                <FormMessage className="text-xs" />
-              </FormItem>
-            )}
-          />
-        )}
-
-        <FormField
-          control={form.control}
-          name="other_incidents" // Campo separado para "other_incidents"
-          render={() => (
-            <FormItem className="mt-4">
-              <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                <FormControl>
-                  <Checkbox
-                    checked={showOtherInput}
-                    onCheckedChange={handleOtherCheckboxChange}
-                  />
-                </FormControl>
-                <FormLabel className="text-sm font-normal">
-                  Otros incidentes
+                <FormLabel className="text-[10px] font-semibold tracking-[0.18em] uppercase text-muted-foreground">
+                  Descripción
                 </FormLabel>
-              </FormItem>
-              {showOtherInput && (
-                <FormItem className="mt-2">
-                  <FormControl>
-                    <Input
-                      type="text"
-                      placeholder="Detalles del incidente"
-                      {...form.register("other_incidents")}
-                      onChange={handleOtherInputChange}
-                    />
-                  </FormControl>
-                </FormItem>
-              )}
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <div className="flex justify-center items-center gap-2">
-          <FormField
-            control={form.control}
-            name="image"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Imagen General</FormLabel>
-
-                <div className="flex items-center gap-4">
-                  {field.value ? (
-                    <div className="relative h-16 w-16">
-                      <Image
-                        src={URL.createObjectURL(field.value)}
-                        alt="Preview"
-                        width={64}
-                        height={64}
-                        className="rounded-md object-contain"
-                      />
-                    </div>
-                  ) : initialData?.image &&
-                    typeof initialData.image === "string" ? (
-                    <div className="relative h-16 w-16">
-                      <Image
-                        src={
-                          initialData.image.startsWith("data:image")
-                            ? initialData.image
-                            : `data:image/jpeg;base64,${initialData.image}`
-                        }
-                        alt="Preview"
-                        width={64}
-                        height={64}
-                        className="rounded-md object-contain"
-                      />
-                    </div>
-                  ) : null}
-
-                  <FormControl>
-                    <Input
-                      type="file"
-                      accept="image/jpeg, image/png"
-                      onChange={(e) => field.onChange(e.target.files?.[0])}
-                    />
-                  </FormControl>
-                </div>
-
-                <FormMessage />
+                <FormControl>
+                  <Textarea
+                    placeholder="Describa el suceso ocurrido con el mayor detalle posible..."
+                    className="min-h-[90px] text-sm resize-none border-border focus-visible:ring-amber-500/30 focus-visible:border-amber-500/50"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage className="text-xs" />
               </FormItem>
             )}
           />
-          <FormField
-            control={form.control}
-            name="document"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Documento PDF</FormLabel>
-                <div className="flex items-center gap-4">
-                  {field.value && (
-                    <div>
-                      <p className="text-sm text-gray-500">
-                        Archivo seleccionado:
-                      </p>
-                      <p className="font-semibold text-sm">
-                        {field.value.name}
-                      </p>
+        </Section>
+
+        {/* ── 04 Incidentes ── */}
+        <Section num="04" icon={AlertTriangle} title="Tipo de Incidente">
+          <div className="flex flex-col gap-3">
+
+            {/* Multi-select combobox */}
+            {!showOtherInput && (
+              <FormField
+                control={form.control}
+                name="incidents"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-[10px] font-semibold tracking-[0.18em] uppercase text-muted-foreground">
+                      Incidentes Reportados
+                    </FormLabel>
+                    <FormControl>
+                      <Popover open={open} onOpenChange={setOpen}>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant="outline"
+                            role="combobox"
+                            aria-expanded={open}
+                            className="w-full justify-between h-9 text-sm border-border hover:border-amber-500/50 hover:bg-amber-500/5 transition-colors"
+                          >
+                            <span className="flex items-center gap-2">
+                              <ListChecks className="h-3.5 w-3.5 text-amber-500/70" />
+                              {selectedValues && selectedValues.length > 0 ? (
+                                <span className="flex items-center gap-1.5">
+                                  <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-amber-500 text-[10px] font-bold text-amber-950">
+                                    {selectedValues.length}
+                                  </span>
+                                  <span className="text-foreground">seleccionados</span>
+                                </span>
+                              ) : (
+                                <span className="text-muted-foreground">Seleccionar incidentes...</span>
+                              )}
+                            </span>
+                            <ChevronsUpDown className="h-3.5 w-3.5 opacity-50" />
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-full max-w-md p-0">
+                          <Command>
+                            <CommandInput placeholder="Buscar incidente..." className="text-sm" />
+                            <CommandList>
+                              <CommandEmpty>No se encontraron opciones.</CommandEmpty>
+                              <CommandGroup>
+                                {OPTIONS_LIST.map((option) => (
+                                  <CommandItem
+                                    key={option}
+                                    value={option}
+                                    onSelect={(currentValue) => {
+                                      const isSelected = selectedValues.includes(currentValue);
+                                      const newValues = isSelected
+                                        ? selectedValues.filter((v) => v !== currentValue)
+                                        : [...selectedValues, currentValue];
+                                      setSelectedValues(newValues);
+                                      field.onChange(newValues.length > 0 ? newValues : []);
+                                    }}
+                                    className="text-sm"
+                                  >
+                                    <Check
+                                      className={cn(
+                                        "mr-2 h-3.5 w-3.5 text-amber-500 flex-shrink-0",
+                                        selectedValues.includes(option) ? "opacity-100" : "opacity-0"
+                                      )}
+                                    />
+                                    {option}
+                                  </CommandItem>
+                                ))}
+                              </CommandGroup>
+                            </CommandList>
+                          </Command>
+                        </PopoverContent>
+                      </Popover>
+                    </FormControl>
+                    {selectedValues.length > 0 && (
+                      <div className="flex flex-wrap gap-1.5 mt-2">
+                        {selectedValues.map((v) => (
+                          <span
+                            key={v}
+                            className="inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded border border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-400 leading-relaxed"
+                          >
+                            {v}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                    <FormMessage className="text-xs" />
+                  </FormItem>
+                )}
+              />
+            )}
+
+            {/* Other incidents checkbox + input */}
+            <FormField
+              control={form.control}
+              name="other_incidents"
+              render={() => (
+                <FormItem>
+                  <div className="flex items-center gap-2.5 rounded-md border border-border bg-muted/20 px-3 py-2.5">
+                    <FormControl>
+                      <Checkbox
+                        checked={showOtherInput}
+                        onCheckedChange={handleOtherCheckboxChange}
+                        className="border-amber-500/50 data-[state=checked]:bg-amber-500 data-[state=checked]:border-amber-500"
+                      />
+                    </FormControl>
+                    <FormLabel className="text-[11px] font-medium text-foreground cursor-pointer m-0">
+                      Registrar otro tipo de incidente no listado
+                    </FormLabel>
+                  </div>
+                  {showOtherInput && (
+                    <div className="mt-2">
+                      <FormControl>
+                        <Input
+                          type="text"
+                          placeholder="Describa el incidente..."
+                          className="h-9 text-sm border-border focus-visible:ring-amber-500/30 focus-visible:border-amber-500/50"
+                          {...form.register("other_incidents")}
+                          onChange={handleOtherInputChange}
+                        />
+                      </FormControl>
                     </div>
                   )}
-                  <FormControl>
-                    <Input
-                      type="file"
-                      accept="application/pdf"
-                      onChange={(e) => field.onChange(e.target.files?.[0])}
-                    />
-                  </FormControl>
-                </div>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+                  <FormMessage className="text-xs" />
+                </FormItem>
+              )}
+            />
+          </div>
+        </Section>
+
+        {/* ── 05 Archivos Adjuntos ── */}
+        <Section num="05" icon={Paperclip} title="Archivos Adjuntos">
+          <div className="grid grid-cols-2 gap-3">
+
+            {/* Image upload */}
+            <FormField
+              control={form.control}
+              name="image"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-[10px] font-semibold tracking-[0.18em] uppercase text-muted-foreground">
+                    Imagen <span className="text-muted-foreground/50 normal-case tracking-normal">JPEG / PNG · 5MB</span>
+                  </FormLabel>
+                  <div className={cn(
+                    "relative rounded-md border border-dashed transition-colors",
+                    field.value instanceof File || initialData?.image
+                      ? "border-amber-500/40 bg-amber-500/5"
+                      : "border-border hover:border-amber-500/30 hover:bg-muted/30"
+                  )}>
+                    {(field.value instanceof File || initialData?.image) ? (
+                      <div className="flex items-center gap-2.5 p-2.5">
+                        <div className="w-10 h-10 rounded border border-border overflow-hidden flex-shrink-0 bg-muted">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={
+                              field.value instanceof File
+                                ? URL.createObjectURL(field.value)
+                                : initialData!.image!.startsWith("http")
+                                  ? initialData!.image!
+                                  : `${process.env.NEXT_PUBLIC_STORAGE_BASE_URL}${initialData!.image!}`
+                            }
+                            alt="Preview"
+                            className="w-full h-full object-contain"
+                          />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-1 mb-0.5">
+                            <CheckCircle2 className="w-3 h-3 text-amber-500" />
+                            <span className="text-[10px] font-semibold text-amber-600 dark:text-amber-400 uppercase tracking-wider">
+                              {field.value instanceof File ? "Imagen seleccionada" : "Imagen actual"}
+                            </span>
+                          </div>
+                          <p className="text-xs text-muted-foreground truncate">
+                            {field.value instanceof File ? field.value.name : "Imagen adjunta"}
+                          </p>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex flex-col items-center justify-center py-4 gap-1.5">
+                        <div className="w-7 h-7 rounded-full bg-muted flex items-center justify-center">
+                          <ImageIcon className="w-3.5 h-3.5 text-muted-foreground" />
+                        </div>
+                        <span className="text-[10px] text-muted-foreground">Seleccionar imagen</span>
+                      </div>
+                    )}
+                    <FormControl>
+                      <Input
+                        type="file"
+                        accept="image/jpeg, image/png"
+                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                        onChange={(e) => field.onChange(e.target.files?.[0])}
+                      />
+                    </FormControl>
+                  </div>
+                  <FormMessage className="text-xs" />
+                </FormItem>
+              )}
+            />
+
+            {/* Document upload */}
+            <FormField
+              control={form.control}
+              name="document"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-[10px] font-semibold tracking-[0.18em] uppercase text-muted-foreground">
+                    Documento <span className="text-muted-foreground/50 normal-case tracking-normal">PDF · 5MB</span>
+                  </FormLabel>
+                  <div className={cn(
+                    "relative rounded-md border border-dashed transition-colors",
+                    field.value instanceof File || initialData?.document
+                      ? "border-amber-500/40 bg-amber-500/5"
+                      : "border-border hover:border-amber-500/30 hover:bg-muted/30"
+                  )}>
+                    {field.value instanceof File ? (
+                      <div className="flex items-center gap-2.5 p-2.5">
+                        <div className="w-10 h-10 rounded border border-border flex-shrink-0 bg-red-500/10 flex items-center justify-center">
+                          <FileIcon className="w-4 h-4 text-red-500" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-1 mb-0.5">
+                            <CheckCircle2 className="w-3 h-3 text-amber-500" />
+                            <span className="text-[10px] font-semibold text-amber-600 dark:text-amber-400 uppercase tracking-wider">
+                              PDF seleccionado
+                            </span>
+                          </div>
+                          <p className="text-xs text-muted-foreground truncate">{field.value.name}</p>
+                        </div>
+                      </div>
+                    ) : initialData?.document ? (
+                      <div className="flex items-center gap-2.5 p-2.5">
+                        <div className="w-10 h-10 rounded border border-border flex-shrink-0 bg-red-500/10 flex items-center justify-center">
+                          <FileIcon className="w-4 h-4 text-red-500" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-1 mb-0.5">
+                            <CheckCircle2 className="w-3 h-3 text-amber-500" />
+                            <span className="text-[10px] font-semibold text-amber-600 dark:text-amber-400 uppercase tracking-wider">
+                              Documento actual
+                            </span>
+                          </div>
+                          <a
+                            href={initialData.document}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-xs text-amber-600 hover:underline"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            Ver documento
+                          </a>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex flex-col items-center justify-center py-4 gap-1.5">
+                        <div className="w-7 h-7 rounded-full bg-muted flex items-center justify-center">
+                          <FileIcon className="w-3.5 h-3.5 text-muted-foreground" />
+                        </div>
+                        <span className="text-[10px] text-muted-foreground">Seleccionar PDF</span>
+                      </div>
+                    )}
+                    <FormControl>
+                      <Input
+                        type="file"
+                        accept="application/pdf"
+                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                        onChange={(e) => field.onChange(e.target.files?.[0])}
+                      />
+                    </FormControl>
+                  </div>
+                  <FormMessage className="text-xs" />
+                </FormItem>
+              )}
+            />
+          </div>
+        </Section>
+
+        {/* ── Actions ── */}
+        <div className="mt-1 rounded-lg border border-border overflow-hidden">
+          <div className="grid grid-cols-2">
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => router.push("/acceso_publico/estelar/sms")}
+              className="h-11 rounded-none border-r border-border text-muted-foreground hover:text-foreground hover:bg-muted/60 font-medium tracking-wide text-[12px] uppercase"
+            >
+              <ArrowLeft className="h-3.5 w-3.5 mr-2" />
+              Volver
+            </Button>
+            <Button
+              type="submit"
+              disabled={createObligatoryReport.isPending}
+              className="h-11 rounded-none bg-amber-500 hover:bg-amber-400 text-amber-950 font-semibold tracking-[0.12em] uppercase text-[12px] border-0 transition-colors"
+            >
+              {createObligatoryReport.isPending ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <span className="flex items-center gap-2">
+                  <Send className="h-3.5 w-3.5" />
+                  Enviar Reporte
+                </span>
+              )}
+            </Button>
+          </div>
         </div>
 
-        <div className="flex justify-between items-center gap-x-4">
-          <Separator className="flex-1" />
-          <p className="text-muted-foreground">SIGEAC</p>
-          <Separator className="flex-1" />
-        </div>
-        <Button type="submit">Enviar reporte</Button>
       </form>
     </Form>
   );
