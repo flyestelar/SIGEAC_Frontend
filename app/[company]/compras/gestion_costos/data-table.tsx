@@ -30,6 +30,7 @@ export type DataTableProps<TData> = {
   costDrafts?: Record<number, any>
   type?: string
   category?: string
+  disablePagination?: boolean
 }
 
 function DataTableInner<TData>({
@@ -37,6 +38,7 @@ function DataTableInner<TData>({
   data,
   loading = false,
   costDrafts,
+  disablePagination = false,
 }: DataTableProps<TData>) {
 
   const [sorting, setSorting] = useState<SortingState>([])
@@ -166,7 +168,9 @@ function DataTableInner<TData>({
         </Table>
       </div>
 
-      <DataTablePagination table={table} />
+      {!disablePagination && (
+        <DataTablePagination table={table} />
+      )}
     </div>
   )
 }

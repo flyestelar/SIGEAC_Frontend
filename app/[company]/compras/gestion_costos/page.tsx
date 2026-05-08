@@ -1,6 +1,12 @@
 'use client'
 
-import { useMemo, useState, useCallback, useDeferredValue } from 'react'
+import {
+  useMemo,
+  useState,
+  useCallback,
+  useDeferredValue,
+  useEffect,
+} from 'react'
 
 import { ContentLayout } from '@/components/layout/ContentLayout'
 import LoadingPage from '@/components/misc/LoadingPage'
@@ -20,6 +26,8 @@ import { useCompanyStore } from '@/stores/CompanyStore'
 import { DataTable } from './data-table'
 import { getColumns } from './columns'
 
+import GroupedCostTable from './_components/GroupedCostTable'
+
 import CostToolbar from './_components/CostToolbar'
 import CostTypeToggle from './_components/CostTypeToggle'
 import CostSaveBar from './_components/CostSaveBar'
@@ -35,7 +43,13 @@ import {
 } from '@/actions/mantenimiento/compras/gestion_costos/actions'
 
 type CostType = 'ARTICLE' | 'GENERAL'
-type Category = 'all' | 'COMPONENT' | 'PART' | 'CONSUMABLE' | 'TOOL'
+
+type Category =
+  | 'all'
+  | 'COMPONENT'
+  | 'PART'
+  | 'CONSUMABLE'
+  | 'TOOL'
 
 type BaseRow = {
   id: number
@@ -58,7 +72,17 @@ const CostManagementPage = () => {
   const [category, setCategory] = useState<Category>('all')
   const [search, setSearch] = useState('')
 
+  const [groupBy, setGroupBy] = useState<string>('NONE')
+
   const deferredSearch = useDeferredValue(search)
+
+  /**
+   * 🔥 FIX: reset de filtros incompatibles al cambiar tipo
+   */
+  useEffect(() => {
+    setGroupBy('NONE')
+    setSearch('')
+  }, [type])
 
   const { data: warehouseData, isLoading: loadingArticles } =
     useGetAllWarehouseArticlesByCategory(
@@ -132,13 +156,16 @@ const CostManagementPage = () => {
       )
     })
   }, [baseData, deferredSearch, type])
+
   const {
     drafts: costDrafts,
     hasChanges,
     onCostChange,
     setDrafts,
     getChangedRows,
-  } = useCostDrafts<BaseRow>({ data: filteredData })
+  } = useCostDrafts<BaseRow>({
+    data: filteredData,
+  })
 
   const bulkArticleMutation = useBulkUpdateArticleCost()
   const bulkGeneralMutation = useBulkUpdateGeneralCost()
@@ -182,6 +209,7 @@ const CostManagementPage = () => {
       }),
     [type, onCostChange]
   )
+
   return (
     <ContentLayout title="Gestión de Costos">
       <div className="flex flex-col gap-6">
@@ -231,24 +259,26 @@ const CostManagementPage = () => {
           />
         </div>
 
-        <div
-          className="
-            flex items-center justify-between gap-4
-            px-3 py-2
-            rounded-xl border
-            bg-slate-200/40 border-slate-200/40
-            dark:bg-slate-800/70 dark:border-slate-700/60
-            backdrop-blur-md
-            dark:shadow-[0_4px_20px_rgba(0,0,0,0.35)]
-          "
-        >
+        <div className="
+          flex items-center justify-between gap-4
+          px-3 py-2
+          rounded-xl border
+          bg-slate-200/40 border-slate-200/40
+          dark:bg-slate-800/70 dark:border-slate-700/60
+          backdrop-blur-md
+          dark:shadow-[0_4px_20px_rgba(0,0,0,0.35)]
+        ">
           <CostToolbar
             search={search}
             setSearch={setSearch}
+            groupBy={groupBy}
+            setGroupBy={setGroupBy}
+            type={type}
           />
 
           <span className="text-xs text-muted-foreground tabular-nums">
-            {filteredData.length} {filteredData.length === 1 ? 'artículo' : 'artículos'}
+            {filteredData.length}{' '}
+            {filteredData.length === 1 ? 'artículo' : 'artículos'}
           </span>
         </div>
 
@@ -257,11 +287,24 @@ const CostManagementPage = () => {
           modifiedCount={getChangedRows().length}
           onSave={handleSave}
         />
-        
+
         {isInitialLoading && filteredData.length === 0 ? (
           <div className="flex items-center justify-center min-h-[300px]">
             <LoadingPage />
           </div>
+        ) : groupBy !== 'NONE' ? (
+          <GroupedCostTable
+            data={filteredData}
+            groupBy={groupBy as any}
+            renderTable={(rows) => (
+              <DataTable
+                columns={columns}
+                data={rows}
+                loading={isUpdating}
+                costDrafts={costDrafts}
+              />
+            )}
+          />
         ) : (
           <DataTable
             columns={columns}
