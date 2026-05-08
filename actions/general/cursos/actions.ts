@@ -120,6 +120,30 @@ export const useFinishCourse = () => {
   };
 };
 
+export const useReopenCourse = () => {
+  const queryClient = useQueryClient();
+  const reopenMutation = useMutation({
+    mutationFn: async ({ company, id }: { company: string; id: string }) => {
+      await axiosInstance.patch(`/general/${company}/reopen-course/${id}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["department-courses"] });
+      toast.success("¡Reabierto!", {
+        description: `¡El curso ha sido reabierto correctamente!`,
+      });
+    },
+    onError: () => {
+      toast.error("Oops!", {
+        description: "¡Hubo un error al reabrir el curso!",
+      });
+    },
+  });
+
+  return {
+    reopenCourse: reopenMutation,
+  };
+};
+
 export const useUpdateCourse = () => {
   const queryClient = useQueryClient();
   const updateMutation = useMutation({
@@ -184,5 +208,114 @@ export const useUpdateCourseCalendar = () => {
 
   return {
     updateCourseCalendar: updateCourseMutation,
+  };
+};
+
+export const useCreateCourseExam = () => {
+  const queryClient = useQueryClient();
+  const createMutation = useMutation({
+    mutationFn: async ({
+      company,
+      course_id,
+      data,
+    }: {
+      company: string;
+      course_id: string;
+      data: { name: string; description: string; exam_date: Date };
+    }) => {
+      await axiosInstance.post(`/general/${company}/course/${course_id}/create-exam`, data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["course-exams"] });
+      toast.success("¡Examen Creado!", {
+        description: `El examen ha sido creado correctamente.`,
+      });
+    },
+    onError: (error) => {
+      toast.error("Oops!", {
+        description: "No se pudo crear el examen...",
+      });
+      console.log(error);
+    },
+  });
+  return {
+    createCourseExam: createMutation,
+  };
+};
+
+export const useUpdateCourseExamResult = () => {
+  const queryClient = useQueryClient();
+  const updateMutation = useMutation({
+    mutationFn: async ({
+      company,
+      id,
+      exam_id,
+      employee_dni,
+      data,
+    }: {
+      company: string;
+      id?: string;
+      exam_id: string;
+      employee_dni: string;
+      data: FormData;
+    }) => {
+      let attendanceId = id;
+
+      if (!attendanceId) {
+        const registerData = new FormData();
+        registerData.append("employees[]", employee_dni);
+
+        await axiosInstance.post(
+          `/general/${company}/course-exam/${exam_id}/register-attendance`,
+          registerData,
+          {
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
+          }
+        );
+
+        const { data: attendanceList } = await axiosInstance.get(
+          `/general/${company}/course-exam/${exam_id}/attendance`
+        );
+
+        const createdAttendance = attendanceList.find(
+          (attendance: { employee_dni: string }) =>
+            attendance.employee_dni === employee_dni
+        );
+
+        if (!createdAttendance?.id) {
+          throw new Error("No se pudo registrar el participante en el examen.");
+        }
+
+        attendanceId = createdAttendance.id.toString();
+      }
+
+      await axiosInstance.post(
+        `/general/${company}/course-exam-attendance/${attendanceId}/result`,
+        data,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["course-exam-attendance"] });
+      queryClient.invalidateQueries({ queryKey: ["sms-course-attendance-list"] });
+      toast.success("¡Guardado!", {
+        description: `El resultado se ha guardado correctamente.`,
+      });
+    },
+    onError: (error) => {
+      toast.error("Oops!", {
+        description: "No se pudo guardar el resultado...",
+      });
+      console.log(error);
+    },
+  });
+  return {
+    updateCourseExamResult: updateMutation,
   };
 };
