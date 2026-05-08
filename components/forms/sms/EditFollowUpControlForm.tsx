@@ -40,7 +40,7 @@ const FormSchema = z.object({
   date: z
     .date()
     .refine((val) => !isNaN(val.getTime()), { message: "Invalid Date" }),
-  sms_activity_id: z.number().nullable().optional(),
+  sms_activity_id: z.coerce.number().nullable().optional(),
   image: z
     .instanceof(File)
     .refine((file) => file.size <= 5 * 1024 * 1024, "Max 5MB")
