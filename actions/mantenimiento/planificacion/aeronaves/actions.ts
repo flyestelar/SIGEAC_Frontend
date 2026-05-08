@@ -8,11 +8,16 @@ export interface AircraftPartAPI {
     part_number: string;
     serial: string;
     manufacturer_id: string;
-    time_since_new: number;
-    time_since_overhaul: number;
-    cycles_since_new: number;
-    cycles_since_overhaul: number;
+    time_since_new: number | null;
+    time_since_overhaul: number | null;
+    cycles_since_new: number | null;
+    cycles_since_overhaul: number | null;
     condition_type: "NEW" | "OVERHAULED";
+    is_father?: boolean;
+    part_type?: string;
+    ata_chapter?: string | null;
+    position?: string | null;
+    part_order?: number | null;
     sub_parts?: AircraftPartAPI[];
 }
 

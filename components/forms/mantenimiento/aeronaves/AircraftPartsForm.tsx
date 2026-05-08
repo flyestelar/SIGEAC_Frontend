@@ -1,50 +1,65 @@
 "use client"
 
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
+import { Card } from "@/components/ui/card"
+import { Form, FormLabel } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { useToast } from "@/components/ui/use-toast"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { ChevronDown, ChevronRight, Folder, FolderOpen, Layers, Layers2, MinusCircle, PlusCircle, RefreshCw, AlertTriangle } from "lucide-react"
-import { useEffect, useMemo, useState } from "react"
-import { Control, useFieldArray, useForm, useWatch } from "react-hook-form"
+import { AlertTriangle } from "lucide-react"
+import PartsList from "./parts-form/PartsList"
+import { useMemo, useState } from "react"
+import { useFieldArray, useForm } from "react-hook-form"
 import { z } from "zod"
-import { ScrollArea } from "@/components/ui/scroll-area"
+
+
 
 // 1. Esquema actualizado con removed_date
 const PartSchema: any = z.object({
     id: z.any().optional(),
     serial: z.string().optional(),
     manufacturer_id: z.string().optional(),
-    part_name: z.string().min(1, "Nombre obligatorio").max(50),
-    part_number: z.string().min(1, "Número obligatorio").regex(/^[A-Za-z0-9\-]+$/),
-    time_since_new: z.number().min(0).max(100000),
-    time_since_overhaul: z.number().min(0).max(100000),
-    cycles_since_new: z.number().min(0).max(50000),
-    cycles_since_overhaul: z.number().min(0).max(50000),
+
+    type: z.string().min(1, "Tipo obligatorio").max(50),
+    position: z.enum(["LH", "RH"]).optional(),
+    part_order: z.number().nullable().optional(),
+
+    part_number: z.string().min(1, "Número obligatorio"),
+    ata_chapter: z.string().optional(),
+
+    time_since_new: z.number().nullable().optional(),
+    time_since_overhaul: z.number().nullable().optional(),
+    cycles_since_new: z.number().nullable().optional(),
+    cycles_since_overhaul: z.number().nullable().optional(),
+
     condition_type: z.enum(["NEW", "OVERHAULED"]),
     is_father: z.boolean().default(false),
     removed_date: z.string().nullable().optional(),
+
     sub_parts: z.array(z.lazy(() => PartSchema)).optional()
-});
+})
 
 const PartsFormSchema = z.object({
-    parts: z.array(PartSchema).min(1)
-});
+    parts: z.array(PartSchema)
+})
 
-type PartsFormType = z.infer<typeof PartsFormSchema>;
+export const PART_CATEGORIES: Record<string, string> = {
+    ENGINE: "Planta de Poder",
+    APU: "APU",
+    PROPELLER: "Hélice",
+};
+
+type PartsFormType = z.infer<typeof PartsFormSchema>
 
 type RawPart = {
     id?: number | string;
     serial?: string;
     manufacturer_id?: string;
-    part_name?: string;
+    type?: string;
     part_number?: string;
+    ata_chapter?: string | null;
+    position?: string | null;
+    part_order?: number | null;
     time_since_new?: number | string | null;
     time_since_overhaul?: number | string | null;
     cycles_since_new?: number | string | null;
@@ -58,6 +73,9 @@ type RawPart = {
 type AircraftAssignmentLike = {
     removed_date?: string | null;
     aircraft_part?: RawPart | null;
+    position?: string | null;
+    part_order?: number | null;
+    ata_chapter?: string | null;
 };
 
 type InitialPartsLike = PartsFormType & {
@@ -70,18 +88,28 @@ const toNumber = (value: number | string | null | undefined) => {
     return Number.isFinite(parsed) ? parsed : 0;
 };
 
+const nullableNumber = (value: number | string | null | undefined) => {
+    if (value === null || value === undefined || value === "") return null;
+
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : null;
+};
+
 const normalizePart = (part: any): z.infer<typeof PartSchema> => {
     const normalizedSubParts = (part.sub_parts || []).map(normalizePart);
     return {
         id: part.id,
         serial: part.serial || "",
         manufacturer_id: part.manufacturer_id || "",
-        part_name: part.part_name || "",
+        type: part.type ? String(part.type).charAt(0).toUpperCase() + String(part.type).slice(1) : "",
         part_number: part.part_number || "",
-        time_since_new: toNumber(part.time_since_new),
-        time_since_overhaul: toNumber(part.time_since_overhaul),
-        cycles_since_new: toNumber(part.cycles_since_new),
-        cycles_since_overhaul: toNumber(part.cycles_since_overhaul),
+        ata_chapter: part.ata_chapter || part.ata_number || part.ata || "",
+        position: part.position || undefined,
+        part_order: part.part_order ?? null,
+        time_since_new: nullableNumber(part.time_since_new),
+        time_since_overhaul: nullableNumber(part.time_since_overhaul),
+        cycles_since_new: nullableNumber(part.cycles_since_new),
+        cycles_since_overhaul: nullableNumber(part.cycles_since_overhaul),
         condition_type: part.condition_type === "OVERHAULED" ? "OVERHAULED" : "NEW",
         is_father: typeof part.is_father === "boolean" ? part.is_father : normalizedSubParts.length > 0,
         removed_date: part.removed_date || null,
@@ -90,15 +118,26 @@ const normalizePart = (part: any): z.infer<typeof PartSchema> => {
 };
 
 const buildPartsFromAssignments = (assignments: AircraftAssignmentLike[] = []): z.infer<typeof PartSchema>[] => {
-    const activeParts = assignments
-        .filter((assignment) => assignment.removed_date === null || assignment.removed_date === undefined)
-        .map((assignment) => assignment.aircraft_part)
-        .filter((part): part is RawPart => Boolean(part));
+    const entries = assignments.filter(a => a.removed_date === null || a.removed_date === undefined);
+
+    const activeEntries: RawPart[] = entries.map((assignment) => {
+        const src = (assignment.aircraft_part as any) ?? (assignment as any);
+        const position = src.position ?? (assignment as any).position ?? null;
+        const part_order = src.part_order ?? (assignment as any).part_order ?? null;
+        const ata_chapter = (src.ata_chapter ?? (assignment as any).ata_chapter) ?? (assignment as any).ata_number ?? null;
+
+        return {
+            ...(src ?? {}),
+            position,
+            part_order,
+            ata_chapter,
+        } as RawPart;
+    }).filter(Boolean);
 
     const partsById = new Map<string, RawPart>();
 
     const collectPartTree = (part: RawPart) => {
-        const key = String(part.id ?? `${part.parent_part_id ?? "root"}-${part.part_number ?? part.part_name ?? Math.random()}`);
+        const key = String(part.id ?? `${part.parent_part_id ?? "root"}-${part.part_number ?? part.type ?? Math.random()}`);
         const existing = partsById.get(key);
 
         partsById.set(key, {
@@ -108,7 +147,7 @@ const buildPartsFromAssignments = (assignments: AircraftAssignmentLike[] = []): 
         (part.sub_parts || []).forEach(collectPartTree);
     };
 
-    activeParts.forEach(collectPartTree);
+    activeEntries.forEach(collectPartTree);
 
     const parts = Array.from(partsById.values());
     const childrenByParent = new Map<string, RawPart[]>();
@@ -145,13 +184,7 @@ const buildPartsFromAssignments = (assignments: AircraftAssignmentLike[] = []): 
         .map(normalizePart);
 };
 
-const usePartValue = <T,>(control: Control<PartsFormType>, path: string, defaultValue?: T): T => {
-    return useWatch({
-        control,
-        name: path as any,
-        defaultValue
-    });
-};
+// helpers moved to parts-form/constants.ts
 
 export function AircraftPartsInfoForm({ onNext, onBack, initialData }: {
     onNext: (data: PartsFormType) => void,
@@ -163,19 +196,30 @@ export function AircraftPartsInfoForm({ onNext, onBack, initialData }: {
     const [tempDate, setTempDate] = useState<string>(new Date().toISOString().split('T')[0]);
 
     const normalizedInitialData = useMemo(() => {
-        if (initialData?.parts) return { parts: initialData.parts.map(normalizePart) };
-        return { parts: [{ condition_type: "NEW", removed_date: null }] };
-    }, [initialData]);
+        if (initialData?.parts) return { parts: initialData.parts }
+
+        if (initialData?.aircraft_parts) {
+            const parts = (initialData.aircraft_parts || []).map((p: any) => normalizePart(p));
+            return { parts: parts.length ? parts : [{ condition_type: "NEW", removed_date: null }] };
+        }
+
+        if (initialData?.aircraft_assignments) {
+            const parts = buildPartsFromAssignments(initialData.aircraft_assignments || []);
+            return { parts: parts.length ? parts : [{ condition_type: "NEW", removed_date: null }] };
+        }
+
+        return { parts: [{ condition_type: "NEW", removed_date: null }] }
+    }, [initialData])
 
     const form = useForm<PartsFormType>({
         resolver: zodResolver(PartsFormSchema),
         defaultValues: normalizedInitialData
-    });
+    })
 
     const { fields, append } = useFieldArray({
         control: form.control,
         name: "parts"
-    });
+    })
 
     const reactivatePartTree = (path: string) => {
         form.setValue(`${path}.removed_date` as any, null);
@@ -221,9 +265,51 @@ export function AircraftPartsInfoForm({ onNext, onBack, initialData }: {
         }
     };
 
+    const handleNext = (data: PartsFormType) => {
+        console.log("Validated data:", data);
+        onNext(data);
+    }
+
+    const handleError = (errors: any) => {
+        console.log("Form submit errors:", errors);
+        toast({ title: "Errores en el formulario", description: "Revisa los campos marcados en rojo." });
+    }
+
+    const submitFiltered = () => {
+        const values = form.getValues();
+        const parts = values.parts || [];
+
+        // Keep mapping of original indexes for error mapping
+        const origIndices: number[] = [];
+        const activeParts = parts.reduce((acc: any[], p: any, i: number) => {
+            if (!p || p.removed_date) return acc;
+            origIndices.push(i);
+            acc.push(p);
+            return acc;
+        }, [] as any[]);
+
+        // Validate only active parts using zod
+        const parsed = PartsFormSchema.safeParse({ parts: activeParts });
+        form.clearErrors();
+        if (!parsed.success) {
+            parsed.error.errors.forEach(err => {
+                const [idx, field] = err.path as any[];
+                const orig = origIndices[idx];
+                if (orig !== undefined && field) {
+                    form.setError(`parts.${orig}.${String(field)}` as any, { type: 'manual', message: err.message });
+                }
+            });
+            toast({ title: 'Errores en el formulario', description: 'Corrige los campos marcados.' });
+            return;
+        }
+
+        // If valid, send all parts (registered and removals) to the next step
+        onNext({ parts });
+    };
+
     return (
         <Form {...form}>
-            <form onSubmit={form.handleSubmit(onNext)} className="space-y-6 mt-4">
+            <form onSubmit={(e) => e.preventDefault()} className="space-y-6 mt-4">
                 {/* MODAL DE CONFIRMACIÓN DE REMOCIÓN */}
                 {removingPath && (
                     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
@@ -234,14 +320,14 @@ export function AircraftPartsInfoForm({ onNext, onBack, initialData }: {
                             </div>
                             <div className="bg-destructive/10 p-3 rounded-md mb-4 border border-destructive/20">
                                 <p className="text-[12px] text-destructive-foreground font-medium">
-                                    Al remover esta pieza, todas sus sub-partes instaladas 
+                                    Al remover esta pieza, todas sus sub-partes instaladas
                                     quedarán inactivas automáticamente.
                                 </p>
                             </div>
                             <FormLabel>Fecha de remoción</FormLabel>
-                            <Input 
-                                type="date" 
-                                value={tempDate} 
+                            <Input
+                                type="date"
+                                value={tempDate}
                                 onChange={(e) => setTempDate(e.target.value)}
                                 className="mb-6 mt-2"
                             />
@@ -257,365 +343,24 @@ export function AircraftPartsInfoForm({ onNext, onBack, initialData }: {
                     <h2 className="text-xl font-semibold">Partes de Aeronave</h2>
                 </div>
 
-                <Card>
-                    <CardContent className="p-0">
-                        <ScrollArea className="h-auto">
-                            <div className="p-4 space-y-4">
-                                {fields.map((field, index) => (
-                                    <PartSection
-                                        key={field.id}
-                                        form={form}
-                                        index={index}
-                                        path={`parts.${index}`}
-                                        level={0}
-                                        onRemove={removeItem}
-                                        onReactivate={reactivatePartTree}
-                                        onToggleExpand={toggleExpand} 
-                                        isExpanded={expandedParts[`parts.${index}`] || false} 
-                                        onAddSubpart={addSubpart}
-                                        expandedParts={expandedParts}
-                                    />
-                                ))}
-                                
-                                {/* BOTÓN DE AGREGAR PARTE PRINCIPAL */}
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    onClick={() => append({ condition_type: "NEW" })}
-                                    className="w-full border-dashed py-8"
-                                >
-                                    <PlusCircle className="size-4 mr-2" />
-                                    Agregar Parte Principal
-                                </Button>
-                            </div>
-                        </ScrollArea>
-                    </CardContent>
-                </Card>
+                <PartsList
+                    fields={fields}
+                    form={form}
+                    append={append}
+                    onRemove={removeItem}
+                    onReactivate={reactivatePartTree}
+                    onToggleExpand={toggleExpand}
+                    expandedParts={expandedParts}
+                    onAddSubpart={addSubpart}
+                />
 
                 <div className="flex justify-between pt-4">
                     <Button type="button" variant="outline" onClick={() => onBack(form.getValues())}>Anterior</Button>
-                    <Button type="submit">Siguiente</Button>
+                    <Button type="button" onClick={submitFiltered}>Siguiente</Button>
                 </div>
             </form>
         </Form>
     );
 }
 
-function PartSection({ 
-    form, 
-    index, 
-    path, 
-    level, 
-    onRemove, 
-    onReactivate, 
-    onToggleExpand, 
-    isExpanded, 
-    onAddSubpart, 
-    expandedParts 
-}: {
-    form: any;
-    index: number;
-    path: string;
-    level: number;
-    onRemove: (fullPath: string) => void;
-    onReactivate: (path: string) => void;
-    onToggleExpand: (path: string) => void;
-    isExpanded: boolean;
-    onAddSubpart: (path: string) => void;
-    expandedParts: Record<string, boolean>;
-}) {
-    const isRemoved = usePartValue<string | null>(form.control, `${path}.removed_date`, null);
-    const hassub_parts = usePartValue<boolean>(form.control, `${path}.is_father`, false);
-    const sub_parts = usePartValue<any[]>(form.control, `${path}.sub_parts`, []);
-    const partName = usePartValue<string>(form.control, `${path}.part_name`, "");
-    const partNumber = usePartValue<string>(form.control, `${path}.part_number`, "");
 
-    return (
-        <Card className={`overflow-hidden ${level > 0 ? 'ml-6' : ''} ${isRemoved ? 'opacity-60 bg-muted/50' : ''}`}>
-            <Collapsible open={isExpanded && !isRemoved} onOpenChange={() => !isRemoved && onToggleExpand(path)}>
-                <div className="flex items-center justify-between p-4 bg-muted/30">
-                    <div className="flex items-center gap-2">
-                        <CollapsibleTrigger asChild disabled={!!isRemoved}>
-                            <Button type="button" variant="ghost" size="sm" className="h-8 w-8 p-0">
-                                {isExpanded && !isRemoved ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-                            </Button>
-                        </CollapsibleTrigger>
-
-                        <div className="flex items-center gap-2">
-                            {hassub_parts ? (
-                                isExpanded && !isRemoved ? <FolderOpen className="h-4 w-4 text-blue-500" /> : <Folder className="h-4 w-4 text-blue-500" />
-                            ) : (
-                                <div className="h-4 w-4 rounded-full bg-primary/20"></div>
-                            )}
-
-                            <div className="flex flex-col">
-                                <span className={`text-sm font-medium ${isRemoved ? 'line-through text-muted-foreground' : ''}`}>
-                                    {partName || `Parte ${index + 1}`}
-                                    {partNumber && <Badge variant="outline" className="ml-2">{partNumber}</Badge>}
-                                </span>
-                                {isRemoved ? (
-                                    <span className="text-[10px] text-destructive font-bold uppercase tracking-wider mt-0.5">
-                                        Removida el: {isRemoved}
-                                    </span>
-                                ) : (
-                                    <span className="text-xs text-muted-foreground">
-                                        {level === 0 ? 'Parte principal' : `Subparte ${index + 1}`}
-                                    </span>
-                                )}
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                        {isRemoved ? (
-                            <Button
-                                type="button"
-                                variant="outline"
-                                size="sm"
-                                onClick={() => onReactivate(path)}
-                                className="h-8 text-xs border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100"
-                            >
-                                <RefreshCw size={14} className="mr-1" />
-                                Reactivar {level === 0 && "Sistema"}
-                            </Button>
-                        ) : (
-                            <>
-                                {hassub_parts && sub_parts.length > 0 && (
-                                    <Badge variant="secondary" className="mr-2">
-                                        {sub_parts.length} subparte{sub_parts.length !== 1 ? 's' : ''}
-                                    </Badge>
-                                )}
-                                <Button
-                                    type="button"
-                                    variant="ghost"
-                                    size="icon"
-                                    onClick={() => onRemove(path)}
-                                    className="h-8 w-8 text-destructive"
-                                >
-                                    <MinusCircle size={16} />
-                                </Button>
-                            </>
-                        )}
-                    </div>
-                </div>
-
-                <CollapsibleContent>
-                    <div className="p-4 space-y-4 border-t">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <FormField
-                                control={form.control}
-                                name={`${path}.part_name`}
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Nombre de la parte</FormLabel>
-                                        <FormControl>
-                                            <Input placeholder="Ej: Motor, Ala, Tren de aterrizaje" {...field} />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                            <FormField
-                                control={form.control}
-                                name={`${path}.part_number`}
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Número de Parte</FormLabel>
-                                        <FormControl>
-                                            <Input placeholder="Ej: ENG-001, WNG-202" {...field} />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <FormField
-                                control={form.control}
-                                name={`${path}.time_since_new`}
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>TSN</FormLabel>
-                                        <FormControl>
-                                            <Input
-                                                placeholder="Ej: 1500"
-                                                {...field}
-                                                onChange={e => field.onChange(e.target.value ? Number(e.target.value) : undefined)}
-                                                value={field.value ?? ""}
-                                            />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                            <FormField
-                                control={form.control}
-                                name={`${path}.time_since_overhaul`}
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>TSO</FormLabel>
-                                        <FormControl>
-                                            <Input
-                                                placeholder="Ej: 1500"
-                                                {...field}
-                                                onChange={e => field.onChange(e.target.value ? Number(e.target.value) : undefined)}
-                                                value={field.value ?? ""}
-                                            />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <FormField
-                                control={form.control}
-                                name={`${path}.cycles_since_new`}
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>CSN</FormLabel>
-                                        <FormControl>
-                                            <Input
-                                                placeholder="Ej: 1500"
-                                                {...field}
-                                                onChange={e => field.onChange(e.target.value ? Number(e.target.value) : undefined)}
-                                                value={field.value ?? ""}
-                                            />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                            <FormField
-                                control={form.control}
-                                name={`${path}.cycles_since_overhaul`}
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>CSO</FormLabel>
-                                        <FormControl>
-                                            <Input
-                                                placeholder="Ej: 300"
-                                                {...field}
-                                                onChange={e => field.onChange(e.target.value ? Number(e.target.value) : undefined)}
-                                                value={field.value ?? ""}
-                                            />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <FormField
-                                control={form.control}
-                                name={`${path}.condition_type`}
-                                render={({ field }) => (
-                                    <FormItem className="space-y-3">
-                                        <FormLabel>Condición</FormLabel>
-                                        <FormControl>
-                                            <RadioGroup
-                                                onValueChange={field.onChange}
-                                                value={field.value}
-                                                className="flex flex-col space-y-1"
-                                            >
-                                                <FormItem className="flex items-center space-x-2 space-y-0">
-                                                    <FormControl>
-                                                        <RadioGroupItem value="NEW" />
-                                                    </FormControl>
-                                                    <FormLabel className="font-normal">Nueva</FormLabel>
-                                                </FormItem>
-                                                <FormItem className="flex items-center space-x-2 space-y-0">
-                                                    <FormControl>
-                                                        <RadioGroupItem value="OVERHAULED" />
-                                                    </FormControl>
-                                                    <FormLabel className="font-normal">Reacondicionada</FormLabel>
-                                                </FormItem>
-                                            </RadioGroup>
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-
-                            <FormField
-                                control={form.control}
-                                name={`${path}.is_father`}
-                                render={({ field }) => (
-                                    <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
-                                        <FormControl>
-                                            <Checkbox
-                                                checked={field.value}
-                                                onCheckedChange={field.onChange}
-                                            />
-                                        </FormControl>
-                                        <div className="space-y-1 leading-none">
-                                            <FormLabel>Esta parte contiene subpartes</FormLabel>
-                                            <p className="text-xs text-muted-foreground">
-                                                Marque si necesita agregar componentes dentro de esta parte
-                                            </p>
-                                        </div>
-                                    </FormItem>
-                                )}
-                            />
-                        </div>
-
-                        {hassub_parts && (
-                            <div className="pt-4 border-t">
-                                <div className="flex justify-between items-center mb-4">
-                                    <h4 className="font-medium">Subpartes</h4>
-                                    <Button
-                                        type="button"
-                                        variant="outline"
-                                        size="sm"
-                                        onClick={() => onAddSubpart(path)}
-                                    >
-                                        <PlusCircle className="size-3.5 mr-2" /> Agregar Subparte
-                                    </Button>
-                                </div>
-
-                                <div className="space-y-3">
-                                    {sub_parts.map((_: any, subIndex: number) => {
-                                        const subPartPath = `${path}.sub_parts.${subIndex}`;
-                                        return (
-                                            <PartSection
-                                                key={subIndex}
-                                                form={form}
-                                                index={subIndex}
-                                                path={subPartPath}
-                                                level={level + 1}
-                                                onRemove={onRemove}
-                                                onReactivate={onReactivate}
-                                                onToggleExpand={onToggleExpand}
-                                                isExpanded={expandedParts[subPartPath] || false}
-                                                onAddSubpart={onAddSubpart}
-                                                expandedParts={expandedParts}
-                                            />
-                                        );
-                                    })}
-
-                                    {sub_parts.length === 0 && (
-                                        <div className="text-center py-4 text-muted-foreground text-sm">
-                                            <p>No hay subpartes agregadas</p>
-                                            <Button
-                                                type="button"
-                                                variant="ghost"
-                                                size="sm"
-                                                onClick={() => onAddSubpart(path)}
-                                                className="mt-2"
-                                            >
-                                                <PlusCircle className="size-3.5 mr-2" /> Agregar la primera subparte
-                                            </Button>
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-                        )}
-                    </div>
-                </CollapsibleContent>
-            </Collapsible>
-        </Card>
-    );
-}

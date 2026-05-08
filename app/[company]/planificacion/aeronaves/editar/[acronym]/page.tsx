@@ -223,10 +223,13 @@ export default function EditAircraftPage({ params }: { params: { acronym: string
             ...(originalPart?.id && { id: originalPart.id }), // Preservar ID para actualizaciones
             ...rest,
             part_type: originalPart?.part_type || "engine",
-            time_since_new: Math.round((rest.time_since_new ?? 0) * 100) / 100,
-            time_since_overhaul: Math.round((rest.time_since_overhaul ?? 0) * 100) / 100,
-            cycles_since_new: Math.round(rest.cycles_since_new ?? 0),
-            cycles_since_overhaul: Math.round(rest.cycles_since_overhaul ?? 0),
+            time_since_new: rest.time_since_new !== null && rest.time_since_new !== undefined ? Math.round((rest.time_since_new as number) * 100) / 100 : null,
+            time_since_overhaul: rest.time_since_overhaul !== null && rest.time_since_overhaul !== undefined ? Math.round((rest.time_since_overhaul as number) * 100) / 100 : null,
+            cycles_since_new: rest.cycles_since_new !== null && rest.cycles_since_new !== undefined ? Math.round(rest.cycles_since_new as number) : null,
+            cycles_since_overhaul: rest.cycles_since_overhaul !== null && rest.cycles_since_overhaul !== undefined ? Math.round(rest.cycles_since_overhaul as number) : null,
+            ata_chapter: (rest as any).ata_chapter ?? originalPart?.ata_chapter ?? null,
+            position: (rest as any).position ?? originalPart?.position ?? null,
+            part_order: (rest as any).part_order ?? originalPart?.part_order ?? null,
             sub_parts: part.sub_parts?.map((subPart, index) => {
                 const originalSubPart = originalPart?.sub_parts?.[index];
                 return transformPart(subPart, originalSubPart);
