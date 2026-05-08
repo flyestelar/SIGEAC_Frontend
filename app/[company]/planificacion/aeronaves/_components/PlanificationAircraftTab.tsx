@@ -5,6 +5,8 @@ import { format, parseISO, getYear, startOfMonth, endOfMonth } from "date-fns"
 import { es } from "date-fns/locale"
 import { useGetAverageCyclesAndHours } from "@/hooks/aerolinea/vuelos/useGetAverageCyclesAndHours"
 import { Badge } from "@/components/ui/badge"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { Checkbox } from "@/components/ui/checkbox"
 import { 
   Plane, Hash, Calendar as CalendarIcon, Layers, Search, 
   Clock, ChevronRight, Edit, Package, Download, Loader2
@@ -118,6 +120,10 @@ function TreeNode({ part, depth = 0 }: { part: any; depth?: number }) {
 export function PlanificationAircraftTab({ aircraft }: { aircraft: MaintenanceAircraft & { aircraft_assignments?: any[], id: number } }) {
   const [q, setQ] = useState("")
   const [isDownloading, setIsDownloading] = useState(false)
+  const [isDownloadModalOpen, setIsDownloadModalOpen] = useState(false)
+  const [downloadFrom, setDownloadFrom] = useState<string>("")
+  const [downloadTo, setDownloadTo] = useState<string>("")
+  const [downloadAll, setDownloadAll] = useState<boolean>(true)
   const { selectedCompany } = useCompanyStore()
 
   // Lógica de descarga de Excel
@@ -132,11 +138,11 @@ export function PlanificationAircraftTab({ aircraft }: { aircraft: MaintenanceAi
     try {
         // Observa qué limpio queda: no hay URL base manual ni headers de Token
         const response = await axiosInstance.get(
-            `/${selectedCompany.slug}/aircrafts/traceability-export`, 
-            {
-                params: { aircraft_id: aircraft.id },
-                responseType: 'blob', 
-            }
+          `/${selectedCompany.slug}/aircrafts/traceability-export`, 
+          {
+            params: { aircraft_id: aircraft.id },
+            responseType: 'blob', 
+          }
         );
 
         const blob = new Blob([response.data], { 
@@ -175,6 +181,64 @@ export function PlanificationAircraftTab({ aircraft }: { aircraft: MaintenanceAi
         setIsDownloading(false);
     }
   };
+
+    // Nueva versión que acepta filtros opcionales
+    const handleDownloadTraceabilityFiltered = async (opts?: { first_date?: string; second_date?: string }) => {
+    if (!selectedCompany?.slug || !aircraft?.id) {
+      toast.error("Datos de aeronave o empresa no disponibles");
+      return;
+    }
+
+    setIsDownloading(true);
+
+    try {
+      const params: any = { aircraft_id: aircraft.id };
+      if (opts?.first_date) params.first_date = opts.first_date;
+      if (opts?.second_date) params.second_date = opts.second_date;
+
+      const response = await axiosInstance.get(
+        `/${selectedCompany.slug}/aircrafts/traceability-export`, 
+        {
+          params,
+          responseType: 'blob', 
+        }
+      );
+
+      const blob = new Blob([response.data], { 
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' 
+      });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `Trazabilidad_${aircraft.acronym}_${format(new Date(), 'dd-MM-yyyy')}.xlsx`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+        
+      toast.success("Archivo generado correctamente");
+    } catch (error: any) {
+      if (error.response?.data instanceof Blob) {
+        const reader = new FileReader();
+        reader.onload = () => {
+          const result = reader.result;
+          if (typeof result === 'string') {
+            try {
+              const parsed = JSON.parse(result);
+              toast.error(parsed.error || "Error en el servidor");
+            } catch (e) {
+              toast.error("Error al procesar la respuesta del servidor");
+            }
+          }
+        };
+        reader.readAsText(error.response.data);
+      } else {
+        toast.error("Error al conectar con el servidor");
+      }
+    } finally {
+      setIsDownloading(false);
+    }
+    }
 
   // Solo assignments activos
   const assignments = useMemo(() => {
@@ -226,12 +290,12 @@ export function PlanificationAircraftTab({ aircraft }: { aircraft: MaintenanceAi
                     Editar
                 </Button>
                 </Link>
-                
-                {/* BOTÓN DE DESCARGA AÑADIDO */}
+
+                {/* BOTÓN QUE ABRE MODAL DE DESCARGA */}
                 <Button 
                     variant="default" 
-                    size="sm" 
-                    onClick={handleDownloadTraceability}
+                    size="sm"
+                    onClick={() => setIsDownloadModalOpen(true)}
                     disabled={isDownloading}
                     className="bg-green-700 hover:bg-green-800 text-white"
                 >
@@ -240,8 +304,45 @@ export function PlanificationAircraftTab({ aircraft }: { aircraft: MaintenanceAi
                     ) : (
                         <Download className="h-4 w-4 mr-2" />
                     )}
-                    Exportar Trazabilidad
+                    Exportar Excel
                 </Button>
+
+                {/* Modal de descarga */}
+                <Dialog open={isDownloadModalOpen} onOpenChange={setIsDownloadModalOpen}>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Exportar Excel de Trazabilidad</DialogTitle>
+                    </DialogHeader>
+
+                    <div className="space-y-4 py-2">
+                      <div className="flex items-center gap-2">
+                        <label className="text-sm font-medium">Desde</label>
+                        <Input type="date" value={downloadFrom} onChange={(e) => setDownloadFrom(e.target.value)} disabled={downloadAll} />
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <label className="text-sm font-medium">Hasta</label>
+                        <Input type="date" value={downloadTo} onChange={(e) => setDownloadTo(e.target.value)} disabled={downloadAll} />
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Checkbox checked={downloadAll} onCheckedChange={(v) => setDownloadAll(!!v)} />
+                        <span className="text-sm">Descargar todo (ignorar fechas)</span>
+                      </div>
+                    </div>
+
+                    <div className="flex justify-end gap-2 pt-4">
+                      <Button variant="outline" onClick={() => setIsDownloadModalOpen(false)}>Cancelar</Button>
+                      <Button onClick={() => {
+                        // Ejecutar descarga con o sin filtros
+                        if (downloadAll) {
+                          handleDownloadTraceabilityFiltered();
+                        } else {
+                          handleDownloadTraceabilityFiltered({ first_date: downloadFrom || undefined, second_date: downloadTo || undefined });
+                        }
+                        setIsDownloadModalOpen(false);
+                      }} disabled={isDownloading}>Descargar</Button>
+                    </div>
+                  </DialogContent>
+                </Dialog>
             </div>
           </div>
           <p className="text-sm text-muted-foreground">Serial <span className="font-medium text-foreground">{aircraft.serial}</span></p>
