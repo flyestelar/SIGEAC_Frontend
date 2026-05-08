@@ -38,8 +38,8 @@ import {
   ClipboardList,
 } from "lucide-react";
 import { useParams } from "next/navigation";
-import Image from "next/image";
-import { useState } from "react";
+
+import { useState, useEffect } from "react";
 import axiosInstance from "@/lib/axios";
 
 
@@ -83,13 +83,26 @@ const ShowSMSActivity = () => {
   const attendedList = (activity as any)?.attendance as AttendanceData[] | undefined;
 
   const [isDownloading, setIsDownloading] = useState(false);
+  const [imageSrc, setImageSrc] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!activity?.image) return;
+    let objectUrl: string;
+    axiosInstance.get(activity.image, { responseType: 'blob' }).then((response) => {
+      const blob = new Blob([response.data], { type: String(response.headers['content-type'] ?? 'image/jpeg') });
+      objectUrl = URL.createObjectURL(blob);
+      setImageSrc(objectUrl);
+    });
+    return () => { if (objectUrl) URL.revokeObjectURL(objectUrl); };
+  }, [activity?.image]);
 
   const downloadDocument = async (url: string, filename: string) => {
     setIsDownloading(true);
     try {
       const response = await axiosInstance.get(url, { responseType: 'blob' });
+      const blob = new Blob([response.data], { type: 'application/pdf' });
       const link = document.createElement('a');
-      link.href = URL.createObjectURL(response.data);
+      link.href = URL.createObjectURL(blob);
       link.download = filename;
       link.click();
       URL.revokeObjectURL(link.href);
@@ -390,13 +403,10 @@ const ShowSMSActivity = () => {
                       <Dialog>
                         <DialogTrigger asChild>
                           <div className="relative group w-full max-w-sm h-64 mx-auto cursor-pointer">
-                            <Image
-                              src={activity.image}
-                              alt="Imagen de la actividad"
-                              fill
-                              unoptimized
-                              className="w-full h-full object-contain rounded-md border group-hover:border-gray-400 transition-all"
-                            />
+                            {imageSrc
+                              ? <img src={imageSrc} alt="Imagen de la actividad" className="w-full h-full object-contain rounded-md border group-hover:border-gray-400 transition-all" />
+                              : <div className="w-full h-full flex items-center justify-center"><Loader2 className="size-8 animate-spin text-gray-400" /></div>
+                            }
                             <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 bg-black/20 transition-opacity rounded-md">
                               <span className="text-white bg-black/70 px-3 py-2 rounded-md text-sm">
                                 Ver imagen completa
@@ -408,14 +418,11 @@ const ShowSMSActivity = () => {
                           <DialogHeader>
                             <DialogTitle>Imagen de la Actividad</DialogTitle>
                           </DialogHeader>
-                          <div className="relative h-[60vh] flex justify-center">
-                            <Image
-                              src={activity.image}
-                              fill
-                              unoptimized
-                              alt="Imagen completa de la actividad"
-                              className="max-w-full max-h-full object-contain rounded-lg border"
-                            />
+                          <div className="relative h-[60vh] flex justify-center items-center">
+                            {imageSrc
+                              ? <img src={imageSrc} alt="Imagen completa de la actividad" className="max-w-full max-h-full object-contain rounded-lg border" />
+                              : <Loader2 className="size-10 animate-spin text-gray-400" />
+                            }
                           </div>
                         </DialogContent>
                       </Dialog>
