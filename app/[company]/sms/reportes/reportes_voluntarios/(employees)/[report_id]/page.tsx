@@ -18,10 +18,10 @@ import {
 import { useGetVoluntaryReportById } from "@/hooks/sms/useGetVoluntaryReportById";
 import { dateFormat } from "@/lib/utils";
 import { useCompanyStore } from "@/stores/CompanyStore";
+import axiosInstance from "@/lib/axios";
 import {
   AlertCircle,
   AlertTriangle,
-  Calendar,
   ChevronRight,
   FileText,
   Loader2,
@@ -34,9 +34,9 @@ import {
   Shield,
   MapPin,
 } from "lucide-react";
-import Image from "next/image";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
 
 const formatFriendly = (dateString: string | null | undefined) => {
   if (!dateString) return "N/A";
@@ -100,20 +100,47 @@ const ShowVoluntaryReport = () => {
     company: selectedCompany?.slug,
   });
 
-  const handleDownloadImage = async (url: string, filename: string) => {
+  const [imageSrc, setImageSrc] = useState<string | null>(null);
+  const [isDownloading, setIsDownloading] = useState(false);
+
+  useEffect(() => {
+    if (!voluntaryReport?.image) return;
+    let objectUrl: string;
+    let cancelled = false;
+    axiosInstance
+      .get(voluntaryReport.image, { responseType: "blob" })
+      .then((response) => {
+        if (cancelled) return;
+        const blob = new Blob([response.data], {
+          type: String(response.headers["content-type"] ?? "image/jpeg"),
+        });
+        objectUrl = URL.createObjectURL(blob);
+        setImageSrc(objectUrl);
+      })
+      .catch((err) => console.error("Error cargando imagen:", err));
+    return () => {
+      cancelled = true;
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
+    };
+  }, [voluntaryReport?.image]);
+
+  const downloadDocument = async (url: string, filename: string) => {
+    setIsDownloading(true);
     try {
-      const response = await fetch(url);
-      const blob = await response.blob();
-      const blobUrl = window.URL.createObjectURL(blob);
+      const response = await axiosInstance.get(url, { responseType: "blob" });
+      const blob = new Blob([response.data], { type: "application/pdf" });
+      const objectUrl = URL.createObjectURL(blob);
       const link = document.createElement("a");
-      link.href = blobUrl;
+      link.href = objectUrl;
       link.download = filename;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-      window.URL.revokeObjectURL(blobUrl);
-    } catch {
-      window.open(url, "_blank");
+      setTimeout(() => URL.revokeObjectURL(objectUrl), 1000);
+    } catch (err) {
+      console.error("Error descargando documento:", err);
+    } finally {
+      setIsDownloading(false);
     }
   };
 
@@ -345,13 +372,17 @@ const ShowVoluntaryReport = () => {
                       <Dialog>
                         <DialogTrigger asChild>
                           <div className="group relative h-[220px] cursor-pointer overflow-hidden rounded-lg border transition-colors hover:border-sky-400">
-                            <Image
-                              src={voluntaryReport.image!}
-                              alt="Imagen del reporte"
-                              fill
-                              unoptimized
-                              className="object-contain"
-                            />
+                            {imageSrc ? (
+                              <img
+                                src={imageSrc}
+                                alt="Imagen del reporte"
+                                className="h-full w-full object-contain transition-transform duration-200 group-hover:scale-105"
+                              />
+                            ) : (
+                              <div className="flex h-full items-center justify-center">
+                                <Loader2 className="size-8 animate-spin text-sky-500" />
+                              </div>
+                            )}
                             <div className="absolute inset-0 flex items-center justify-center bg-transparent transition-all group-hover:bg-black/35">
                               <span className="flex items-center gap-1.5 rounded-md bg-black/50 px-3.5 py-2 text-sm font-semibold text-white opacity-0 transition-opacity group-hover:opacity-100">
                                 <Maximize2 className="h-4 w-4" />
@@ -366,14 +397,16 @@ const ShowVoluntaryReport = () => {
                               RVP-{voluntaryReport.report_number} · Imagen
                             </DialogTitle>
                           </DialogHeader>
-                          <div className="relative h-[60vh]">
-                            <Image
-                              src={voluntaryReport.image!}
-                              alt="Imagen completa del reporte"
-                              fill
-                              unoptimized
-                              className="object-contain"
-                            />
+                          <div className="relative flex h-[60vh] items-center justify-center">
+                            {imageSrc ? (
+                              <img
+                                src={imageSrc}
+                                alt="Imagen completa del reporte"
+                                className="max-h-full max-w-full rounded-lg object-contain"
+                              />
+                            ) : (
+                              <Loader2 className="size-10 animate-spin text-sky-500" />
+                            )}
                           </div>
                         </DialogContent>
                       </Dialog>
@@ -383,11 +416,12 @@ const ShowVoluntaryReport = () => {
                         size="sm"
                         className="w-full text-xs"
                         onClick={() =>
-                          handleDownloadImage(
+                          downloadDocument(
                             voluntaryReport.image!,
                             `Imagen-RVP-${voluntaryReport.report_number || "adjunta"}.jpg`,
                           )
                         }
+                        disabled={isDownloading}
                       >
                         <Download className="mr-1.5 h-3.5 w-3.5" />
                         Descargar imagen
@@ -411,15 +445,24 @@ const ShowVoluntaryReport = () => {
                             RVP-{voluntaryReport.report_number}.pdf
                           </p>
                         </div>
-                        <a
-                          href={voluntaryReport.document!}
-                          download={`RVP-${voluntaryReport.report_number}.pdf`}
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          disabled={isDownloading}
+                          onClick={() =>
+                            downloadDocument(
+                              voluntaryReport.document!,
+                              `RVP-${voluntaryReport.report_number}.pdf`,
+                            )
+                          }
                         >
-                          <Button variant="outline" size="sm">
+                          {isDownloading ? (
+                            <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                          ) : (
                             <Download className="mr-1.5 h-3.5 w-3.5" />
-                            Descargar
-                          </Button>
-                        </a>
+                          )}
+                          {isDownloading ? "Descargando..." : "Descargar"}
+                        </Button>
                       </div>
                     </div>
                   </SectionCard>
