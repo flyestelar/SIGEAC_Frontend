@@ -88,12 +88,21 @@ const ShowSMSActivity = () => {
   useEffect(() => {
     if (!activity?.image) return;
     let objectUrl: string;
-    axiosInstance.get(activity.image, { responseType: 'blob' }).then((response) => {
-      const blob = new Blob([response.data], { type: String(response.headers['content-type'] ?? 'image/jpeg') });
-      objectUrl = URL.createObjectURL(blob);
-      setImageSrc(objectUrl);
-    });
-    return () => { if (objectUrl) URL.revokeObjectURL(objectUrl); };
+    let cancelled = false;
+    axiosInstance.get(activity.image, { responseType: 'blob' })
+      .then((response) => {
+        if (cancelled) return;
+        const blob = new Blob([response.data], { type: String(response.headers['content-type'] ?? 'image/jpeg') });
+        objectUrl = URL.createObjectURL(blob);
+        setImageSrc(objectUrl);
+      })
+      .catch((err) => {
+        console.error('Error cargando imagen:', err);
+      });
+    return () => {
+      cancelled = true;
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
+    };
   }, [activity?.image]);
 
   const downloadDocument = async (url: string, filename: string) => {
@@ -101,11 +110,16 @@ const ShowSMSActivity = () => {
     try {
       const response = await axiosInstance.get(url, { responseType: 'blob' });
       const blob = new Blob([response.data], { type: 'application/pdf' });
+      const objectUrl = URL.createObjectURL(blob);
       const link = document.createElement('a');
-      link.href = URL.createObjectURL(blob);
+      link.href = objectUrl;
       link.download = filename;
+      document.body.appendChild(link);
       link.click();
-      URL.revokeObjectURL(link.href);
+      document.body.removeChild(link);
+      setTimeout(() => URL.revokeObjectURL(objectUrl), 1000);
+    } catch (err) {
+      console.error('Error descargando documento:', err);
     } finally {
       setIsDownloading(false);
     }
