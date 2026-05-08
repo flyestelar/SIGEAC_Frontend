@@ -33,10 +33,11 @@ import {
   User,
   Users,
 } from "lucide-react";
-import Image from "next/image";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useCompanyStore } from "@/stores/CompanyStore";
+import axiosInstance from "@/lib/axios";
+import { useState, useEffect } from "react";
 
 /* ── Helpers ──────────────────────────────────────────────── */
 
@@ -136,6 +137,50 @@ const ShowObligatoryReport = () => {
   const isOpen = report?.status === "ABIERTO";
   const imageUrl = resolveUrl(report?.image);
   const docUrl = resolveUrl(report?.document);
+
+  const [imageSrc, setImageSrc] = useState<string | null>(null);
+  const [isDownloading, setIsDownloading] = useState(false);
+
+  useEffect(() => {
+    if (!imageUrl) return;
+    let objectUrl: string;
+    let cancelled = false;
+    axiosInstance
+      .get(imageUrl, { responseType: "blob" })
+      .then((response) => {
+        if (cancelled) return;
+        const blob = new Blob([response.data], {
+          type: String(response.headers["content-type"] ?? "image/jpeg"),
+        });
+        objectUrl = URL.createObjectURL(blob);
+        setImageSrc(objectUrl);
+      })
+      .catch((err) => console.error("Error cargando imagen:", err));
+    return () => {
+      cancelled = true;
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
+    };
+  }, [imageUrl]);
+
+  const downloadFile = async (url: string, filename: string, type = "application/octet-stream") => {
+    setIsDownloading(true);
+    try {
+      const response = await axiosInstance.get(url, { responseType: "blob" });
+      const blob = new Blob([response.data], { type });
+      const objectUrl = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = objectUrl;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      setTimeout(() => URL.revokeObjectURL(objectUrl), 1000);
+    } catch (err) {
+      console.error("Error descargando archivo:", err);
+    } finally {
+      setIsDownloading(false);
+    }
+  };
 
   return (
     <ContentLayout title="Reporte Obligatorio de Suceso">
@@ -372,16 +417,17 @@ const ShowObligatoryReport = () => {
                       <DialogTrigger asChild>
                         <button className="group relative w-full overflow-hidden rounded-md border border-border bg-muted/30 hover:border-amber-500/50 transition-colors">
                           <div className="relative h-40 w-full">
-                            <Image
-                              src={imageUrl}
-                              alt={`Imagen ROS-${report.report_number}`}
-                              fill
-                              unoptimized
-                              className="object-contain p-2"
-                              onError={(e) => {
-                                (e.target as HTMLImageElement).style.display = "none";
-                              }}
-                            />
+                            {imageSrc ? (
+                              <img
+                                src={imageSrc}
+                                alt={`Imagen ROS-${report.report_number}`}
+                                className="h-full w-full object-contain p-2 transition-transform duration-200 group-hover:scale-105"
+                              />
+                            ) : (
+                              <div className="flex h-full items-center justify-center">
+                                <Loader2 className="size-7 animate-spin text-amber-500" />
+                              </div>
+                            )}
                             <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/30 rounded-md">
                               <span className="flex items-center gap-1.5 text-white text-xs font-medium bg-black/60 px-2.5 py-1.5 rounded">
                                 <ImageIcon className="w-3.5 h-3.5" />
@@ -403,23 +449,37 @@ const ShowObligatoryReport = () => {
                           </DialogTitle>
                         </DialogHeader>
                         <div className="relative flex justify-center items-center h-[60vh]">
-                          <Image
-                            src={imageUrl}
-                            alt={`Imagen ROS-${report.report_number}`}
-                            fill
-                            unoptimized
-                            className="object-contain"
-                          />
+                          {imageSrc ? (
+                            <img
+                              src={imageSrc}
+                              alt={`Imagen ROS-${report.report_number}`}
+                              className="max-h-full max-w-full rounded-lg object-contain"
+                            />
+                          ) : (
+                            <Loader2 className="size-10 animate-spin text-amber-500" />
+                          )}
                         </div>
                         <div className="flex justify-end pt-2">
-                          <a
-                            href={imageUrl}
-                            download={`ROS-${report.report_number}`}
-                            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-md border border-border bg-muted hover:bg-muted/80 text-xs font-medium transition-colors"
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            disabled={isDownloading}
+                            onClick={() =>
+                              downloadFile(
+                                imageUrl,
+                                `ROS-${report.report_number}`,
+                                "image/jpeg",
+                              )
+                            }
+                            className="gap-1.5 text-xs"
                           >
-                            <Download className="w-3.5 h-3.5" />
+                            {isDownloading ? (
+                              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                            ) : (
+                              <Download className="w-3.5 h-3.5" />
+                            )}
                             Descargar
-                          </a>
+                          </Button>
                         </div>
                       </DialogContent>
                     </Dialog>
@@ -427,13 +487,13 @@ const ShowObligatoryReport = () => {
 
                   {/* Document */}
                   {docUrl && (
-                    <a
-                      href={docUrl}
-                      download={`ROS-${report.report_number}.pdf`}
-                      className="flex items-center gap-3 px-3 py-2.5 rounded-md border border-border bg-muted/30 hover:border-amber-500/50 hover:bg-muted/60 transition-colors group"
+                    <button
+                      disabled={isDownloading}
+                      onClick={() => downloadFile(docUrl, `ROS-${report.report_number}.pdf`, "application/pdf")}
+                      className="flex w-full items-center gap-3 px-3 py-2.5 rounded-md border border-border bg-muted/30 hover:border-amber-500/50 hover:bg-muted/60 transition-colors group disabled:opacity-60 disabled:cursor-not-allowed"
                     >
                       <File className="w-4 h-4 text-amber-600 flex-shrink-0" />
-                      <div className="flex-1 min-w-0">
+                      <div className="flex-1 min-w-0 text-left">
                         <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
                           Documento PDF
                         </p>
@@ -441,8 +501,12 @@ const ShowObligatoryReport = () => {
                           ROS-{report.report_number}.pdf
                         </p>
                       </div>
-                      <Download className="w-3.5 h-3.5 text-muted-foreground group-hover:text-amber-600 transition-colors flex-shrink-0" />
-                    </a>
+                      {isDownloading ? (
+                        <Loader2 className="w-3.5 h-3.5 animate-spin text-amber-600 flex-shrink-0" />
+                      ) : (
+                        <Download className="w-3.5 h-3.5 text-muted-foreground group-hover:text-amber-600 transition-colors flex-shrink-0" />
+                      )}
+                    </button>
                   )}
                 </div>
               </Section>
