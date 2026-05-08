@@ -418,7 +418,7 @@ export function PlanificationAircraftTab({ aircraft }: { aircraft: MaintenanceAi
               </CardContent>
             </Card>
           </div>
-
+ 
           <Card className="border-muted/40">
             <CardHeader className="flex flex-row items-center justify-between gap-2 space-y-0">
               <CardTitle className="text-base">Resumen de Partes</CardTitle>
