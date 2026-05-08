@@ -39,6 +39,8 @@ import {
 } from "lucide-react";
 import { useParams } from "next/navigation";
 import Image from "next/image";
+import { useState } from "react";
+import axiosInstance from "@/lib/axios";
 
 
 interface AttendanceData {
@@ -79,6 +81,22 @@ const ShowSMSActivity = () => {
   } = useGetSMSActivityAttendanceStats(activity_id);
 
   const attendedList = (activity as any)?.attendance as AttendanceData[] | undefined;
+
+  const [isDownloading, setIsDownloading] = useState(false);
+
+  const downloadDocument = async (url: string, filename: string) => {
+    setIsDownloading(true);
+    try {
+      const response = await axiosInstance.get(url, { responseType: 'blob' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(response.data);
+      link.download = filename;
+      link.click();
+      URL.revokeObjectURL(link.href);
+    } finally {
+      setIsDownloading(false);
+    }
+  };
 
   const PieChartData = AttendanceStats
     ? [
@@ -373,7 +391,7 @@ const ShowSMSActivity = () => {
                         <DialogTrigger asChild>
                           <div className="relative group w-full max-w-sm h-64 mx-auto cursor-pointer">
                             <Image
-                              src={`${process.env.NEXT_PUBLIC_STORAGE_BASE_URL}${activity.image}`}
+                              src={activity.image}
                               alt="Imagen de la actividad"
                               fill
                               unoptimized
@@ -392,7 +410,7 @@ const ShowSMSActivity = () => {
                           </DialogHeader>
                           <div className="relative h-[60vh] flex justify-center">
                             <Image
-                              src={`${process.env.NEXT_PUBLIC_STORAGE_BASE_URL}${activity.image}`}
+                              src={activity.image}
                               fill
                               unoptimized
                               alt="Imagen completa de la actividad"
@@ -409,16 +427,16 @@ const ShowSMSActivity = () => {
                       <h3 className="text-lg font-semibold mb-4 text-gray-800 dark:text-gray-200">
                         Documento Adjunto
                       </h3>
-                      <a
-                        href={`${process.env.NEXT_PUBLIC_STORAGE_BASE_URL}${activity.document}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        download={`ACT-${activity.activity_number}.pdf`}
-                        className="inline-flex items-center px-5 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700"
+                      <Button
+                        onClick={() => downloadDocument(activity.document!, `ACT-${activity.activity_number}.pdf`)}
+                        disabled={isDownloading}
+                        className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-3 text-base"
                       >
-                        <FileText className="w-5 h-5 mr-2" />
-                        Descargar Documento Adjunto
-                      </a>
+                        {isDownloading
+                          ? <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                          : <FileText className="w-5 h-5 mr-2" />}
+                        {isDownloading ? 'Descargando...' : 'Descargar Documento Adjunto'}
+                      </Button>
                     </div>
                   )}
                 </div>
