@@ -13,6 +13,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useGetSMSActivityAttendanceStats } from "@/hooks/sms/useGetSMSActivityAttendanceStats";
 import { useGetSMSActivityById } from "@/hooks/sms/useGetSMSActivityById";
+import { useGetMitigationTable } from "@/hooks/sms/useGetMitigationTable";
 import { useCompanyStore } from "@/stores/CompanyStore";
 import { addDays, format } from "date-fns";
 import { es } from "date-fns/locale";
@@ -36,6 +37,8 @@ import {
   UserCheck,
   Info,
   ClipboardList,
+  Shield,
+  Link2,
 } from "lucide-react";
 import { useParams } from "next/navigation";
 
@@ -81,6 +84,24 @@ const ShowSMSActivity = () => {
   } = useGetSMSActivityAttendanceStats(activity_id);
 
   const attendedList = (activity as any)?.attendance as AttendanceData[] | undefined;
+
+  const { data: mitigationTable } = useGetMitigationTable(selectedCompany?.slug);
+
+  const mitigationInfo = activity?.mitigation_measure_id
+    ? (() => {
+        const entry = (mitigationTable ?? []).find((mt) =>
+          mt.mitigation_plan?.measures?.some((m) => m.id === activity.mitigation_measure_id)
+        );
+        if (!entry) return null;
+        const measure = entry.mitigation_plan!.measures.find((m) => m.id === activity.mitigation_measure_id)!;
+        const reportLabel = entry.voluntary_report?.report_number
+          ? `RVP-${entry.voluntary_report.report_number}`
+          : entry.obligatory_report?.report_number
+            ? `RO-${entry.obligatory_report.report_number}`
+            : null;
+        return { plan: entry.mitigation_plan!, measure, reportLabel };
+      })()
+    : null;
 
   const [isDownloading, setIsDownloading] = useState(false);
   const [imageSrc, setImageSrc] = useState<string | null>(null);
@@ -302,6 +323,45 @@ const ShowSMSActivity = () => {
                   </div>
                 </div>
               </div>
+
+              {/* Tarjeta de Plan de Mitigación */}
+              {mitigationInfo && (
+                <div className="rounded-lg border border-blue-200 bg-blue-50 p-5 dark:border-blue-800 dark:bg-blue-950/30">
+                  <h2 className="mb-4 flex items-center gap-2 text-lg font-bold text-blue-800 dark:text-blue-300">
+                    <Shield className="h-5 w-5" />
+                    Plan de Mitigación Asociado
+                  </h2>
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-widest text-blue-600 dark:text-blue-400">
+                        Plan
+                      </p>
+                      <p className="mt-1 text-sm font-medium text-blue-900 dark:text-blue-100">
+                        {mitigationInfo.plan.description}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-widest text-blue-600 dark:text-blue-400">
+                        Medida de mitigación
+                      </p>
+                      <p className="mt-1 text-sm font-medium text-blue-900 dark:text-blue-100">
+                        {mitigationInfo.measure.description}
+                      </p>
+                    </div>
+                    {mitigationInfo.reportLabel && (
+                      <div>
+                        <p className="text-xs font-semibold uppercase tracking-widest text-blue-600 dark:text-blue-400">
+                          Reporte origen
+                        </p>
+                        <p className="mt-1 flex items-center gap-1 text-sm font-medium text-blue-900 dark:text-blue-100">
+                          <Link2 className="h-3.5 w-3.5" />
+                          {mitigationInfo.reportLabel}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
 
               {/* Sección de detalles combinada con correcciones de estiramiento */}
               <div className="grid grid-cols-1 gap-6 lg:grid-cols-3 items-start">
