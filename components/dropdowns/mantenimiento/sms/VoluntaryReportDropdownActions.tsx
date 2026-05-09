@@ -14,15 +14,15 @@ import { useCompanyStore } from "@/stores/CompanyStore";
 import { useState } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useAcceptVoluntaryReport } from "@/actions/mantenimiento/sms/reporte_voluntario/actions";
+import { VoluntaryReport, ObligatoryReport } from "@/types/sms/mantenimiento";
 
-type ReportKind = "RVP" | "ROS";
 
 type ReportDetailActionsProps = {
-    id: number;
-    kind: ReportKind;
+    report: VoluntaryReport | ObligatoryReport;
+    kind: 'RVP' | 'ROS';
 };
 
-export function VoluntaryReportDropdownActions({ id, kind }: ReportDetailActionsProps) {
+export function VoluntaryReportDropdownActions({ report, kind }: ReportDetailActionsProps) {
     const { selectedCompany } = useCompanyStore();
     const router = useRouter();
     const { acceptVoluntaryReport } = useAcceptVoluntaryReport();
@@ -31,7 +31,7 @@ export function VoluntaryReportDropdownActions({ id, kind }: ReportDetailActions
     const handleAccept = async () => {
         const value = {
             company: selectedCompany!.slug,
-            id: id.toString(),
+            id: report.id.toString(),
         };
         await acceptVoluntaryReport.mutateAsync(value);
         setOpenAccept(false);
@@ -40,8 +40,8 @@ export function VoluntaryReportDropdownActions({ id, kind }: ReportDetailActions
 
     const href =
         kind === "RVP"
-            ? `/${selectedCompany?.slug}/sms/aeronautical/gestion_de_riesgos/reportes/voluntarios/${id}`
-            : `/${selectedCompany?.slug}/sms/aeronautical/gestion_de_riesgos/reportes/obligatorios/${id}`;
+            ? `/${selectedCompany?.slug}/sms/aeronautical/gestion_de_riesgos/reportes/voluntarios/${report.id}`
+            : `/${selectedCompany?.slug}/sms/aeronautical/gestion_de_riesgos/reportes/obligatorios/${report.id}`;
 
     return (
         <>
@@ -63,10 +63,11 @@ export function VoluntaryReportDropdownActions({ id, kind }: ReportDetailActions
                     </DropdownMenuItem>
 
 
-                    <DropdownMenuItem onClick={() => setOpenAccept(true)}>
-                        <CheckCheck className="size-5 text-green-400" />
-                        <p className="pl-2">Aceptar</p>
-                    </DropdownMenuItem>
+                    {report.status === 'EN_PROCESO' &&
+                        (<DropdownMenuItem onClick={() => setOpenAccept(true)}>
+                            <CheckCheck className="size-5 text-green-400" />
+                            <p className="pl-2">Aceptar</p>
+                        </DropdownMenuItem>)}
                 </DropdownMenuContent>
             </DropdownMenu>
 
