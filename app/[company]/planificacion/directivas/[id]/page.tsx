@@ -600,7 +600,7 @@ export default function AirworthinessDirectiveDetailPage() {
               <LoadingPage />
             ) : (
               <TabTable
-                headers={['Aeronave', 'Aplica', 'Motivo', 'AMOC', 'Acciones']}
+                headers={['Aeronave', 'Aplica', 'Motivo', 'Acciones']}
                 rows={applicabilities.map((item) => [
                   <div key={`${item.id}-aircraft`}>
                     <p className="font-medium">{item.aircraft?.acronym ?? `#${item.aircraft_id}`}</p>
@@ -626,7 +626,6 @@ export default function AirworthinessDirectiveDetailPage() {
                     </Badge>
                   ),
                   item.non_applicability_reason || '—',
-                  item.amoc_approved_method || '—',
                   <div key={`${item.id}-actions`} className="flex items-center justify-end gap-1">
                     <Button variant="ghost" size="icon" onClick={() => openEditApplicability(item)}>
                       <Pencil className="h-4 w-4" />

@@ -34,7 +34,6 @@ const editApplicabilitySchema = z
     aircraft_id: z.string().min(1, 'La aeronave es obligatoria'),
     is_applicable: z.boolean().default(true),
     non_applicability_reason: z.string().trim().optional(),
-    amoc_approved_method: z.string().trim().optional(),
   })
   .superRefine((values, ctx) => {
     if (!values.is_applicable && !values.non_applicability_reason?.trim()) {
@@ -71,7 +70,6 @@ export default function EditAirworthinessDirectiveApplicabilityForm({
       aircraft_id: String(applicability.aircraft_id),
       is_applicable: applicability.is_applicable ?? true,
       non_applicability_reason: applicability.non_applicability_reason ?? '',
-      amoc_approved_method: applicability.amoc_approved_method ?? '',
     },
   });
 
@@ -90,7 +88,6 @@ export default function EditAirworthinessDirectiveApplicabilityForm({
       aircraft_id: String(applicability.aircraft_id),
       is_applicable: applicability.is_applicable ?? true,
       non_applicability_reason: applicability.non_applicability_reason ?? '',
-      amoc_approved_method: applicability.amoc_approved_method ?? '',
     });
   };
 
@@ -101,7 +98,6 @@ export default function EditAirworthinessDirectiveApplicabilityForm({
         aircraft_id: Number(values.aircraft_id),
         is_applicable: values.is_applicable,
         non_applicability_reason: values.is_applicable ? null : values.non_applicability_reason || null,
-        amoc_approved_method: values.amoc_approved_method || null,
       },
     });
 
@@ -185,24 +181,6 @@ export default function EditAirworthinessDirectiveApplicabilityForm({
             )}
           />
         )}
-
-        <FormField
-          control={form.control}
-          name="amoc_approved_method"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>AMOC aprobado</FormLabel>
-              <FormControl>
-                <Textarea
-                  placeholder="Ingrese el método alternativo aprobado si aplica"
-                  className="min-h-24"
-                  {...field}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
 
         <div className="flex justify-end gap-2">
           <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>

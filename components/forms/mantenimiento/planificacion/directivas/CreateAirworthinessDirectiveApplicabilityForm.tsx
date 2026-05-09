@@ -23,7 +23,6 @@ const createApplicabilitySchema = z
     aircraft_ids: z.array(z.string()).default([]),
     is_applicable: z.boolean().default(true),
     non_applicability_reason: z.string().trim().optional(),
-    amoc_approved_method: z.string().trim().optional(),
   })
   .superRefine((values, ctx) => {
     if (values.aircraft_ids.length === 0) {
@@ -47,7 +46,6 @@ type CreateApplicabilityFormValues = {
   aircraft_ids: string[];
   is_applicable: boolean;
   non_applicability_reason?: string;
-  amoc_approved_method?: string;
 };
 
 export default function CreateAirworthinessDirectiveApplicabilityForm({
@@ -70,7 +68,6 @@ export default function CreateAirworthinessDirectiveApplicabilityForm({
       aircraft_ids: [],
       is_applicable: true,
       non_applicability_reason: '',
-      amoc_approved_method: '',
     },
   });
 
@@ -92,7 +89,6 @@ export default function CreateAirworthinessDirectiveApplicabilityForm({
       aircraft_ids: [],
       is_applicable: true,
       non_applicability_reason: '',
-      amoc_approved_method: '',
     });
     setSelectedCount(0);
   };
@@ -101,7 +97,6 @@ export default function CreateAirworthinessDirectiveApplicabilityForm({
     const payload = {
       is_applicable: values.is_applicable,
       non_applicability_reason: values.is_applicable ? null : values.non_applicability_reason || null,
-      amoc_approved_method: values.amoc_approved_method || null,
     };
 
     await createApplicabilitiesBulk.mutateAsync({
@@ -211,24 +206,6 @@ export default function CreateAirworthinessDirectiveApplicabilityForm({
             )}
           />
         )}
-
-        <FormField
-          control={form.control}
-          name="amoc_approved_method"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>AMOC aprobado</FormLabel>
-              <FormControl>
-                <Textarea
-                  placeholder="Ingrese el método alternativo aprobado si aplica"
-                  className="min-h-24"
-                  {...field}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
 
         <div className="flex justify-end gap-2">
           <Button type="submit" className="gap-2" disabled={createApplicabilitiesBulk.isPending || availableAircraft.length === 0}>

@@ -172,7 +172,6 @@ export type AirworthinessDirectiveApplicabilityResource = {
   aircraft_part?: AircraftPartResource;
   is_applicable: boolean;
   non_applicability_reason: string | null;
-  amoc_approved_method: string | null;
   created_at: string | null;
   updated_at: string | null;
 };
@@ -1271,6 +1270,9 @@ export type SmsActivityResource = {
   document: string | null;
   bulletin_id: number | null;
   bulletin?: string;
+  mitigation_measure_id: number | null;
+  mitigation_measure?: string;
+  attendance?: string;
 };
 
 /**
@@ -1278,6 +1280,7 @@ export type SmsActivityResource = {
  */
 export type SafetyBulletinResource = {
   id: number;
+  sms_activity_id: number | null;
   date: string;
   title: string;
   description: string;
@@ -1297,6 +1300,7 @@ export type SafetyBulletins = {
   document: string | null;
   created_at: string | null;
   updated_at: string | null;
+  sms_activity_id: number | null;
 };
 
 /**
@@ -1317,7 +1321,6 @@ export type StoreAirworthinessDirectiveApplicabilityBulkRequest = {
     aircraft_id: number;
     is_applicable?: boolean;
     non_applicability_reason?: string | null;
-    amoc_approved_method?: string | null;
   }>;
 };
 
@@ -1328,7 +1331,6 @@ export type StoreAirworthinessDirectiveApplicabilityRequest = {
   aircraft_id: number;
   is_applicable?: boolean;
   non_applicability_reason?: string | null;
-  amoc_approved_method?: string | null;
 };
 
 /**
@@ -1712,7 +1714,6 @@ export type UpdateAirworthinessDirectiveApplicabilityRequest = {
   aircraft_id?: number;
   is_applicable?: boolean;
   non_applicability_reason?: string | null;
-  amoc_approved_method?: string | null;
 };
 
 /**
@@ -1783,6 +1784,7 @@ export type UpdateDangerIdentification = {
 export type UpdateFollowUpRequest = {
   description?: string | null;
   date?: string | null;
+  sms_activity_id?: number | null;
   image?: Blob | File | null;
   document?: Blob | File | null;
 };
@@ -1938,9 +1940,8 @@ export type UpdateVoluntaryReportRequest = {
   identification_date?: string;
   station?: string;
   airport_location?: string;
-  is_anonymous?: boolean;
+  is_anonymous?: string;
   description?: string;
-  possible_consequences?: string;
   recommendations?: string | null;
   reporter_name?: string | null;
   reporter_last_name?: string | null;
@@ -1958,6 +1959,7 @@ export type UpdateVoluntaryReportRequest = {
   location_id?: number;
   image?: Blob | File;
   document?: string;
+  possible_consequences: Array<string>;
 };
 
 /**
@@ -2002,7 +2004,7 @@ export type VoluntaryReport = {
   station: string;
   description: string;
   finding_location: string;
-  possible_consequences: string;
+  possible_consequences: Array<unknown> | null;
   reporter_name: string | null;
   reporter_last_name: string | null;
   reporter_phone: string | null;
@@ -2041,7 +2043,6 @@ export type VoluntaryReportRequest = {
   finding_location_other?: string | null;
   is_anonymous: boolean;
   description: string;
-  possible_consequences: string;
   recommendations?: string | null;
   reporter_name?: string | null;
   reporter_last_name?: string | null;
@@ -2057,6 +2058,7 @@ export type VoluntaryReportRequest = {
   danger_identification_id?: number | null;
   image?: Blob | File | null;
   document?: string | null;
+  possible_consequences: Array<string>;
 };
 
 /**
@@ -2072,7 +2074,7 @@ export type VoluntaryReportResource = {
   finding_location_other: string | null;
   danger_type: string | null;
   description: string;
-  possible_consequences: string | null;
+  possible_consequences: Array<unknown> | null;
   reporter_name: string | null;
   reporter_last_name: string | null;
   reporter_phone: string | null;
@@ -4021,11 +4023,9 @@ export type AirworthinessDirectiveApplicabilitiesBulkStoreError =
   AirworthinessDirectiveApplicabilitiesBulkStoreErrors[keyof AirworthinessDirectiveApplicabilitiesBulkStoreErrors];
 
 export type AirworthinessDirectiveApplicabilitiesBulkStoreResponses = {
-  /**
-   * Array of `AirworthinessDirectiveApplicabilityResource`
-   */
   201: {
-    data: Array<AirworthinessDirectiveApplicabilityResource>;
+    success: boolean;
+    message: 'Applicabilities created successfully.';
   };
 };
 
@@ -4920,13 +4920,67 @@ export type AnalysisCloseReportErrors = {
      */
     message: string;
   };
+  /**
+   * Not found
+   */
+  404: {
+    /**
+     * Error overview.
+     */
+    message: string;
+  };
+  422: {
+    message: string;
+    status: 422;
+  };
 };
 
 export type AnalysisCloseReportError = AnalysisCloseReportErrors[keyof AnalysisCloseReportErrors];
 
 export type AnalysisCloseReportResponses = {
-  200: unknown;
+  200: {
+    message: 'Reporte cerrado correctamente';
+    close_date: string;
+    status: 200;
+  };
 };
+
+export type AnalysisCloseReportResponse = AnalysisCloseReportResponses[keyof AnalysisCloseReportResponses];
+
+export type AnalysisOpenReportData = {
+  body?: never;
+  path: {
+    company: string;
+    mitigation_id: string;
+  };
+  query?: never;
+  url: '/{company}/sms/open-report/{mitigation_id}';
+};
+
+export type AnalysisOpenReportErrors = {
+  /**
+   * Unauthenticated
+   */
+  401: {
+    /**
+     * Error overview.
+     */
+    message: string;
+  };
+  404: {
+    message: 'Reporte no encontrado para el ID de mitigación proporcionado.';
+  };
+};
+
+export type AnalysisOpenReportError = AnalysisOpenReportErrors[keyof AnalysisOpenReportErrors];
+
+export type AnalysisOpenReportResponses = {
+  200: {
+    message: 'Reporte abierto exitosamente y fecha de cierre reiniciada.';
+  };
+};
+
+export type AnalysisOpenReportResponse = AnalysisOpenReportResponses[keyof AnalysisOpenReportResponses];
 
 export type AnalysisGetRiskCountByDateRangeData = {
   body?: never;
@@ -11306,6 +11360,9 @@ export type FollowUpControllStoreErrors = {
      */
     message: string;
   };
+  422: {
+    message: 'La actividad no pertenece a la medida indicada.';
+  };
   500: {
     error: 'No se pudo guardar el documento';
   };
@@ -13564,6 +13621,47 @@ export type MitigationMeasureStoreResponses = {
 };
 
 export type MitigationMeasureStoreResponse = MitigationMeasureStoreResponses[keyof MitigationMeasureStoreResponses];
+
+export type MitigationMeasureGetActivitiesByMeasureIdData = {
+  body?: never;
+  path: {
+    company: string;
+    id: number;
+  };
+  query?: never;
+  url: '/{company}/sms/mitigation-measures/{id}/activities';
+};
+
+export type MitigationMeasureGetActivitiesByMeasureIdErrors = {
+  /**
+   * Unauthenticated
+   */
+  401: {
+    /**
+     * Error overview.
+     */
+    message: string;
+  };
+  /**
+   * Not found
+   */
+  404: {
+    /**
+     * Error overview.
+     */
+    message: string;
+  };
+};
+
+export type MitigationMeasureGetActivitiesByMeasureIdError =
+  MitigationMeasureGetActivitiesByMeasureIdErrors[keyof MitigationMeasureGetActivitiesByMeasureIdErrors];
+
+export type MitigationMeasureGetActivitiesByMeasureIdResponses = {
+  200: string;
+};
+
+export type MitigationMeasureGetActivitiesByMeasureIdResponse =
+  MitigationMeasureGetActivitiesByMeasureIdResponses[keyof MitigationMeasureGetActivitiesByMeasureIdResponses];
 
 export type MitigationMeasureDestroyData = {
   body?: never;
@@ -17985,7 +18083,7 @@ export type SMsActivityShowData = {
   body?: never;
   path: {
     company: string;
-    id: string;
+    id: number;
   };
   query?: never;
   url: '/{company}/sms/activities/{id}';
@@ -18616,6 +18714,7 @@ export type SafetyBulletinIndexResponse = SafetyBulletinIndexResponses[keyof Saf
 
 export type SafetyBulletinStoreData = {
   body: {
+    sms_activity_id: number;
     date: string;
     title: string;
     description: string;
@@ -18744,6 +18843,7 @@ export type SafetyBulletinDestroyResponse = SafetyBulletinDestroyResponses[keyof
 
 export type SafetyBulletinUpdateData = {
   body?: {
+    sms_activity_id?: number | null;
     date?: string | null;
     title?: string | null;
     description?: string | null;
@@ -21015,6 +21115,15 @@ export type VoluntaryReportDestroyErrors = {
      */
     message: string;
   };
+  /**
+   * Not found
+   */
+  404: {
+    /**
+     * Error overview.
+     */
+    message: string;
+  };
 };
 
 export type VoluntaryReportDestroyError = VoluntaryReportDestroyErrors[keyof VoluntaryReportDestroyErrors];
@@ -21068,7 +21177,7 @@ export type VoluntaryReportShowResponses = {
 export type VoluntaryReportShowResponse = VoluntaryReportShowResponses[keyof VoluntaryReportShowResponses];
 
 export type VoluntaryReportUpdateData = {
-  body?: UpdateVoluntaryReportRequest;
+  body: UpdateVoluntaryReportRequest;
   path: {
     company: string;
     id: number;
@@ -21120,7 +21229,7 @@ export type VoluntaryReportUpdateResponses = {
 export type VoluntaryReportUpdateResponse = VoluntaryReportUpdateResponses[keyof VoluntaryReportUpdateResponses];
 
 export type VoluntaryReportAcceptVoluntaryReportData = {
-  body?: UpdateVoluntaryReportRequest;
+  body: UpdateVoluntaryReportRequest;
   path: {
     company: string;
     id: number;

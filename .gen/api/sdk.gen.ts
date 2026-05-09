@@ -198,6 +198,9 @@ import type {
   AnalysisIndexData,
   AnalysisIndexErrors,
   AnalysisIndexResponses,
+  AnalysisOpenReportData,
+  AnalysisOpenReportErrors,
+  AnalysisOpenReportResponses,
   AnalysisShowAnalysisWithPlanData,
   AnalysisShowAnalysisWithPlanErrors,
   AnalysisShowAnalysisWithPlanResponses,
@@ -905,6 +908,9 @@ import type {
   MitigationMeasureDestroyData,
   MitigationMeasureDestroyErrors,
   MitigationMeasureDestroyResponses,
+  MitigationMeasureGetActivitiesByMeasureIdData,
+  MitigationMeasureGetActivitiesByMeasureIdErrors,
+  MitigationMeasureGetActivitiesByMeasureIdResponses,
   MitigationMeasureGetMitigationMeasureByPlanIdData,
   MitigationMeasureGetMitigationMeasureByPlanIdErrors,
   MitigationMeasureGetMitigationMeasureByPlanIdResponses,
@@ -2662,8 +2668,19 @@ export const analysisCloseReport = <ThrowOnError extends boolean = false>(
   options: Options<AnalysisCloseReportData, ThrowOnError>,
 ) =>
   (options.client ?? client).patch<AnalysisCloseReportResponses, AnalysisCloseReportErrors, ThrowOnError>({
+    responseType: 'json',
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/{company}/sms/close-report/{mitigation_id}',
+    ...options,
+  });
+
+export const analysisOpenReport = <ThrowOnError extends boolean = false>(
+  options: Options<AnalysisOpenReportData, ThrowOnError>,
+) =>
+  (options.client ?? client).patch<AnalysisOpenReportResponses, AnalysisOpenReportErrors, ThrowOnError>({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/{company}/sms/open-report/{mitigation_id}',
     ...options,
   });
 
@@ -5933,6 +5950,20 @@ export const mitigationMeasureStore = <ThrowOnError extends boolean = false>(
       'Content-Type': 'application/json',
       ...options.headers,
     },
+  });
+
+export const mitigationMeasureGetActivitiesByMeasureId = <ThrowOnError extends boolean = false>(
+  options: Options<MitigationMeasureGetActivitiesByMeasureIdData, ThrowOnError>,
+) =>
+  (options.client ?? client).get<
+    MitigationMeasureGetActivitiesByMeasureIdResponses,
+    MitigationMeasureGetActivitiesByMeasureIdErrors,
+    ThrowOnError
+  >({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/{company}/sms/mitigation-measures/{id}/activities',
+    ...options,
   });
 
 export const mitigationMeasureDestroy = <ThrowOnError extends boolean = false>(

@@ -76,6 +76,7 @@ import {
   analysisGetTotalPostRiskCountByDateRange,
   analysisGetTotalRiskCountByDateRange,
   analysisIndex,
+  analysisOpenReport,
   analysisShowAnalysisWithPlan,
   analysisStore,
   analysisUpdate,
@@ -312,6 +313,7 @@ import {
   manufacturerStore,
   manufacturerUpdate,
   mitigationMeasureDestroy,
+  mitigationMeasureGetActivitiesByMeasureId,
   mitigationMeasureGetMitigationMeasureByPlanId,
   mitigationMeasureIndex,
   mitigationMeasureStore,
@@ -721,6 +723,7 @@ import type {
   AirworthinessDirectivesUpdateResponse,
   AnalysisCloseReportData,
   AnalysisCloseReportError,
+  AnalysisCloseReportResponse,
   AnalysisGetPostRiskCountByDateRangeData,
   AnalysisGetPostRiskCountByDateRangeError,
   AnalysisGetPostRiskCountByDateRangeResponse,
@@ -736,6 +739,9 @@ import type {
   AnalysisIndexData,
   AnalysisIndexError,
   AnalysisIndexResponse,
+  AnalysisOpenReportData,
+  AnalysisOpenReportError,
+  AnalysisOpenReportResponse,
   AnalysisShowAnalysisWithPlanData,
   AnalysisShowAnalysisWithPlanError,
   AnalysisShowAnalysisWithPlanResponse,
@@ -1417,6 +1423,9 @@ import type {
   MitigationMeasureDestroyData,
   MitigationMeasureDestroyError,
   MitigationMeasureDestroyResponse,
+  MitigationMeasureGetActivitiesByMeasureIdData,
+  MitigationMeasureGetActivitiesByMeasureIdError,
+  MitigationMeasureGetActivitiesByMeasureIdResponse,
   MitigationMeasureGetMitigationMeasureByPlanIdData,
   MitigationMeasureGetMitigationMeasureByPlanIdError,
   MitigationMeasureGetMitigationMeasureByPlanIdResponse,
@@ -4003,14 +4012,42 @@ export const analysisShowAnalysisWithPlanOptions = (options: Options<AnalysisSho
 
 export const analysisCloseReportMutation = (
   options?: Partial<Options<AnalysisCloseReportData>>,
-): UseMutationOptions<unknown, AxiosError<AnalysisCloseReportError>, Options<AnalysisCloseReportData>> => {
+): UseMutationOptions<
+  AnalysisCloseReportResponse,
+  AxiosError<AnalysisCloseReportError>,
+  Options<AnalysisCloseReportData>
+> => {
   const mutationOptions: UseMutationOptions<
-    unknown,
+    AnalysisCloseReportResponse,
     AxiosError<AnalysisCloseReportError>,
     Options<AnalysisCloseReportData>
   > = {
     mutationFn: async (fnOptions) => {
       const { data } = await analysisCloseReport({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+export const analysisOpenReportMutation = (
+  options?: Partial<Options<AnalysisOpenReportData>>,
+): UseMutationOptions<
+  AnalysisOpenReportResponse,
+  AxiosError<AnalysisOpenReportError>,
+  Options<AnalysisOpenReportData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    AnalysisOpenReportResponse,
+    AxiosError<AnalysisOpenReportError>,
+    Options<AnalysisOpenReportData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await analysisOpenReport({
         ...options,
         ...fnOptions,
         throwOnError: true,
@@ -9963,6 +10000,31 @@ export const mitigationMeasureStoreMutation = (
   };
   return mutationOptions;
 };
+
+export const mitigationMeasureGetActivitiesByMeasureIdQueryKey = (
+  options: Options<MitigationMeasureGetActivitiesByMeasureIdData>,
+) => createQueryKey('mitigationMeasureGetActivitiesByMeasureId', options);
+
+export const mitigationMeasureGetActivitiesByMeasureIdOptions = (
+  options: Options<MitigationMeasureGetActivitiesByMeasureIdData>,
+) =>
+  queryOptions<
+    MitigationMeasureGetActivitiesByMeasureIdResponse,
+    AxiosError<MitigationMeasureGetActivitiesByMeasureIdError>,
+    MitigationMeasureGetActivitiesByMeasureIdResponse,
+    ReturnType<typeof mitigationMeasureGetActivitiesByMeasureIdQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await mitigationMeasureGetActivitiesByMeasureId({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: mitigationMeasureGetActivitiesByMeasureIdQueryKey(options),
+  });
 
 export const mitigationMeasureDestroyMutation = (
   options?: Partial<Options<MitigationMeasureDestroyData>>,
