@@ -9,13 +9,13 @@ import {
   BookUser,
   Building2,
   ClipboardCopy,
-  CalendarClock,
   ClipboardList,
+  CalendarClock,
   ClipboardPen,
   ClipboardCheck,
-  ClockArrowUp,
   CreditCardIcon,
   FileBadge,
+  Gauge,
   Globe,
   HandCoins,
   Hourglass,
@@ -34,6 +34,7 @@ import {
   SquareArrowDown,
   SquarePen,
   User2,
+  Wrench,
   UserRoundCog,
 } from 'lucide-react';
 
@@ -536,14 +537,14 @@ export function getMenuList(currentCompany: Company | null, userRoles: string[])
         {
           href: companyPath('/planificacion/ordenes_trabajo'),
           label: 'Ordenes de Trabajo',
-          icon: ClockArrowUp,
+          icon: ClipboardCheck,
           roles: ['ANALISTA_PLANIFICACION', 'JEFE_PLANIFICACION', 'SUPERUSER'],
           submenus: [],
         },
         {
           href: companyPath('/planificacion/control_mantenimiento'),
           label: 'Ctrl. de Mantenimiento',
-          icon: ClipboardList,
+          icon: Wrench,
           roles: ['ANALISTA_PLANIFICACION', 'JEFE_PLANIFICACION', 'SUPERUSER'],
           submenus: [],
         },
@@ -557,7 +558,7 @@ export function getMenuList(currentCompany: Company | null, userRoles: string[])
         {
           href: companyPath('/planificacion/control_vuelos'),
           label: 'Ctrl. de Hrs. de Vuelo',
-          icon: ClockArrowUp,
+          icon: Gauge,
           roles: ['ANALISTA_PLANIFICACION', 'JEFE_PLANIFICACION', 'SUPERUSER'],
           submenus: [
             {
@@ -589,7 +590,7 @@ export function getMenuList(currentCompany: Company | null, userRoles: string[])
         {
           href: companyPath('/planificacion/directivas'),
           label: 'Directivas de Aeronavegabilidad',
-          icon: FileBadge,
+          icon: ScrollText,
           roles: ['ANALISTA_PLANIFICACION', 'JEFE_PLANIFICACION', 'SUPERUSER'],
           submenus: [],
         },
@@ -622,7 +623,7 @@ export function getMenuList(currentCompany: Company | null, userRoles: string[])
         {
           href: companyPath('/ingenieria/requisiciones/nueva_requisicion'),
           label: 'Solicitudes de Compras',
-          icon: ScrollText,
+          icon: ClipboardList,
           roles: ['SUPERUSER'],
           submenus: [],
         },
@@ -769,7 +770,7 @@ export function getMenuList(currentCompany: Company | null, userRoles: string[])
 
   const filteredMenu = fullMenu.filter((group) => {
     if (group.groupLabel === 'General' && userRoles.some((r) => ['JEFE_ALMACEN', 'ANALISTA_ALMACEN'].includes(r))) {
-      return false;
+    return false;
     }
     return true;
   });
