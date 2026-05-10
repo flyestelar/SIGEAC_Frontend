@@ -1,6 +1,7 @@
 import {
   useCloseReport,
   useDeleteMitigationPlan,
+  useDownloadAnalysisPdf,
   useOpenReport,
 } from "@/actions/sms/planes_de_mitigation/actions";
 import CreateAnalysisForm from "@/components/forms/sms/CreateAnalysisForm";
@@ -28,6 +29,7 @@ import { MitigationTable } from "@/types";
 import {
   ClipboardList,
   ClipboardPenLine,
+  FileDown,
   FilePenLine,
   Loader2,
   LockKeyhole,
@@ -59,6 +61,7 @@ const MitigationTableDropdownActions = ({
   const [closeDate, setCloseDate] = useState<string>("");
   const { closeReportByMitigationId } = useCloseReport();
   const { openReportByMitigationId } = useOpenReport();
+  const { downloadAnalysisPdf } = useDownloadAnalysisPdf();
   const { theme } = useTheme();
 
   const handleDelete = async (id: number | string) => {
@@ -214,6 +217,26 @@ const MitigationTableDropdownActions = ({
                 </DropdownMenuItem>
               )
             ) : null}
+
+            {/* GENERAR PDF DEL PLAN DE MITIGACION */}
+            {mitigationTable.mitigation_plan?.id && (
+              <DropdownMenuItem
+                disabled={downloadAnalysisPdf.isPending}
+                onClick={() =>
+                  downloadAnalysisPdf.mutate({
+                    company: selectedCompany!.slug,
+                    id: mitigationTable.id,
+                  })
+                }
+              >
+                {downloadAnalysisPdf.isPending ? (
+                  <Loader2 className="size-5 animate-spin" />
+                ) : (
+                  <FileDown className="size-5 text-amber-500" />
+                )}
+                <p className="pl-2">Generar PDF</p>
+              </DropdownMenuItem>
+            )}
 
             {/* OPCION PARA CERRAR LA GESTION DE UN REPROTE */}
 

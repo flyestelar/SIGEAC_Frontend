@@ -1,4 +1,5 @@
 import axiosInstance from "@/lib/axios";
+import { isAxiosError } from "axios";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
@@ -111,6 +112,33 @@ export const useDeleteDangerIdentification = () => {
   return {
     deleteDangerIdentification: deleteMutation,
   };
+};
+
+export const useDownloadDangerIdentificationPdf = () => {
+  const downloadMutation = useMutation({
+    mutationFn: async ({ company, id }: { company: string; id: number | string }) => {
+      const response = await axiosInstance.get(
+        `/${company}/sms/danger-identifications/${id}/pdf`,
+        { responseType: "blob" }
+      );
+      const url = window.URL.createObjectURL(new Blob([response.data], { type: "application/pdf" }));
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `identificacion-peligro-${id}.pdf`;
+      link.click();
+      window.URL.revokeObjectURL(url);
+    },
+    onSuccess: () => {
+      toast.success("PDF generado", { description: "El reporte PDF se ha descargado correctamente." });
+    },
+    onError: (error) => {
+      const message = isAxiosError(error)
+        ? error.response?.data?.message ?? "No se pudo generar el PDF."
+        : "No se pudo generar el PDF.";
+      toast.error("Error", { description: message });
+    },
+  });
+  return { downloadDangerIdentificationPdf: downloadMutation };
 };
 
 export const useUpdateDangerIdentification = () => {

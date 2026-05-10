@@ -152,6 +152,32 @@ export const useCloseReport = () => {
   };
 };
 
+export const useDownloadAnalysisPdf = () => {
+  const downloadMutation = useMutation({
+    mutationFn: async ({ company, id }: { company: string; id: number | string }) => {
+      const response = await axiosInstance.get(`/${company}/sms/analysis/${id}/pdf`, {
+        responseType: 'blob',
+      });
+      const url = window.URL.createObjectURL(new Blob([response.data], { type: 'application/pdf' }));
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `plan-mitigacion-${id}.pdf`;
+      link.click();
+      window.URL.revokeObjectURL(url);
+    },
+    onSuccess: () => {
+      toast.success('PDF generado', { description: 'El reporte PDF se ha descargado correctamente.' });
+    },
+    onError: (error) => {
+      const message = isAxiosError(error)
+        ? error.response?.data?.message ?? 'No se pudo generar el PDF.'
+        : 'No se pudo generar el PDF.';
+      toast.error('Error', { description: message });
+    },
+  });
+  return { downloadAnalysisPdf: downloadMutation };
+};
+
 export const useOpenReport = () => {
   const queryClient = useQueryClient();
   const openReportMutation = useMutation({

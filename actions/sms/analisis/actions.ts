@@ -62,7 +62,7 @@ export const useDeleteAnalysis = () => {
 
   const deleteMutation = useMutation({
     mutationFn: async (id: number | string) => {
-      await axiosInstance.delete(`/transmandu/sms/analysis/${id}`);
+      await axiosInstance.delete(`/estelar/sms/analysis/${id}`);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["analysis"] });

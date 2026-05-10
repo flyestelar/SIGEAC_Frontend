@@ -168,7 +168,11 @@ export function CreateVoluntaryReportForm({
         "Solo se permiten archivos PDF",
       )
       .optional(),
-    is_anonymous: z.boolean()
+    is_anonymous: z.boolean(),
+    source_reference: z
+      .string()
+      .regex(/^\d*$/, { message: "Solo se permiten números" })
+      .optional(),
   });
 
   type FormSchemaType = z.infer<typeof FormSchema>;
@@ -189,6 +193,7 @@ export function CreateVoluntaryReportForm({
       finding_location_other: initialData?.finding_location_other || "",
       danger_type: initialData?.danger_type || "",
       is_anonymous: initialData?.is_anonymous ?? true,
+      source_reference: (initialData as any)?.source_reference?.toString() || "",
       identification_date: initialData?.identification_date
         ? addDays(new Date(initialData.identification_date), 1)
         : new Date(),
@@ -569,6 +574,24 @@ export function CreateVoluntaryReportForm({
             <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
               Clasificación y Descripción
             </p>
+            <FormField
+              control={form.control}
+              name="source_reference"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Referencia de la Fuente</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="number"
+                      placeholder="Número de referencia"
+                      {...field}
+                      onChange={(e) => field.onChange(e.target.value)}
+                    />
+                  </FormControl>
+                  <FormMessage className="text-xs" />
+                </FormItem>
+              )}
+            />
             <FormField
               control={form.control}
               name="danger_type"
