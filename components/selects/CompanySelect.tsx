@@ -32,10 +32,10 @@ const CompanySelect = () => {
   } = useGetUserLocationsByCompanyId();
 
   useEffect(() => {
-    if (selectedCompany) {
-      mutate(selectedCompany.id);
-    }
-  }, [selectedCompany, mutate]);
+    if (!selectedCompany?.id) return;
+
+    mutate(selectedCompany.id);
+  }, [selectedCompany?.id, mutate]);
 
   const handleCompanySelect = (companyId: string) => {
     const company = user?.companies?.find(
@@ -54,6 +54,7 @@ const CompanySelect = () => {
 
   return (
     <div className="flex flex-wrap items-center justify-center gap-2 w-full">
+
       <Select
         value={selectedCompany?.id.toString() || ""}
         onValueChange={handleCompanySelect}
@@ -84,7 +85,9 @@ const CompanySelect = () => {
       >
         <SelectTrigger className="w-[140px] sm:w-[160px] md:w-[180px]">
           <SelectValue
-            placeholder={locationsLoading ? "Cargando..." : "Estación"}
+            placeholder={
+              locationsLoading ? "Cargando..." : "Estación"
+            }
           />
         </SelectTrigger>
 
@@ -99,16 +102,14 @@ const CompanySelect = () => {
             </p>
           ) : (
             locations?.map((location) => (
-              <SelectItem
-                key={location.id}
-                value={location.id.toString()}
-              >
+              <SelectItem key={location.id} value={location.id.toString()}>
                 {location.cod_iata}
               </SelectItem>
             ))
           )}
         </SelectContent>
       </Select>
+
     </div>
   );
 };
