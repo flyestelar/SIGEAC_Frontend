@@ -33,8 +33,8 @@ export function Sidebar() {
         {/* LOGO CONTAINER */}
         <div
           className={cn(
-            "flex justify-center items-center mb-1 mt-4 rounded-md shadow-sm transition-colors",
-            "bg-white dark:bg-background",
+            "flex justify-center items-center mb-1 mt-4",
+            "bg-background dark:bg-background",
             "px-4 py-4"
           )}
         >
