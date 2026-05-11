@@ -23,7 +23,7 @@ export default function Home() {
         flex-col 
         lg:flex-row 
         bg-sky-100 
-        dark:bg-slate-950 
+        dark:bg-background 
         overflow-hidden
       "
     >

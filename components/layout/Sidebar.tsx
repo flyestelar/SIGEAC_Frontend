@@ -34,7 +34,7 @@ export function Sidebar() {
         <div
           className={cn(
             "flex justify-center items-center mb-1 mt-4",
-            "bg-background dark:bg-background",
+            "bg-background",
             "px-4 py-4"
           )}
         >
