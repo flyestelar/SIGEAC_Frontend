@@ -49,7 +49,8 @@ export function buildPurchasesGroup({ pathname, currentCompany }: MenuContext): 
                     "JEFE_ADMINISTRACION",
                 ],
                 submenus: [],
-            },            {
+            },            
+            {
                 href: `/${currentCompany?.slug}/compras/gestion_costos`,
                 label: "Gestión de Costos",
                 active: pathname.includes(`/${currentCompany?.slug}/compras/gestion_costos`),

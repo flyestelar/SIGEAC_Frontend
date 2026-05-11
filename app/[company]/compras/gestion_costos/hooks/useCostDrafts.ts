@@ -13,26 +13,35 @@ export function useCostDrafts<T extends { id: number; cost?: number }>({
 }: UseCostDraftsArgs<T>) {
 
   const [drafts, setDrafts] = useState<Record<number, DraftValue>>({})
+
+  // ⚡ directo, sin debounce, sin buffer
   const onCostChange = useCallback((id: number, value: string) => {
     setDrafts(prev => {
-      const next = { ...prev }
-
       if (value === '' || value == null) {
+        if (!(id in prev)) return prev
+        const next = { ...prev }
         delete next[id]
-      } else {
-        next[id] = value
+        return next
       }
 
-      return next
+      if (prev[id] === value) return prev
+
+      return {
+        ...prev,
+        [id]: value,
+      }
     })
   }, [])
+
   const resetDraft = useCallback((id: number) => {
     setDrafts(prev => {
+      if (!(id in prev)) return prev
       const copy = { ...prev }
       delete copy[id]
       return copy
     })
   }, [])
+
   const resetDrafts = useCallback(() => {
     setDrafts({})
   }, [])
@@ -44,7 +53,6 @@ export function useCostDrafts<T extends { id: number; cost?: number }>({
   const modifiedCount = useMemo(() => {
     return data.reduce((acc, item) => {
       const draft = drafts[item.id]
-
       if (draft === undefined) return acc
 
       const draftNum = Number(draft)
@@ -55,6 +63,7 @@ export function useCostDrafts<T extends { id: number; cost?: number }>({
       return draftNum !== currentNum ? acc + 1 : acc
     }, 0)
   }, [data, drafts])
+
   const getChangedRows = useCallback(() => {
     return data
       .filter(item => {
@@ -71,6 +80,7 @@ export function useCostDrafts<T extends { id: number; cost?: number }>({
         cost: Number(drafts[item.id]),
       }))
   }, [data, drafts])
+
   const isDirty = useCallback((id: number, current?: number) => {
     const draft = drafts[id]
     if (draft === undefined) return false
@@ -80,14 +90,11 @@ export function useCostDrafts<T extends { id: number; cost?: number }>({
   return {
     drafts,
     setDrafts,
-
     onCostChange,
     resetDraft,
     resetDrafts,
-
     hasChanges,
     modifiedCount,
-
     isDirty,
     getChangedRows,
   }

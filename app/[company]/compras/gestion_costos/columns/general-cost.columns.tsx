@@ -11,11 +11,11 @@ export type GeneralCostRow = {
   description?: string
   brand_model?: string
   variant_type?: string
+  unit_label?: string
   cost?: number
 }
 
 export type GeneralCostColumnsArgs = {
-  costDrafts: Record<number, string | number | undefined>
   onCostChange: (id: number, value: string) => void
 }
 
@@ -25,26 +25,33 @@ const isModified = (
   current?: number
 ) => {
   const draft = drafts[id]
-  if (draft === undefined) return false
-  return Number(draft) !== Number(current ?? 0)
+
+  if (draft === undefined || draft === null) return false
+
+  const draftStr = String(draft)
+  const currentStr =
+    current !== undefined && current !== null ? String(current) : ''
+
+  return draftStr !== currentStr || draftStr === '0'
 }
 
 export function getGeneralCostColumns({
-  costDrafts,
   onCostChange,
 }: GeneralCostColumnsArgs): ColumnDef<GeneralCostRow>[] {
 
   return [
+
     {
       accessorKey: 'description',
+      size: 340,
       header: ({ column }) => (
-        <div className="flex justify-center text-center w-full max-w-[320px] mx-auto">
+        <div className="flex justify-center w-full">
           <DataTableColumnHeader filter column={column} title="Descripción" />
         </div>
       ),
       cell: ({ row }) => (
-        <div className="flex justify-center text-center w-full">
-          <span className="block max-w-[320px] whitespace-normal break-words text-sm font-semibold text-foreground text-center">
+        <div className="flex justify-center w-full">
+          <span className="block max-w-[320px] break-words text-sm font-semibold text-foreground text-center">
             {row.original.description ?? '—'}
           </span>
         </div>
@@ -53,14 +60,15 @@ export function getGeneralCostColumns({
 
     {
       accessorKey: 'brand_model',
+      size: 260,
       header: ({ column }) => (
-        <div className="flex justify-center w-full text-center">
+        <div className="flex justify-center w-full">
           <DataTableColumnHeader column={column} title="Modelo / Marca" />
         </div>
       ),
       cell: ({ row }) => (
-        <div className="flex justify-center text-center w-full">
-          <span className="block max-w-[240px] whitespace-normal break-words text-sm text-muted-foreground text-center">
+        <div className="flex justify-center w-full">
+          <span className="block max-w-[240px] break-words text-sm text-slate-600 dark:text-slate-300 text-center">
             {row.original.brand_model ?? '—'}
           </span>
         </div>
@@ -69,39 +77,57 @@ export function getGeneralCostColumns({
 
     {
       accessorKey: 'variant_type',
+      size: 220,
       header: ({ column }) => (
-        <div className="flex justify-center w-full text-center">
+        <div className="flex justify-center w-full">
           <DataTableColumnHeader column={column} title="Present. / Especif." />
         </div>
       ),
       cell: ({ row }) => (
-        <div className="flex justify-center text-center w-full">
-          <span className="block max-w-[240px] whitespace-normal break-words text-sm text-muted-foreground text-center">
+        <div className="flex justify-center w-full">
+          <span className="block max-w-[220px] break-words text-sm text-slate-500 dark:text-slate-400 text-center">
             {row.original.variant_type ?? '—'}
           </span>
         </div>
       ),
     },
 
+    // {
+    //   accessorKey: 'unit_label',
+    //   size: 120,
+    //   header: ({ column }) => (
+    //     <div className="flex justify-center w-full">
+    //       <DataTableColumnHeader column={column} title="Unidad" />
+    //     </div>
+    //   ),
+    //   cell: ({ row }) => (
+    //     <div className="flex justify-center w-full">
+    //       <span className="block text-sm text-slate-500 dark:text-slate-400 text-center">
+    //         {row.original.unit_label ?? '—'}
+    //       </span>
+    //     </div>
+    //   ),
+    // },
+
     {
       accessorKey: 'cost',
+      size: 140,
       header: ({ column }) => (
-        <div className="flex justify-center w-full text-center">
+        <div className="flex justify-center w-full">
           <DataTableColumnHeader filter column={column} title="Costo Unitario" />
         </div>
       ),
 
-      cell: ({ row }) => {
+      cell: ({ row, table }) => {
         const id = row.original.id
         const current = row.original.cost
+        const meta = table.options.meta as any
+        const costDrafts = meta?.costDrafts ?? {}
         const draft = costDrafts[id]
-
         const modified = isModified(id, costDrafts, current)
 
         const currentValue =
-          current !== undefined && current !== null
-            ? String(current)
-            : ''
+          current !== undefined && current !== null ? String(current) : '0'
 
         const draftValue =
           draft !== undefined && draft !== null
@@ -112,12 +138,11 @@ export function getGeneralCostColumns({
           <div className="flex justify-center w-full">
             <div
               className={cn(
-                'group flex items-center gap-1.5 rounded-md border px-2 py-1',
-                'bg-background/60 backdrop-blur transition-all',
-                'hover:border-muted-foreground/40',
+                'group flex items-center gap-1.5 rounded-md border px-2 py-1 transition-all',
+                'bg-white/70 dark:bg-slate-900/40 backdrop-blur-sm',
                 modified
-                  ? 'border-amber-500 bg-amber-50/60 dark:bg-amber-950/30'
-                  : 'border-border'
+                  ? 'border-emerald-500/60 bg-emerald-50/70 dark:bg-emerald-900/20'
+                  : 'border-slate-200 dark:border-slate-700/60'
               )}
             >
               <span className="text-xs text-muted-foreground">$</span>
@@ -133,21 +158,33 @@ export function getGeneralCostColumns({
                   <Input
                     inputMode="decimal"
                     value={draftValue}
+                    autoFocus
                     onChange={(e) => onCostChange(id, e.target.value)}
-                    className="h-6 w-16 border-0 bg-transparent p-0 text-sm tabular-nums shadow-none text-center font-medium text-foreground focus-visible:ring-0 focus-visible:ring-offset-0"
+                    className="
+                      h-6 w-16 border-0 bg-transparent p-0
+                      text-sm tabular-nums text-center font-medium
+                      text-foreground
+                      focus-visible:ring-0 focus-visible:ring-offset-0
+                    "
                   />
                 </>
               ) : (
                 <Input
                   inputMode="decimal"
-                  value={currentValue}
+                  value=""
+                  placeholder={currentValue}
                   onChange={(e) => onCostChange(id, e.target.value)}
-                  className="h-6 w-20 border-0 bg-transparent p-0 text-sm tabular-nums shadow-none text-center text-muted-foreground focus-visible:ring-0 focus-visible:ring-offset-0"
+                  className="
+                    h-6 w-16 border-0 bg-transparent p-0
+                    text-sm tabular-nums text-center
+                    text-muted-foreground
+                    focus-visible:ring-0 focus-visible:ring-offset-0
+                  "
                 />
               )}
 
               {modified && (
-                <div className="h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse" />
+                <div className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
               )}
             </div>
           </div>

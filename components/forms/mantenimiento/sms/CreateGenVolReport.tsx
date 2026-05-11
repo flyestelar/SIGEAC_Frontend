@@ -243,6 +243,9 @@ export function CreateGenVolReport({
         }
         onClose();
     };
+    const onError = (errors: any) => {
+        console.log("Errores del formulario:", errors);
+    };
 
     return (
         <Form {...form}>

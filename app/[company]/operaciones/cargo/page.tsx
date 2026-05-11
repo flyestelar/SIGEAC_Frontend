@@ -5,6 +5,7 @@ import { useCompanyStore } from "@/stores/CompanyStore";
 import { useGetCargoStatsByAircraft } from "@/hooks/operaciones/cargo/useGetCargoStatsByAircraft";
 import { useState } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { MonthYearPicker } from "@/components/selects/MonthYearPicker";
@@ -278,8 +279,15 @@ const AircraftCard = ({
 
 const CargoPage = () => {
   const { selectedCompany } = useCompanyStore();
-  const [month, setMonth] = useState(new Date().getMonth() + 1);
-  const [year, setYear] = useState(new Date().getFullYear());
+  const searchParams = useSearchParams();
+
+  // Leer mes/año desde la URL si existen, si no, usar el mes actual
+  const [month, setMonth] = useState(
+    Number(searchParams.get("month")) || new Date().getMonth() + 1,
+  );
+  const [year, setYear] = useState(
+    Number(searchParams.get("year")) || new Date().getFullYear(),
+  );
   const [activeTab, setActiveTab] = useState("registered");
 
   const {

@@ -1,6 +1,12 @@
 'use client'
 
-import { useMemo, useState, useCallback, useDeferredValue } from 'react'
+import {
+  useMemo,
+  useState,
+  useCallback,
+  useDeferredValue,
+  useEffect,
+} from 'react'
 
 import { ContentLayout } from '@/components/layout/ContentLayout'
 import LoadingPage from '@/components/misc/LoadingPage'
@@ -20,6 +26,8 @@ import { useCompanyStore } from '@/stores/CompanyStore'
 import { DataTable } from './data-table'
 import { getColumns } from './columns'
 
+import GroupedCostTable from './_components/GroupedCostTable'
+
 import CostToolbar from './_components/CostToolbar'
 import CostTypeToggle from './_components/CostTypeToggle'
 import CostSaveBar from './_components/CostSaveBar'
@@ -35,7 +43,13 @@ import {
 } from '@/actions/mantenimiento/compras/gestion_costos/actions'
 
 type CostType = 'ARTICLE' | 'GENERAL'
-type Category = 'all' | 'COMPONENT' | 'PART' | 'CONSUMABLE' | 'TOOL'
+
+type Category =
+  | 'all'
+  | 'COMPONENT'
+  | 'PART'
+  | 'CONSUMABLE'
+  | 'TOOL'
 
 type BaseRow = {
   id: number
@@ -48,6 +62,7 @@ type BaseRow = {
   description?: string
   brand_model?: string
   variant_type?: string
+  unit_label?: string
 }
 
 const CostManagementPage = () => {
@@ -57,7 +72,17 @@ const CostManagementPage = () => {
   const [category, setCategory] = useState<Category>('all')
   const [search, setSearch] = useState('')
 
+  const [groupBy, setGroupBy] = useState<string>('NONE')
+
   const deferredSearch = useDeferredValue(search)
+
+  /**
+   * 🔥 FIX: reset de filtros incompatibles al cambiar tipo
+   */
+  useEffect(() => {
+    setGroupBy('NONE')
+    setSearch('')
+  }, [type])
 
   const { data: warehouseData, isLoading: loadingArticles } =
     useGetAllWarehouseArticlesByCategory(
@@ -87,6 +112,7 @@ const CostManagementPage = () => {
         batch_name: batch.name,
         part_number: article.part_number,
         serial: article.serial,
+        unit_label: article.unit?.label,
         cost: Number(article.cost ?? 0),
       }))
     )
@@ -101,6 +127,7 @@ const CostManagementPage = () => {
         brand_model: a.brand_model,
         variant_type: a.variant_type,
         cost: Number(a.cost ?? 0),
+        unit_label: a.general_primary_unit?.label,
       }))
     }
 
@@ -116,6 +143,7 @@ const CostManagementPage = () => {
       if (type === 'ARTICLE') {
         return (
           item.part_number?.toLowerCase?.().includes(q) ||
+          item.serial?.toLowerCase?.().includes(q) ||
           item.batch_name?.toLowerCase?.().includes(q)
         )
       }
@@ -128,13 +156,16 @@ const CostManagementPage = () => {
       )
     })
   }, [baseData, deferredSearch, type])
+
   const {
     drafts: costDrafts,
     hasChanges,
     onCostChange,
     setDrafts,
     getChangedRows,
-  } = useCostDrafts<BaseRow>({ data: filteredData })
+  } = useCostDrafts<BaseRow>({
+    data: filteredData,
+  })
 
   const bulkArticleMutation = useBulkUpdateArticleCost()
   const bulkGeneralMutation = useBulkUpdateGeneralCost()
@@ -174,16 +205,17 @@ const CostManagementPage = () => {
     () =>
       getColumns({
         type,
-        costDrafts,
         onCostChange,
       }),
-    [type, costDrafts, onCostChange]
+    [type, onCostChange]
   )
+
   return (
     <ContentLayout title="Gestión de Costos">
-      <div className="flex flex-col gap-4">
-        <div className="flex items-center gap-2">
-          <BackButton iconOnly variant="secondary" />
+      <div className="flex flex-col gap-6">
+
+        <div className="flex items-center gap-3">
+          <BackButton iconOnly tooltip="Volver" variant="secondary" />
 
           <Breadcrumb>
             <BreadcrumbList>
@@ -204,37 +236,81 @@ const CostManagementPage = () => {
           </Breadcrumb>
         </div>
 
-        <div className="flex items-baseline justify-between">
-          <h1 className="text-2xl font-bold">Gestión de Costos</h1>
+        <div className="flex flex-col gap-2 border-b pb-4">
+          <div className="flex items-end justify-between">
+            <div className="flex flex-col">
+              <h1 className="text-3xl font-semibold tracking-tight">
+                Gestión de Costos
+              </h1>
 
-          <span className="text-xs text-muted-foreground tabular-nums">
-            {filteredData.length} registros
-          </span>
+              <p className="text-sm text-muted-foreground">
+                Administra y actualiza los costos unitarios de artículos y otros elementos del inventario aeronáutico y general.
+              </p>
+            </div>
+          </div>
         </div>
 
-        <CostTypeToggle
-          type={type}
-          setType={setType}
-          category={category}
-          setCategory={setCategory}
-        />
+        <div className="flex justify-center">
+          <CostTypeToggle
+            type={type}
+            setType={setType}
+            category={category}
+            setCategory={setCategory}
+          />
+        </div>
 
-        <CostToolbar search={search} setSearch={setSearch} />
+        <div className="
+          flex items-center justify-between gap-4
+          px-3 py-2
+          rounded-xl border
+          bg-slate-200/40 border-slate-200/40
+          dark:bg-slate-800/70 dark:border-slate-700/60
+          backdrop-blur-md
+          dark:shadow-[0_4px_20px_rgba(0,0,0,0.35)]
+        ">
+          <CostToolbar
+            search={search}
+            setSearch={setSearch}
+            groupBy={groupBy}
+            setGroupBy={setGroupBy}
+            type={type}
+          />
+
+          <span className="text-xs text-muted-foreground tabular-nums">
+            {filteredData.length}{' '}
+            {filteredData.length === 1 ? 'artículo' : 'artículos'}
+          </span>
+        </div>
 
         <CostSaveBar
           hasChanges={hasChanges}
           modifiedCount={getChangedRows().length}
           onSave={handleSave}
         />
+
         {isInitialLoading && filteredData.length === 0 ? (
           <div className="flex items-center justify-center min-h-[300px]">
             <LoadingPage />
           </div>
+        ) : groupBy !== 'NONE' ? (
+          <GroupedCostTable
+            data={filteredData}
+            groupBy={groupBy as any}
+            renderTable={(rows) => (
+              <DataTable
+                columns={columns}
+                data={rows}
+                loading={isUpdating}
+                costDrafts={costDrafts}
+              />
+            )}
+          />
         ) : (
           <DataTable
             columns={columns}
             data={filteredData}
             loading={isUpdating}
+            costDrafts={costDrafts}
           />
         )}
 

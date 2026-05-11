@@ -70,7 +70,7 @@ const ExternalAircraftCargoPage = () => {
             <BreadcrumbItem>Operaciones</BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem>
-              <BreadcrumbLink href={`/${company}/operaciones/cargo`}>
+              <BreadcrumbLink href={`/${company}/operaciones/cargo?month=${month}&year=${year}`}>
                 Carga
               </BreadcrumbLink>
             </BreadcrumbItem>
@@ -104,7 +104,7 @@ const ExternalAircraftCargoPage = () => {
               size="icon"
               className="h-9 w-9 shrink-0"
             >
-              <Link href={`/${company}/operaciones/cargo`}>
+              <Link href={`/${company}/operaciones/cargo?month=${month}&year=${year}`}>
                 <ArrowLeft className="h-4 w-4" />
               </Link>
             </Button>
