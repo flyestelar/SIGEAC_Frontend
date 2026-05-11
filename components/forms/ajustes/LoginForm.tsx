@@ -49,7 +49,6 @@ export function LoginForm() {
     },
   });
 
-  // 👇 ref directo al input de password
   const passwordRef = useRef<HTMLInputElement | null>(null);
 
   const onSubmit = (data: FormSchemaType) => {
@@ -59,12 +58,10 @@ export function LoginForm() {
   const handleTogglePassword = () => {
     const input = passwordRef.current;
 
-    // guardar posición del cursor antes del cambio
     const pos = input?.selectionStart ?? 0;
 
     setShowPassword((v) => !v);
 
-    // restaurar cursor en el siguiente tick
     requestAnimationFrame(() => {
       if (input) {
         input.focus();
@@ -79,7 +76,6 @@ export function LoginForm() {
         onSubmit={form.handleSubmit(onSubmit)}
         className="flex flex-col space-y-3"
       >
-        {/* USERNAME */}
         <FormField
           control={form.control}
           name="login"
@@ -98,7 +94,6 @@ export function LoginForm() {
           )}
         />
 
-        {/* PASSWORD */}
         <FormField
           control={form.control}
           name="password"
@@ -117,9 +112,12 @@ export function LoginForm() {
                     className="dark:bg-black/30 pr-10 text-foreground tracking-wider placeholder:text-muted-foreground"
                     type={showPassword ? "text" : "password"}
                     placeholder="******"
+                    autoComplete="current-password"
+                    data-lpignore="true"
+                    data-1p-ignore
+                    spellCheck={false}
                   />
 
-                  {/* TOGGLE BUTTON */}
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger asChild>
@@ -152,14 +150,12 @@ export function LoginForm() {
           )}
         />
 
-        {/* SEPARATOR */}
         <div className="flex justify-between items-center gap-x-4">
           <Separator className="flex-1" />
           <p className="text-muted-foreground">SIGEAC</p>
           <Separator className="flex-1" />
         </div>
 
-        {/* BUTTON */}
         <Button
           variant={loginMutation.isPending ? "outline" : "default"}
           className="bg-primary text-white hover:bg-blue-900 disabled:bg-slate-50 disabled:border-4"

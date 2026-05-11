@@ -69,9 +69,11 @@ export function CreateGenVolReport({
     const FormSchema = z.object({
         identification_date: z
             .date()
+            .default(() => new Date())
             .refine((val) => !isNaN(val.getTime()), { message: "Invalid Date" }),
         report_date: z
             .date()
+            .default(() => new Date())
             .refine((val) => !isNaN(val.getTime()), { message: "Invalid Date" }),
 
         location_id: z.string(),
@@ -95,16 +97,12 @@ export function CreateGenVolReport({
 
         reporter_name: z
             .string()
-            .min(3, {
-                message: "El nombre de quien reporta debe tener al menos 3 letras.",
-            })
+
             .max(40)
             .optional(),
         reporter_last_name: z
             .string()
-            .min(3, {
-                message: "El Apellido de quien reporta debe tener al menos 3 letras.",
-            })
+
             .max(40)
             .optional(),
         reporter_phone: z
@@ -116,9 +114,6 @@ export function CreateGenVolReport({
 
         reporter_email: z
             .string()
-            .min(10, {
-                message: "El correo electrónico debe tener al menos 10 caracteres",
-            })
             .email({ message: "Formato de correo electrónico inválido" })
             .optional(),
         image: z

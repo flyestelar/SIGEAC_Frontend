@@ -1,4 +1,4 @@
-/** @type {import('next').NextConfig} */
+// /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
     remotePatterns: [
@@ -12,10 +12,9 @@ const nextConfig = {
         port: "81",
         pathname: "/api/**",
       },
-      {
-        protocol: "https",
-        hostname: "apisigeactmd74.share.zrok.io",
-      },
+      ...(process.env.NEXT_PUBLIC_HOSTNAME
+        ? [{ protocol: "https", hostname: process.env.NEXT_PUBLIC_HOSTNAME }]
+        : []),
     ],
     dangerouslyAllowSVG: true,
     unoptimized: false,

@@ -40,6 +40,14 @@ interface UpdateVoluntaryReportData {
         document?: File | string;
     };
 }
+interface CloseVoluntaryReportData {
+    company: string | null;
+    id: string | number;
+    data: {
+        close_date: string;
+        document: File;
+    };
+}
 interface NextNumberResponse {
     next_number: string;
 }
@@ -201,5 +209,41 @@ export const useAcceptVoluntaryReport = () => {
     return {
         // CAMBIA ESTO:
         acceptVoluntaryReport: acceptMutation,
+    };
+};
+
+export const useCloseVoluntaryReport = () => {
+    const queryClient = useQueryClient();
+
+    const closeMutation = useMutation({
+        mutationKey: ["close-voluntary-report"],
+        mutationFn: async ({ company, id, data }: CloseVoluntaryReportData) => {
+            await axiosInstance.post(`/${company}/sms/aeronautical/close-rvp/${id}`, data, {
+                headers: {
+                    "Content-Type": "multipart/form-data",
+                },
+            });
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["voluntary-reports"] });
+            queryClient.invalidateQueries({ queryKey: ["voluntary-report"] });
+            toast.success("¡Reporte cerrado!", {
+                description: "El reporte voluntario ha sido cerrado correctamente.",
+            });
+        },
+        onError: (error: any) => {
+            // Extraemos el mensaje directamente de la respuesta del backend
+            const serverMessage = error.response?.data?.error || "Error al cerrar el reporte";
+
+            toast.error("Oops", {
+                description: serverMessage,
+            });
+
+            console.log(error);
+        },
+    });
+
+    return {
+        closeVoluntaryReport: closeMutation,
     };
 };
