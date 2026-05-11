@@ -35,14 +35,13 @@ export default function Home() {
           flex-1 
           items-center 
           justify-center 
-          bg-clouds 
+          bg-clouds dark:bg-night
           bg-cover 
           relative 
           animate-moveBackground 
           rounded-b-full 
           lg:rounded-r-full 
           lg:rounded-b-none
-          dark:brightness-75
         "
       >
         <motion.div
