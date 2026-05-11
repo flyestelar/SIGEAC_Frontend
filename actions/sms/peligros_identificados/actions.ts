@@ -10,7 +10,7 @@ interface DangerIdentificationData {
     danger: string;
     current_defenses: string;
     risk_management_start_date: Date;
-    danger_area: string;
+    sms_area_id?: number;
     description: string;
     possible_consequences: string;
     consequence_to_evaluate: string;
@@ -26,7 +26,7 @@ interface UpdateDangerIdentification {
     current_defenses: string;
     risk_management_start_date: Date;
     danger: string;
-    danger_area: string;
+    sms_area_id?: number;
     danger_type: string;
     description: string;
     possible_consequences: string;

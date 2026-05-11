@@ -953,6 +953,8 @@ export type DangerIdentification = {
   danger: string;
   current_defenses: string;
   danger_area: string;
+  sms_area_id: number | null;
+  sms_area?: { id: number; name: string; slug: string } | null;
   danger_type: string;
   description: string;
   possible_consequences: string;

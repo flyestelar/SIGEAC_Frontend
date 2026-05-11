@@ -282,9 +282,12 @@ const ShowVoluntaryReport = () => {
                 <div className="space-y-0 pt-4">
                   <FieldRow
                     label="Área de Identificación"
-                    value={voluntaryReport.finding_location}
+                    value={
+                      voluntaryReport.finding_location ||
+                      voluntaryReport.sms_finding_location?.name
+                    }
                   />
-                  <FieldRow label="Estación" value={voluntaryReport.station} />
+                  <FieldRow label="Estación" value={voluntaryReport.station || (voluntaryReport as any).sms_station?.name} />
                   <FieldRow
                     label="Localización Específica"
                     value={voluntaryReport.finding_location_other}

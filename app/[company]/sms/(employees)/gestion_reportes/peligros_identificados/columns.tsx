@@ -60,9 +60,11 @@ export const columns: ColumnDef<DangerIdentification>[] = [
       />
     ),
     cell: ({ row }) => {
-      return (
-        <p className="font-medium text-center">{row.original.danger_area}</p>
-      );
+      const area =
+        row.original.danger_area ||
+        row.original.sms_area?.name ||
+        "N/A";
+      return <p className="font-medium text-center">{area}</p>;
     },
   },
 

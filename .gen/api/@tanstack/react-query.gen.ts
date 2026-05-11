@@ -331,6 +331,8 @@ import {
   obligatoryReportGeneratePdfReport,
   obligatoryReportGetNextReportNumber,
   obligatoryReportIndex,
+  obligatoryReportServeDocument,
+  obligatoryReportServeImage,
   obligatoryReportShow,
   obligatoryReportStore,
   obligatoryReportUpdate,
@@ -456,13 +458,28 @@ import {
   sMsActivityGetNextActivityNumber,
   sMsActivityIndex,
   sMsActivityOpenActivity,
+  sMsActivityServeDocument,
+  sMsActivityServeImage,
   sMsActivityShow,
   sMsActivityStore,
+  sMsActivityUpdate,
   sMsActivityUpdateCalendarActivity,
+  smsAreaDestroy,
+  smsAreaIndex,
+  smsAreaStore,
+  smsAreaUpdate,
+  smsFindingLocationDestroy,
+  smsFindingLocationIndex,
+  smsFindingLocationStore,
+  smsFindingLocationUpdate,
   smsFollowUpControlsFile,
   smsObligatoryReportsFile,
   smsSMsActivityGetActivitiesStats0,
   smsSMsActivityGetActivitiesStats02,
+  smsStationDestroy,
+  smsStationIndex,
+  smsStationStore,
+  smsStationUpdate,
   smsVoluntaryReportsFile,
   surveyCreateQuestion,
   surveyDeleteQuestion,
@@ -1477,6 +1494,12 @@ import type {
   ObligatoryReportIndexData,
   ObligatoryReportIndexError,
   ObligatoryReportIndexResponse,
+  ObligatoryReportServeDocumentData,
+  ObligatoryReportServeDocumentError,
+  ObligatoryReportServeDocumentResponse,
+  ObligatoryReportServeImageData,
+  ObligatoryReportServeImageError,
+  ObligatoryReportServeImageResponse,
   ObligatoryReportShowData,
   ObligatoryReportShowError,
   ObligatoryReportShowResponse,
@@ -1840,6 +1863,12 @@ import type {
   SMsActivityOpenActivityData,
   SMsActivityOpenActivityError,
   SMsActivityOpenActivityResponse,
+  SMsActivityServeDocumentData,
+  SMsActivityServeDocumentError,
+  SMsActivityServeDocumentResponse,
+  SMsActivityServeImageData,
+  SMsActivityServeImageError,
+  SMsActivityServeImageResponse,
   SMsActivityShowData,
   SMsActivityShowError,
   SMsActivityShowResponse,
@@ -1849,6 +1878,33 @@ import type {
   SMsActivityUpdateCalendarActivityData,
   SMsActivityUpdateCalendarActivityError,
   SMsActivityUpdateCalendarActivityResponse,
+  SMsActivityUpdateData,
+  SMsActivityUpdateError,
+  SMsActivityUpdateResponse,
+  SmsAreaDestroyData,
+  SmsAreaDestroyError,
+  SmsAreaDestroyResponse,
+  SmsAreaIndexData,
+  SmsAreaIndexError,
+  SmsAreaIndexResponse,
+  SmsAreaStoreData,
+  SmsAreaStoreError,
+  SmsAreaStoreResponse,
+  SmsAreaUpdateData,
+  SmsAreaUpdateError,
+  SmsAreaUpdateResponse,
+  SmsFindingLocationDestroyData,
+  SmsFindingLocationDestroyError,
+  SmsFindingLocationDestroyResponse,
+  SmsFindingLocationIndexData,
+  SmsFindingLocationIndexError,
+  SmsFindingLocationIndexResponse,
+  SmsFindingLocationStoreData,
+  SmsFindingLocationStoreError,
+  SmsFindingLocationStoreResponse,
+  SmsFindingLocationUpdateData,
+  SmsFindingLocationUpdateError,
+  SmsFindingLocationUpdateResponse,
   SmsFollowUpControlsFileData,
   SmsFollowUpControlsFileError,
   SmsFollowUpControlsFileResponse,
@@ -1861,6 +1917,18 @@ import type {
   SmsSmsActivityGetActivitiesStats0Data,
   SmsSmsActivityGetActivitiesStats0Error,
   SmsSmsActivityGetActivitiesStats0Response,
+  SmsStationDestroyData,
+  SmsStationDestroyError,
+  SmsStationDestroyResponse,
+  SmsStationIndexData,
+  SmsStationIndexError,
+  SmsStationIndexResponse,
+  SmsStationStoreData,
+  SmsStationStoreError,
+  SmsStationStoreResponse,
+  SmsStationUpdateData,
+  SmsStationUpdateError,
+  SmsStationUpdateResponse,
   SmsVoluntaryReportsFileData,
   SmsVoluntaryReportsFileError,
   SmsVoluntaryReportsFileResponse,
@@ -10465,6 +10533,50 @@ export const obligatoryReportGeneratePdfReportOptions = (options: Options<Obliga
     queryKey: obligatoryReportGeneratePdfReportQueryKey(options),
   });
 
+export const obligatoryReportServeImageQueryKey = (options: Options<ObligatoryReportServeImageData>) =>
+  createQueryKey('obligatoryReportServeImage', options);
+
+export const obligatoryReportServeImageOptions = (options: Options<ObligatoryReportServeImageData>) =>
+  queryOptions<
+    ObligatoryReportServeImageResponse,
+    AxiosError<ObligatoryReportServeImageError>,
+    ObligatoryReportServeImageResponse,
+    ReturnType<typeof obligatoryReportServeImageQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await obligatoryReportServeImage({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: obligatoryReportServeImageQueryKey(options),
+  });
+
+export const obligatoryReportServeDocumentQueryKey = (options: Options<ObligatoryReportServeDocumentData>) =>
+  createQueryKey('obligatoryReportServeDocument', options);
+
+export const obligatoryReportServeDocumentOptions = (options: Options<ObligatoryReportServeDocumentData>) =>
+  queryOptions<
+    ObligatoryReportServeDocumentResponse,
+    AxiosError<ObligatoryReportServeDocumentError>,
+    ObligatoryReportServeDocumentResponse,
+    ReturnType<typeof obligatoryReportServeDocumentQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await obligatoryReportServeDocument({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: obligatoryReportServeDocumentQueryKey(options),
+  });
+
 export const optionIndexQueryKey = (options: Options<OptionIndexData>) => createQueryKey('optionIndex', options);
 
 /**
@@ -12914,6 +13026,50 @@ export const articleUpdate2Mutation = (
   return mutationOptions;
 };
 
+export const sMsActivityServeImageQueryKey = (options: Options<SMsActivityServeImageData>) =>
+  createQueryKey('sMsActivityServeImage', options);
+
+export const sMsActivityServeImageOptions = (options: Options<SMsActivityServeImageData>) =>
+  queryOptions<
+    SMsActivityServeImageResponse,
+    AxiosError<SMsActivityServeImageError>,
+    SMsActivityServeImageResponse,
+    ReturnType<typeof sMsActivityServeImageQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await sMsActivityServeImage({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: sMsActivityServeImageQueryKey(options),
+  });
+
+export const sMsActivityServeDocumentQueryKey = (options: Options<SMsActivityServeDocumentData>) =>
+  createQueryKey('sMsActivityServeDocument', options);
+
+export const sMsActivityServeDocumentOptions = (options: Options<SMsActivityServeDocumentData>) =>
+  queryOptions<
+    SMsActivityServeDocumentResponse,
+    AxiosError<SMsActivityServeDocumentError>,
+    SMsActivityServeDocumentResponse,
+    ReturnType<typeof sMsActivityServeDocumentQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await sMsActivityServeDocument({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: sMsActivityServeDocumentQueryKey(options),
+  });
+
 export const sMsActivityIndexQueryKey = (options: Options<SMsActivityIndexData>) =>
   createQueryKey('sMsActivityIndex', options);
 
@@ -13007,6 +13163,30 @@ export const sMsActivityShowOptions = (options: Options<SMsActivityShowData>) =>
     },
     queryKey: sMsActivityShowQueryKey(options),
   });
+
+export const sMsActivityUpdateMutation = (
+  options?: Partial<Options<SMsActivityUpdateData>>,
+): UseMutationOptions<
+  SMsActivityUpdateResponse,
+  AxiosError<SMsActivityUpdateError>,
+  Options<SMsActivityUpdateData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    SMsActivityUpdateResponse,
+    AxiosError<SMsActivityUpdateError>,
+    Options<SMsActivityUpdateData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await sMsActivityUpdate({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
 
 export const smsSmsActivityGetActivitiesStats0QueryKey = (options: Options<SmsSmsActivityGetActivitiesStats0Data>) =>
   createQueryKey('smsSMsActivityGetActivitiesStats0', options);
@@ -13502,6 +13682,267 @@ export const safetyBulletinDeleteDocumentMutation = (
   > = {
     mutationFn: async (fnOptions) => {
       const { data } = await safetyBulletinDeleteDocument({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+export const smsAreaIndexQueryKey = (options: Options<SmsAreaIndexData>) => createQueryKey('smsAreaIndex', options);
+
+export const smsAreaIndexOptions = (options: Options<SmsAreaIndexData>) =>
+  queryOptions<
+    SmsAreaIndexResponse,
+    AxiosError<SmsAreaIndexError>,
+    SmsAreaIndexResponse,
+    ReturnType<typeof smsAreaIndexQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await smsAreaIndex({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: smsAreaIndexQueryKey(options),
+  });
+
+export const smsAreaStoreMutation = (
+  options?: Partial<Options<SmsAreaStoreData>>,
+): UseMutationOptions<SmsAreaStoreResponse, AxiosError<SmsAreaStoreError>, Options<SmsAreaStoreData>> => {
+  const mutationOptions: UseMutationOptions<
+    SmsAreaStoreResponse,
+    AxiosError<SmsAreaStoreError>,
+    Options<SmsAreaStoreData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await smsAreaStore({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+export const smsAreaDestroyMutation = (
+  options?: Partial<Options<SmsAreaDestroyData>>,
+): UseMutationOptions<SmsAreaDestroyResponse, AxiosError<SmsAreaDestroyError>, Options<SmsAreaDestroyData>> => {
+  const mutationOptions: UseMutationOptions<
+    SmsAreaDestroyResponse,
+    AxiosError<SmsAreaDestroyError>,
+    Options<SmsAreaDestroyData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await smsAreaDestroy({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+export const smsAreaUpdateMutation = (
+  options?: Partial<Options<SmsAreaUpdateData>>,
+): UseMutationOptions<SmsAreaUpdateResponse, AxiosError<SmsAreaUpdateError>, Options<SmsAreaUpdateData>> => {
+  const mutationOptions: UseMutationOptions<
+    SmsAreaUpdateResponse,
+    AxiosError<SmsAreaUpdateError>,
+    Options<SmsAreaUpdateData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await smsAreaUpdate({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+export const smsFindingLocationIndexQueryKey = (options: Options<SmsFindingLocationIndexData>) =>
+  createQueryKey('smsFindingLocationIndex', options);
+
+export const smsFindingLocationIndexOptions = (options: Options<SmsFindingLocationIndexData>) =>
+  queryOptions<
+    SmsFindingLocationIndexResponse,
+    AxiosError<SmsFindingLocationIndexError>,
+    SmsFindingLocationIndexResponse,
+    ReturnType<typeof smsFindingLocationIndexQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await smsFindingLocationIndex({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: smsFindingLocationIndexQueryKey(options),
+  });
+
+export const smsFindingLocationStoreMutation = (
+  options?: Partial<Options<SmsFindingLocationStoreData>>,
+): UseMutationOptions<
+  SmsFindingLocationStoreResponse,
+  AxiosError<SmsFindingLocationStoreError>,
+  Options<SmsFindingLocationStoreData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    SmsFindingLocationStoreResponse,
+    AxiosError<SmsFindingLocationStoreError>,
+    Options<SmsFindingLocationStoreData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await smsFindingLocationStore({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+export const smsFindingLocationDestroyMutation = (
+  options?: Partial<Options<SmsFindingLocationDestroyData>>,
+): UseMutationOptions<
+  SmsFindingLocationDestroyResponse,
+  AxiosError<SmsFindingLocationDestroyError>,
+  Options<SmsFindingLocationDestroyData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    SmsFindingLocationDestroyResponse,
+    AxiosError<SmsFindingLocationDestroyError>,
+    Options<SmsFindingLocationDestroyData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await smsFindingLocationDestroy({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+export const smsFindingLocationUpdateMutation = (
+  options?: Partial<Options<SmsFindingLocationUpdateData>>,
+): UseMutationOptions<
+  SmsFindingLocationUpdateResponse,
+  AxiosError<SmsFindingLocationUpdateError>,
+  Options<SmsFindingLocationUpdateData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    SmsFindingLocationUpdateResponse,
+    AxiosError<SmsFindingLocationUpdateError>,
+    Options<SmsFindingLocationUpdateData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await smsFindingLocationUpdate({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+export const smsStationIndexQueryKey = (options: Options<SmsStationIndexData>) =>
+  createQueryKey('smsStationIndex', options);
+
+export const smsStationIndexOptions = (options: Options<SmsStationIndexData>) =>
+  queryOptions<
+    SmsStationIndexResponse,
+    AxiosError<SmsStationIndexError>,
+    SmsStationIndexResponse,
+    ReturnType<typeof smsStationIndexQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await smsStationIndex({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: smsStationIndexQueryKey(options),
+  });
+
+export const smsStationStoreMutation = (
+  options?: Partial<Options<SmsStationStoreData>>,
+): UseMutationOptions<SmsStationStoreResponse, AxiosError<SmsStationStoreError>, Options<SmsStationStoreData>> => {
+  const mutationOptions: UseMutationOptions<
+    SmsStationStoreResponse,
+    AxiosError<SmsStationStoreError>,
+    Options<SmsStationStoreData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await smsStationStore({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+export const smsStationDestroyMutation = (
+  options?: Partial<Options<SmsStationDestroyData>>,
+): UseMutationOptions<
+  SmsStationDestroyResponse,
+  AxiosError<SmsStationDestroyError>,
+  Options<SmsStationDestroyData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    SmsStationDestroyResponse,
+    AxiosError<SmsStationDestroyError>,
+    Options<SmsStationDestroyData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await smsStationDestroy({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+export const smsStationUpdateMutation = (
+  options?: Partial<Options<SmsStationUpdateData>>,
+): UseMutationOptions<SmsStationUpdateResponse, AxiosError<SmsStationUpdateError>, Options<SmsStationUpdateData>> => {
+  const mutationOptions: UseMutationOptions<
+    SmsStationUpdateResponse,
+    AxiosError<SmsStationUpdateError>,
+    Options<SmsStationUpdateData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await smsStationUpdate({
         ...options,
         ...fnOptions,
         throwOnError: true,

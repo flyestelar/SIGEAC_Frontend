@@ -131,7 +131,9 @@ const ShowDangerIdentification = () => {
                   <Layers className="w-6 h-6 text-gray-600 dark:text-gray-300 flex-shrink-0" />
                   <p className="text-lg font-semibold text-gray-700 dark:text-gray-300">
                     <span className="font-bold">Área de Peligro:</span>{" "}
-                    {dangerIdentification.danger_area}
+                    {dangerIdentification.danger_area ||
+                      dangerIdentification.sms_area?.name ||
+                      "—"}
                   </p>
                 </div>
               </div>

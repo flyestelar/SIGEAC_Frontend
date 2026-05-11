@@ -15,4 +15,4 @@ export type CreateClientConfig<T extends ClientOptions = ClientOptions2> = (
   override?: Config<ClientOptions & T>,
 ) => Config<Required<ClientOptions> & T>;
 
-export const client = createClient(createConfig<ClientOptions2>({ baseURL: 'http://172.190.0.166:81/api' }));
+export const client = createClient(createConfig<ClientOptions2>({ baseURL: 'https://172.190.0.166:81/api' }));
