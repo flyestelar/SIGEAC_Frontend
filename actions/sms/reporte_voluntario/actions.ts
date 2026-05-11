@@ -21,8 +21,8 @@ interface VoluntaryReportData {
     source_reference?: string | null;
     identification_date: string;
     report_date: string;
-    station: string;
-    finding_location: string;
+    sms_station_id?: number;
+    sms_finding_location_id?: number;
     finding_location_other: string;
     danger_type: string;
     is_anonymous: boolean | 0 | 1;
@@ -34,6 +34,7 @@ interface VoluntaryReportData {
     reporter_last_name?: string | null;
     reporter_phone?: string | null;
     reporter_email?: string | null;
+    sms_area_id?: number;
     image?: File | string | null;
     document?: File | string | null;
   };
@@ -45,8 +46,8 @@ interface UpdateVoluntaryReportData {
     report_number?: string;
     report_date: Date | string;
     identification_date: Date | string;
-    station: string;
-    finding_location: string;
+    sms_station_id?: number;
+    sms_finding_location_id?: number;
     finding_location_other: string;
     danger_type: string;
     description: string;

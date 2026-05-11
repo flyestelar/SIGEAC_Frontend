@@ -63,11 +63,13 @@ export const columns: ColumnDef<ObligatoryReportResource>[] = [
     header: ({ column }) => (
       <DataTableColumnHeader filter column={column} title="Lugar del incidente" />
     ),
-    cell: ({ row }) => (
-      <p className="font-medium text-center">
-        {row.original.incident_location || "N/A"}
-      </p>
-    ),
+    cell: ({ row }) => {
+      const location =
+        row.original.incident_location ||
+        row.original.sms_finding_location?.name ||
+        "N/A";
+      return <p className="font-medium text-center">{location}</p>;
+    },
   },
   {
     accessorKey: "danger_type",

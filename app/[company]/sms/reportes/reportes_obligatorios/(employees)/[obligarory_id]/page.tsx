@@ -289,7 +289,7 @@ const ShowObligatoryReport = () => {
             <Section num="01" icon={FileText} title="Identificación">
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
                 <FieldRow label="Código" value={`ROS-${report.report_number}`} />
-                <FieldRow label="Estación" value={report.station} />
+                <FieldRow label="Estación" value={report.station || (report as any).sms_station?.name} />
                 <FieldRow label="Fecha del Reporte" value={fmtDate(report.report_date)} />
               </div>
             </Section>
@@ -297,7 +297,13 @@ const ShowObligatoryReport = () => {
             {/* 02 Ubicación */}
             <Section num="02" icon={MapPin} title="Ubicación del Incidente">
               <div className="grid grid-cols-2 gap-4">
-                <FieldRow label="Lugar" value={report.incident_location} />
+                <FieldRow
+                  label="Lugar"
+                  value={
+                    report.incident_location ||
+                    report.sms_finding_location?.name
+                  }
+                />
                 <FieldRow label="Especificación" value={report.incident_location_other} />
                 <FieldRow label="Fecha del Incidente" value={fmtDate(report.incident_date)} />
                 {report.danger_type && (
@@ -345,7 +351,7 @@ const ShowObligatoryReport = () => {
                   <FieldRow label="Nombre" value={report.reporter_name} />
                   <FieldRow label="Correo" value={report.reporter_email} />
                   <FieldRow label="Teléfono" value={report.reporter_phone} />
-                  <FieldRow label="Área" value={report.reporter_area} />
+                  <FieldRow label="Área" value={report.reporter_area || (report as any).sms_area?.name} />
                   <FieldRow label="Cargo" value={report.reporter_position} />
                 </div>
               </Section>

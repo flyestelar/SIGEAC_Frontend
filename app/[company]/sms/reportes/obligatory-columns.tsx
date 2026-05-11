@@ -65,7 +65,8 @@ export const columns: ColumnDef<ObligatoryReportResource>[] = [
     ),
     cell: ({ row }) => (
       <p className="font-medium text-center">
-        {row.original.incident_location || "N/A"}
+        {row.original.incident_location || row.original.sms_finding_location?.name ||
+        "N/A"}
       </p>
     ),
   },

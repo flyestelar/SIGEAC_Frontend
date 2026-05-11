@@ -51,7 +51,7 @@ import {
   Upload,
   User,
 } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useCompanyStore } from "@/stores/CompanyStore";
 
@@ -145,6 +145,8 @@ export function CreateGeneralVoluntaryReportForm({
   initialData,
 }: FormProps) {
   const { selectedCompany, selectedStation } = useCompanyStore();
+  const params = useParams<{ company?: string }>();
+  const companySlug = selectedCompany?.slug ?? params.company ?? "";
   const { createVoluntaryReport } = useCreateVoluntaryReport();
   const { updateVoluntaryReport } = useUpdateVoluntaryReport();
   const [isAnonymous, setIsAnonymous] = useState(true);
@@ -267,7 +269,7 @@ export function CreateGeneralVoluntaryReportForm({
 
     if (initialData && isEditing) {
       const value = {
-        company: selectedCompany!.slug,
+        company: companySlug,
         id: initialData.id.toString(),
         data: {
           ...data,
@@ -284,7 +286,7 @@ export function CreateGeneralVoluntaryReportForm({
       await updateVoluntaryReport.mutateAsync(value);
     } else {
       const value = {
-        company: selectedCompany!.slug,
+        company: companySlug,
         reportData: {
           ...data,
           location_id: selectedStation,
@@ -304,10 +306,10 @@ export function CreateGeneralVoluntaryReportForm({
         const response = await createVoluntaryReport.mutateAsync(value);
         if (shouldEnableField) {
           router.push(
-            `/${selectedCompany?.slug}/sms/reportes/reportes_voluntarios/${response.voluntary_report_id}`
+            `/${companySlug}/sms/reportes/reportes_voluntarios/${response.voluntary_report_id}`
           );
         } else {
-          router.push(`/${selectedCompany?.slug}/dashboard`);
+          router.push(`/${companySlug}/dashboard`);
         }
       } catch (error) {
         console.error("Error al crear el reporte:", error);
