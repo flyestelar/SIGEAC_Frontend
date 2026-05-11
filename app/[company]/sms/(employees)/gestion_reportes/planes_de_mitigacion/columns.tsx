@@ -7,6 +7,7 @@ import { MitigationTable } from "@/types";
 import { ReportNumberCell } from "./_components/ReportNumberCell";
 import { MeasuresCell } from "./_components/MeasuresCell";
 import { RiskAnalysisCell } from "./_components/RiskAnalysisCell";
+import { ReportsCell } from "./_components/ReportsCell";
 
 // Columnas de la tabla (responsive)
 export const columns: ColumnDef<MitigationTable>[] = [
@@ -108,6 +109,17 @@ export const columns: ColumnDef<MitigationTable>[] = [
     ),
     size: 120,
     minSize: 100,
+  },
+  {
+    id: "reports",
+    header: () => (
+      <div className="text-center text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+        Reportes
+      </div>
+    ),
+    cell: ({ row }) => <ReportsCell mitigationTable={row.original} />,
+    size: 100,
+    minSize: 80,
   },
   {
     id: "actions",
