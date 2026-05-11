@@ -9,7 +9,7 @@ import type {
 
 interface CreateAirworthinessDirectiveComplianceExecutionDialogProps {
   directiveId: number;
-  applicability: AirworthinessDirectiveApplicabilityResource;
+  applicabilities: AirworthinessDirectiveApplicabilityResource[];
   control: AirworthinessDirectiveComplianceControlResource;
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -17,7 +17,7 @@ interface CreateAirworthinessDirectiveComplianceExecutionDialogProps {
 
 export default function CreateAirworthinessDirectiveComplianceExecutionDialog({
   directiveId,
-  applicability,
+  applicabilities,
   control,
   open,
   onOpenChange,
@@ -28,13 +28,13 @@ export default function CreateAirworthinessDirectiveComplianceExecutionDialog({
         <DialogHeader>
           <DialogTitle>Registrar cumplimiento</DialogTitle>
           <DialogDescription>
-            Registra la ejecución del control para {applicability.aircraft?.acronym ?? `#${applicability.aircraft_id}`}.
+            Registra la ejecución del control{control.description ? ` "${control.description}"` : ''} para la aeronave seleccionada.
           </DialogDescription>
         </DialogHeader>
 
         <CreateAirworthinessDirectiveComplianceExecutionForm
           directiveId={directiveId}
-          applicability={applicability}
+          applicabilities={applicabilities}
           control={control}
           onSuccess={() => onOpenChange(false)}
         />

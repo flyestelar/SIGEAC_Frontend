@@ -331,6 +331,8 @@ import {
   obligatoryReportGeneratePdfReport,
   obligatoryReportGetNextReportNumber,
   obligatoryReportIndex,
+  obligatoryReportServeDocument,
+  obligatoryReportServeImage,
   obligatoryReportShow,
   obligatoryReportStore,
   obligatoryReportUpdate,
@@ -456,6 +458,8 @@ import {
   sMsActivityGetNextActivityNumber,
   sMsActivityIndex,
   sMsActivityOpenActivity,
+  sMsActivityServeDocument,
+  sMsActivityServeImage,
   sMsActivityShow,
   sMsActivityStore,
   sMsActivityUpdateCalendarActivity,
@@ -1477,6 +1481,12 @@ import type {
   ObligatoryReportIndexData,
   ObligatoryReportIndexError,
   ObligatoryReportIndexResponse,
+  ObligatoryReportServeDocumentData,
+  ObligatoryReportServeDocumentError,
+  ObligatoryReportServeDocumentResponse,
+  ObligatoryReportServeImageData,
+  ObligatoryReportServeImageError,
+  ObligatoryReportServeImageResponse,
   ObligatoryReportShowData,
   ObligatoryReportShowError,
   ObligatoryReportShowResponse,
@@ -1840,6 +1850,12 @@ import type {
   SMsActivityOpenActivityData,
   SMsActivityOpenActivityError,
   SMsActivityOpenActivityResponse,
+  SMsActivityServeDocumentData,
+  SMsActivityServeDocumentError,
+  SMsActivityServeDocumentResponse,
+  SMsActivityServeImageData,
+  SMsActivityServeImageError,
+  SMsActivityServeImageResponse,
   SMsActivityShowData,
   SMsActivityShowError,
   SMsActivityShowResponse,
@@ -3491,30 +3507,6 @@ export const airworthinessDirectiveApplicabilitiesUpdateMutation = (
   return mutationOptions;
 };
 
-export const airworthinessDirectiveComplianceControlsDestroyMutation = (
-  options?: Partial<Options<AirworthinessDirectiveComplianceControlsDestroyData>>,
-): UseMutationOptions<
-  AirworthinessDirectiveComplianceControlsDestroyResponse,
-  AxiosError<AirworthinessDirectiveComplianceControlsDestroyError>,
-  Options<AirworthinessDirectiveComplianceControlsDestroyData>
-> => {
-  const mutationOptions: UseMutationOptions<
-    AirworthinessDirectiveComplianceControlsDestroyResponse,
-    AxiosError<AirworthinessDirectiveComplianceControlsDestroyError>,
-    Options<AirworthinessDirectiveComplianceControlsDestroyData>
-  > = {
-    mutationFn: async (fnOptions) => {
-      const { data } = await airworthinessDirectiveComplianceControlsDestroy({
-        ...options,
-        ...fnOptions,
-        throwOnError: true,
-      });
-      return data;
-    },
-  };
-  return mutationOptions;
-};
-
 export const airworthinessDirectiveComplianceControlsStoreMutation = (
   options?: Partial<Options<AirworthinessDirectiveComplianceControlsStoreData>>,
 ): UseMutationOptions<
@@ -3529,6 +3521,30 @@ export const airworthinessDirectiveComplianceControlsStoreMutation = (
   > = {
     mutationFn: async (fnOptions) => {
       const { data } = await airworthinessDirectiveComplianceControlsStore({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+export const airworthinessDirectiveComplianceControlsDestroyMutation = (
+  options?: Partial<Options<AirworthinessDirectiveComplianceControlsDestroyData>>,
+): UseMutationOptions<
+  AirworthinessDirectiveComplianceControlsDestroyResponse,
+  AxiosError<AirworthinessDirectiveComplianceControlsDestroyError>,
+  Options<AirworthinessDirectiveComplianceControlsDestroyData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    AirworthinessDirectiveComplianceControlsDestroyResponse,
+    AxiosError<AirworthinessDirectiveComplianceControlsDestroyError>,
+    Options<AirworthinessDirectiveComplianceControlsDestroyData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await airworthinessDirectiveComplianceControlsDestroy({
         ...options,
         ...fnOptions,
         throwOnError: true,
@@ -10467,6 +10483,50 @@ export const obligatoryReportGeneratePdfReportOptions = (options: Options<Obliga
     queryKey: obligatoryReportGeneratePdfReportQueryKey(options),
   });
 
+export const obligatoryReportServeImageQueryKey = (options: Options<ObligatoryReportServeImageData>) =>
+  createQueryKey('obligatoryReportServeImage', options);
+
+export const obligatoryReportServeImageOptions = (options: Options<ObligatoryReportServeImageData>) =>
+  queryOptions<
+    ObligatoryReportServeImageResponse,
+    AxiosError<ObligatoryReportServeImageError>,
+    ObligatoryReportServeImageResponse,
+    ReturnType<typeof obligatoryReportServeImageQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await obligatoryReportServeImage({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: obligatoryReportServeImageQueryKey(options),
+  });
+
+export const obligatoryReportServeDocumentQueryKey = (options: Options<ObligatoryReportServeDocumentData>) =>
+  createQueryKey('obligatoryReportServeDocument', options);
+
+export const obligatoryReportServeDocumentOptions = (options: Options<ObligatoryReportServeDocumentData>) =>
+  queryOptions<
+    ObligatoryReportServeDocumentResponse,
+    AxiosError<ObligatoryReportServeDocumentError>,
+    ObligatoryReportServeDocumentResponse,
+    ReturnType<typeof obligatoryReportServeDocumentQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await obligatoryReportServeDocument({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: obligatoryReportServeDocumentQueryKey(options),
+  });
+
 export const optionIndexQueryKey = (options: Options<OptionIndexData>) => createQueryKey('optionIndex', options);
 
 /**
@@ -12915,6 +12975,50 @@ export const articleUpdate2Mutation = (
   };
   return mutationOptions;
 };
+
+export const sMsActivityServeImageQueryKey = (options: Options<SMsActivityServeImageData>) =>
+  createQueryKey('sMsActivityServeImage', options);
+
+export const sMsActivityServeImageOptions = (options: Options<SMsActivityServeImageData>) =>
+  queryOptions<
+    SMsActivityServeImageResponse,
+    AxiosError<SMsActivityServeImageError>,
+    SMsActivityServeImageResponse,
+    ReturnType<typeof sMsActivityServeImageQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await sMsActivityServeImage({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: sMsActivityServeImageQueryKey(options),
+  });
+
+export const sMsActivityServeDocumentQueryKey = (options: Options<SMsActivityServeDocumentData>) =>
+  createQueryKey('sMsActivityServeDocument', options);
+
+export const sMsActivityServeDocumentOptions = (options: Options<SMsActivityServeDocumentData>) =>
+  queryOptions<
+    SMsActivityServeDocumentResponse,
+    AxiosError<SMsActivityServeDocumentError>,
+    SMsActivityServeDocumentResponse,
+    ReturnType<typeof sMsActivityServeDocumentQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await sMsActivityServeDocument({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: sMsActivityServeDocumentQueryKey(options),
+  });
 
 export const sMsActivityIndexQueryKey = (options: Options<SMsActivityIndexData>) =>
   createQueryKey('sMsActivityIndex', options);

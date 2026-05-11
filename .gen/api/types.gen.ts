@@ -181,9 +181,8 @@ export type AirworthinessDirectiveApplicabilityResource = {
  */
 export type AirworthinessDirectiveComplianceControlResource = {
   id: string;
-  applicability_id: string;
-  aircraft_id: string;
-  aircraft: AircraftResource;
+  ad_id: string;
+  description: string;
   calendar_due_date: string | null;
   flight_hours_due: number | null;
   cycles_due: number | null;
@@ -202,6 +201,7 @@ export type AirworthinessDirectiveComplianceControlResource = {
 export type AirworthinessDirectiveComplianceRecordResource = {
   id: string;
   applicability_id: string;
+  control_id: string;
   aircraft_id: string;
   aircraft: AircraftResource;
   work_order_number: string;
@@ -709,6 +709,14 @@ export type EmployeeResource = {
   email: string | null;
   phone: string | null;
   isActive: boolean;
+  job_title?: {
+    id: number;
+    name: string;
+  };
+  department?: {
+    id: number;
+    name: string;
+  };
 };
 
 /**
@@ -965,7 +973,17 @@ export type MessageBag = Array<unknown>;
 /**
  * MitigationMeasure
  */
-export type MitigationMeasure = Array<string>;
+export type MitigationMeasure = {
+  id: number;
+  description: string;
+  implementation_supervisor: string;
+  implementation_responsible: string;
+  estimated_date: string;
+  execution_date: string | null;
+  mitigation_plan_id: number;
+  registered_by: string;
+  updated_by: string | null;
+};
 
 /**
  * MitigationMeasureRequest
@@ -1241,7 +1259,7 @@ export type SmsActivityRequest = {
   status?: 'ABIERTO' | 'CERRADO' | 'PROCESO';
   image?: Blob | File | null;
   document?: Blob | File | null;
-  bulletin_id?: number | null;
+  mitigation_measure_id?: number | null;
 };
 
 /**
@@ -1268,10 +1286,19 @@ export type SmsActivityResource = {
   updated_by: string | null;
   image: string | null;
   document: string | null;
-  bulletin_id: number | null;
   bulletin?: string;
   mitigation_measure_id: number | null;
-  mitigation_measure?: string;
+  mitigation_measure?: {
+    id: number;
+    description: string;
+    estimated_date: string;
+    execution_date: string;
+    implementation_responsible: string;
+    mitigation_plan: {
+      id: number;
+      description: string;
+    } | null;
+  } | null;
   attendance?: string;
 };
 
@@ -1337,6 +1364,7 @@ export type StoreAirworthinessDirectiveApplicabilityRequest = {
  * StoreAirworthinessDirectiveComplianceControlRequest
  */
 export type StoreAirworthinessDirectiveComplianceControlRequest = {
+  description?: string | null;
   calendar_due_date?: string | null;
   flight_hours_due?: number | null;
   cycles_due?: number | null;
@@ -1349,6 +1377,7 @@ export type StoreAirworthinessDirectiveComplianceControlRequest = {
  * StoreAirworthinessDirectiveComplianceRecordRequest
  */
 export type StoreAirworthinessDirectiveComplianceRecordRequest = {
+  applicability_id: number;
   work_order_number?: string | null;
   execution_date: string;
   flight_hours_at_execution?: number | null;
@@ -1720,6 +1749,7 @@ export type UpdateAirworthinessDirectiveApplicabilityRequest = {
  * UpdateAirworthinessDirectiveComplianceControlRequest
  */
 export type UpdateAirworthinessDirectiveComplianceControlRequest = {
+  description?: string | null;
   calendar_due_date?: string | null;
   flight_hours_due?: number | null;
   cycles_due?: number | null;
@@ -4158,51 +4188,13 @@ export type AirworthinessDirectiveApplicabilitiesUpdateResponses = {
 export type AirworthinessDirectiveApplicabilitiesUpdateResponse =
   AirworthinessDirectiveApplicabilitiesUpdateResponses[keyof AirworthinessDirectiveApplicabilitiesUpdateResponses];
 
-export type AirworthinessDirectiveComplianceControlsDestroyData = {
-  body?: never;
-  path: {
-    directiveId: number;
-    applicabilityId: number;
-  };
-  query?: never;
-  url: '/airworthiness-directives/{directiveId}/applicabilities/{applicabilityId}/compliance-control';
-};
-
-export type AirworthinessDirectiveComplianceControlsDestroyErrors = {
-  /**
-   * Unauthenticated
-   */
-  401: {
-    /**
-     * Error overview.
-     */
-    message: string;
-  };
-  422: {
-    message: 'Compliance control cannot be deleted because execution history exists.';
-  };
-};
-
-export type AirworthinessDirectiveComplianceControlsDestroyError =
-  AirworthinessDirectiveComplianceControlsDestroyErrors[keyof AirworthinessDirectiveComplianceControlsDestroyErrors];
-
-export type AirworthinessDirectiveComplianceControlsDestroyResponses = {
-  200: {
-    message: 'Compliance control deleted successfully.';
-  };
-};
-
-export type AirworthinessDirectiveComplianceControlsDestroyResponse =
-  AirworthinessDirectiveComplianceControlsDestroyResponses[keyof AirworthinessDirectiveComplianceControlsDestroyResponses];
-
 export type AirworthinessDirectiveComplianceControlsStoreData = {
   body?: StoreAirworthinessDirectiveComplianceControlRequest;
   path: {
     directiveId: number;
-    applicabilityId: number;
   };
   query?: never;
-  url: '/airworthiness-directives/{directiveId}/applicabilities/{applicabilityId}/compliance-control';
+  url: '/airworthiness-directives/{directiveId}/compliance-controls';
 };
 
 export type AirworthinessDirectiveComplianceControlsStoreErrors = {
@@ -4247,14 +4239,51 @@ export type AirworthinessDirectiveComplianceControlsStoreResponses = {
 export type AirworthinessDirectiveComplianceControlsStoreResponse =
   AirworthinessDirectiveComplianceControlsStoreResponses[keyof AirworthinessDirectiveComplianceControlsStoreResponses];
 
+export type AirworthinessDirectiveComplianceControlsDestroyData = {
+  body?: never;
+  path: {
+    directiveId: number;
+    controlId: number;
+  };
+  query?: never;
+  url: '/airworthiness-directives/{directiveId}/compliance-controls/{controlId}';
+};
+
+export type AirworthinessDirectiveComplianceControlsDestroyErrors = {
+  /**
+   * Unauthenticated
+   */
+  401: {
+    /**
+     * Error overview.
+     */
+    message: string;
+  };
+  422: {
+    message: 'Compliance control cannot be deleted because execution history exists.';
+  };
+};
+
+export type AirworthinessDirectiveComplianceControlsDestroyError =
+  AirworthinessDirectiveComplianceControlsDestroyErrors[keyof AirworthinessDirectiveComplianceControlsDestroyErrors];
+
+export type AirworthinessDirectiveComplianceControlsDestroyResponses = {
+  200: {
+    message: 'Compliance control deleted successfully.';
+  };
+};
+
+export type AirworthinessDirectiveComplianceControlsDestroyResponse =
+  AirworthinessDirectiveComplianceControlsDestroyResponses[keyof AirworthinessDirectiveComplianceControlsDestroyResponses];
+
 export type AirworthinessDirectiveComplianceControlsUpdateData = {
   body?: UpdateAirworthinessDirectiveComplianceControlRequest;
   path: {
     directiveId: number;
-    applicabilityId: number;
+    controlId: number;
   };
   query?: never;
-  url: '/airworthiness-directives/{directiveId}/applicabilities/{applicabilityId}/compliance-control';
+  url: '/airworthiness-directives/{directiveId}/compliance-controls/{controlId}';
 };
 
 export type AirworthinessDirectiveComplianceControlsUpdateErrors = {
@@ -4303,10 +4332,10 @@ export type AirworthinessDirectiveComplianceControlsStoreExecutionData = {
   body: StoreAirworthinessDirectiveComplianceRecordRequest;
   path: {
     directiveId: number;
-    applicabilityId: number;
+    controlId: number;
   };
   query?: never;
-  url: '/airworthiness-directives/{directiveId}/applicabilities/{applicabilityId}/compliance-records';
+  url: '/airworthiness-directives/{directiveId}/compliance-controls/{controlId}/records';
 };
 
 export type AirworthinessDirectiveComplianceControlsStoreExecutionErrors = {
@@ -4355,8 +4384,7 @@ export type AirworthinessDirectivesComplianceControlsData = {
   };
   query?: {
     search?: string | null;
-    aircraft_id?: number;
-    order_by?: 'newest' | 'oldest' | 'aircraft';
+    order_by?: 'newest' | 'oldest';
     page?: number;
     per_page?: number;
   };
@@ -14267,7 +14295,7 @@ export type ObligatoryReportShowErrors = {
 export type ObligatoryReportShowError = ObligatoryReportShowErrors[keyof ObligatoryReportShowErrors];
 
 export type ObligatoryReportShowResponses = {
-  200: Array<unknown | string | string>;
+  200: Array<unknown>;
 };
 
 export type ObligatoryReportShowResponse = ObligatoryReportShowResponses[keyof ObligatoryReportShowResponses];
@@ -14416,6 +14444,77 @@ export type ObligatoryReportGeneratePdfReportResponses = {
 
 export type ObligatoryReportGeneratePdfReportResponse =
   ObligatoryReportGeneratePdfReportResponses[keyof ObligatoryReportGeneratePdfReportResponses];
+
+export type ObligatoryReportServeImageData = {
+  body?: never;
+  path: {
+    company: string;
+    id: number;
+    filePath: string;
+  };
+  query?: never;
+  url: '/{company}/sms/obligatory-reports/{id}/image/{filePath}';
+};
+
+export type ObligatoryReportServeImageErrors = {
+  /**
+   * Unauthenticated
+   */
+  401: {
+    /**
+     * Error overview.
+     */
+    message: string;
+  };
+  404: {
+    error: 'Imagen no encontrada';
+  };
+};
+
+export type ObligatoryReportServeImageError = ObligatoryReportServeImageErrors[keyof ObligatoryReportServeImageErrors];
+
+export type ObligatoryReportServeImageResponses = {
+  200: Blob | File;
+};
+
+export type ObligatoryReportServeImageResponse =
+  ObligatoryReportServeImageResponses[keyof ObligatoryReportServeImageResponses];
+
+export type ObligatoryReportServeDocumentData = {
+  body?: never;
+  path: {
+    company: string;
+    id: number;
+    filePath: string;
+  };
+  query?: never;
+  url: '/{company}/sms/obligatory-reports/{id}/document/{filePath}';
+};
+
+export type ObligatoryReportServeDocumentErrors = {
+  /**
+   * Unauthenticated
+   */
+  401: {
+    /**
+     * Error overview.
+     */
+    message: string;
+  };
+  404: {
+    error: 'Documento no encontrado';
+  };
+};
+
+export type ObligatoryReportServeDocumentError =
+  ObligatoryReportServeDocumentErrors[keyof ObligatoryReportServeDocumentErrors];
+
+export type ObligatoryReportServeDocumentResponses = {
+  200: Blob | File;
+};
+
+export type ObligatoryReportServeDocumentResponse =
+  ObligatoryReportServeDocumentResponses[keyof ObligatoryReportServeDocumentResponses];
 
 export type OptionIndexData = {
   body?: never;
@@ -17965,6 +18064,73 @@ export type ArticleUpdate2Responses = {
 
 export type ArticleUpdate2Response = ArticleUpdate2Responses[keyof ArticleUpdate2Responses];
 
+export type SMsActivityServeImageData = {
+  body?: never;
+  path: {
+    company: string;
+    filePath: string;
+  };
+  query?: never;
+  url: '/{company}/sms/activities/image/{filePath}';
+};
+
+export type SMsActivityServeImageErrors = {
+  /**
+   * Unauthenticated
+   */
+  401: {
+    /**
+     * Error overview.
+     */
+    message: string;
+  };
+  404: {
+    error: 'Imagen no encontrada';
+  };
+};
+
+export type SMsActivityServeImageError = SMsActivityServeImageErrors[keyof SMsActivityServeImageErrors];
+
+export type SMsActivityServeImageResponses = {
+  200: Blob | File;
+};
+
+export type SMsActivityServeImageResponse = SMsActivityServeImageResponses[keyof SMsActivityServeImageResponses];
+
+export type SMsActivityServeDocumentData = {
+  body?: never;
+  path: {
+    company: string;
+    filePath: string;
+  };
+  query?: never;
+  url: '/{company}/sms/activities/document/{filePath}';
+};
+
+export type SMsActivityServeDocumentErrors = {
+  /**
+   * Unauthenticated
+   */
+  401: {
+    /**
+     * Error overview.
+     */
+    message: string;
+  };
+  404: {
+    error: 'Documento no encontrado';
+  };
+};
+
+export type SMsActivityServeDocumentError = SMsActivityServeDocumentErrors[keyof SMsActivityServeDocumentErrors];
+
+export type SMsActivityServeDocumentResponses = {
+  200: Blob | File;
+};
+
+export type SMsActivityServeDocumentResponse =
+  SMsActivityServeDocumentResponses[keyof SMsActivityServeDocumentResponses];
+
 export type SMsActivityIndexData = {
   body?: never;
   path: {
@@ -21171,7 +21337,7 @@ export type VoluntaryReportShowErrors = {
 export type VoluntaryReportShowError = VoluntaryReportShowErrors[keyof VoluntaryReportShowErrors];
 
 export type VoluntaryReportShowResponses = {
-  200: Array<unknown | string | string>;
+  200: Array<unknown>;
 };
 
 export type VoluntaryReportShowResponse = VoluntaryReportShowResponses[keyof VoluntaryReportShowResponses];
@@ -21314,10 +21480,11 @@ export type VoluntaryReportServeImageData = {
   body?: never;
   path: {
     company: string;
+    id: number;
     filePath: string;
   };
   query?: never;
-  url: '/{company}/sms/voluntary-reports/{filePath}/image/{filePath}';
+  url: '/{company}/sms/voluntary-reports/{id}/image/{filePath}';
 };
 
 export type VoluntaryReportServeImageErrors = {
@@ -21329,9 +21496,6 @@ export type VoluntaryReportServeImageErrors = {
      * Error overview.
      */
     message: string;
-  };
-  403: {
-    error: 'No autorizado';
   };
   404: {
     error: 'Imagen no encontrada';
@@ -21351,10 +21515,11 @@ export type VoluntaryReportServeDocumentData = {
   body?: never;
   path: {
     company: string;
+    id: number;
     filePath: string;
   };
   query?: never;
-  url: '/{company}/sms/voluntary-reports/{filePath}/document/{filePath}';
+  url: '/{company}/sms/voluntary-reports/{id}/document/{filePath}';
 };
 
 export type VoluntaryReportServeDocumentErrors = {
@@ -21366,9 +21531,6 @@ export type VoluntaryReportServeDocumentErrors = {
      * Error overview.
      */
     message: string;
-  };
-  403: {
-    error: 'No autorizado';
   };
   404: {
     error: 'Documento no encontrado';

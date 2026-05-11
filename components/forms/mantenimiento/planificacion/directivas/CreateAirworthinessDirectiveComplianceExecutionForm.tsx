@@ -11,6 +11,7 @@ import { FormNumericField } from '@/components/forms/FormNumericField';
 import { FormTextField } from '@/components/forms/FormTextField';
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { useCreateAirworthinessDirectiveComplianceExecution } from '@/hooks/planificacion/directivas/queries';
 import type {
@@ -19,6 +20,7 @@ import type {
 } from '@api/types';
 
 const complianceExecutionSchema = z.object({
+  applicability_id: z.string().min(1, 'Debes seleccionar una aeronave'),
   work_order_number: z.string().trim().min(1, 'La orden de trabajo es obligatoria'),
   execution_date: z.string().min(1, 'La fecha de ejecución es obligatoria'),
   flight_hours_at_execution: z.number().min(0, 'Debe ser mayor o igual a 0').nullable().optional(),
@@ -31,21 +33,24 @@ type ComplianceExecutionFormValues = z.infer<typeof complianceExecutionSchema>;
 
 interface CreateAirworthinessDirectiveComplianceExecutionFormProps {
   directiveId: number;
-  applicability: AirworthinessDirectiveApplicabilityResource;
+  applicabilities: AirworthinessDirectiveApplicabilityResource[];
   control: AirworthinessDirectiveComplianceControlResource;
   onSuccess: () => void;
 }
 
 export default function CreateAirworthinessDirectiveComplianceExecutionForm({
   directiveId,
-  applicability,
+  applicabilities,
   control,
   onSuccess,
 }: CreateAirworthinessDirectiveComplianceExecutionFormProps) {
   const createExecution = useCreateAirworthinessDirectiveComplianceExecution(directiveId);
+  const applicableAircraft = applicabilities.filter((item) => item.is_applicable);
+
   const form = useForm<ComplianceExecutionFormValues>({
     resolver: zodResolver(complianceExecutionSchema),
     defaultValues: {
+      applicability_id: '',
       work_order_number: '',
       execution_date: '',
       flight_hours_at_execution: null,
@@ -57,6 +62,7 @@ export default function CreateAirworthinessDirectiveComplianceExecutionForm({
 
   useEffect(() => {
     form.reset({
+      applicability_id: '',
       work_order_number: '',
       execution_date: '',
       flight_hours_at_execution: null,
@@ -64,15 +70,16 @@ export default function CreateAirworthinessDirectiveComplianceExecutionForm({
       inspector_license_signature: '',
       remarks: '',
     });
-  }, [applicability.id, control.id, form]);
+  }, [control.id, form]);
 
   const onSubmit = async (values: ComplianceExecutionFormValues) => {
     await createExecution.mutateAsync({
       path: {
         directiveId,
-        applicabilityId: applicability.id,
+        controlId: Number(control.id),
       },
       body: {
+        applicability_id: Number(values.applicability_id),
         work_order_number: values.work_order_number,
         execution_date: values.execution_date,
         flight_hours_at_execution: values.flight_hours_at_execution ?? null,
@@ -89,9 +96,34 @@ export default function CreateAirworthinessDirectiveComplianceExecutionForm({
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
         <div className="rounded-2xl border bg-muted/30 p-4">
-          <p className="text-sm font-medium">{applicability.aircraft?.acronym ?? `#${applicability.aircraft_id}`}</p>
+          <p className="text-sm font-medium">{control.description || 'Control sin descripción'}</p>
           <p className="text-xs text-muted-foreground">Estado actual: {control.compliance_status}</p>
         </div>
+
+        <FormField
+          control={form.control}
+          name="applicability_id"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Aeronave</FormLabel>
+              <Select onValueChange={field.onChange} value={field.value}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Seleccione aeronave" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {applicableAircraft.map((item) => (
+                    <SelectItem key={item.id} value={String(item.id)}>
+                      {item.aircraft?.acronym ?? `#${item.aircraft_id}`}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
         <div className="grid gap-4 md:grid-cols-2">
           <FormTextField

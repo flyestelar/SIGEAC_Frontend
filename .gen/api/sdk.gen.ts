@@ -962,6 +962,12 @@ import type {
   ObligatoryReportIndexData,
   ObligatoryReportIndexErrors,
   ObligatoryReportIndexResponses,
+  ObligatoryReportServeDocumentData,
+  ObligatoryReportServeDocumentErrors,
+  ObligatoryReportServeDocumentResponses,
+  ObligatoryReportServeImageData,
+  ObligatoryReportServeImageErrors,
+  ObligatoryReportServeImageResponses,
   ObligatoryReportShowData,
   ObligatoryReportShowErrors,
   ObligatoryReportShowResponses,
@@ -1333,6 +1339,12 @@ import type {
   SMsActivityOpenActivityData,
   SMsActivityOpenActivityErrors,
   SMsActivityOpenActivityResponses,
+  SMsActivityServeDocumentData,
+  SMsActivityServeDocumentErrors,
+  SMsActivityServeDocumentResponses,
+  SMsActivityServeImageData,
+  SMsActivityServeImageErrors,
+  SMsActivityServeImageResponses,
   SMsActivityShowData,
   SMsActivityShowErrors,
   SMsActivityShowResponses,
@@ -2424,20 +2436,6 @@ export const airworthinessDirectiveApplicabilitiesUpdate = <ThrowOnError extends
     },
   });
 
-export const airworthinessDirectiveComplianceControlsDestroy = <ThrowOnError extends boolean = false>(
-  options: Options<AirworthinessDirectiveComplianceControlsDestroyData, ThrowOnError>,
-) =>
-  (options.client ?? client).delete<
-    AirworthinessDirectiveComplianceControlsDestroyResponses,
-    AirworthinessDirectiveComplianceControlsDestroyErrors,
-    ThrowOnError
-  >({
-    responseType: 'json',
-    security: [{ scheme: 'bearer', type: 'http' }],
-    url: '/airworthiness-directives/{directiveId}/applicabilities/{applicabilityId}/compliance-control',
-    ...options,
-  });
-
 export const airworthinessDirectiveComplianceControlsStore = <ThrowOnError extends boolean = false>(
   options: Options<AirworthinessDirectiveComplianceControlsStoreData, ThrowOnError>,
 ) =>
@@ -2448,12 +2446,26 @@ export const airworthinessDirectiveComplianceControlsStore = <ThrowOnError exten
   >({
     responseType: 'json',
     security: [{ scheme: 'bearer', type: 'http' }],
-    url: '/airworthiness-directives/{directiveId}/applicabilities/{applicabilityId}/compliance-control',
+    url: '/airworthiness-directives/{directiveId}/compliance-controls',
     ...options,
     headers: {
       'Content-Type': 'application/json',
       ...options.headers,
     },
+  });
+
+export const airworthinessDirectiveComplianceControlsDestroy = <ThrowOnError extends boolean = false>(
+  options: Options<AirworthinessDirectiveComplianceControlsDestroyData, ThrowOnError>,
+) =>
+  (options.client ?? client).delete<
+    AirworthinessDirectiveComplianceControlsDestroyResponses,
+    AirworthinessDirectiveComplianceControlsDestroyErrors,
+    ThrowOnError
+  >({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/airworthiness-directives/{directiveId}/compliance-controls/{controlId}',
+    ...options,
   });
 
 export const airworthinessDirectiveComplianceControlsUpdate = <ThrowOnError extends boolean = false>(
@@ -2466,7 +2478,7 @@ export const airworthinessDirectiveComplianceControlsUpdate = <ThrowOnError exte
   >({
     responseType: 'json',
     security: [{ scheme: 'bearer', type: 'http' }],
-    url: '/airworthiness-directives/{directiveId}/applicabilities/{applicabilityId}/compliance-control',
+    url: '/airworthiness-directives/{directiveId}/compliance-controls/{controlId}',
     ...options,
     headers: {
       'Content-Type': 'application/json',
@@ -2484,7 +2496,7 @@ export const airworthinessDirectiveComplianceControlsStoreExecution = <ThrowOnEr
   >({
     responseType: 'json',
     security: [{ scheme: 'bearer', type: 'http' }],
-    url: '/airworthiness-directives/{directiveId}/applicabilities/{applicabilityId}/compliance-records',
+    url: '/airworthiness-directives/{directiveId}/compliance-controls/{controlId}/records',
     ...options,
     headers: {
       'Content-Type': 'application/json',
@@ -6199,6 +6211,30 @@ export const obligatoryReportGeneratePdfReport = <ThrowOnError extends boolean =
     ...options,
   });
 
+export const obligatoryReportServeImage = <ThrowOnError extends boolean = false>(
+  options: Options<ObligatoryReportServeImageData, ThrowOnError>,
+) =>
+  (options.client ?? client).get<ObligatoryReportServeImageResponses, ObligatoryReportServeImageErrors, ThrowOnError>({
+    responseType: 'blob',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/{company}/sms/obligatory-reports/{id}/image/{filePath}',
+    ...options,
+  });
+
+export const obligatoryReportServeDocument = <ThrowOnError extends boolean = false>(
+  options: Options<ObligatoryReportServeDocumentData, ThrowOnError>,
+) =>
+  (options.client ?? client).get<
+    ObligatoryReportServeDocumentResponses,
+    ObligatoryReportServeDocumentErrors,
+    ThrowOnError
+  >({
+    responseType: 'blob',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/{company}/sms/obligatory-reports/{id}/document/{filePath}',
+    ...options,
+  });
+
 /**
  * Display a listing of the resource
  */
@@ -7638,6 +7674,26 @@ export const articleUpdate2 = <ThrowOnError extends boolean = false>(
     },
   });
 
+export const sMsActivityServeImage = <ThrowOnError extends boolean = false>(
+  options: Options<SMsActivityServeImageData, ThrowOnError>,
+) =>
+  (options.client ?? client).get<SMsActivityServeImageResponses, SMsActivityServeImageErrors, ThrowOnError>({
+    responseType: 'blob',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/{company}/sms/activities/image/{filePath}',
+    ...options,
+  });
+
+export const sMsActivityServeDocument = <ThrowOnError extends boolean = false>(
+  options: Options<SMsActivityServeDocumentData, ThrowOnError>,
+) =>
+  (options.client ?? client).get<SMsActivityServeDocumentResponses, SMsActivityServeDocumentErrors, ThrowOnError>({
+    responseType: 'blob',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/{company}/sms/activities/document/{filePath}',
+    ...options,
+  });
+
 /**
  * Obtener lista de actividades con filtro opcional de rango de fechas
  */
@@ -8708,7 +8764,7 @@ export const voluntaryReportServeImage = <ThrowOnError extends boolean = false>(
   (options.client ?? client).get<VoluntaryReportServeImageResponses, VoluntaryReportServeImageErrors, ThrowOnError>({
     responseType: 'blob',
     security: [{ scheme: 'bearer', type: 'http' }],
-    url: '/{company}/sms/voluntary-reports/{filePath}/image/{filePath}',
+    url: '/{company}/sms/voluntary-reports/{id}/image/{filePath}',
     ...options,
   });
 
@@ -8722,7 +8778,7 @@ export const voluntaryReportServeDocument = <ThrowOnError extends boolean = fals
   >({
     responseType: 'blob',
     security: [{ scheme: 'bearer', type: 'http' }],
-    url: '/{company}/sms/voluntary-reports/{filePath}/document/{filePath}',
+    url: '/{company}/sms/voluntary-reports/{id}/document/{filePath}',
     ...options,
   });
 
