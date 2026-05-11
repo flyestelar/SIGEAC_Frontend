@@ -11,7 +11,6 @@ import { getBadgeStatusClass } from "@/lib/sms/utils";
 import { VoluntaryReportDropdownActions } from "@/components/dropdowns/mantenimiento/sms/VoluntaryReportDropdownActions";
 
 export const columns: ColumnDef<VoluntaryReport>[] = [
-
     {
         accessorKey: "report_date",
         header: ({ column }) => (

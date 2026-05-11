@@ -208,14 +208,10 @@ export const getReportCode = (report: { id: number; report_number?: string | nul
 };
 
 export const buildVoluntaryDetails = (report: VoluntaryReportView): DetailItem[] => [
-    { label: "Codigo", value: getReportCode(report, "RVP") },
     { label: "Fecha del reporte", value: formatDisplayDate(report.report_date) },
     { label: "Fecha de identificacion", value: formatDisplayDate(report.identification_date) },
     { label: "Estado", value: report.status },
-    { label: "Lugar del peligro", value: report.danger_location || formatLocationLabel(report.location) },
     { label: "Area del peligro", value: report.danger_area || report.identification_area },
-    { label: "Ubicacion del aeropuerto", value: report.airport_location || "N/A" },
-    { label: "Identificacion vinculada", value: report.danger_identification_id ?? "N/A" },
     { label: "Nombre", value: report.reporter_name || "N/A" },
     { label: "Apellido", value: report.reporter_last_name || "N/A" },
     { label: "Telefono", value: report.reporter_phone || "N/A" },
@@ -289,12 +285,6 @@ export const buildDangerIdentificationDetails = (notification: HazardNotificatio
     { label: "Ubicacion", value: notification.location ? formatLocationLabel(notification.location) : "N/A" },
     { label: "Fuente de informacion", value: notification.information_source?.name || "N/A" },
     {
-        label: "Defensas actuales",
-        value: notification.current_defenses,
-        fullWidth: true,
-        contentClassName: "whitespace-pre-wrap",
-    },
-    {
         label: "Descripcion",
         value: notification.description,
         fullWidth: true,
@@ -359,8 +349,7 @@ export const buildControlDetails = (control: FollowUpControlLike): DetailItem[] 
         fullWidth: true,
         contentClassName: "whitespace-pre-wrap",
     },
-    { label: "Imagen", value: control.image || "N/A" },
-    { label: "Documento", value: control.document || "N/A" },
+
 ];
 
 export const buildAnalysisEntries = (

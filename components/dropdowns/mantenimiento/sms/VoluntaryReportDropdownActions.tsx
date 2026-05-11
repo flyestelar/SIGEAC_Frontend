@@ -1,8 +1,9 @@
 "use client";
 
-import { CheckCheck, EyeIcon, Loader2, MoreHorizontal } from "lucide-react";
+import { CheckCheck, EyeIcon, Loader2, LockKeyhole, MoreHorizontal } from "lucide-react";
 import { useRouter } from "next/navigation";
 
+import CloseVoluntaryReportForm from "@/components/forms/mantenimiento/sms/CloseVoluntaryReportForm";
 import { Button } from "@/components/ui/button";
 import {
     DropdownMenu,
@@ -10,6 +11,7 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { getResult } from "@/lib/utils";
 import { useCompanyStore } from "@/stores/CompanyStore";
 import { useState } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -27,7 +29,21 @@ export function VoluntaryReportDropdownActions({ report, kind }: ReportDetailAct
     const router = useRouter();
     const { acceptVoluntaryReport } = useAcceptVoluntaryReport();
     const [openAccept, setOpenAccept] = useState<boolean>(false);
+    const [openCloseReport, setOpenCloseReport] = useState<boolean>(false);
 
+    const mitigationAnalysis = report.hazard_notification?.mitigation_plan?.analysis;
+    const closeResult = mitigationAnalysis?.result
+        ? getResult(mitigationAnalysis.result)
+        : undefined;
+    const canCloseReport = Boolean(
+        kind === "RVP" &&
+        mitigationAnalysis &&
+        mitigationAnalysis.result &&
+        report.status !== "CERRADO" &&
+        (closeResult === "TOLERABLE" || closeResult === "ACEPTABLE")
+    );
+
+    console.log('can close report', canCloseReport, { mitigationAnalysis, closeResult, reportStatus: report.status });
     const handleAccept = async () => {
         const value = {
             company: selectedCompany!.slug,
@@ -68,6 +84,13 @@ export function VoluntaryReportDropdownActions({ report, kind }: ReportDetailAct
                             <CheckCheck className="size-5 text-green-400" />
                             <p className="pl-2">Aceptar</p>
                         </DropdownMenuItem>)}
+
+                    {canCloseReport && (
+                        <DropdownMenuItem onClick={() => setOpenCloseReport(true)}>
+                            <LockKeyhole className="size-5" />
+                            <p className="pl-2">Cerrar reporte</p>
+                        </DropdownMenuItem>
+                    )}
                 </DropdownMenuContent>
             </DropdownMenu>
 
@@ -104,7 +127,27 @@ export function VoluntaryReportDropdownActions({ report, kind }: ReportDetailAct
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
+
+            <Dialog open={openCloseReport} onOpenChange={setOpenCloseReport}>
+                <DialogContent className="sm:max-w-lg">
+                    <DialogHeader>
+                        <DialogTitle className="text-center">
+                            Cerrar reporte voluntario
+                        </DialogTitle>
+                        <DialogDescription className="text-center">
+                            Adjunte el documento PDF de cierre y seleccione la fecha de cierre.
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    {openCloseReport && (
+                        <CloseVoluntaryReportForm
+                            reportId={report.id}
+                            onSuccess={() => setOpenCloseReport(false)}
+                            onCancel={() => setOpenCloseReport(false)}
+                        />
+                    )}
+                </DialogContent>
+            </Dialog>
         </>
     );
 }
-
