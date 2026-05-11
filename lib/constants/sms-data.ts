@@ -321,6 +321,63 @@ export const policyCardsData = [
     },
 ];
 
+export const policyCardsDataOmac = [
+    {
+        icon: Building2,
+        description:
+            "1.	Ejecutar la implementación del sistema de gestión operacional. ",
+    },
+    {
+        icon: Handshake,
+        description:
+            "2.	Ejecutar la implementación del Sistema de Gestión Operacional de manera no punitiva.",
+    },
+    {
+        icon: SearchCheck,
+        description:
+            " 3.	Mejorar continuamente todos los niveles de Gestión de seguridad operacional, para lograr los objetivos trazados por la empresa ",
+    },
+    {
+        icon: ShieldCheck,
+        description:
+            "4.	Identificar continuamente los peligros y gestionar los riesgos.",
+    },
+    {
+        icon: Trophy,
+        description:
+            "5.	Corregir las fallas encontradas, en función de mantener la Seguridad Operacional en el nivel acordado.",
+    },
+    {
+        icon: BookCheck,
+        description:
+            "6.	Incentivar a su personal para que reporten los problemas de la Seguridad Operacional.",
+    },
+
+    {
+        icon: Siren,
+        description:
+            "7.	Comprender los principios en que se basa el Sistema de Gestión de la Seguridad Operacional, apoyando con recursos humanos, materiales y financieros que faciliten el desarrollo del proceso y la puesta en práctica de la política de Seguridad Operacional.",
+    },
+
+    {
+        icon: Gavel,
+        description:
+            "8.	Mantener una cultura de Seguridad Operacional positiva.",
+    },
+
+    {
+        icon: RefreshCcw,
+        description:
+            "9.	Compromete a no tomar acciones punitivas a quien reporte eventos de Seguridad Operacional, o peligros existentes, que den cuenta de condiciones que atenten a la empresa y retroalimentar a quien reporta.",
+    },
+
+    {
+        icon: Users,
+        description:
+            "10.	Asegurarse de que las políticas de Seguridad Operacional sean revisadas constantemente, actualizadas y apoyen el cumplimento del plan de implementación de SMS.",
+    },
+];
+
 export const policyImages = [
     {
         src: `${process.env.NEXT_PUBLIC_STORAGE_BASE_URL}images/sms/politica_1.png`,
@@ -331,6 +388,19 @@ export const policyImages = [
     //   alt: "Política 2",
     // },
 ];
+
+export const policyImagesOmac = [
+    {
+        src: `${process.env.NEXT_PUBLIC_STORAGE_BASE_URL}images/sms/h74_politicas.png`,
+        alt: "Política 1",
+    },
+    // {
+    //   src: `${process.env.NEXT_PUBLIC_STORAGE_BASE_URL}images/sms/politica_2.png`,
+    //   alt: "Política 2",
+    // },
+];
+
+
 
 export const AeronauticalpolicyImages = [
     {

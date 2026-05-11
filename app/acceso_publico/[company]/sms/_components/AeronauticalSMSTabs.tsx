@@ -10,7 +10,6 @@ import {
     Building2,
     ChevronLeft,
     ChevronRight,
-    Eye,
     FileText,
     Shield,
     Target,
@@ -19,12 +18,8 @@ import {
 
 import { CustomCard } from "@/components/cards/CustomCard";
 import { PolicyCard } from "@/components/cards/PolicyCard";
-import { StrategyCard } from "@/components/cards/StrategyCard";
 import ActionPlanDialog from "@/components/dialogs/aerolinea/sms/ActionPlanDialog";
-import FeaturesDialog from "@/components/dialogs/aerolinea/sms/FeaturedDialog";
-import { SMSConceptsDialog } from "@/components/dialogs/aerolinea/sms/SMSConceptsDialog";
 import { ImageGalleryDialog } from "@/components/dialogs/general/ImageGalleryDialog";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -34,10 +29,12 @@ import {
     AeronauticalpolicyImages,
     emergencyPlans,
     policyCardsData,
+    policyImagesOmac,
     smsConcepts,
 } from "@/lib/constants/sms-data";
 import { PillarCard } from "./PillarCard";
 import { PersonCard } from "./PersonCard";
+import AeronauticalStrategiesTab from "./AeronauticalStrategiesTab";
 
 interface SMSTabsProps {
     company: string;
@@ -111,6 +108,19 @@ export const AeronauticalSMSTabs = ({ company, surveyNumbers }: SMSTabsProps) =>
         },
 
     ];
+
+    const OmacGroupSMS = [
+        {
+            title: "Comite de Seguridad Operacional",
+            image: `${storageBaseUrl}images/sms/comite_sms.png`,
+        },
+        {
+            title: "Grupo de Accion de Seguridad Operacional",
+            image: `${storageBaseUrl}images/sms/grupo_de_seguridad.png`,
+        },
+
+
+    ]
 
     const reportActions = [
         {
@@ -286,6 +296,18 @@ export const AeronauticalSMSTabs = ({ company, surveyNumbers }: SMSTabsProps) =>
                                 Principios rectores de una operación segura, justa y enfocada
                                 en la gestión de riesgos.
                             </p>
+                            <ImageGalleryDialog
+                                images={policyImagesOmac}
+                                trigger={
+                                    <Button
+                                        variant="link"
+                                        className="text-xs sm:text-base p-1 h-auto hover:no-underline text-yellow-600 hover:text-yellow-800 transition-colors"
+                                    >
+                                        Ver Políticas Completas
+                                    </Button>
+                                }
+                            />
+
                         </CardHeader>
                         <CardContent>
                             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
@@ -311,10 +333,7 @@ export const AeronauticalSMSTabs = ({ company, surveyNumbers }: SMSTabsProps) =>
                             <BookOpen className="h-5 w-5 text-yellow-600 dark:text-yellow-400" />
                             Galería institucional
                         </CardTitle>
-                        <p className="text-sm leading-6 text-muted-foreground">
-                            Un carrusel visual para recorrer la identidad del portal, su entorno
-                            operativo y referencias institucionales.
-                        </p>
+
                     </CardHeader>
                     <CardContent className="space-y-5">
                         <div className="overflow-hidden rounded-[1.75rem] border border-border/60 bg-muted/20">
@@ -401,10 +420,7 @@ export const AeronauticalSMSTabs = ({ company, surveyNumbers }: SMSTabsProps) =>
                             <Users className="h-5 w-5 text-yellow-600 dark:text-yellow-400" />
                             Personal clave
                         </CardTitle>
-                        <p className="text-sm leading-6 text-muted-foreground">
-                            Tarjetas preparadas para fotos de personas, con marco circular y una
-                            presencia visual más ejecutiva.
-                        </p>
+
                     </CardHeader>
                     <CardContent className="grid gap-5 sm:grid-cols-1 xl:grid-cols-2 2xl:grid-cols-2">
                         {keyPersonnel.map((person) => (
@@ -415,92 +431,43 @@ export const AeronauticalSMSTabs = ({ company, surveyNumbers }: SMSTabsProps) =>
                                 description={person.description}
                             />
                         ))}
-                    </CardContent>                </Card>
+                    </CardContent>
+                </Card>
+
+                <Card>
+                    <CardHeader className="space-y-2">
+                        <CardTitle className="flex items-center gap-2 text-xl">
+                            <Users className="h-5 w-5 text-yellow-600 dark:text-yellow-400" />
+                            Grupos
+                        </CardTitle>
+                        <CardContent className="grid gap-5 sm:grid-cols-1 xl:grid-cols-2 2xl:grid-cols-2">
+                            <PillarCard
+                                key={OmacGroupSMS[0].title}
+                                title={OmacGroupSMS[0].title}
+                                image={OmacGroupSMS[0].image}
+                            />
+
+                            <PillarCard
+                                key={OmacGroupSMS[1].title}
+                                title={OmacGroupSMS[1].title}
+                                image={OmacGroupSMS[1].image}
+                            />
+
+                        </CardContent>
+                    </CardHeader>
+
+                </Card>
             </TabsContent>
 
             <TabsContent value="estrategias" className="mt-6 space-y-4">
-                <Card className="min-h-[300px] border-border/60 shadow-lg">
-                    <CardHeader>
-                        <CardTitle className="text-lg sm:text-xl">
-                            Estrategias de seguridad operacional
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4 text-sm sm:text-base">
-                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                            <div
-                                className="flex cursor-pointer flex-col rounded-2xl border-l-4 border-l-yellow-500 pl-4"
-                                onClick={() => setIsConceptOpen(true)}
-                            >
-                                <StrategyCard
-                                    title="Términos SMS"
-                                    description="Glosario esencial para comprender el lenguaje operativo y preventivo del sistema."
-                                    className="h-full cursor-pointer border border-border/60 bg-background hover:scale-[1.02]"
-                                />
-                            </div>
-
-                            <SMSConceptsDialog
-                                concepts={smsConcepts}
-                                title="Glosario de Términos SMS"
-                                description="Definiciones esenciales para comprender el Sistema de Gestión de Seguridad"
-                                open={isConceptOpen}
-                                onOpenChange={setIsConceptOpen}
-                            />
-
-                            <FeaturesDialog features={responsibilities}>
-                                <div className="flex flex-col rounded-2xl border-l-4 border-l-yellow-500 pl-4">
-                                    <StrategyCard
-                                        title="Responsabilidades SMS"
-                                        description="Funciones clave del personal para sostener una operación segura y alineada con el SMS."
-                                        className="h-full cursor-pointer border border-border/60 bg-background hover:scale-[1.02]"
-                                    />
-                                </div>
-                            </FeaturesDialog>
-
-                            <div
-                                className="flex w-full cursor-pointer flex-col rounded-2xl border-l-4 border-l-yellow-500 pl-4"
-                                onClick={() =>
-                                    router.push(
-                                        `/acceso_publico/${company}/sms/encuesta/${surveyNumbers?.SMS_SURVEY}`
-                                    )
-                                }
-                            >
-                                <StrategyCard
-                                    title="Encuestas SMS"
-                                    description="Evalúa conocimientos, percepción y madurez de la cultura de seguridad."
-                                    className="h-full border border-border/60 bg-background hover:scale-[1.02]"
-                                />
-                            </div>
-
-                            <div
-                                className="flex w-full cursor-pointer flex-col rounded-2xl border-l-4 border-l-yellow-500 pl-4"
-                                onClick={() =>
-                                    router.push(
-                                        `/acceso_publico/${company}/sms/encuesta/${surveyNumbers?.SMS_QUIZ}`
-                                    )
-                                }
-                            >
-                                <StrategyCard
-                                    title="Trivia SMS"
-                                    description="Pon a prueba conocimientos clave sobre prevención, reporte y respuesta."
-                                    className="h-full border border-border/60 bg-background hover:scale-[1.02]"
-                                />
-                            </div>
-
-                            <div
-                                className="flex flex-col rounded-2xl border-l-4 border-l-yellow-500 pl-4 sm:col-span-2"
-                                onClick={() =>
-                                    router.push(`/acceso_publico/${company}/sms/comunicados`)
-                                }
-                            >
-                                <StrategyCard
-                                    title="Comunicados SMS"
-                                    description="Accede a boletines, avisos y comunicaciones preventivas relevantes para toda la organización."
-                                    className="h-full cursor-pointer border border-border/60 bg-background hover:scale-[1.02]"
-                                />
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
+                <AeronauticalStrategiesTab
+                    company={company}
+                    isConceptOpen={isConceptOpen}
+                    setIsConceptOpen={setIsConceptOpen}
+                    smsConcepts={smsConcepts}
+                    responsibilities={responsibilities}
+                    surveyNumbers={surveyNumbers}
+                />
             </TabsContent>
 
             <TabsContent value="plan-respuesta" className="mt-6 space-y-4">

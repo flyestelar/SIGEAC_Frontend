@@ -231,10 +231,14 @@ export const useCloseVoluntaryReport = () => {
                 description: "El reporte voluntario ha sido cerrado correctamente.",
             });
         },
-        onError: (error) => {
-            toast.error("Oops!", {
-                description: "No se pudo cerrar el reporte voluntario...",
+        onError: (error: any) => {
+            // Extraemos el mensaje directamente de la respuesta del backend
+            const serverMessage = error.response?.data?.error || "Error al cerrar el reporte";
+
+            toast.error("Oops", {
+                description: serverMessage,
             });
+
             console.log(error);
         },
     });
