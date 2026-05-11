@@ -4588,6 +4588,15 @@ export type AirworthinessDirectivesStoreData = {
     effective_date?: string | null;
     is_recurring?: boolean;
     pdf_document?: Blob | File | null;
+    controls?: Array<{
+      description?: string | null;
+      calendar_due_date?: string | null;
+      flight_hours_due?: number | null;
+      cycles_due?: number | null;
+      recurrence_interval_days?: number | null;
+      recurrence_interval_hours?: number | null;
+      recurrence_interval_cycles?: number | null;
+    }>;
   };
   path?: never;
   query?: never;

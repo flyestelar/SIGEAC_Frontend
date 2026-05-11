@@ -1,6 +1,5 @@
 'use client';
 
-import CreateAirworthinessDirectiveDialog from '@/components/dialogs/planificacion/directivas/CreateAirworthinessDirectiveDialog';
 import { ContentLayout } from '@/components/layout/ContentLayout';
 import LoadingPage from '@/components/misc/LoadingPage';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -18,7 +17,6 @@ export default function AirworthinessDirectivesPage() {
   const { selectedCompany } = useCompanyStore();
   const { data: directivesResponse, isLoading, isError } = useGetAirworthinessDirectives();
   const [query, setQuery] = useState('');
-  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const directives = useMemo(() => directivesResponse?.data ?? [], [directivesResponse?.data]);
   const totalDirectives = directivesResponse?.meta?.total ?? directives.length;
 
@@ -64,16 +62,13 @@ export default function AirworthinessDirectivesPage() {
             </div>
           </div>
 
-          <Button size="sm" className="gap-2" onClick={() => setIsCreateDialogOpen(true)}>
-            <Plus className="h-4 w-4" />
-            Nueva directiva
+          <Button size="sm" className="gap-2" asChild>
+            <Link href={`/${selectedCompany?.slug}/planificacion/directivas/nueva`}>
+              <Plus className="h-4 w-4" />
+              Nueva directiva
+            </Link>
           </Button>
         </div>
-
-        <CreateAirworthinessDirectiveDialog
-          open={isCreateDialogOpen}
-          onOpenChange={setIsCreateDialogOpen}
-        />
 
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           <div className="rounded-2xl border bg-background p-4">
