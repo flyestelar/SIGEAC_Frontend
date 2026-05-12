@@ -40,7 +40,12 @@ import {
 import LoadingPage from "../../../misc/LoadingPage"
 import { PDFDownloadLink } from "@react-pdf/renderer"
 import RequisitionReportPdf from "@/components/pdf/almacen/RequisitionReportPdf"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger
+} from "@/components/ui/tooltip"
 
 function transformApiData(apiData: any) {
   return {
@@ -66,13 +71,15 @@ function transformApiData(apiData: any) {
   }
 }
 
-const iconClass =
-  "size-5 transition-transform duration-200 group-hover:rotate-[6deg] group-hover:scale-110"
+const iconBase =
+  "size-5 transition-all duration-200 ease-out hover:scale-110 hover:text-black"
+
+const iconReject =
+  "size-5 transition-all duration-200 ease-out text-orange-600 hover:text-black hover:scale-110"
 
 const itemBase =
   "group flex items-center justify-center rounded-md p-2 transition-all duration-150 hover:bg-muted/60 active:scale-95"
 
-// helper visual disabled
 const disabledClass = "opacity-40 grayscale pointer-events-none"
 
 const RequisitionsDropdownActions = ({ req }: { req: Requisition }) => {
@@ -116,7 +123,11 @@ const RequisitionsDropdownActions = ({ req }: { req: Requisition }) => {
     setOpenDelete(false)
   }
 
-  const handleReject = async (id: number, updated_by: string, status: string) => {
+  const handleReject = async (
+    id: number,
+    updated_by: string,
+    status: string
+  ) => {
     await updateStatusRequisition.mutateAsync({
       id,
       data: { status, updated_by },
@@ -127,12 +138,10 @@ const RequisitionsDropdownActions = ({ req }: { req: Requisition }) => {
 
   return (
     <TooltipProvider>
+
       <DropdownMenu open={open} onOpenChange={setOpen}>
         <DropdownMenuTrigger asChild>
-          <Button
-            variant="ghost"
-            className="h-8 w-8 p-0 hover:bg-muted/60 transition-colors"
-          >
+          <Button variant="ghost" className="h-8 w-8 p-0 hover:bg-muted/60 transition-colors">
             <MoreHorizontal className="h-4 w-4" />
           </Button>
         </DropdownMenuTrigger>
@@ -141,15 +150,12 @@ const RequisitionsDropdownActions = ({ req }: { req: Requisition }) => {
           align="center"
           className="
             flex gap-2 justify-center
-            animate-in fade-in zoom-in-95
-            duration-150
+            animate-in fade-in zoom-in-95 duration-150
             rounded-lg border bg-background/95 backdrop-blur-sm
-            shadow-lg
-            p-2
-            overflow-visible
-            z-[999]
+            shadow-lg p-2 overflow-visible z-[999]
           "
         >
+
           {(userRoles.includes("ANALISTA_COMPRAS") ||
             userRoles.includes("SUPERUSER")) && (
             <>
@@ -157,18 +163,14 @@ const RequisitionsDropdownActions = ({ req }: { req: Requisition }) => {
               <Tooltip>
                 <TooltipTrigger asChild>
                   <span>
-                    <DropdownMenuItem
-                      asChild
-                      disabled={!canQuote}
-                      className="p-0"
-                    >
+                    <DropdownMenuItem asChild disabled={!canQuote} className="p-0">
                       <button
                         onClick={() => setOpenConfirm(true)}
                         className={`${itemBase} text-emerald-600 ${
                           !canQuote ? disabledClass : ""
                         }`}
                       >
-                        <Receipt className={iconClass} />
+                        <Receipt className={iconBase} />
                       </button>
                     </DropdownMenuItem>
                   </span>
@@ -186,11 +188,11 @@ const RequisitionsDropdownActions = ({ req }: { req: Requisition }) => {
                       className="p-0"
                     >
                       <button
-                        className={`${itemBase} text-orange-500 ${
+                        className={`${itemBase} text-orange-600 ${
                           !canReject ? disabledClass : ""
                         }`}
                       >
-                        <ClipboardX className={iconClass} />
+                        <ClipboardX className={iconReject} />
                       </button>
                     </DropdownMenuItem>
                   </span>
@@ -209,7 +211,7 @@ const RequisitionsDropdownActions = ({ req }: { req: Requisition }) => {
               <TooltipTrigger asChild>
                 <DropdownMenuItem className="p-0">
                   <button className={`${itemBase} text-blue-600`}>
-                    <FileDown className={iconClass} />
+                    <FileDown className={iconBase} />
                   </button>
                 </DropdownMenuItem>
               </TooltipTrigger>
@@ -220,17 +222,15 @@ const RequisitionsDropdownActions = ({ req }: { req: Requisition }) => {
           {/* DELETE */}
           <Tooltip>
             <TooltipTrigger asChild>
-              <DropdownMenuItem
-                onClick={() => setOpenDelete(true)}
-                className="p-0"
-              >
-                <button className={`${itemBase} text-red-500`}>
-                  <Trash2 className={iconClass} />
+              <DropdownMenuItem onClick={() => setOpenDelete(true)} className="p-0">
+                <button className={`${itemBase} text-red-600`}>
+                  <Trash2 className={iconBase} />
                 </button>
               </DropdownMenuItem>
             </TooltipTrigger>
             <TooltipContent>Eliminar</TooltipContent>
           </Tooltip>
+
         </DropdownMenuContent>
       </DropdownMenu>
 
@@ -329,6 +329,7 @@ const RequisitionsDropdownActions = ({ req }: { req: Requisition }) => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
     </TooltipProvider>
   )
 }

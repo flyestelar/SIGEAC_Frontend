@@ -6,13 +6,31 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu"
+
 import { PurchaseOrder } from "@/types"
 import { ClipboardCheck, MoreHorizontal, Minus } from "lucide-react"
 import { useState } from "react"
 import { CompletePurchaseForm } from "../../../forms/mantenimiento/compras/CompletePurchaseForm"
 import { Button } from "../../../ui/button"
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "../../../ui/dialog"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle
+} from "../../../ui/dialog"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger
+} from "@/components/ui/tooltip"
+
+const iconClass =
+  "size-5 text-green-600 transition-all duration-200 ease-out hover:scale-110 hover:text-black"
+
+const iconDisabled =
+  "size-4 text-muted-foreground/30"
 
 const PurchaseOrderDropdownActions = ({ po }: { po: PurchaseOrder }) => {
   const [openApprove, setOpenApprove] = useState<boolean>(false)
@@ -21,15 +39,19 @@ const PurchaseOrderDropdownActions = ({ po }: { po: PurchaseOrder }) => {
 
   return (
     <TooltipProvider>
+
       {isInactive ? (
         <Tooltip>
           <TooltipTrigger asChild>
             <Button variant="ghost" className="h-8 w-8 p-0 cursor-not-allowed">
               <span className="sr-only">Sin acciones</span>
-              <Minus className="h-4 w-4 text-gray-300" />
+              <Minus className={iconDisabled} />
             </Button>
           </TooltipTrigger>
-          <TooltipContent>No hay acciones disponibles para una orden de compra pagada.</TooltipContent>
+
+          <TooltipContent>
+            No hay acciones disponibles para una orden de compra pagada.
+          </TooltipContent>
         </Tooltip>
       ) : (
         <DropdownMenu>
@@ -40,13 +62,27 @@ const PurchaseOrderDropdownActions = ({ po }: { po: PurchaseOrder }) => {
             </Button>
           </DropdownMenuTrigger>
 
-          <DropdownMenuContent align="center" className="flex gap-2 justify-center">
+          <DropdownMenuContent
+            align="center"
+            className="
+              flex gap-2 justify-center
+              animate-in fade-in zoom-in-95 duration-150
+              rounded-lg border bg-background/95 backdrop-blur-sm
+              shadow-lg p-2 overflow-visible z-[999]
+            "
+          >
             <Tooltip>
               <TooltipTrigger asChild>
-                <DropdownMenuItem onClick={() => setOpenApprove(true)}>
-                  <ClipboardCheck className="size-5 text-green-500" />
+                <DropdownMenuItem
+                  onClick={() => setOpenApprove(true)}
+                  className="p-0"
+                >
+                  <button className="flex items-center justify-center p-2 rounded-md transition-all duration-150 hover:bg-muted/60 active:scale-95">
+                    <ClipboardCheck className={iconClass} />
+                  </button>
                 </DropdownMenuItem>
               </TooltipTrigger>
+
               <TooltipContent>Completar compra</TooltipContent>
             </Tooltip>
           </DropdownMenuContent>
@@ -56,15 +92,22 @@ const PurchaseOrderDropdownActions = ({ po }: { po: PurchaseOrder }) => {
       <Dialog open={openApprove} onOpenChange={setOpenApprove}>
         <DialogContent className="max-w-lg lg:max-w-2xl">
           <DialogHeader>
-            <DialogTitle className="text-center">Completar Compra</DialogTitle>
+            <DialogTitle className="text-center">
+              Completar Compra
+            </DialogTitle>
+
             <DialogDescription className="text-center p-2 mb-0 pb-0">
               Ingrese los datos de la compra para confirmar la orden.
             </DialogDescription>
 
-            <CompletePurchaseForm po={po} onClose={() => setOpenApprove(false)} />
+            <CompletePurchaseForm
+              po={po}
+              onClose={() => setOpenApprove(false)}
+            />
           </DialogHeader>
         </DialogContent>
       </Dialog>
+
     </TooltipProvider>
   )
 }
