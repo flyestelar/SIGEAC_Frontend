@@ -13,6 +13,8 @@ import CompanySelect from "@/components/selects/CompanySelect";
 const CompanyBootstrap = () => {
   const router = useRouter();
   const navigatingRef = useRef(false);
+  const resolvedRef = useRef(false);
+  const companyAutoSelectedRef = useRef(false);
 
   const { user, loading: userLoading } = useAuth();
 
@@ -80,7 +82,7 @@ const CompanyBootstrap = () => {
   };
 
   /**
-   * RESOLVER ESTACIÓN (solo sugerencia)
+   * RESOLVER ESTACIÓN (sin cambios)
    */
   const resolveStation = (
     companyId: number | string,
@@ -108,7 +110,8 @@ const CompanyBootstrap = () => {
         !hydrated ||
         userLoading ||
         !user ||
-        navigatingRef.current
+        navigatingRef.current ||
+        resolvedRef.current
       ) {
         return;
       }
@@ -160,10 +163,16 @@ const CompanyBootstrap = () => {
       }
 
       /**
-       * CASO 2: NO hay company seleccionada → NO forzar ninguna
-       * 👉 este es el FIX CLAVE que faltaba
+       * CASO 2: COMPANY única → auto select
        */
       if (!selectedCompany) {
+        if (
+          user.companies?.length === 1 &&
+          !companyAutoSelectedRef.current
+        ) {
+          companyAutoSelectedRef.current = true;
+          setSelectedCompany(user.companies[0]);
+        }
         return;
       }
 
@@ -186,7 +195,7 @@ const CompanyBootstrap = () => {
         if (!locations?.length) return;
 
         /**
-         * CASO A: SOLO 1 estación → auto-select obligatorio
+         * CASO A: SOLO 1 estación → auto select + navigate
          */
         if (locations.length === 1) {
           const station =
@@ -207,34 +216,11 @@ const CompanyBootstrap = () => {
 
         /**
          * CASO B: MÚLTIPLES estaciones → NO auto-select
-         * 👉 solo sugerimos última, pero NO forzamos navegación
          */
-        const suggestedStation = resolveStation(
-          company.id,
-          locations
-        );
 
-        const history = getHistory();
+        resolvedRef.current = true;
 
-        const last = history[String(company.id)];
-
-        /**
-         * SOLO precargar si coincide con historial,
-         * pero NO navegar ni forzar selección si hay múltiples
-         */
-        if (last && last === suggestedStation) {
-          setSelectedStation(suggestedStation);
-        } else {
-          setSelectedStation("");
-        }
-
-        saveHistory(company.id, suggestedStation);
-
-        /**
-         * IMPORTANTE:
-         * NO router.replace aquí
-         * el usuario debe elegir estación
-         */
+        return;
       } catch (error) {
         console.error(error);
       }
