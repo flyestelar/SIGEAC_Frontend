@@ -151,6 +151,10 @@ export default function EditAircraftPage({ params }: { params: { acronym: string
                 part_number: part.part_number,
                 serial: part.serial || "",
                 manufacturer_id: part.manufacturer_id?.toString() || "",
+                type: part.type ? String(part.type).charAt(0).toUpperCase() + String(part.type).slice(1).toLowerCase() : "",
+                ata_chapter: part.ata_chapter || part.ata_number || part.ata || "",
+                position: part.position ?? (part as any).position ?? null,
+                part_order: part.part_order ?? null,
                 time_since_new: Math.round(Number(part.time_since_new || part.part_hours || 0) * 100) / 100,
                 time_since_overhaul: Math.round(Number(part.time_since_overhaul || 0) * 100) / 100,
                 cycles_since_new: Math.round(Number(part.cycles_since_new || part.part_cycles || 0)),
@@ -166,7 +170,20 @@ export default function EditAircraftPage({ params }: { params: { acronym: string
     const transformAssignmentsToFormFormat = useCallback((assignments: AircraftAssignment[] = []): AircraftPart[] => {
         const uniqueRootParts = assignments
             .filter((assignment) => assignment.removed_date === null || assignment.removed_date === undefined)
-            .map((assignment) => assignment.aircraft_part)
+            .map((assignment) => {
+                const src = assignment.aircraft_part as any;
+                const assignmentData = assignment as any;
+                return {
+                    ...(src || {}),
+                    ata_chapter: assignmentData.ata_chapter ?? src?.ata_chapter ?? assignmentData.ata_number ?? src?.ata_number ?? src?.ata ?? null,
+                    position: assignmentData.position ?? src?.position ?? null,
+                    part_order: assignmentData.part_order ?? src?.part_order ?? null,
+                    time_since_new: assignmentData.time_since_new ?? src?.time_since_new ?? src?.part_hours ?? null,
+                    time_since_overhaul: assignmentData.time_since_overhaul ?? src?.time_since_overhaul ?? null,
+                    cycles_since_new: assignmentData.cycles_since_new ?? src?.cycles_since_new ?? src?.part_cycles ?? null,
+                    cycles_since_overhaul: assignmentData.cycles_since_overhaul ?? src?.cycles_since_overhaul ?? null,
+                };
+            })
             .filter((part): part is any => Boolean(part) && !part.parent_part_id)
             .filter((part, index, array) => array.findIndex((candidate) => candidate.id === part.id) === index);
 

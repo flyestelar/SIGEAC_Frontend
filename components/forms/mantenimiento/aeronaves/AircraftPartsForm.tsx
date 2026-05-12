@@ -8,7 +8,7 @@ import { useToast } from "@/components/ui/use-toast"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { AlertTriangle } from "lucide-react"
 import PartsList from "./parts-form/PartsList"
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { useFieldArray, useForm } from "react-hook-form"
 import { z } from "zod"
 
@@ -95,13 +95,23 @@ const nullableNumber = (value: number | string | null | undefined) => {
     return Number.isFinite(parsed) ? parsed : null;
 };
 
+const normalizePartType = (type?: string | null) => {
+    if (!type) return "";
+    const raw = String(type).trim();
+    const upper = raw.toUpperCase();
+
+    if (upper === "APU") return "APU";
+    if (raw === upper) return upper.charAt(0) + upper.slice(1).toLowerCase();
+    return raw;
+};
+
 const normalizePart = (part: any): z.infer<typeof PartSchema> => {
     const normalizedSubParts = (part.sub_parts || []).map(normalizePart);
     return {
         id: part.id,
         serial: part.serial || "",
         manufacturer_id: part.manufacturer_id || "",
-        type: part.type ? String(part.type).charAt(0).toUpperCase() + String(part.type).slice(1) : "",
+        type: normalizePartType(part.type),
         part_number: part.part_number || "",
         ata_chapter: part.ata_chapter || part.ata_number || part.ata || "",
         position: part.position || undefined,
@@ -122,12 +132,29 @@ const buildPartsFromAssignments = (assignments: AircraftAssignmentLike[] = []): 
 
     const activeEntries: RawPart[] = entries.map((assignment) => {
         const src = (assignment.aircraft_part as any) ?? (assignment as any);
-        const position = src.position ?? (assignment as any).position ?? null;
-        const part_order = src.part_order ?? (assignment as any).part_order ?? null;
-        const ata_chapter = (src.ata_chapter ?? (assignment as any).ata_chapter) ?? (assignment as any).ata_number ?? null;
+        const assignmentData = assignment as any;
+        const position = assignmentData.position ?? src.position ?? null;
+        const part_order = assignmentData.part_order ?? src.part_order ?? null;
+        const ata_chapter = assignmentData.ata_chapter ?? src.ata_chapter ?? assignmentData.ata_number ?? src.ata_number ?? src.ata ?? null;
+        const time_since_new = assignmentData.time_since_new ?? src.time_since_new ?? null;
+        const time_since_overhaul = assignmentData.time_since_overhaul ?? src.time_since_overhaul ?? null;
+        const cycles_since_new = assignmentData.cycles_since_new ?? src.cycles_since_new ?? null;
+        const cycles_since_overhaul = assignmentData.cycles_since_overhaul ?? src.cycles_since_overhaul ?? null;
+        const condition_type = assignmentData.condition_type ?? src.condition_type ?? "NEW";
+        const type = assignmentData.type ?? src.type ?? "";
+        const serial = assignmentData.serial ?? src.serial ?? "";
+        const manufacturer_id = assignmentData.manufacturer_id ?? src.manufacturer_id ?? "";
 
         return {
             ...(src ?? {}),
+            type,
+            serial,
+            manufacturer_id,
+            time_since_new,
+            time_since_overhaul,
+            cycles_since_new,
+            cycles_since_overhaul,
+            condition_type,
             position,
             part_order,
             ata_chapter,
@@ -196,7 +223,10 @@ export function AircraftPartsInfoForm({ onNext, onBack, initialData }: {
     const [tempDate, setTempDate] = useState<string>(new Date().toISOString().split('T')[0]);
 
     const normalizedInitialData = useMemo(() => {
-        if (initialData?.parts) return { parts: initialData.parts }
+        if (initialData?.parts) {
+            const parts = (initialData.parts || []).map((p: any) => normalizePart(p));
+            return { parts: parts.length ? parts : [{ condition_type: "NEW", removed_date: null }] };
+        }
 
         if (initialData?.aircraft_parts) {
             const parts = (initialData.aircraft_parts || []).map((p: any) => normalizePart(p));
@@ -215,6 +245,10 @@ export function AircraftPartsInfoForm({ onNext, onBack, initialData }: {
         resolver: zodResolver(PartsFormSchema),
         defaultValues: normalizedInitialData
     })
+
+    useEffect(() => {
+        form.reset(normalizedInitialData);
+    }, [form, normalizedInitialData]);
 
     const { fields, append } = useFieldArray({
         control: form.control,
@@ -362,5 +396,4 @@ export function AircraftPartsInfoForm({ onNext, onBack, initialData }: {
         </Form>
     );
 }
-
 
