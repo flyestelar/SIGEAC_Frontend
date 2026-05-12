@@ -2,7 +2,6 @@
 
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
-
 import {
   Calendar as CalendarIcon,
   AlertCircle,
@@ -12,13 +11,10 @@ import {
   CalendarDays,
   CalendarX
 } from "lucide-react";
-
 import { useState, useMemo } from "react";
-
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Calendar } from "@/components/ui/calendar";
-
 import {
   Select,
   SelectContent,
@@ -26,20 +22,17 @@ import {
   SelectTrigger,
   SelectValue
 } from "@/components/ui/select";
-
 import {
   Popover,
   PopoverContent,
   PopoverTrigger
 } from "@/components/ui/popover";
-
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-
 import { cn } from "@/lib/utils";
 
 /* ---------------- TYPES ---------------- */
@@ -51,40 +44,30 @@ interface Props {
   endDate?: Date;
   setStartDate: (d?: Date) => void;
   setEndDate: (d?: Date) => void;
-
   aircraft: string | null;
   setAircraft: (v: string | null) => void;
   aircrafts?: any[];
   isLoadingAircrafts?: boolean;
-
   workOrder: string | null;
   setWorkOrder: (v: string | null) => void;
-
   departmentId: string | null;
   setDepartmentId: (v: string | null) => void;
   departments?: any[];
   isLoadingDepartments?: boolean;
-
   authorizedEmployeeId: string | null;
   setAuthorizedEmployeeId: (v: string | null) => void;
   authorizedEmployees?: any[];
   isLoadingEmployees?: boolean;
-
   thirdPartyId: string | null;
   setThirdPartyId: (v: string | null) => void;
   thirdParties?: any[];
   isLoadingThirdParties?: boolean;
-
   dispatchType: DispatchType | null;
   setDispatchType: (v: DispatchType | null) => void;
-
   isDateRangeInvalid: boolean;
-  canFilterByPlanificacion: boolean;
-
-  // ================= ARTÍCULOS (NUEVO) =================
+  isPlanificacionOnlyFilters: boolean;
   articles?: any[];
   isLoadingArticles?: boolean;
-
   articleFilters: {
     part_number: string;
     alternative_part_number: string;
@@ -93,7 +76,6 @@ interface Props {
     variant_type: string;
     brand_model: string;
   };
-
   setArticleFilters: (v: any) => void;
 }
 
@@ -104,50 +86,38 @@ export function DispatchReportFilters({
   endDate,
   setStartDate,
   setEndDate,
-
   aircraft,
   setAircraft,
   aircrafts,
   isLoadingAircrafts,
-
   workOrder,
   setWorkOrder,
-
   departmentId,
   setDepartmentId,
   departments,
   isLoadingDepartments,
-
   authorizedEmployeeId,
   setAuthorizedEmployeeId,
   authorizedEmployees,
   isLoadingEmployees,
-
   thirdPartyId,
   setThirdPartyId,
   thirdParties,
   isLoadingThirdParties,
-
   dispatchType,
   setDispatchType,
-
   isDateRangeInvalid,
-  canFilterByPlanificacion,
-
-  // ================= ARTÍCULOS =================
+  isPlanificacionOnlyFilters,
   articles = [],
   isLoadingArticles,
   articleFilters,
   setArticleFilters
 }: Props) {
   const today = new Date();
-
   const [openGeneral, setOpenGeneral] = useState(false);
   const [openItems, setOpenItems] = useState(false);
-
   const [openStartDate, setOpenStartDate] = useState(false);
   const [openEndDate, setOpenEndDate] = useState(false);
-
   const [partNumberSearch, setPartNumberSearch] = useState("");
   const [altPartSearch, setAltPartSearch] = useState("");
   const [descriptionSearch, setDescriptionSearch] = useState("");
@@ -222,36 +192,41 @@ export function DispatchReportFilters({
 
   // ================= RESUMEN FILTRO GENERAL =================
   const generalSelectedFilters = [
-    aircraft && canFilterByPlanificacion && {
+    aircraft && {
       label: "Aeronave",
       value:
         aircrafts?.find((a) => String(a.id) === String(aircraft))?.acronym ??
         aircraft,
     },
-    workOrder && canFilterByPlanificacion && {
+
+    workOrder && {
       label: "OT",
       value: workOrder,
     },
-    !canFilterByPlanificacion && departmentId && {
+
+    !isPlanificacionOnlyFilters && departmentId && {
       label: "Departamento",
       value:
         departments?.find((d) => String(d.id) === String(departmentId))?.name ??
         departmentId,
     },
-    !canFilterByPlanificacion && authorizedEmployeeId && {
+
+    !isPlanificacionOnlyFilters && authorizedEmployeeId && {
       label: "Empresa",
       value:
         authorizedEmployees?.find(
           (e) => String(e.id) === String(authorizedEmployeeId)
         )?.employee_name ?? authorizedEmployeeId,
     },
-    !canFilterByPlanificacion && thirdPartyId && {
+
+    !isPlanificacionOnlyFilters && thirdPartyId && {
       label: "Tercero",
       value:
         thirdParties?.find((t) => String(t.id) === String(thirdPartyId))?.name ??
         thirdPartyId,
     },
-    !canFilterByPlanificacion && dispatchType && {
+
+    !isPlanificacionOnlyFilters && dispatchType && {
       label: "Tipo",
       value: dispatchType === "aeronautical" ? "Aeronáutico" : "General",
     },
@@ -564,7 +539,6 @@ export function DispatchReportFilters({
 
           <PopoverContent className="w-[92vw] max-w-[340px] space-y-4 p-4">
 
-            {canFilterByPlanificacion && (
               <div className="space-y-1">
                 <div className="text-[11px] font-medium text-muted-foreground uppercase tracking-wide">
                   Aeronave
@@ -584,9 +558,7 @@ export function DispatchReportFilters({
                   </SelectContent>
                 </Select>
               </div>
-            )}
 
-            {canFilterByPlanificacion && (
               <div className="space-y-1">
                 <div className="text-[11px] font-medium text-muted-foreground uppercase tracking-wide">
                   Orden de Trabajo
@@ -609,9 +581,9 @@ export function DispatchReportFilters({
                   </SelectContent>
                 </Select>
               </div>
-            )}
 
-            {!canFilterByPlanificacion && (
+
+            {!isPlanificacionOnlyFilters && (
               <>
                 <div className="space-y-1">
                   <div className="text-[11px] font-medium text-muted-foreground uppercase tracking-wide">
@@ -701,7 +673,7 @@ export function DispatchReportFilters({
         </Popover>
       </div>
 
-      {!canFilterByPlanificacion && <div className="w-full flex justify-center">
+      {!isPlanificacionOnlyFilters && <div className="w-full flex justify-center">
         <Popover open={openItems} onOpenChange={setOpenItems}>
           <PopoverTrigger asChild>
             <Button

@@ -46,7 +46,7 @@ export function DispatchReportDialog() {
   const { selectedStation, selectedCompany } = useCompanyStore();
   const { user } = useAuth();
 
-  const canFilterByPlanificacion =
+  const isPlanificacionOnlyFilters =
     user?.roles?.some((r) =>
       ["JEFE_PLANIFICACION", "ANALISTA_PLANIFICACION"].includes(r.name)
     ) ?? false;
@@ -287,18 +287,16 @@ export function DispatchReportDialog() {
         </div>
         <div className="px-6 py-5">
           <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className={`grid mb-4 ${canFilterByPlanificacion ? "grid-cols-1" : "grid-cols-2"}`}>
+            <TabsList className="grid mb-4 grid-cols-2">
               <TabsTrigger value="dispatch" className=" flex gap-2 text-xs rounded-lg transition-all duration-200 data-[state=active]:bg-background data-[state=active]:shadow-md data-[state=active]:shadow-blue-500/10 data-[state=active]:ring-1 data-[state=active]:ring-blue-500/ data-[state=active]:text-blue-600">
                 <FileText className="w-3.5 h-3.5" />
                 Salidas
               </TabsTrigger>
 
-              {!canFilterByPlanificacion && (
-                <TabsTrigger value="balance" className=" flex gap-2 text-xs rounded-lg transition-all duration-200 data-[state=active]:bg-background data-[state=active]:shadow-md data-[state=active]:shadow-blue-500/10 data-[state=active]:ring-1 data-[state=active]:ring-blue-500/ data-[state=active]:text-blue-600">
-                  <Scale className="w-3.5 h-3.5" />
-                  Balance
-                </TabsTrigger>
-              )}
+              <TabsTrigger value="balance" className=" flex gap-2 text-xs rounded-lg transition-all duration-200 data-[state=active]:bg-background data-[state=active]:shadow-md data-[state=active]:shadow-blue-500/10 data-[state=active]:ring-1 data-[state=active]:ring-blue-500/ data-[state=active]:text-blue-600">
+                <Scale className="w-3.5 h-3.5" />
+                Balance
+              </TabsTrigger>
             </TabsList>
 
             <DispatchReportFilters
@@ -333,14 +331,13 @@ export function DispatchReportDialog() {
               dispatchType={dispatchType}
               setDispatchType={setDispatchType}
 
-              // 🔥 ARTÍCULOS UNIFICADOS
               articles={allArticles}
               isLoadingArticles={isLoadingArticles || isLoadingGeneralArticles}
               articleFilters={articleFilters}
               setArticleFilters={setArticleFilters}
 
               isDateRangeInvalid={isDateRangeInvalid}
-              canFilterByPlanificacion={canFilterByPlanificacion}
+              isPlanificacionOnlyFilters={isPlanificacionOnlyFilters}
             />
 
             <TabsContent value="dispatch" className="mt-8">
@@ -385,7 +382,7 @@ export function DispatchReportDialog() {
               </div>
             </TabsContent>
 
-            {!canFilterByPlanificacion && <TabsContent value="balance" className="mt-8">
+            <TabsContent value="balance" className="mt-8">
               <div className="grid grid-cols-[1fr_auto] gap-4 items-center">
                 <Button
                   size="lg"
@@ -425,7 +422,7 @@ export function DispatchReportDialog() {
                   </Tooltip>
                 </TooltipProvider>
               </div>
-            </TabsContent>}
+            </TabsContent>
 
           </Tabs>
         </div>
