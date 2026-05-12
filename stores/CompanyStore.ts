@@ -1,100 +1,63 @@
 import { Company } from "@/types";
 import { create } from "zustand";
+import { persist } from "zustand/middleware";
 
 interface CompanyState {
   selectedCompany: Company | null;
   selectedStation: string;
-}
 
-interface CompanyActions {
-  setSelectedCompany: (company: Company | null) => void;
-  setSelectedStation: (station: string) => void;
-  initFromLocalStorage: () => void;
+  setSelectedCompany: (
+    company: Company | null
+  ) => void;
+
+  setSelectedStation: (
+    station: string
+  ) => void;
+
   reset: () => void;
 }
 
-const initialState: CompanyState = {
+const initialState = {
   selectedCompany: null,
   selectedStation: "",
 };
 
-export const useCompanyStore = create<
-  CompanyState & CompanyActions
->((set) => ({
-  ...initialState,
+export const useCompanyStore =
+  create<CompanyState>()(
+    persist(
+      (set) => ({
+        ...initialState,
 
-  setSelectedCompany: (company) => {
-    set({ selectedCompany: company });
+        setSelectedCompany: (
+          company: Company | null
+        ) => {
+          set({
+            selectedCompany: company,
+          });
+        },
 
-    if (typeof window !== "undefined") {
-      if (company) {
-        localStorage.setItem(
-          "selectedCompany",
-          JSON.stringify(company)
-        );
-      } else {
-        localStorage.removeItem("selectedCompany");
+        setSelectedStation: (
+          station: string
+        ) => {
+          set({
+            selectedStation: station,
+          });
+        },
+
+        reset: () => {
+          set(initialState);
+        },
+      }),
+      {
+        name: "company-storage",
+
+        partialize: (state) => ({
+          selectedCompany:
+            state.selectedCompany,
+
+          selectedStation:
+            state.selectedStation,
+        }),
       }
-    }
-  },
-
-  setSelectedStation: (station) => {
-    set({ selectedStation: station });
-
-    if (typeof window !== "undefined") {
-      if (station) {
-        localStorage.setItem(
-          "selectedStation",
-          station
-        );
-      } else {
-        localStorage.removeItem(
-          "selectedStation"
-        );
-      }
-    }
-  },
-
-  initFromLocalStorage: () => {
-    if (typeof window === "undefined") return;
-
-    try {
-      const savedCompany =
-        localStorage.getItem("selectedCompany");
-
-      const savedStation =
-        localStorage.getItem("selectedStation");
-
-      if (savedCompany) {
-        set({
-          selectedCompany: JSON.parse(savedCompany),
-        });
-      }
-
-      if (savedStation) {
-        set({
-          selectedStation: savedStation,
-        });
-      }
-    } catch (error) {
-      console.error(
-        "Error initializing company store",
-        error
-      );
-
-      localStorage.removeItem("selectedCompany");
-      localStorage.removeItem("selectedStation");
-
-      set(initialState);
-    }
-  },
-
-  reset: () => {
-    set(initialState);
-
-    if (typeof window !== "undefined") {
-      localStorage.removeItem("selectedCompany");
-      localStorage.removeItem("selectedStation");
-    }
-  },
-}));
+    )
+  );
