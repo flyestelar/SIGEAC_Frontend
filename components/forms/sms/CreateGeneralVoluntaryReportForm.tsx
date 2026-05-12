@@ -54,6 +54,18 @@ import {
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useCompanyStore } from "@/stores/CompanyStore";
+import { useGetSmsStations } from "@/hooks/sms/useGetSmsStations";
+import { useGetFindingLocations } from "@/hooks/sms/useGetFindingLocations";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { CreateSmsStationForm } from "@/components/forms/sms/CreateSmsStationForm";
+import { CreateFindingLocationForm } from "@/components/forms/sms/CreateFindingLocationForm";
+import { Plus } from "lucide-react";
 
 interface FormProps {
   onClose: () => void;
@@ -150,6 +162,11 @@ export function CreateGeneralVoluntaryReportForm({
   const { createVoluntaryReport } = useCreateVoluntaryReport();
   const { updateVoluntaryReport } = useUpdateVoluntaryReport();
   const [isAnonymous, setIsAnonymous] = useState(true);
+
+  const { data: stations, isLoading: isLoadingStations } = useGetSmsStations(companySlug);
+  const { data: findingLocations, isLoading: isLoadingLocations } = useGetFindingLocations(companySlug);
+  const [openCreateStation, setOpenCreateStation] = useState(false);
+  const [openCreateLocation, setOpenCreateLocation] = useState(false);
   const router = useRouter();
 
   const { user } = useAuth();
@@ -182,8 +199,8 @@ export function CreateGeneralVoluntaryReportForm({
           })
           .optional(),
 
-    station: z.string(),
-    finding_location: z.string(),
+    sms_station_id: z.number().optional(),
+    sms_finding_location_id: z.number().optional(),
     finding_location_other: z.string(),
     description: z
       .string()
@@ -237,8 +254,8 @@ export function CreateGeneralVoluntaryReportForm({
     resolver: zodResolver(FormSchema),
     defaultValues: {
       report_number: initialData?.report_number || "",
-      finding_location: initialData?.finding_location ?? "",
-      station: initialData?.station ?? "",
+      sms_finding_location_id: (initialData as any)?.sms_finding_location_id || undefined,
+      sms_station_id: (initialData as any)?.sms_station_id || undefined,
       description: initialData?.description || "",
       possible_consequences: Array.isArray(initialData?.possible_consequences)
         ? (initialData.possible_consequences as string[]).join("~")
@@ -257,7 +274,8 @@ export function CreateGeneralVoluntaryReportForm({
     },
   });
 
-  const findingLocation = form.watch("finding_location");
+  const selectedFindingLocationId = form.watch("sms_finding_location_id");
+  const isOtherLocation = findingLocations?.find(l => l.id === selectedFindingLocationId)?.name?.toUpperCase() === "OTRO";
 
   const onSubmit = async (data: FormSchemaType) => {
     if (isAnonymous) {
@@ -321,6 +339,7 @@ export function CreateGeneralVoluntaryReportForm({
   const isPending = createVoluntaryReport.isPending || updateVoluntaryReport.isPending;
 
   return (
+    <>
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col w-full max-w-4xl mx-auto">
         {/* Header strip */}
@@ -370,39 +389,38 @@ export function CreateGeneralVoluntaryReportForm({
             <div className="grid grid-cols-2 gap-3">
               <FormField
                 control={form.control}
-                name="station"
+                name="sms_station_id"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
-                      Base / Estación
-                    </FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <div className="flex items-center justify-between">
+                      <FormLabel className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+                        Base / Estación
+                      </FormLabel>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="h-6 gap-1 px-2 text-xs text-amber-600 hover:text-amber-700 hover:bg-amber-50"
+                        onClick={() => setOpenCreateStation(true)}
+                      >
+                        <Plus className="h-3 w-3" />
+                        Nueva
+                      </Button>
+                    </div>
+                    <Select
+                      onValueChange={(val) => field.onChange(Number(val))}
+                      value={field.value?.toString()}
+                      disabled={isLoadingStations}
+                    >
                       <FormControl>
                         <SelectTrigger className="h-9 text-sm border-border focus:ring-amber-500/30 focus:border-amber-500/50">
-                          <SelectValue placeholder="Seleccionar" />
+                          <SelectValue placeholder={isLoadingStations ? "Cargando..." : "Seleccionar"} />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="PZO">Puerto Ordaz</SelectItem>
-                        <SelectItem value="MIQ">MIQ</SelectItem>
-                        <SelectItem value="PMV">PMV</SelectItem>
-                        <SelectItem value="MAR">MAR</SelectItem>
-                        <SelectItem value="VIG">VIG</SelectItem>
-                        <SelectItem value="BNS">BNS</SelectItem>
-                        <SelectItem value="STD">STD</SelectItem>
-                        <SelectItem value="STB">STB</SelectItem>
-                        <SelectItem value="MUN">MUN</SelectItem>
-                        <SelectItem value="SVSA">SVSA</SelectItem>
-                        <SelectItem value="MADRID">MADRID</SelectItem>
-                        <SelectItem value="CHILE">CHILE</SelectItem>
-                        <SelectItem value="HAVANA">HAVANA</SelectItem>
-                        <SelectItem value="SVZ">SVZ</SelectItem>
-                        <SelectItem value="CANAIMA">CANAIMA</SelectItem>
-                        <SelectItem value="MDPC">MDPC</SelectItem>
-                        <SelectItem value="LIMA">LIMA</SelectItem>
-                        <SelectItem value="PTY">PTY</SelectItem>
-                        <SelectItem value="SKBO">SKBO</SelectItem>
-                        <SelectItem value="N/A">NO APLICA</SelectItem>
+                        {stations?.map((s) => (
+                          <SelectItem key={s.id} value={s.id.toString()}>{s.name}</SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -412,25 +430,38 @@ export function CreateGeneralVoluntaryReportForm({
 
               <FormField
                 control={form.control}
-                name="finding_location"
+                name="sms_finding_location_id"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
-                      Lugar de Identificación
-                    </FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <div className="flex items-center justify-between">
+                      <FormLabel className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+                        Lugar de Identificación
+                      </FormLabel>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="h-6 gap-1 px-2 text-xs text-amber-600 hover:text-amber-700 hover:bg-amber-50"
+                        onClick={() => setOpenCreateLocation(true)}
+                      >
+                        <Plus className="h-3 w-3" />
+                        Nuevo
+                      </Button>
+                    </div>
+                    <Select
+                      onValueChange={(val) => field.onChange(Number(val))}
+                      value={field.value?.toString()}
+                      disabled={isLoadingLocations}
+                    >
                       <FormControl>
                         <SelectTrigger className="h-9 text-sm border-border focus:ring-amber-500/30 focus:border-amber-500/50">
-                          <SelectValue placeholder="Seleccionar" />
+                          <SelectValue placeholder={isLoadingLocations ? "Cargando..." : "Seleccionar"} />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="HANGAR">HANGAR</SelectItem>
-                        <SelectItem value="PLATAFORMA">PLATAFORMA</SelectItem>
-                        <SelectItem value="AREA_ADMON">AREA ADMON</SelectItem>
-                        <SelectItem value="AERONAVE">AERONAVE</SelectItem>
-                        <SelectItem value="AEROPUERTO">AEROPUERTO</SelectItem>
-                        <SelectItem value="OTRO">OTRO</SelectItem>
+                        {findingLocations?.map((loc) => (
+                          <SelectItem key={loc.id} value={loc.id.toString()}>{loc.name}</SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -439,7 +470,7 @@ export function CreateGeneralVoluntaryReportForm({
               />
             </div>
 
-            {findingLocation === "OTRO" && (
+            {isOtherLocation && (
               <FormField
                 control={form.control}
                 name="finding_location_other"
@@ -803,5 +834,26 @@ export function CreateGeneralVoluntaryReportForm({
         </div>
       </form>
     </Form>
+
+    <Dialog open={openCreateStation} onOpenChange={setOpenCreateStation}>
+      <DialogContent className="max-w-sm">
+        <DialogHeader>
+          <DialogTitle>Nueva Estación</DialogTitle>
+          <DialogDescription>La estación quedará disponible en el selector.</DialogDescription>
+        </DialogHeader>
+        <CreateSmsStationForm onClose={() => setOpenCreateStation(false)} />
+      </DialogContent>
+    </Dialog>
+
+    <Dialog open={openCreateLocation} onOpenChange={setOpenCreateLocation}>
+      <DialogContent className="max-w-sm">
+        <DialogHeader>
+          <DialogTitle>Nuevo Lugar de Identificación</DialogTitle>
+          <DialogDescription>El lugar quedará disponible en el selector.</DialogDescription>
+        </DialogHeader>
+        <CreateFindingLocationForm onClose={() => setOpenCreateLocation(false)} />
+      </DialogContent>
+    </Dialog>
+    </>
   );
 }

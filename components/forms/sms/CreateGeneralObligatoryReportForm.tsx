@@ -65,6 +65,18 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
+import { useGetSmsStations } from "@/hooks/sms/useGetSmsStations";
+import { useGetFindingLocations } from "@/hooks/sms/useGetFindingLocations";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { CreateSmsStationForm } from "@/components/forms/sms/CreateSmsStationForm";
+import { CreateFindingLocationForm } from "@/components/forms/sms/CreateFindingLocationForm";
+import { Plus } from "lucide-react";
 
 interface FormProps {
   isEditing?: boolean;
@@ -154,8 +166,8 @@ export function CreateGeneralObligatoryReportForm({
 }: FormProps) {
   const FormSchema = z
     .object({
-      station: z.string().optional(),
-      incident_location: z.string().min(1, { message: "Seleccione el lugar del incidente" }),
+      sms_station_id: z.number().optional(),
+      sms_finding_location_id: z.number().optional(),
       incident_location_other: z.string().optional(),
       description: z
         .string()
@@ -210,6 +222,12 @@ export function CreateGeneralObligatoryReportForm({
   const { company } = useParams<{ company: string }>();
   const { selectedCompany } = useCompanyStore();
 
+  const companySlug = selectedCompany?.slug ?? company;
+  const { data: stations, isLoading: isLoadingStations } = useGetSmsStations(companySlug);
+  const { data: findingLocations, isLoading: isLoadingLocations } = useGetFindingLocations(companySlug);
+  const [openCreateStation, setOpenCreateStation] = useState(false);
+  const [openCreateLocation, setOpenCreateLocation] = useState(false);
+
   const [showOtherInput, setShowOtherInput] = useState(
     initialData?.other_incidents ? true : false
   );
@@ -247,8 +265,8 @@ export function CreateGeneralObligatoryReportForm({
   const form = useForm<FormSchemaType>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
-      station: initialData?.station ?? "",
-      incident_location: initialData?.incident_location ?? "",
+      sms_station_id: (initialData as any)?.sms_station_id || undefined,
+      sms_finding_location_id: (initialData as any)?.sms_finding_location_id || undefined,
       incident_location_other: initialData?.incident_location_other ?? "",
       description: initialData?.description ?? "",
       aircraft_id: initialData?.aircraft_id?.toString(),
@@ -272,8 +290,8 @@ export function CreateGeneralObligatoryReportForm({
       await createObligatoryReport.mutateAsync({
         company: selectedCompany?.slug ?? company,
         data: {
-          station: data.station ?? null,
-          incident_location: data.incident_location,
+          sms_station_id: data.sms_station_id ?? null,
+          sms_finding_location_id: data.sms_finding_location_id ?? null,
           incident_location_other: data.incident_location_other ?? null,
           description: data.description,
           incident_date: data.incident_date.toISOString().split("T")[0],
@@ -309,6 +327,7 @@ export function CreateGeneralObligatoryReportForm({
   };
 
   return (
+    <>
     <Form {...form}>
       <form
         onSubmit={form.handleSubmit(onSubmit)}
@@ -334,39 +353,38 @@ export function CreateGeneralObligatoryReportForm({
           <div className="grid grid-cols-2 gap-3">
             <FormField
               control={form.control}
-              name="station"
+              name="sms_station_id"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-[10px] font-semibold tracking-[0.18em] uppercase text-muted-foreground">
-                    Base de Localización
-                  </FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <div className="flex items-center justify-between">
+                    <FormLabel className="text-[10px] font-semibold tracking-[0.18em] uppercase text-muted-foreground">
+                      Base de Localización
+                    </FormLabel>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="h-6 gap-1 px-2 text-xs text-amber-600 hover:text-amber-700 hover:bg-amber-50"
+                      onClick={() => setOpenCreateStation(true)}
+                    >
+                      <Plus className="h-3 w-3" />
+                      Nueva
+                    </Button>
+                  </div>
+                  <Select
+                    onValueChange={(val) => field.onChange(Number(val))}
+                    value={field.value?.toString()}
+                    disabled={isLoadingStations}
+                  >
                     <FormControl>
                       <SelectTrigger className="h-9 text-sm border-border focus:ring-amber-500/30">
-                        <SelectValue placeholder="Seleccionar base" />
+                        <SelectValue placeholder={isLoadingStations ? "Cargando..." : "Seleccionar base"} />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="PZO">Puerto Ordaz</SelectItem>
-                      <SelectItem value="MIQ">MIQ</SelectItem>
-                      <SelectItem value="PMV">PMV</SelectItem>
-                      <SelectItem value="MAR">MAR</SelectItem>
-                      <SelectItem value="VIG">VIG</SelectItem>
-                      <SelectItem value="BNS">BNS</SelectItem>
-                      <SelectItem value="STD">STD</SelectItem>
-                      <SelectItem value="STB">STB</SelectItem>
-                      <SelectItem value="MUN">MUN</SelectItem>
-                      <SelectItem value="SVSA">SVSA</SelectItem>
-                      <SelectItem value="MADRID">MADRID</SelectItem>
-                      <SelectItem value="CHILE">CHILE</SelectItem>
-                      <SelectItem value="HAVANA">HAVANA</SelectItem>
-                      <SelectItem value="SVZ">SVZ</SelectItem>
-                      <SelectItem value="CANAIMA">CANAIMA</SelectItem>
-                      <SelectItem value="MDPC">MDPC</SelectItem>
-                      <SelectItem value="LIMA">LIMA</SelectItem>
-                      <SelectItem value="PTY">PTY</SelectItem>
-                      <SelectItem value="SKBO">SKBO</SelectItem>
-                      <SelectItem value="N/A">NO APLICA</SelectItem>
+                      {stations?.map((s) => (
+                        <SelectItem key={s.id} value={s.id.toString()}>{s.name}</SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                   <FormMessage className="text-xs" />
@@ -376,25 +394,38 @@ export function CreateGeneralObligatoryReportForm({
 
             <FormField
               control={form.control}
-              name="incident_location"
+              name="sms_finding_location_id"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-[10px] font-semibold tracking-[0.18em] uppercase text-muted-foreground">
-                    Lugar del Incidente
-                  </FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <div className="flex items-center justify-between">
+                    <FormLabel className="text-[10px] font-semibold tracking-[0.18em] uppercase text-muted-foreground">
+                      Lugar del Incidente
+                    </FormLabel>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="h-6 gap-1 px-2 text-xs text-amber-600 hover:text-amber-700 hover:bg-amber-50"
+                      onClick={() => setOpenCreateLocation(true)}
+                    >
+                      <Plus className="h-3 w-3" />
+                      Nuevo
+                    </Button>
+                  </div>
+                  <Select
+                    onValueChange={(val) => field.onChange(Number(val))}
+                    value={field.value?.toString()}
+                    disabled={isLoadingLocations}
+                  >
                     <FormControl>
                       <SelectTrigger className="h-9 text-sm border-border focus:ring-amber-500/30">
-                        <SelectValue placeholder="Seleccionar" />
+                        <SelectValue placeholder={isLoadingLocations ? "Cargando..." : "Seleccionar"} />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="HANGAR">HANGAR</SelectItem>
-                      <SelectItem value="PLATAFORMA">PLATAFORMA</SelectItem>
-                      <SelectItem value="AREA_ADMON">ÁREA ADMON</SelectItem>
-                      <SelectItem value="AERONAVE">AERONAVE</SelectItem>
-                      <SelectItem value="AEROPUERTO">AEROPUERTO</SelectItem>
-                      <SelectItem value="OTRO">OTRO</SelectItem>
+                      {findingLocations?.map((loc) => (
+                        <SelectItem key={loc.id} value={loc.id.toString()}>{loc.name}</SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                   <FormMessage className="text-xs" />
@@ -402,7 +433,7 @@ export function CreateGeneralObligatoryReportForm({
               )}
             />
 
-            {form.watch("incident_location") === "OTRO" && (
+            {findingLocations?.find(l => l.id === form.watch("sms_finding_location_id"))?.name?.toUpperCase() === "OTRO" && (
               <FormField
                 control={form.control}
                 name="incident_location_other"
@@ -782,5 +813,26 @@ export function CreateGeneralObligatoryReportForm({
 
       </form>
     </Form>
+
+    <Dialog open={openCreateStation} onOpenChange={setOpenCreateStation}>
+      <DialogContent className="max-w-sm">
+        <DialogHeader>
+          <DialogTitle>Nueva Estación</DialogTitle>
+          <DialogDescription>La estación quedará disponible en el selector.</DialogDescription>
+        </DialogHeader>
+        <CreateSmsStationForm onClose={() => setOpenCreateStation(false)} />
+      </DialogContent>
+    </Dialog>
+
+    <Dialog open={openCreateLocation} onOpenChange={setOpenCreateLocation}>
+      <DialogContent className="max-w-sm">
+        <DialogHeader>
+          <DialogTitle>Nuevo Lugar del Incidente</DialogTitle>
+          <DialogDescription>El lugar quedará disponible en el selector.</DialogDescription>
+        </DialogHeader>
+        <CreateFindingLocationForm onClose={() => setOpenCreateLocation(false)} />
+      </DialogContent>
+    </Dialog>
+    </>
   );
 }
