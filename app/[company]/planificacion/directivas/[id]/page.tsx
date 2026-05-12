@@ -219,10 +219,7 @@ export default function AirworthinessDirectiveDetailPage() {
   const controls = useMemo(() => controlsResponse?.data ?? [], [controlsResponse?.data]);
   const records = useMemo(() => recordsResponse?.data ?? [], [recordsResponse?.data]);
 
-  const applicableAircraft = useMemo(
-    () => applicabilities.filter((item) => item.is_applicable),
-    [applicabilities],
-  );
+  const applicableAircraft = useMemo(() => applicabilities.filter((item) => item.is_applicable), [applicabilities]);
 
   const executionAircraftOptions = useMemo(() => {
     const uniqueAircraft = new Map<string, { value: string; label: string }>();
@@ -254,11 +251,17 @@ export default function AirworthinessDirectiveDetailPage() {
   };
 
   const [isCreateApplicabilityOpen, setIsCreateApplicabilityOpen] = useState(false);
-  const [applicabilityToEdit, setApplicabilityToEdit] = useState<AirworthinessDirectiveApplicabilityResource | undefined>();
-  const [applicabilityToDelete, setApplicabilityToDelete] = useState<AirworthinessDirectiveApplicabilityResource | undefined>();
+  const [applicabilityToEdit, setApplicabilityToEdit] = useState<
+    AirworthinessDirectiveApplicabilityResource | undefined
+  >();
+  const [applicabilityToDelete, setApplicabilityToDelete] = useState<
+    AirworthinessDirectiveApplicabilityResource | undefined
+  >();
   const [controlToEdit, setControlToEdit] = useState<AirworthinessDirectiveComplianceControlResource | undefined>();
   const [isControlDialogOpen, setIsControlDialogOpen] = useState(false);
-  const [executionControl, setExecutionControl] = useState<AirworthinessDirectiveComplianceControlResource | undefined>();
+  const [executionControl, setExecutionControl] = useState<
+    AirworthinessDirectiveComplianceControlResource | undefined
+  >();
   const [isExecutionDialogOpen, setIsExecutionDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isEditDirectiveOpen, setIsEditDirectiveOpen] = useState(false);
@@ -266,17 +269,18 @@ export default function AirworthinessDirectiveDetailPage() {
   const deleteApplicability = useDeleteAirworthinessDirectiveApplicability(
     Number.isFinite(directiveId) ? directiveId : undefined,
   );
-  const existingAircraftIds = useMemo(
-    () =>
-      Array.from(
-        new Set(
-          applicabilities
-            .map((item) => item.aircraft?.id ?? item.aircraft_id)
-            .filter((aircraftId): aircraftId is number => Number.isFinite(aircraftId)),
-        ),
-      ),
-    [applicabilities],
-  );
+  const existingAircraftIds = useMemo(() => {
+    const result = new Set<number>();
+
+    for (const item of applicabilities) {
+      const aircraftId = item.aircraft?.id ?? item.aircraft_id;
+      if (Number.isFinite(aircraftId)) {
+        result.add(aircraftId);
+      }
+    }
+
+    return Array.from(result);
+  }, [applicabilities]);
 
   const openCreateApplicability = () => {
     setApplicabilityToEdit(undefined);
@@ -398,12 +402,12 @@ export default function AirworthinessDirectiveDetailPage() {
                     <Badge
                       variant="outline"
                       className={
-                        summary?.has_pdf_document ?? Boolean(directive.pdf_document_url)
+                        (summary?.has_pdf_document ?? Boolean(directive.pdf_document_url))
                           ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-700'
                           : 'border-amber-500/30 bg-amber-500/10 text-amber-700'
                       }
                     >
-                      {summary?.has_pdf_document ?? Boolean(directive.pdf_document_url)
+                      {(summary?.has_pdf_document ?? Boolean(directive.pdf_document_url))
                         ? 'PDF disponible'
                         : 'PDF pendiente'}
                     </Badge>
@@ -485,17 +489,9 @@ export default function AirworthinessDirectiveDetailPage() {
                 </CardHeader>
                 <CardContent className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
                   <CompactStat label="Evaluadas" value={summary?.total_aircraft_evaluated ?? 0} />
-                  <CompactStat
-                    label="Aplicables"
-                    value={summary?.total_applicable_aircraft ?? 0}
-                    tone="success"
-                  />
+                  <CompactStat label="Aplicables" value={summary?.total_applicable_aircraft ?? 0} tone="success" />
                   <CompactStat label="No aplicables" value={summary?.total_non_applicable_aircraft ?? 0} />
-                  <CompactStat
-                    label="Pend. config."
-                    value={summary?.pending_configuration_count ?? 0}
-                    tone="warning"
-                  />
+                  <CompactStat label="Pend. config." value={summary?.pending_configuration_count ?? 0} tone="warning" />
                 </CardContent>
               </Card>
 
@@ -588,16 +584,12 @@ export default function AirworthinessDirectiveDetailPage() {
                   <AlertDialogTitle>Eliminar aplicabilidad</AlertDialogTitle>
                   <AlertDialogDescription>
                     Esta acción no se puede deshacer. La aplicabilidad de{' '}
-                    {applicabilityToDelete?.aircraft?.acronym ?? applicabilityToDelete?.aircraft_id} será
-                    eliminada.
+                    {applicabilityToDelete?.aircraft?.acronym ?? applicabilityToDelete?.aircraft_id} será eliminada.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
                   <AlertDialogCancel disabled={deleteApplicability.isPending}>Cancelar</AlertDialogCancel>
-                  <AlertDialogAction
-                    onClick={handleDeleteApplicability}
-                    disabled={deleteApplicability.isPending}
-                  >
+                  <AlertDialogAction onClick={handleDeleteApplicability} disabled={deleteApplicability.isPending}>
                     {deleteApplicability.isPending ? 'Eliminando...' : 'Eliminar'}
                   </AlertDialogAction>
                 </AlertDialogFooter>
@@ -649,13 +641,7 @@ export default function AirworthinessDirectiveDetailPage() {
 
                   {(controlSearchInput || controlSort !== 'oldest' || controlPage > 1) && (
                     <div className="flex justify-end">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        className="gap-2"
-                        onClick={resetControlFilters}
-                      >
+                      <Button type="button" variant="outline" size="sm" className="gap-2" onClick={resetControlFilters}>
                         <RotateCcw className="h-4 w-4" />
                         Limpiar filtros
                       </Button>
@@ -852,9 +838,7 @@ export default function AirworthinessDirectiveDetailPage() {
                   rows={records.map((item) => [
                     <div key={`${item.id}-aircraft`}>
                       <p className="font-medium">{item.aircraft?.acronym ?? `#${item.aircraft_id}`}</p>
-                      <p className="line-clamp-2 text-xs text-muted-foreground">
-                        {item.remarks || 'Sin observación'}
-                      </p>
+                      <p className="line-clamp-2 text-xs text-muted-foreground">{item.remarks || 'Sin observación'}</p>
                     </div>,
                     item.work_order_number,
                     formatDate(item.execution_date),
