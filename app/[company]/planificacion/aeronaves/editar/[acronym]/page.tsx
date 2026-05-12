@@ -13,7 +13,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { AircraftInfoForm } from "@/components/forms/mantenimiento/aeronaves/AircraftInfoForm";
 import { AircraftPartsInfoForm } from "@/components/forms/mantenimiento/aeronaves/AircraftPartsForm";
-import { useUpdateMaintenanceAircraft, AircraftPartAPI } from "@/actions/mantenimiento/planificacion/aeronaves/actions";
+import { useUpdateMaintenanceAircraft } from "@/actions/mantenimiento/planificacion/aeronaves/actions";
 import LoadingPage from "@/components/misc/LoadingPage";
 import { useGetClients } from "@/hooks/general/clientes/useGetClients";
 import { useGetManufacturers } from "@/hooks/general/condiciones/useGetConditions";
@@ -61,7 +61,7 @@ interface AircraftAssignment {
 const parseISODate = (dateString: string | Date | null | undefined): Date => {
     if (!dateString) return new Date();
     if (dateString instanceof Date) return dateString;
-    
+
     try {
         return parseISO(dateString);
     } catch {
@@ -129,16 +129,16 @@ export default function EditAircraftPage({ params }: { params: { acronym: string
     const { updateMaintenanceAircraft } = useUpdateMaintenanceAircraft();
     const { selectedCompany } = useCompanyStore();
     const router = useRouter();
-    
+
     // Obtener datos de la aeronave
     const { data: aircraft, isLoading, isError } = useGetMaintenanceAircraftByAcronym(
-        selectedCompany?.slug, 
+        selectedCompany?.slug,
         params.acronym
     );
 
     // Obtener lista de clientes para buscar el cliente de la aeronave
     const { data: clients } = useGetClients(selectedCompany?.slug);
-    
+
     // Obtener lista de fabricantes para mostrar el nombre en el resumen
     const { data: manufacturers } = useGetManufacturers(selectedCompany?.slug);
 
@@ -179,7 +179,7 @@ export default function EditAircraftPage({ params }: { params: { acronym: string
         if ((aircraft as any).client_id && !clients) return;
 
         // Buscar cliente por ID
-        const clientName = (aircraft as any).client_id && clients ? 
+        const clientName = (aircraft as any).client_id && clients ?
             clients.find(client => client.id.toString() === (aircraft as any).client_id.toString())?.name || "" :
             aircraft.client?.name || "";
 
@@ -218,7 +218,7 @@ export default function EditAircraftPage({ params }: { params: { acronym: string
     // Función para transformar las partes del formulario al formato API
     const transformPart = (part: AircraftPart, originalPart?: any): any => {
         const { ...rest } = part;
-        
+
         return {
             ...(originalPart?.id && { id: originalPart.id }), // Preservar ID para actualizaciones
             ...rest,
@@ -241,7 +241,7 @@ export default function EditAircraftPage({ params }: { params: { acronym: string
         if (!aircraftData || !partsData || !aircraft) return;
 
         try {
-            const transformedParts = partsData.parts.map((part, index) => 
+            const transformedParts = partsData.parts.map((part, index) =>
                 transformPart(part, aircraft.aircraft_parts?.[index])
             );
 
@@ -265,7 +265,7 @@ export default function EditAircraftPage({ params }: { params: { acronym: string
                 },
                 company: selectedCompany!.slug,
             });
-            
+
             router.push(`/${selectedCompany?.slug}/planificacion/aeronaves`);
         } catch (error) {
             console.error(error);
@@ -376,22 +376,22 @@ export default function EditAircraftPage({ params }: { params: { acronym: string
                                                 <div className="text-sm font-medium">
                                                     {manufacturers?.find(m => m.id.toString() === aircraftData?.manufacturer_id)?.name || aircraftData?.manufacturer_id}
                                                 </div>
-                                                
+
                                                 <div className="text-sm text-muted-foreground">Cliente</div>
                                                 <div className="text-sm font-medium">{aircraftData?.client_name}</div>
-                                                
+
                                                 <div className="text-sm text-muted-foreground">Serial</div>
                                                 <div className="text-sm font-medium">{aircraftData?.serial}</div>
-                                                
+
                                                 <div className="text-sm text-muted-foreground">Matrícula</div>
                                                 <div className="text-sm font-medium">{aircraftData?.acronym}</div>
-                                                
+
                                                 <div className="text-sm text-muted-foreground">Fecha de Fabricación</div>
                                                 <div className="text-sm font-medium">{aircraftData?.fabricant_date?.getFullYear()}</div>
-                                                
+
                                                 <div className="text-sm text-muted-foreground">Horas de Vuelo</div>
                                                 <div className="text-sm font-medium">{aircraftData?.flight_hours}</div>
-                                                
+
                                                 <div className="text-sm text-muted-foreground">Ciclos de Vuelo</div>
                                                 <div className="text-sm font-medium">{aircraftData?.flight_cycles}</div>
                                             </div>
