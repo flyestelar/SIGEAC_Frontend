@@ -324,7 +324,7 @@ export function DispatchReportDialog() {
               isDateRangeInvalid={isDateRangeInvalid}
               workOrder={null}
               setWorkOrder={() => {}}
-              canFilterByPlanificacion={false}
+              isPlanificacionOnlyFilters={false}
             />
 
             <TabsContent value="dispatch" className="mt-8">
