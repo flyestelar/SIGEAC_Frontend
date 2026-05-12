@@ -36,3 +36,36 @@ export const useCreateSmsArea = () => {
     },
   });
 };
+
+export const useUpdateSmsArea = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ company, id, name }: { company: string; id: number; name: string }) => {
+      const { data } = await axiosInstance.patch(`/${company}/sms/areas/${id}`, { name });
+      return data;
+    },
+    onSuccess: (_, { company }) => {
+      queryClient.invalidateQueries({ queryKey: ["sms-areas", company] });
+      toast.success("Área actualizada correctamente.");
+    },
+    onError: () => {
+      toast.error("No se pudo actualizar el área.");
+    },
+  });
+};
+
+export const useDeleteSmsArea = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ company, id }: { company: string; id: number }) => {
+      await axiosInstance.delete(`/${company}/sms/areas/${id}`);
+    },
+    onSuccess: (_, { company }) => {
+      queryClient.invalidateQueries({ queryKey: ["sms-areas", company] });
+      toast.success("Área eliminada correctamente.");
+    },
+    onError: () => {
+      toast.error("No se pudo eliminar el área.");
+    },
+  });
+};
