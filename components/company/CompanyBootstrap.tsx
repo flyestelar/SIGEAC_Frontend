@@ -37,10 +37,9 @@ const CompanyBootstrap = () => {
    * HYDRATION SEGURA
    */
   useEffect(() => {
-    const unsub =
-      useCompanyStore.persist.onFinishHydration(() =>
-        setHydrated(true)
-      );
+    const unsub = useCompanyStore.persist.onFinishHydration(() =>
+      setHydrated(true)
+    );
 
     if (useCompanyStore.persist.hasHydrated()) {
       setHydrated(true);
@@ -50,80 +49,51 @@ const CompanyBootstrap = () => {
   }, []);
 
   /**
-   * HISTORIAL
-   */
-  const getHistory = () => {
-    if (typeof window === "undefined") return {};
-
-    try {
-      return JSON.parse(
-        localStorage.getItem("company-station-history") ||
-          "{}"
-      );
-    } catch {
-      return {};
-    }
-  };
-
-  const saveHistory = (
-    companyId: number | string,
-    stationId: string
-  ) => {
-    if (typeof window === "undefined") return;
-
-    const history = getHistory();
-
-    history[String(companyId)] = stationId;
-
-    localStorage.setItem(
-      "company-station-history",
-      JSON.stringify(history)
-    );
-  };
-
-  /**
-   * RESOLVER ESTACIÓN (sin cambios)
-   */
-  const resolveStation = (
-    companyId: number | string,
-    stations: any[]
-  ) => {
-    const history = getHistory();
-
-    const last = history[String(companyId)];
-
-    const validLast = stations.find(
-      (s) => s.id.toString() === last
-    );
-
-    return validLast
-      ? validLast.id.toString()
-      : stations[0].id.toString();
-  };
-
-  /**
    * BOOTSTRAP
    */
   useEffect(() => {
-    const bootstrap = async () => {
-      if (
-        !hydrated ||
-        userLoading ||
-        !user ||
-        navigatingRef.current ||
-        resolvedRef.current
-      ) {
-        return;
-      }
+    if (!hydrated || userLoading || !user) return;
+    if (navigatingRef.current || resolvedRef.current) return;
 
+    /**
+     * HISTORIAL (local dentro del effect para evitar deps)
+     */
+    const getHistory = () => {
+      if (typeof window === "undefined") return {};
+
+      try {
+        return JSON.parse(
+          localStorage.getItem("company-station-history") || "{}"
+        );
+      } catch {
+        return {};
+      }
+    };
+
+    const saveHistory = (
+      companyId: number | string,
+      stationId: string
+    ) => {
+      if (typeof window === "undefined") return;
+
+      const history = getHistory();
+
+      history[String(companyId)] = stationId;
+
+      localStorage.setItem(
+        "company-station-history",
+        JSON.stringify(history)
+      );
+    };
+
+    const bootstrap = async () => {
       /**
        * CASO 1: sesión restaurada válida
        */
       if (selectedCompany && selectedStation) {
-        const companyExists =
-          user.companies?.some(
-            (c) => c.id === selectedCompany.id
-          );
+        const companyExists = user.companies?.some(
+          (c) => c.id === selectedCompany.id
+        );
 
         if (!companyExists) {
           reset();
@@ -131,8 +101,7 @@ const CompanyBootstrap = () => {
         }
 
         try {
-          const locations =
-            await getLocations(selectedCompany.id);
+          const locations = await getLocations(selectedCompany.id);
 
           if (!locations?.length) {
             reset();
@@ -140,8 +109,7 @@ const CompanyBootstrap = () => {
           }
 
           const stationExists = locations.some(
-            (l) =>
-              l.id.toString() === selectedStation
+            (l) => l.id.toString() === selectedStation
           );
 
           if (!stationExists) {
@@ -151,10 +119,7 @@ const CompanyBootstrap = () => {
 
           navigatingRef.current = true;
 
-          router.replace(
-            `/${selectedCompany.slug}/dashboard`
-          );
-
+          router.replace(`/${selectedCompany.slug}/dashboard`);
           return;
         } catch {
           reset();
@@ -163,7 +128,7 @@ const CompanyBootstrap = () => {
       }
 
       /**
-       * CASO 2: COMPANY única → auto select
+       * CASO 2: auto-select company única
        */
       if (!selectedCompany) {
         if (
@@ -178,10 +143,9 @@ const CompanyBootstrap = () => {
 
       const company = selectedCompany;
 
-      const companyExists =
-        user.companies?.some(
-          (c) => c.id === company.id
-        );
+      const companyExists = user.companies?.some(
+        (c) => c.id === company.id
+      );
 
       if (!companyExists) {
         reset();
@@ -189,38 +153,29 @@ const CompanyBootstrap = () => {
       }
 
       try {
-        const locations =
-          await getLocations(company.id);
+        const locations = await getLocations(company.id);
 
         if (!locations?.length) return;
 
         /**
-         * CASO A: SOLO 1 estación → auto select + navigate
+         * CASO A: solo 1 estación
          */
         if (locations.length === 1) {
-          const station =
-            locations[0].id.toString();
+          const station = locations[0].id.toString();
 
           setSelectedStation(station);
-
           saveHistory(company.id, station);
 
           navigatingRef.current = true;
 
-          router.replace(
-            `/${company.slug}/dashboard`
-          );
-
+          router.replace(`/${company.slug}/dashboard`);
           return;
         }
 
         /**
-         * CASO B: MÚLTIPLES estaciones → NO auto-select
+         * CASO B: múltiples estaciones → esperar selección manual
          */
-
         resolvedRef.current = true;
-
-        return;
       } catch (error) {
         console.error(error);
       }
