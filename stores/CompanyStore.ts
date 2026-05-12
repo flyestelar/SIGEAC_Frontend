@@ -6,14 +6,8 @@ interface CompanyState {
   selectedCompany: Company | null;
   selectedStation: string;
 
-  setSelectedCompany: (
-    company: Company | null
-  ) => void;
-
-  setSelectedStation: (
-    station: string
-  ) => void;
-
+  setSelectedCompany: (company: Company | null) => void;
+  setSelectedStation: (station: string) => void;
   reset: () => void;
 }
 
@@ -22,42 +16,48 @@ const initialState = {
   selectedStation: "",
 };
 
-export const useCompanyStore =
-  create<CompanyState>()(
-    persist(
-      (set) => ({
-        ...initialState,
+export const useCompanyStore = create<CompanyState>()(
+  persist(
+    (set, get) => ({
+      ...initialState,
 
-        setSelectedCompany: (
-          company: Company | null
-        ) => {
-          set({
-            selectedCompany: company,
-          });
-        },
-
-        setSelectedStation: (
-          station: string
-        ) => {
-          set({
-            selectedStation: station,
-          });
-        },
-
-        reset: () => {
-          set(initialState);
-        },
-      }),
-      {
-        name: "company-storage",
-
-        partialize: (state) => ({
-          selectedCompany:
-            state.selectedCompany,
-
-          selectedStation:
-            state.selectedStation,
+      /**
+       * IMPORTANTE:
+       * cambiar empresa invalida cualquier estación previa
+       */
+      setSelectedCompany: (company) =>
+        set({
+          selectedCompany: company,
+          selectedStation: "",
         }),
-      }
-    )
-  );
+
+      /**
+       * estación independiente, pero normalmente viene del bootstrap
+       */
+      setSelectedStation: (station) =>
+        set({
+          selectedStation: station,
+        }),
+
+      /**
+       * reset total consistente
+       */
+      reset: () =>
+        set({
+          selectedCompany: null,
+          selectedStation: "",
+        }),
+    }),
+    {
+      name: "company-storage",
+
+      /**
+       * Persistimos solo lo necesario
+       */
+      partialize: (state) => ({
+        selectedCompany: state.selectedCompany,
+        selectedStation: state.selectedStation,
+      }),
+    }
+  )
+);

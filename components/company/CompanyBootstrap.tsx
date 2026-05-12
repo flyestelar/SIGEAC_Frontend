@@ -13,11 +13,9 @@ import CompanySelect from "@/components/selects/CompanySelect";
 const CompanyBootstrap = () => {
   const router = useRouter();
   const navigatingRef = useRef(false);
-  const mountedRef = useRef(true);
-  const [hydrated, setHydrated] =
-    useState(false);
-  const { user, loading: userLoading } =
-    useAuth();
+
+  const { user, loading: userLoading } = useAuth();
+
   const {
     selectedCompany,
     selectedStation,
@@ -25,33 +23,85 @@ const CompanyBootstrap = () => {
     setSelectedStation,
     reset,
   } = useCompanyStore();
+
   const {
     mutateAsync: getLocations,
     isPending: locationsLoading,
   } = useGetUserLocationsByCompanyId();
 
-  useEffect(() => {
-    mountedRef.current = true;
+  const [hydrated, setHydrated] = useState(false);
 
-    const finishHydration =
-      useCompanyStore.persist
-        .onFinishHydration(() => {
-          if (mountedRef.current) {
-            setHydrated(true);
-          }
-        });
-    if (
-      useCompanyStore.persist.hasHydrated()
-    ) {
+  /**
+   * HYDRATION SEGURA
+   */
+  useEffect(() => {
+    const unsub =
+      useCompanyStore.persist.onFinishHydration(() =>
+        setHydrated(true)
+      );
+
+    if (useCompanyStore.persist.hasHydrated()) {
       setHydrated(true);
     }
 
-    return () => {
-      mountedRef.current = false;
-      finishHydration();
-    };
+    return () => unsub();
   }, []);
 
+  /**
+   * HISTORIAL
+   */
+  const getHistory = () => {
+    if (typeof window === "undefined") return {};
+
+    try {
+      return JSON.parse(
+        localStorage.getItem("company-station-history") ||
+          "{}"
+      );
+    } catch {
+      return {};
+    }
+  };
+
+  const saveHistory = (
+    companyId: number | string,
+    stationId: string
+  ) => {
+    if (typeof window === "undefined") return;
+
+    const history = getHistory();
+
+    history[String(companyId)] = stationId;
+
+    localStorage.setItem(
+      "company-station-history",
+      JSON.stringify(history)
+    );
+  };
+
+  /**
+   * RESOLVER ESTACIÓN (solo sugerencia)
+   */
+  const resolveStation = (
+    companyId: number | string,
+    stations: any[]
+  ) => {
+    const history = getHistory();
+
+    const last = history[String(companyId)];
+
+    const validLast = stations.find(
+      (s) => s.id.toString() === last
+    );
+
+    return validLast
+      ? validLast.id.toString()
+      : stations[0].id.toString();
+  };
+
+  /**
+   * BOOTSTRAP
+   */
   useEffect(() => {
     const bootstrap = async () => {
       if (
@@ -62,96 +112,131 @@ const CompanyBootstrap = () => {
       ) {
         return;
       }
-      if (
-        selectedCompany &&
-        selectedStation
-      ) {
-        const companyStillExists =
+
+      /**
+       * CASO 1: sesión restaurada válida
+       */
+      if (selectedCompany && selectedStation) {
+        const companyExists =
           user.companies?.some(
-            (company) =>
-              company.id ===
-              selectedCompany.id
+            (c) => c.id === selectedCompany.id
           );
 
-        if (!companyStillExists) {
+        if (!companyExists) {
           reset();
           return;
         }
+
         try {
           const locations =
-            await getLocations(
-              selectedCompany.id
-            );
-          if (
-            !Array.isArray(locations) ||
-            locations.length === 0
-          ) {
-            reset();
-            return;
-          }
-          const stationStillExists =
-            locations.some(
-              (location) =>
-                location.id.toString() ===
-                selectedStation
-            );
+            await getLocations(selectedCompany.id);
 
-          if (!stationStillExists) {
+          if (!locations?.length) {
             reset();
             return;
           }
+
+          const stationExists = locations.some(
+            (l) =>
+              l.id.toString() === selectedStation
+          );
+
+          if (!stationExists) {
+            reset();
+            return;
+          }
+
           navigatingRef.current = true;
+
           router.replace(
             `/${selectedCompany.slug}/dashboard`
           );
+
           return;
-        } catch (error) {
-          console.error(
-            "Bootstrap validation error:",
-            error
-          );
+        } catch {
           reset();
           return;
         }
       }
 
-      if (
-        user.companies?.length === 1
-      ) {
-        const onlyCompany =
-          user.companies[0];
-        setSelectedCompany(
-          onlyCompany
+      /**
+       * CASO 2: NO hay company seleccionada → NO forzar ninguna
+       * 👉 este es el FIX CLAVE que faltaba
+       */
+      if (!selectedCompany) {
+        return;
+      }
+
+      const company = selectedCompany;
+
+      const companyExists =
+        user.companies?.some(
+          (c) => c.id === company.id
         );
-        try {
-          const locations =
-            await getLocations(
-              onlyCompany.id
-            );
-          if (
-            !Array.isArray(locations) ||
-            locations.length === 0
-          ) {
-            return;
-          }
-          if (locations.length === 1) {
-            const onlyLocation =
-              locations[0];
-            setSelectedStation(
-              onlyLocation.id.toString()
-            );
-            navigatingRef.current =
-              true;
-            router.replace(
-              `/${onlyCompany.slug}/dashboard`
-            );
-          }
-        } catch (error) {
-          console.error(
-            "Location bootstrap error:",
-            error
+
+      if (!companyExists) {
+        reset();
+        return;
+      }
+
+      try {
+        const locations =
+          await getLocations(company.id);
+
+        if (!locations?.length) return;
+
+        /**
+         * CASO A: SOLO 1 estación → auto-select obligatorio
+         */
+        if (locations.length === 1) {
+          const station =
+            locations[0].id.toString();
+
+          setSelectedStation(station);
+
+          saveHistory(company.id, station);
+
+          navigatingRef.current = true;
+
+          router.replace(
+            `/${company.slug}/dashboard`
           );
+
+          return;
         }
+
+        /**
+         * CASO B: MÚLTIPLES estaciones → NO auto-select
+         * 👉 solo sugerimos última, pero NO forzamos navegación
+         */
+        const suggestedStation = resolveStation(
+          company.id,
+          locations
+        );
+
+        const history = getHistory();
+
+        const last = history[String(company.id)];
+
+        /**
+         * SOLO precargar si coincide con historial,
+         * pero NO navegar ni forzar selección si hay múltiples
+         */
+        if (last && last === suggestedStation) {
+          setSelectedStation(suggestedStation);
+        } else {
+          setSelectedStation("");
+        }
+
+        saveHistory(company.id, suggestedStation);
+
+        /**
+         * IMPORTANTE:
+         * NO router.replace aquí
+         * el usuario debe elegir estación
+         */
+      } catch (error) {
+        console.error(error);
       }
     };
 
@@ -168,6 +253,10 @@ const CompanyBootstrap = () => {
     reset,
     router,
   ]);
+
+  /**
+   * LOADING
+   */
   if (
     !hydrated ||
     userLoading ||
@@ -181,6 +270,7 @@ const CompanyBootstrap = () => {
             <Plane className="w-10 h-10 text-primary animate-bounce" />
             <div className="absolute inset-0 blur-xl opacity-30 bg-primary rounded-full scale-150" />
           </div>
+
           <div className="text-center space-y-1">
             <p className="text-sm font-medium text-foreground">
               Preparando tu entorno
@@ -189,6 +279,7 @@ const CompanyBootstrap = () => {
               Cargando configuración del sistema...
             </p>
           </div>
+
           <div className="w-40 h-1 bg-muted rounded-full overflow-hidden">
             <div className="h-full w-1/2 bg-primary animate-pulse rounded-full" />
           </div>
