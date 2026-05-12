@@ -50,6 +50,8 @@ interface Props {
   isLoadingAircrafts?: boolean;
   workOrder: string | null;
   setWorkOrder: (v: string | null) => void;
+  workOrders?: { id: number; work_order: string; work_order_id: number | null }[];
+  isLoadingWorkOrders?: boolean;
   departmentId: string | null;
   setDepartmentId: (v: string | null) => void;
   departments?: any[];
@@ -92,6 +94,8 @@ export function DispatchReportFilters({
   isLoadingAircrafts,
   workOrder,
   setWorkOrder,
+  workOrders = [],
+  isLoadingWorkOrders,
   departmentId,
   setDepartmentId,
   departments,
@@ -568,14 +572,14 @@ export function DispatchReportFilters({
                   value={workOrder || "all"}
                   onValueChange={(v) => setWorkOrder(v === "all" ? null : v)}
                 >
-                  <SelectTrigger disabled={isLoadingArticles}>
+                  <SelectTrigger disabled={isLoadingWorkOrders}>
                     <SelectValue placeholder="Seleccionar OT" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">Todas</SelectItem>
-                    {uniqueOTs.map((ot) => (
-                      <SelectItem key={`ot-${ot}`} value={ot}>
-                        {ot}
+                    {workOrders.map((ot) => (
+                      <SelectItem key={`ot-${ot.id}`} value={ot.work_order}>
+                        {ot.work_order}
                       </SelectItem>
                     ))}
                   </SelectContent>

@@ -36,6 +36,7 @@ import { useGetDepartments } from "@/hooks/sistema/departamento/useGetDepartment
 
 import { useGetArticlesByStatus } from "@/hooks/mantenimiento/almacen/articulos/useGetArticlesByStatus";
 import { useGetGeneralArticles } from "@/hooks/mantenimiento/almacen/almacen_general/useGetGeneralArticles";
+import { useGetDispatchWorkOrders } from "@/hooks/mantenimiento/almacen/reportes/useGetDispatchWorkOrders";
 
 import { DispatchReportFilters } from "@/components/dialogs/mantenimiento/almacen/DispatchReportFilters";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -107,6 +108,9 @@ export function DispatchReportDialog() {
 
   // 🔥 UNIFICACIÓN DE FUENTES
   const allArticles = [...articlesByStatus, ...generalArticles];
+
+  const { data: workOrders = [], isLoading: isLoadingWorkOrders } =
+    useGetDispatchWorkOrders(selectedCompany?.slug);
 
   // ===================== VALIDACIÓN FECHAS =====================
   const isDateRangeInvalid =
@@ -312,6 +316,8 @@ export function DispatchReportDialog() {
 
               workOrder={workOrder}
               setWorkOrder={setWorkOrder}
+              workOrders={workOrders}
+              isLoadingWorkOrders={isLoadingWorkOrders}
 
               departmentId={departmentId}
               setDepartmentId={setDepartmentId}
