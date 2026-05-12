@@ -281,7 +281,7 @@ const MitigationTableDropdownActions = ({
         </Dialog>
 
         <Dialog open={openCreateAnalysis} onOpenChange={setOpenCreateAnalysis}>
-          <DialogContent className="flex flex-col max-w-2xl m-2">
+          <DialogContent className="flex flex-col max-w-3xl m-2">
             <DialogHeader>
               <DialogTitle>Análisis Post Mitigación</DialogTitle>
               <DialogDescription>Análisis Post Mitigación</DialogDescription>

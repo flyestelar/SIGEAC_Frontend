@@ -41,6 +41,17 @@ import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { useCompanyStore } from "@/stores/CompanyStore";
 import { MitigationPlan } from "@/types";
+import { useGetSmsAreas } from "@/hooks/sms/useGetSmsAreas";
+import { CreateSmsAreaForm } from "@/components/forms/sms/CreateSmsAreaForm";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Plus } from "lucide-react";
+import { useState } from "react";
 
 const FormSchema = z.object({
   description: z
@@ -88,6 +99,8 @@ export default function CreateMitigationPlanForm({
   const { selectedCompany } = useCompanyStore();
   const { createMitigationPlan } = useCreateMitigationPlan();
   const { updateMitigationPlan } = useUpdateMitigationPlan();
+  const { data: areas, isLoading: isLoadingAreas } = useGetSmsAreas(selectedCompany?.slug);
+  const [openCreateArea, setOpenCreateArea] = useState(false);
 
   const onSubmit = async (data: FormSchemaType) => {
     if (isEditing && initialData) {
@@ -114,6 +127,7 @@ export default function CreateMitigationPlanForm({
   };
 
   return (
+    <>
     <Form {...form}>
       <form
         onSubmit={form.handleSubmit(onSubmit)}
@@ -137,42 +151,48 @@ export default function CreateMitigationPlanForm({
           )}
         />
 
-        <div className="flex gap-2 items-center justify-center">
-          <FormField
-            control={form.control}
-            name="responsible"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-[11px] font-semibold tracking-[0.1em] uppercase text-muted-foreground">Área</FormLabel>
-                <Select onValueChange={field.onChange} value={field.value}>
-                  <FormControl>
-                    <SelectTrigger className="h-9 text-sm">
-                      <SelectValue placeholder="Seleccionar área" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {[
-                      ["ANONIMO","ANÓNIMO"],["APTO","APTO"],["DISPATCH","DISPATCH"],["GSE","GSE"],
-                      ["GTE. EST.","GTE. EST."],["SUMINISTRO","SUMINISTRO"],["INAC","INAC"],
-                      ["MTTO","MANTENIMIENTO"],["ING","INGENIERÍA"],["INST. CAP","INST. CAP"],
-                      ["N/A","NO APLICA"],["OMA","OMA"],["OPS","OPS"],["QMS","QMS"],
-                      ["RR.HH","RECURSOS HUMANOS"],["SGC","SGC"],["SMS","SMS"],
-                      ["TDC","TDC"],["TDM","TDM"],["TFC","TFC"],["CARG","CARG"],
-                      ["QMS_AVSEC","QMS AVSEC"],["GTE_EQUIPAJE","GTE EQUIPAJE"],
-                      ["TALLER_SUPERVIVENCIA","TALLER DE SUPERVIVENCIA"],["NDT","NDT"],
-                      ["AUDITORIA_INTERNA","AUDITORÍA INTERNA"],["AEROPUERTO","AEROPUERTO"],
-                      ["SSL","SSL"],["TECNOLOGIA","TECNOLOGÍA"],["INFRAESTRUCTURA","INFRAESTRUCTURA"],
-                      ["AVSEC","AVSEC"],
-                    ].map(([v, l]) => (
-                      <SelectItem key={v} value={v}>{l}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
+        <FormField
+          control={form.control}
+          name="responsible"
+          render={({ field }) => (
+            <FormItem>
+              <div className="flex items-center justify-between">
+                <FormLabel className="text-[11px] font-semibold tracking-[0.1em] uppercase text-muted-foreground">
+                  Área
+                </FormLabel>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="h-6 gap-1 px-2 text-xs text-primary hover:bg-primary/10"
+                  onClick={() => setOpenCreateArea(true)}
+                >
+                  <Plus className="h-3 w-3" />
+                  Nueva
+                </Button>
+              </div>
+              <Select
+                onValueChange={field.onChange}
+                value={field.value}
+                disabled={isLoadingAreas}
+              >
+                <FormControl>
+                  <SelectTrigger className="h-9 text-sm">
+                    <SelectValue placeholder={isLoadingAreas ? "Cargando..." : "Seleccionar área"} />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {areas?.map((area) => (
+                    <SelectItem key={area.id} value={area.name}>
+                      {area.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
         <FormField
           control={form.control}
@@ -233,5 +253,16 @@ export default function CreateMitigationPlanForm({
         </Button>
       </form>
     </Form>
+
+    <Dialog open={openCreateArea} onOpenChange={setOpenCreateArea}>
+      <DialogContent className="max-w-sm">
+        <DialogHeader>
+          <DialogTitle>Nueva Área</DialogTitle>
+          <DialogDescription>El área quedará disponible en el selector.</DialogDescription>
+        </DialogHeader>
+        <CreateSmsAreaForm onClose={() => setOpenCreateArea(false)} />
+      </DialogContent>
+    </Dialog>
+    </>
   );
 }

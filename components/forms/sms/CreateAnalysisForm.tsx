@@ -28,6 +28,7 @@ import {
 } from "@/components/ui/select";
 import { Analysis } from "@/types";
 import { Separator } from "@radix-ui/react-select";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 import { useRouter } from "next/navigation";
 import { useCompanyStore } from "@/stores/CompanyStore";
@@ -161,6 +162,8 @@ export default function CreateAnalysisForm({
         onSubmit={form.handleSubmit(onSubmit)}
         className="flex flex-col space-y-3"
       >
+      <ScrollArea className="h-[60vh] pr-4">
+        <div className="flex flex-col space-y-3">
         <FormLabel className="text-lg text-center m-2"></FormLabel>
 
         <FormField
@@ -244,6 +247,8 @@ export default function CreateAnalysisForm({
           <p className="text-muted-foreground">SIGEAC</p>
           <Separator className="flex-1" />
         </div>
+        </div>
+      </ScrollArea>
         <Button
           type="submit"
           disabled={updateAnalyses.isPending || createAnalysis.isPending}

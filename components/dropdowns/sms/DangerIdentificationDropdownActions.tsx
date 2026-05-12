@@ -176,7 +176,7 @@ const DangerIdentificationDropdownActions = ({
         </Dialog>
 
         <Dialog open={openCreateAnalysis} onOpenChange={setOpenCreateAnalysis}>
-          <DialogContent className="flex flex-col max-w-2xl m-2">
+          <DialogContent className="flex flex-col max-w-3xl m-2">
             <DialogHeader>
               <DialogTitle></DialogTitle>
               <DialogDescription></DialogDescription>
@@ -191,7 +191,7 @@ const DangerIdentificationDropdownActions = ({
         </Dialog>
 
         <Dialog open={openEditAnalyses} onOpenChange={setOpenEditAnalyses}>
-          <DialogContent className="flex flex-col max-w-2xl m-2">
+          <DialogContent className="flex flex-col max-w-3xl m-2">
             <DialogHeader>
               <DialogTitle></DialogTitle>
               <DialogDescription></DialogDescription>
