@@ -97,12 +97,7 @@ const nullableNumber = (value: number | string | null | undefined) => {
 
 const normalizePartType = (type?: string | null) => {
     if (!type) return "";
-    const raw = String(type).trim();
-    const upper = raw.toUpperCase();
-
-    if (upper === "APU") return "APU";
-    if (raw === upper) return upper.charAt(0) + upper.slice(1).toLowerCase();
-    return raw;
+    return String(type).trim().toUpperCase();
 };
 
 const normalizePart = (part: any): z.infer<typeof PartSchema> => {

@@ -207,13 +207,6 @@ export default function PartSection({
                                                         </Button>
                                                     ))}
                                                 </div>
-                                                <Input
-                                                    type="number"
-                                                    placeholder="Otro"
-                                                    className="w-20"
-                                                    value={field.value ?? ""}
-                                                    onChange={e => field.onChange(e.target.value !== "" ? Number(e.target.value) : null)}
-                                                />
                                             </div>
                                         </FormControl>
                                     </FormItem>
