@@ -65,6 +65,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
+import { useAuth } from "@/contexts/AuthContext";
 import { useGetSmsStations } from "@/hooks/sms/useGetSmsStations";
 import { useGetFindingLocations } from "@/hooks/sms/useGetFindingLocations";
 import {
@@ -221,6 +222,10 @@ export function CreateGeneralObligatoryReportForm({
   const router = useRouter();
   const { company } = useParams<{ company: string }>();
   const { selectedCompany } = useCompanyStore();
+  const { user } = useAuth();
+  const shouldEnableField = user?.roles?.map((r) => r.name).some((role) =>
+    ["SUPERUSER", "ANALISTA_SMS", "JEFE_SMS"].includes(role)
+  ) ?? false;
 
   const companySlug = selectedCompany?.slug ?? company;
   const { data: stations, isLoading: isLoadingStations } = useGetSmsStations(companySlug);
@@ -364,8 +369,9 @@ export function CreateGeneralObligatoryReportForm({
                       type="button"
                       variant="ghost"
                       size="sm"
-                      className="h-6 gap-1 px-2 text-xs text-amber-600 hover:text-amber-700 hover:bg-amber-50"
+                      className="h-6 gap-1 px-2 text-xs text-amber-600 hover:text-amber-700 hover:bg-amber-50 disabled:opacity-40 disabled:cursor-not-allowed"
                       onClick={() => setOpenCreateStation(true)}
+                      disabled={!shouldEnableField}
                     >
                       <Plus className="h-3 w-3" />
                       Nueva
@@ -405,8 +411,9 @@ export function CreateGeneralObligatoryReportForm({
                       type="button"
                       variant="ghost"
                       size="sm"
-                      className="h-6 gap-1 px-2 text-xs text-amber-600 hover:text-amber-700 hover:bg-amber-50"
+                      className="h-6 gap-1 px-2 text-xs text-amber-600 hover:text-amber-700 hover:bg-amber-50 disabled:opacity-40 disabled:cursor-not-allowed"
                       onClick={() => setOpenCreateLocation(true)}
+                      disabled={!shouldEnableField}
                     >
                       <Plus className="h-3 w-3" />
                       Nuevo

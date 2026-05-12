@@ -400,8 +400,9 @@ export function CreateGeneralVoluntaryReportForm({
                         type="button"
                         variant="ghost"
                         size="sm"
-                        className="h-6 gap-1 px-2 text-xs text-amber-600 hover:text-amber-700 hover:bg-amber-50"
+                        className="h-6 gap-1 px-2 text-xs text-amber-600 hover:text-amber-700 hover:bg-amber-50 disabled:opacity-40 disabled:cursor-not-allowed"
                         onClick={() => setOpenCreateStation(true)}
+                        disabled={!shouldEnableField}
                       >
                         <Plus className="h-3 w-3" />
                         Nueva
@@ -441,8 +442,9 @@ export function CreateGeneralVoluntaryReportForm({
                         type="button"
                         variant="ghost"
                         size="sm"
-                        className="h-6 gap-1 px-2 text-xs text-amber-600 hover:text-amber-700 hover:bg-amber-50"
+                        className="h-6 gap-1 px-2 text-xs text-amber-600 hover:text-amber-700 hover:bg-amber-50 disabled:opacity-40 disabled:cursor-not-allowed"
                         onClick={() => setOpenCreateLocation(true)}
+                        disabled={!shouldEnableField}
                       >
                         <Plus className="h-3 w-3" />
                         Nuevo
