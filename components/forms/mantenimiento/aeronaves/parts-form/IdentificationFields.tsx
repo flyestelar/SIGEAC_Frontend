@@ -18,10 +18,7 @@ export default function IdentificationFields({ form, path }: any) {
     const { data: manufacturers, isLoading: isManufacturersLoading } = useGetManufacturers(selectedCompany?.slug);
     const [manufacturerOpen, setManufacturerOpen] = useState(false);
 
-    const partManufacturers = useMemo(
-        () => (manufacturers || []).filter((manufacturer: Manufacturer) => manufacturer.type === "PART"),
-        [manufacturers],
-    );
+    const manufacturerOptions = useMemo(() => manufacturers || [], [manufacturers]);
 
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -51,6 +48,7 @@ export default function IdentificationFields({ form, path }: any) {
                                     size="icon"
                                     className="h-8 w-8 border-dashed"
                                     aria-label="Crear fabricante"
+                                    onClick={() => setManufacturerOpen(false)}
                                 >
                                     <Plus className="h-4 w-4" />
                                 </Button>
@@ -70,8 +68,17 @@ export default function IdentificationFields({ form, path }: any) {
                                     )}
                                 >
                                     {isManufacturersLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                                    {partManufacturers.find((manufacturer) => String(manufacturer.id) === field.value)?.name ||
-                                        "Selecciona fabricante"}
+                                    <span className="flex min-w-0 flex-1 items-center justify-between gap-2 text-left">
+                                        <span className="truncate">
+                                            {manufacturerOptions.find((manufacturer) => String(manufacturer.id) === field.value)?.name ||
+                                                "Selecciona fabricante"}
+                                        </span>
+                                        {manufacturerOptions.find((manufacturer) => String(manufacturer.id) === field.value) && (
+                                            <span className="shrink-0 rounded-md bg-muted px-2 py-0.5 text-[10px] font-medium uppercase text-muted-foreground">
+                                                {manufacturerOptions.find((manufacturer) => String(manufacturer.id) === field.value)?.type}
+                                            </span>
+                                        )}
+                                    </span>
                                     <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                                 </Button>
                             </FormControl>
@@ -82,10 +89,10 @@ export default function IdentificationFields({ form, path }: any) {
                                 <CommandList>
                                     <CommandEmpty>No se encontraron fabricantes.</CommandEmpty>
                                     <CommandGroup>
-                                        {partManufacturers.map((manufacturer) => (
+                                        {manufacturerOptions.map((manufacturer) => (
                                             <CommandItem
                                                 key={manufacturer.id}
-                                                value={manufacturer.name}
+                                                value={`${manufacturer.name} ${manufacturer.type}`}
                                                 onSelect={() => {
                                                     field.onChange(String(manufacturer.id));
                                                     setManufacturerOpen(false);
@@ -97,7 +104,12 @@ export default function IdentificationFields({ form, path }: any) {
                                                         String(manufacturer.id) === field.value ? "opacity-100" : "opacity-0",
                                                     )}
                                                 />
-                                                {manufacturer.name}
+                                                <span className="flex w-full items-center justify-between gap-3">
+                                                    <span className="truncate">{manufacturer.name}</span>
+                                                    <span className="shrink-0 rounded-md bg-muted px-2 py-0.5 text-[10px] font-medium uppercase text-muted-foreground">
+                                                        {manufacturer.type}
+                                                    </span>
+                                                </span>
                                             </CommandItem>
                                         ))}
                                     </CommandGroup>
