@@ -715,7 +715,17 @@ export type Requisition = {
     submission_date: Date;
     work_order: WorkOrder;
     aircraft: Aircraft;
+    quotes?: RequisitionQuote[];
     type: "GENERAL" | "AERONAUTICO";
+};
+
+export type RequisitionQuote = {
+  quote_number: string;
+  status: string;
+  vendor: {
+    name: string | null;
+  };
+  updated_at: string;
 };
 
 export type AdministrationRequisition = {
