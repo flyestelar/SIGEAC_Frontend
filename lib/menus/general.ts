@@ -139,8 +139,6 @@ export function buildGeneralGroup({ pathname, currentCompany }: MenuContext): Gr
                 ),
                 icon: Truck,
                 roles: [
-                    "ANALISTA_COMPRAS",
-                    "JEFE_COMPRAS",
                     "SUPERUSER",
                     "JEFE_ALMACEN",
                 ],
