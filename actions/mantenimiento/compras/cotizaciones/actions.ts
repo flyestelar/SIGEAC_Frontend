@@ -57,6 +57,7 @@ export const useUpdateQuoteStatus = () => {
       mutationFn: async ({id, data, company}: {id: number,company: string, data: {
         status: string,
         updated_by: string,
+        observation?: string | null,
       }}) => {
           await axiosInstance.put(`/${company}/quote-order-update-status/${id}`, data)
         },

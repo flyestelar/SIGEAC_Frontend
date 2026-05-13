@@ -29,6 +29,7 @@ import {
   DialogTitle
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
+import { useState } from "react"
 
 /* =========================
    STYLES
@@ -85,10 +86,8 @@ type Props = {
 
 const QuoteDropdownDialogs = ({
   quote,
-
   openReject,
   setOpenReject,
-
   openApprove,
   setOpenApprove
 }: Props) => {
@@ -99,6 +98,8 @@ const QuoteDropdownDialogs = ({
   const { updateStatusRequisition } = useUpdateRequisitionStatus()
   const { createPurchaseOrder } = useCreatePurchaseOrder()
 
+  const [Observation, setObservation] = useState("")
+
   if (!selectedCompany) return <LoadingPage />
 
   const handleReject = async () => {
@@ -106,7 +107,8 @@ const QuoteDropdownDialogs = ({
       id: quote.id,
       data: {
         status: "RECHAZADA",
-        updated_by: `${user?.first_name} ${user?.last_name}`
+        updated_by: `${user?.first_name} ${user?.last_name}`,
+        observation: Observation.trim() || null
       },
       company: selectedCompany.slug
     })
@@ -120,6 +122,7 @@ const QuoteDropdownDialogs = ({
       company: selectedCompany.slug
     })
 
+    setObservation("")
     setOpenReject(false)
   }
 
@@ -191,6 +194,28 @@ const QuoteDropdownDialogs = ({
             <div>
               Esta acción es <b>irreversible</b> y afectará el estado de la solicitud asociada.
             </div>
+          </div>
+          <div className="mx-6 mt-4">
+            <label className="text-xs font-medium text-muted-foreground mb-2 block">
+              Observación de rechazo (opcional)
+            </label>
+
+            <textarea
+              value={Observation}
+              onChange={(e) => setObservation(e.target.value)}
+              placeholder="Ej: precio no competitivo, proveedor no cumple requisitos..."
+              className="
+                w-full min-h-[90px] resize-none
+                rounded-xl border border-border/60
+                bg-background/70
+                px-3 py-2 text-sm
+                text-foreground
+                outline-none
+                focus:border-red-400/50
+                focus:ring-2 focus:ring-red-500/10
+                transition
+              "
+            />
           </div>
           <div className={footer}>
             <Button

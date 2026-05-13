@@ -661,6 +661,7 @@ export type Quote = {
     quote_date: Date;
     created_by: string;
     status: string;
+    observation?: string;
 };
 
 export type Renting = {
@@ -717,6 +718,7 @@ export type Requisition = {
     aircraft: Aircraft;
     quotes?: RequisitionQuote[];
     type: "GENERAL" | "AERONAUTICO";
+    observation?: null;
 };
 
 export type RequisitionQuote = {
