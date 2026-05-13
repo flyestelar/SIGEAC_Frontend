@@ -30,10 +30,6 @@ import { useCreatePurchaseOrder } from "@/actions/mantenimiento/compras/ordenes_
 
 import QuoteDropdownDialogs from "@/components/dialogs/mantenimiento/compras/QuoteDropdownDialogs"
 
-/* =========================
-   STYLE SYSTEM (igual al de Requisition)
-========================= */
-
 const iconBase =
   "size-[18px] transition-all duration-200 ease-out group-hover:scale-110"
 
