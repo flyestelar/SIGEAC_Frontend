@@ -19,12 +19,13 @@ import {
   ClipboardX,
   Loader2,
   Minus,
-  MoreHorizontal
+  MoreHorizontal,
+  Trash2
 } from "lucide-react"
 import { Quote } from "@/types"
 import { useAuth } from "@/contexts/AuthContext"
 import { useCompanyStore } from "@/stores/CompanyStore"
-import { useUpdateQuoteStatus } from "@/actions/mantenimiento/compras/cotizaciones/actions"
+import { useDeleteQuote, useUpdateQuoteStatus } from "@/actions/mantenimiento/compras/cotizaciones/actions"
 import { useUpdateRequisitionStatus } from "@/actions/mantenimiento/compras/requisiciones/actions"
 import { useCreatePurchaseOrder } from "@/actions/mantenimiento/compras/ordenes_compras/actions"
 
@@ -59,10 +60,14 @@ const QuoteDropdownActions = ({ quote }: { quote: Quote }) => {
   const [openDropdown, setOpenDropdown] = useState(false)
   const [openReject, setOpenReject] = useState(false)
   const [openApprove, setOpenApprove] = useState(false)
+  const [openDelete, setOpenDelete] = useState(false)
 
   const { updateStatusQuote } = useUpdateQuoteStatus()
   const { updateStatusRequisition } = useUpdateRequisitionStatus()
   const { createPurchaseOrder } = useCreatePurchaseOrder()
+  const { deleteQuote } = useDeleteQuote()
+
+  const canDelete = quote.status === "PENDIENTE"
 
   const isInactive =
     quote.status === "APROBADO" ||
@@ -237,13 +242,41 @@ const QuoteDropdownActions = ({ quote }: { quote: Quote }) => {
 
               <TooltipContent>Rechazar cotización</TooltipContent>
             </Tooltip>
+            {/* DELETE */}
+            {canDelete && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span>
+                    <DropdownMenuItem
+                      asChild
+                      className="p-0 focus:bg-transparent"
+                    >
+                      <button
+                        onClick={() => {
+                          setOpenDropdown(false)
+                          setOpenDelete(true)
+                        }}
+                        className={`${itemBase} text-red-600`}
+                      >
+                        <Trash2 className={iconBase} />
+                      </button>
+                    </DropdownMenuItem>
+                  </span>
+                </TooltipTrigger>
 
+                <TooltipContent>
+                  Eliminar cotización
+                </TooltipContent>
+              </Tooltip>
+            )}
           </DropdownMenuContent>
         </DropdownMenu>
         )}
 
         <QuoteDropdownDialogs
           quote={quote}
+          openDelete={openDelete}
+          setOpenDelete={setOpenDelete}
           openReject={openReject}
           setOpenReject={setOpenReject}
           openApprove={openApprove}

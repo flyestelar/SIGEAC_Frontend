@@ -85,22 +85,23 @@ export const useDeleteQuote = () => {
   const queryClient = useQueryClient()
 
   const deleteMutation = useMutation({
-      mutationFn: async ({id, company}: {id: number, company: string}) => {
-          await axiosInstance.post(`/delete-quote/${id}`, {company})
-        },
-      onSuccess: () => {
-          queryClient.invalidateQueries({queryKey: ['quotes']})
-          toast.success("¡Eliminado!", {
-              description: `¡La cotización ha sido eliminada correctamente!`
-          })
-        },
-      onError: (e) => {
-          toast.error("Oops!", {
-            description: "¡Hubo un error al eliminar la cotizacion!"
-        })
-        },
-      }
-  )
+    mutationFn: async ({id, company}: {id: number, company: string}) => {
+      await axiosInstance.delete(`/${company}/delete-quote/${id}`)
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({queryKey: ['quotes']})
+      queryClient.invalidateQueries({queryKey: ['quote'], exact: false})
+      queryClient.invalidateQueries({queryKey: ['requisitions-orders']})
+      toast.success("¡Eliminado!", {
+        description: `¡La cotización ha sido eliminada correctamente!`
+      })
+    },
+    onError: (error) => {
+      toast.error("Oops!", {
+        description: "¡Hubo un error al eliminar la cotización!"
+      })
+    }
+  })
 
   return {
     deleteQuote: deleteMutation,

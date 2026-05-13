@@ -1,6 +1,7 @@
 "use client"
 
 import {
+  useDeleteQuote,
   useUpdateQuoteStatus
 } from "@/actions/mantenimiento/compras/cotizaciones/actions"
 import {
@@ -82,6 +83,8 @@ type Props = {
   setOpenReject: (open: boolean) => void
   openApprove: boolean
   setOpenApprove: (open: boolean) => void
+  openDelete: boolean
+  setOpenDelete: (open: boolean) => void
 }
 
 const QuoteDropdownDialogs = ({
@@ -89,7 +92,9 @@ const QuoteDropdownDialogs = ({
   openReject,
   setOpenReject,
   openApprove,
-  setOpenApprove
+  setOpenApprove,
+  openDelete,
+  setOpenDelete
 }: Props) => {
   const { user } = useAuth()
   const { selectedCompany } = useCompanyStore()
@@ -97,6 +102,7 @@ const QuoteDropdownDialogs = ({
   const { updateStatusQuote } = useUpdateQuoteStatus()
   const { updateStatusRequisition } = useUpdateRequisitionStatus()
   const { createPurchaseOrder } = useCreatePurchaseOrder()
+  const { deleteQuote } = useDeleteQuote()
 
   const [Observation, setObservation] = useState("")
 
@@ -164,10 +170,72 @@ const QuoteDropdownDialogs = ({
 
     setOpenApprove(false)
   }
+  const handleDelete = async () => {
+    await deleteQuote.mutateAsync({
+      id: quote.id,
+      company: selectedCompany.slug
+    })
+
+    setOpenDelete(false)
+  }
 
   return (
     <>
+    {/* =========================
+        DELETE
+    ========================= */}
 
+    <Dialog open={openDelete} onOpenChange={setOpenDelete}>
+      <DialogContent className={dialogClass}>
+        <DialogHeader className={header}>
+          <div className={iconBase("red")}>
+            <Trash2 className="size-5" />
+          </div>
+
+          <DialogTitle className={title}>
+            Eliminar cotización
+          </DialogTitle>
+
+          <DialogDescription className={description}>
+            La cotización{" "}
+            <span className="font-medium text-foreground">
+              {quote.quote_number}
+            </span>{" "}
+            será eliminada permanentemente.
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className={warningBox("red")}>
+          <AlertTriangle className="size-4 mt-[2px]" />
+
+          <div>
+            Esta acción es <b>irreversible</b> y eliminará el registro del sistema.
+          </div>
+        </div>
+
+        <div className={footer}>
+          <Button
+            variant="outline"
+            onClick={() => setOpenDelete(false)}
+            className={cancelBtn}
+          >
+            Cancelar
+          </Button>
+
+          <Button
+            onClick={handleDelete}
+            disabled={deleteQuote.isPending}
+            className={dangerBtn}
+          >
+            {deleteQuote.isPending && (
+              <Loader2 className="mr-2 size-4 animate-spin" />
+            )}
+
+            Eliminar
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
       {/* =========================
           REJECT
       ========================= */}
