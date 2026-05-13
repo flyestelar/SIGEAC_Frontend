@@ -1,113 +1,154 @@
 "use client"
 
+import { useState } from "react"
+import { PurchaseOrder } from "@/types"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu"
-
-import { PurchaseOrder } from "@/types"
-import { ClipboardCheck, MoreHorizontal, Minus } from "lucide-react"
-import { useState } from "react"
-import { CompletePurchaseForm } from "../../../forms/mantenimiento/compras/CompletePurchaseForm"
-import { Button } from "../../../ui/button"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle
-} from "../../../ui/dialog"
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger
 } from "@/components/ui/tooltip"
+import { Button } from "@/components/ui/button"
+import {
+  ClipboardCheck,
+  Minus,
+  MoreHorizontal
+} from "lucide-react"
+import PurchaseOrderDropdownDialogs from "@/components/dialogs/mantenimiento/compras/PurchaseOrderDropdownDialogs"
 
-const iconClass =
-  "size-5 text-green-600 transition-all duration-200 ease-out hover:scale-110 hover:text-black"
+const iconBase =
+  "size-[18px] transition-all duration-200 ease-out group-hover:scale-110"
+const itemBase = `
+  group
+  relative
+  flex
+  items-center
+  justify-center
+  size-9
+  rounded-xl
+  transition-all
+  duration-200
+  ease-out
+  hover:bg-muted
+  hover:shadow-sm
+  active:scale-95
+`
 
-const iconDisabled =
-  "size-4 text-muted-foreground/30"
-
-const PurchaseOrderDropdownActions = ({ po }: { po: PurchaseOrder }) => {
-  const [openApprove, setOpenApprove] = useState<boolean>(false)
-
-  const isInactive = po.status?.toUpperCase() === "PAGADO"
+const PurchaseOrderDropdownActions = ({
+  po
+}: {
+  po: PurchaseOrder
+}) => {
+  const [openDropdown, setOpenDropdown] =
+    useState(false)
+  const [openApprove, setOpenApprove] =
+    useState(false)
+  const isInactive =
+    po.status?.toUpperCase() === "PAGADO"
 
   return (
-    <TooltipProvider>
+    <TooltipProvider delayDuration={120}>
+      <>
+        {isInactive ? (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                className="h-8 w-8 p-0 cursor-not-allowed"
+              >
+                <Minus className="h-4 w-4 text-muted-foreground/30" />
+              </Button>
+            </TooltipTrigger>
 
-      {isInactive ? (
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0 cursor-not-allowed">
-              <span className="sr-only">Sin acciones</span>
-              <Minus className={iconDisabled} />
-            </Button>
-          </TooltipTrigger>
-
-          <TooltipContent>
-            No hay acciones disponibles para una orden de compra pagada.
-          </TooltipContent>
-        </Tooltip>
-      ) : (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
-              <span className="sr-only">Abrir menú</span>
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-
-          <DropdownMenuContent
-            align="center"
-            className="
-              flex gap-2 justify-center
-              animate-in fade-in zoom-in-95 duration-150
-              rounded-lg border bg-background/95 backdrop-blur-sm
-              shadow-lg p-2 overflow-visible z-[999]
-            "
+            <TooltipContent>
+              No hay acciones disponibles para una orden de compra pagada.
+            </TooltipContent>
+          </Tooltip>
+        ) : (
+          <DropdownMenu
+            open={openDropdown}
+            onOpenChange={setOpenDropdown}
           >
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <DropdownMenuItem
-                  onClick={() => setOpenApprove(true)}
-                  className="p-0"
-                >
-                  <button className="flex items-center justify-center p-2 rounded-md transition-all duration-150 hover:bg-muted/60 active:scale-95">
-                    <ClipboardCheck className={iconClass} />
-                  </button>
-                </DropdownMenuItem>
-              </TooltipTrigger>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="
+                  size-8
+                  rounded-xl
+                  border border-transparent
+                  transition-all duration-200
+                  hover:bg-muted/70
+                  hover:border-border/50
+                  hover:shadow-sm
+                  data-[state=open]:bg-muted
+                "
+              >
+                <MoreHorizontal className="size-4" />
+              </Button>
+            </DropdownMenuTrigger>
 
-              <TooltipContent>Completar compra</TooltipContent>
-            </Tooltip>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      )}
+            <DropdownMenuContent
+              align="center"
+              sideOffset={3}
+              className="
+                flex items-center justify-center gap-1.5
+                rounded-2xl
+                border border-border/50
+                bg-background/90
+                backdrop-blur-xl
+                shadow-xl
+                p-1.5
+                overflow-visible
+                animate-in fade-in zoom-in-95 duration-200
+              "
+            >
+              {/* COMPLETE PURCHASE */}
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span>
+                    <DropdownMenuItem
+                      asChild
+                      className="p-0 focus:bg-transparent"
+                    >
+                      <button
+                        onClick={() => {
+                          setOpenDropdown(false)
+                          setOpenApprove(true)
+                        }}
+                        className={`
+                          ${itemBase}
+                          text-emerald-600
+                        `}
+                      >
+                        <ClipboardCheck
+                          className={iconBase}
+                        />
+                      </button>
+                    </DropdownMenuItem>
+                  </span>
+                </TooltipTrigger>
 
-      <Dialog open={openApprove} onOpenChange={setOpenApprove}>
-        <DialogContent className="max-w-lg lg:max-w-2xl">
-          <DialogHeader>
-            <DialogTitle className="text-center">
-              Completar Compra
-            </DialogTitle>
+                <TooltipContent>
+                  Completar compra
+                </TooltipContent>
+              </Tooltip>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
 
-            <DialogDescription className="text-center p-2 mb-0 pb-0">
-              Ingrese los datos de la compra para confirmar la orden.
-            </DialogDescription>
-
-            <CompletePurchaseForm
-              po={po}
-              onClose={() => setOpenApprove(false)}
-            />
-          </DialogHeader>
-        </DialogContent>
-      </Dialog>
-
+        <PurchaseOrderDropdownDialogs
+          po={po}
+          openApprove={openApprove}
+          setOpenApprove={setOpenApprove}
+        />
+      </>
     </TooltipProvider>
   )
 }
