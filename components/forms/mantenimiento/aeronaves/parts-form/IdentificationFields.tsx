@@ -1,46 +1,113 @@
 "use client"
 
-import React from "react";
+import React, { useMemo, useState } from "react";
+import { Button } from "@/components/ui/button";
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { Check, ChevronsUpDown, Loader2, Plus } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { useCompanyStore } from "@/stores/CompanyStore";
 import { useGetManufacturers } from "@/hooks/general/fabricantes/useGetManufacturers";
+import { Manufacturer } from "@/types";
+import { CreateManufacturerDialog } from "@/components/dialogs/general/CreateManufacturerDialog";
 
 export default function IdentificationFields({ form, path }: any) {
-  const { selectedCompany } = useCompanyStore();
-  const { data: manufacturers, isLoading: isManufacturersLoading } = useGetManufacturers(selectedCompany?.slug);
+    const { selectedCompany } = useCompanyStore();
+    const { data: manufacturers, isLoading: isManufacturersLoading } = useGetManufacturers(selectedCompany?.slug);
+    const [manufacturerOpen, setManufacturerOpen] = useState(false);
 
-  return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <FormField control={form.control} name={`${path}.serial`} render={({ field }: any) => (
-        <FormItem>
-          <FormLabel>Serial</FormLabel>
-          <FormControl>
-            <Input placeholder="Serial (opcional)" {...field} />
-          </FormControl>
-          <FormMessage />
-        </FormItem>
-      )} />
+    const partManufacturers = useMemo(
+        () => (manufacturers || []).filter((manufacturer: Manufacturer) => manufacturer.type === "PART"),
+        [manufacturers],
+    );
 
-      <FormField control={form.control} name={`${path}.manufacturer_id`} render={({ field }: any) => (
-        <FormItem>
-          <FormLabel>Fabricante</FormLabel>
-          <FormControl>
-            <Select onValueChange={field.onChange} value={field.value || ""}>
-              <SelectTrigger>
-                <SelectValue placeholder={isManufacturersLoading ? "Cargando..." : "Selecciona fabricante"} />
-              </SelectTrigger>
-              <SelectContent>
-                {(manufacturers || []).filter((m: any) => m.type === "PART").map((m: any) => (
-                  <SelectItem key={m.id} value={String(m.id)}>{m.name}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </FormControl>
-          <FormMessage />
-        </FormItem>
-      )} />
-    </div>
-  );
+    return (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <FormField control={form.control} name={`${path}.serial`} render={({ field }: any) => (
+                <FormItem>
+                    <FormLabel>Serial</FormLabel>
+                    <FormControl>
+                        <Input placeholder="Serial (opcional)" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                </FormItem>
+            )} />
+
+            <FormField control={form.control} name={`${path}.manufacturer_id`} render={({ field }: any) => (
+                <FormItem className="flex flex-col">
+                    <div className="flex items-center justify-between gap-2">
+                        <FormLabel>Fabricante</FormLabel>
+                        <CreateManufacturerDialog
+                            onSuccess={(manufacturer: Manufacturer) => {
+                                field.onChange(String(manufacturer.id));
+                                setManufacturerOpen(false);
+                            }}
+                            triggerButton={
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="icon"
+                                    className="h-8 w-8 border-dashed"
+                                    aria-label="Crear fabricante"
+                                >
+                                    <Plus className="h-4 w-4" />
+                                </Button>
+                            }
+                        />
+                    </div>
+                    <Popover open={manufacturerOpen} onOpenChange={setManufacturerOpen}>
+                        <PopoverTrigger asChild>
+                            <FormControl>
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    role="combobox"
+                                    className={cn(
+                                        "w-full justify-between",
+                                        !field.value && "text-muted-foreground",
+                                    )}
+                                >
+                                    {isManufacturersLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                                    {partManufacturers.find((manufacturer) => String(manufacturer.id) === field.value)?.name ||
+                                        "Selecciona fabricante"}
+                                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                </Button>
+                            </FormControl>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-[320px] p-0" align="start">
+                            <Command>
+                                <CommandInput placeholder="Buscar fabricante..." />
+                                <CommandList>
+                                    <CommandEmpty>No se encontraron fabricantes.</CommandEmpty>
+                                    <CommandGroup>
+                                        {partManufacturers.map((manufacturer) => (
+                                            <CommandItem
+                                                key={manufacturer.id}
+                                                value={manufacturer.name}
+                                                onSelect={() => {
+                                                    field.onChange(String(manufacturer.id));
+                                                    setManufacturerOpen(false);
+                                                }}
+                                            >
+                                                <Check
+                                                    className={cn(
+                                                        "mr-2 h-4 w-4",
+                                                        String(manufacturer.id) === field.value ? "opacity-100" : "opacity-0",
+                                                    )}
+                                                />
+                                                {manufacturer.name}
+                                            </CommandItem>
+                                        ))}
+                                    </CommandGroup>
+                                </CommandList>
+                            </Command>
+                        </PopoverContent>
+                    </Popover>
+                    <FormMessage />
+                </FormItem>
+            )} />
+        </div>
+    );
 }
