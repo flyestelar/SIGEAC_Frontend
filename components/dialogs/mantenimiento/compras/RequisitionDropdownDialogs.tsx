@@ -31,6 +31,7 @@ import {
   DialogHeader,
   DialogTitle
 } from "@/components/ui/dialog"
+import { useState } from "react"
 
 function transformApiData(apiData: any) {
   return {
@@ -107,6 +108,8 @@ const RequisitionDropdownDialogs = ({
   const { updateStatusRequisition } =
     useUpdateRequisitionStatus()
 
+  const [Observation, setObservation] = useState("")
+
   const initialData = transformApiData(req)
 
   if (!selectedCompany) return <LoadingPage />
@@ -129,11 +132,13 @@ const RequisitionDropdownDialogs = ({
       id,
       data: {
         status,
-        updated_by
+        updated_by,
+        observation: Observation.trim() || null
       },
       company: selectedCompany.slug
     })
 
+    setObservation("")
     setOpenReject(false)
   }
 
@@ -250,6 +255,28 @@ const RequisitionDropdownDialogs = ({
             <div>
                 Esta acción es <b>irreversible</b>. La requisición será marcada como rechazada permanentemente.
             </div>
+            </div>
+            <div className="mx-6 mt-4">
+              <label className="text-xs font-medium text-muted-foreground mb-2 block">
+                Observación de rechazo (opcional)
+              </label>
+
+              <textarea
+                value={Observation}
+                onChange={(e) => setObservation(e.target.value)}
+                placeholder="Ej: documentación incompleta, proveedor no cumple requisitos..."
+                className="
+                  w-full min-h-[90px] resize-none
+                  rounded-xl border border-border/60
+                  bg-background/70
+                  px-3 py-2 text-sm
+                  text-foreground
+                  outline-none
+                  focus:border-orange-400/50
+                  focus:ring-2 focus:ring-orange-500/10
+                  transition
+                "
+              />
             </div>
 
             {/* ACTIONS */}
