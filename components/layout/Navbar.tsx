@@ -34,7 +34,7 @@ export function Navbar({ title }: NavbarProps) {
         {/* DERECHA */}
         <div className="flex items-center gap-2 ml-auto flex-shrink-0 z-10">
           <ThemeToggler />
-          {/* <NotificationBell /> */}
+          <NotificationBell />
           <UserNav />
         </div>
 

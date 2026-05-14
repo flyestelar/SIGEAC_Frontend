@@ -3,9 +3,18 @@
 import { useNotifications } from '@/hooks/notifications/useNotifications';
 import { useCompanyStore } from '@/stores/CompanyStore';
 import NotificationItem from './NotificationItem';
-import { Button } from '@/components/ui/button';
+
 import { Separator } from '@/components/ui/separator';
-import { Inbox, X } from 'lucide-react';
+import { Inbox, CheckCheck } from 'lucide-react';
+
+import { useMarkAllNotificationsAsRead } from '@/hooks/notifications/useMarkAllNotificationsAsRead';
+
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 
 interface Props {
   onClose?: () => void;
@@ -13,23 +22,27 @@ interface Props {
 
 export default function NotificationDropdown({ onClose }: Props) {
   const { selectedCompany } = useCompanyStore();
+
   const { notifications, unreadCount } = useNotifications(
     selectedCompany?.slug
   );
 
+  const { mutate: markAllAsRead, isPending } =
+    useMarkAllNotificationsAsRead(selectedCompany?.slug!);
+
   return (
     <>
       {/* overlay */}
-      <div
-        className="fixed inset-0 z-40"
-        onClick={onClose}
-      />
+      <div className="fixed inset-0 z-40" onClick={onClose} />
 
       {/* container */}
-      <div className="absolute right-0 mt-2 w-96 z-50 rounded-xl border bg-background shadow-2xl overflow-hidden">
+      <div className="absolute right-0 mt-2 w-96 rounded-xl border bg-background shadow-2xl isolate z-50 overflow-visible">
 
         {/* HEADER */}
-        <div className="flex items-center justify-between px-4 py-3 bg-muted/40 backdrop-blur">
+
+        <div className="flex items-center justify-between px-4 py-3 bg-muted/40 backdrop-blur rounded-t-xl">
+
+          {/* LEFT INFO */}
           <div className="flex flex-col">
             <h3 className="text-sm font-semibold flex items-center gap-2">
               <Inbox className="w-4 h-4" />
@@ -40,12 +53,39 @@ export default function NotificationDropdown({ onClose }: Props) {
               {unreadCount} sin leer
             </p>
           </div>
+
+          {/* RIGHT ACTION (ICON + TOOLTIP) */}
+          {unreadCount > 0 && (
+            <TooltipProvider delayDuration={100}>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    onClick={() => markAllAsRead()}
+                    disabled={isPending}
+                    className="
+                      p-2 rounded-md
+                      hover:bg-muted
+                      transition-colors
+                      disabled:opacity-50
+                      disabled:cursor-not-allowed
+                    "
+                  >
+                    <CheckCheck className="w-4 h-4 text-blue-600" />
+                  </button>
+                </TooltipTrigger>
+
+                <TooltipContent side="bottom" className="z-[999]">
+                Marcar todas como leídas
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          )}
         </div>
 
         <Separator />
 
         {/* CONTENT */}
-        <div className="max-h-96 overflow-y-auto scrollbar-thin">
+        <div className="max-h-[calc(2*72px)] overflow-y-auto scrollbar-thin">
 
           {notifications.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-10 text-center">
