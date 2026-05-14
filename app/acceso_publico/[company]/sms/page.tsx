@@ -135,9 +135,11 @@ const SMSPage = () => {
         .sms-rise-2 { animation: sms-rise 0.55s ease 0.12s forwards; opacity: 0; }
         .sms-strategy-card { transition: transform 0.2s ease, box-shadow 0.2s ease; }
         .sms-strategy-card:hover { transform: translateY(-3px); box-shadow: 0 10px 32px rgba(0,0,0,0.10); }
+        .sms-tabs-list::-webkit-scrollbar { display: none; }
+        .sms-tabs-list { -ms-overflow-style: none; scrollbar-width: none; }
       `}</style>
 
-      <div className="sms-body flex flex-col w-full max-w-6xl mx-auto gap-8">
+      <div className="sms-body flex flex-col w-full max-w-6xl mx-auto gap-6 sm:gap-8">
 
         {/* ── HERO ── */}
         <section className="relative rounded-2xl overflow-hidden shadow-2xl sms-rise">
@@ -154,9 +156,9 @@ const SMSPage = () => {
           </div>
 
           {/* Content */}
-          <div className="relative z-10 px-8 pt-10 pb-0 lg:px-14 lg:pt-14 min-h-[360px] flex flex-col">
+          <div className="relative z-10 px-4 sm:px-8 pt-6 sm:pt-10 pb-0 lg:px-14 lg:pt-14 min-h-[360px] flex flex-col">
             {/* Status pill */}
-            <div className="flex items-center gap-2 mb-8">
+            <div className="flex items-center gap-2 mb-4 sm:mb-8">
               <span className="relative flex h-2 w-2">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-sky-400 opacity-75" />
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-sky-400" />
@@ -168,12 +170,12 @@ const SMSPage = () => {
 
             {/* Title */}
             <div className="flex-1 max-w-2xl">
-              <h1 className="sms-display text-5xl lg:text-7xl font-extrabold text-white leading-none mb-4 uppercase">
+              <h1 className="sms-display text-3xl sm:text-5xl lg:text-7xl font-extrabold text-white leading-none mb-3 sm:mb-4 uppercase">
                 Sistema de Gestión de{" "}
                 <span className="text-sky-400">Seguridad</span>{" "}
                 Operacional
               </h1>
-              <p className="text-slate-300 text-sm lg:text-base leading-relaxed max-w-lg mb-8">
+              <p className="text-slate-300 text-sm lg:text-base leading-relaxed max-w-lg mb-4 sm:mb-8">
                 Comprometidos con los más altos estándares de seguridad en
                 todas nuestras operaciones de aviación.
               </p>
@@ -207,7 +209,7 @@ const SMSPage = () => {
             </div>
 
             {/* Stats strip */}
-            <div className="mt-10 border-t border-white/10 grid grid-cols-2 sm:grid-cols-4">
+            <div className="mt-6 sm:mt-10 border-t border-white/10 grid grid-cols-2 sm:grid-cols-4">
               {[
                 { value: "6",    label: "Planes de Emergencia" },
                 { value: "4",    label: "Áreas Estratégicas" },
@@ -216,10 +218,10 @@ const SMSPage = () => {
               ].map((s, i) => (
                 <div
                   key={i}
-                  className={`sms-stat-divider text-center py-5 ${i < 3 ? "sm:border-r sm:border-white/12" : ""}`}
+                  className={`sms-stat-divider text-center py-3 sm:py-5 ${i < 3 ? "sm:border-r sm:border-white/12" : ""}`}
                 >
-                  <div className="sms-display text-3xl lg:text-4xl font-bold text-sky-400">{s.value}</div>
-                  <div className="text-[11px] text-slate-400 mt-0.5 tracking-wide">{s.label}</div>
+                  <div className="sms-display text-2xl sm:text-3xl lg:text-4xl font-bold text-sky-400">{s.value}</div>
+                  <div className="text-[10px] sm:text-[11px] text-slate-400 mt-0.5 tracking-wide">{s.label}</div>
                 </div>
               ))}
             </div>
@@ -228,29 +230,31 @@ const SMSPage = () => {
 
         {/* ── TABS ── */}
         <Tabs defaultValue="politicas" className="w-full sms-rise-2">
-          <TabsList className="w-full bg-transparent border-b border-border rounded-none h-auto p-0 flex overflow-x-auto gap-0">
-            {[
-              { value: "politicas",     icon: BookOpen,       label: "Políticas" },
-              { value: "empresa",       icon: Building,       label: "Empresa" },
-              { value: "estrategias",   icon: Target,         label: "Estrategias" },
-              { value: "plan-respuesta",icon: AlertTriangle,  label: "Plan de Respuesta" },
-            ].map((tab) => (
-              <TabsTrigger
-                key={tab.value}
-                value={tab.value}
-                className="flex-1 flex items-center justify-center gap-2 rounded-none border-b-2 border-transparent data-[state=active]:border-sky-500 data-[state=active]:text-sky-600 data-[state=active]:bg-transparent data-[state=active]:shadow-none py-3 px-3 text-sm font-medium text-muted-foreground transition-colors duration-200 whitespace-nowrap min-w-[100px]"
-              >
-                <tab.icon className="w-4 h-4 flex-shrink-0" />
-                <span>{tab.label}</span>
-              </TabsTrigger>
-            ))}
-          </TabsList>
+          <div className="sms-tabs-list relative border-b border-border overflow-x-auto">
+            <TabsList className="w-max min-w-full bg-transparent border-none rounded-none h-auto p-0 flex gap-0">
+              {[
+                { value: "politicas",     icon: BookOpen,       label: "Políticas" },
+                { value: "empresa",       icon: Building,       label: "Empresa" },
+                { value: "estrategias",   icon: Target,         label: "Estrategias" },
+                { value: "plan-respuesta",icon: AlertTriangle,  label: "Plan de Respuesta" },
+              ].map((tab) => (
+                <TabsTrigger
+                  key={tab.value}
+                  value={tab.value}
+                  className="shrink-0 flex items-center justify-center gap-1.5 rounded-none border-b-2 border-transparent data-[state=active]:border-sky-500 data-[state=active]:text-sky-600 data-[state=active]:bg-transparent data-[state=active]:shadow-none py-3 px-4 text-sm font-medium text-muted-foreground transition-colors duration-200 whitespace-nowrap"
+                >
+                  <tab.icon className="w-4 h-4 flex-shrink-0" />
+                  <span>{tab.label}</span>
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </div>
 
           {/* ── POLÍTICAS ── */}
           <TabsContent value="politicas" className="mt-6 space-y-5">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
               <div>
-                <h2 className="sms-display text-2xl font-bold uppercase tracking-wide">
+                <h2 className="sms-display text-xl sm:text-2xl font-bold uppercase tracking-wide">
                   Políticas de Seguridad Operacional
                 </h2>
                 <p className="text-sm text-muted-foreground mt-0.5">
@@ -289,7 +293,7 @@ const SMSPage = () => {
           {/* ── EMPRESA ── */}
           <TabsContent value="empresa" className="mt-6 space-y-5">
             <div>
-              <h2 className="sms-display text-2xl font-bold uppercase tracking-wide">
+              <h2 className="sms-display text-xl sm:text-2xl font-bold uppercase tracking-wide">
                 Nuestra Empresa
               </h2>
               <p className="text-sm text-muted-foreground mt-0.5">
@@ -327,7 +331,7 @@ const SMSPage = () => {
             />
 
             <div>
-              <h2 className="sms-display text-2xl font-bold uppercase tracking-wide">
+              <h2 className="sms-display text-xl sm:text-2xl font-bold uppercase tracking-wide">
                 Estrategias de Seguridad Operacional
               </h2>
               <p className="text-sm text-muted-foreground mt-0.5">
@@ -452,7 +456,7 @@ const SMSPage = () => {
           {/* ── PLAN DE RESPUESTA ── */}
           <TabsContent value="plan-respuesta" className="mt-6 space-y-5">
             <div>
-              <h2 className="sms-display text-2xl font-bold uppercase tracking-wide">
+              <h2 className="sms-display text-xl sm:text-2xl font-bold uppercase tracking-wide">
                 Plan de Respuesta Ante la Emergencia
               </h2>
               <p className="text-sm text-muted-foreground mt-0.5">

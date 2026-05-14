@@ -5,11 +5,7 @@ const nextConfig = {
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: 'p818zgogs0bj.share.zrok.io',
-      },
-      {
-        protocol: 'http',
-        hostname: 'p818zgogs0bj.share.zrok.io',
+        hostname: 'api-etr.sigeac.org',
       },
       {
         protocol: 'http',
