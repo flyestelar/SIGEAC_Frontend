@@ -24,7 +24,7 @@ export default function CreateAirworthinessDirectivePage() {
         <div className="space-y-3">
           <Link href={basePath} className="inline-flex">
             <Button variant="ghost" size="sm" className="gap-2 px-0 text-muted-foreground">
-              <ArrowLeft className="h-4 w-4" />
+              <ArrowLeft className="size-4" />
               Volver al índice
             </Button>
           </Link>
