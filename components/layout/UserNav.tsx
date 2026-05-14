@@ -25,12 +25,15 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useCompanyStore } from '@/stores/CompanyStore'
+
 
 import { useAuth } from "@/contexts/AuthContext";
 import { useMyEmployee } from "@/hooks/sistema/usuario/useMyEmployee";
 import { MarqueeText } from "../misc/MarqueeText";
 
 export function UserNav() {
+  const { selectedCompany, selectedStation } = useCompanyStore()
   const { user, loading, logout } = useAuth();
   const { data: employee, isLoading: employeeLoading } = useMyEmployee();
 
@@ -132,7 +135,7 @@ export function UserNav() {
             asChild
             className="rounded-lg cursor-pointer px-2 py-2"
           >
-            <Link href="/dashboard" className="flex items-center gap-2">
+            <Link href={`/${selectedCompany?.slug}/dashboard`} className="flex items-center gap-2">
               <LayoutGrid className="w-4 h-4 text-muted-foreground" />
               Dashboard
             </Link>
