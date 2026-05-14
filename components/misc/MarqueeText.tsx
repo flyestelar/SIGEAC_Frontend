@@ -46,7 +46,7 @@ export function MarqueeText({ text }: { text: string }) {
           } as React.CSSProperties
         }
       >
-        <span className="pr-10">{text}</span>
+        <span>{text}</span>
       </div>
     </div>
   );

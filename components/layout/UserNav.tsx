@@ -39,6 +39,9 @@ export function UserNav() {
 
   const initials =
     `${user?.first_name?.[0] ?? ""}${user?.last_name?.[0] ?? ""}`;
+  const fullName = `${user?.first_name ?? ''} ${user?.last_name ?? ''}`
+    .trim()
+    .toUpperCase()
 
   return (
     <DropdownMenu>
@@ -113,14 +116,14 @@ export function UserNav() {
 
             <div className="flex flex-col min-w-0">
               <p className="text-sm font-medium truncate">
-                {user?.username ?? "Usuario"}
+                {fullName ?? "Usuario"}
               </p>
 
               <div className="flex items-center gap-1 min-w-0">
                 <Mail className="w-3 h-3 flex-shrink-0" />
 
                 <div className="min-w-0 flex-1">
-                  <MarqueeText text={user?.email ?? ""} />
+                  <MarqueeText text={user?.email?.trim() ?? ""} />
                 </div>
               </div>
             </div>
