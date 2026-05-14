@@ -181,3 +181,16 @@ input[type="password"]::-webkit-password-toggle-button {
   appearance: none !important;
   -webkit-appearance: none !important;
 }
+
+@keyframes marquee-x {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(calc(-1 * var(--distance)));
+  }
+}
+
+.animate-marquee-x {
+  animation: marquee-x 6s ease-in-out infinite alternate;
+}
