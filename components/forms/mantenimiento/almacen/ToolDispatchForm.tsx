@@ -104,7 +104,7 @@ export function ToolDispatchForm({ onClose }: FormProps) {
   } = useGetBatchesWithInWarehouseArticles({
     location_id: Number(selectedStation!),
     company: selectedCompany!.slug,
-    category: "herramienta",
+    category: "tool",
   });
 
   const {
@@ -154,8 +154,10 @@ export function ToolDispatchForm({ onClose }: FormProps) {
   const { setValue } = form;
 
   const onSubmit = async (data: FormSchemaType) => {
+    const { articles, ...rest } = data;
     const formattedData = {
-      ...data,
+      ...rest,
+      aeronautical_articles: articles,
       created_by: `${user?.employee[0].dni}`,
       submission_date: format(data.submission_date, "yyyy-MM-dd"),
       category: "herramienta",
@@ -240,10 +242,10 @@ export function ToolDispatchForm({ onClose }: FormProps) {
                       <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                     </Button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-[200px] p-0">
-                    <Command>
-                      <CommandInput placeholder="Buscar una herramienta" />
-                      <CommandList>
+                    <PopoverContent className="w-[min(var(--radix-popover-trigger-width),calc(100vw-2rem))] max-w-[calc(100vw-2rem)] p-0">
+                      <Command>
+                        <CommandInput placeholder="Buscar una herramienta" />
+                      <CommandList onWheelCapture={(event) => event.stopPropagation()}>
                         <CommandEmpty className="flex justify-center">
                           {isBatchesLoading ? (
                             <Loader2 className="size-4 animate-spin" />
@@ -266,6 +268,7 @@ export function ToolDispatchForm({ onClose }: FormProps) {
                               <CommandItem
                                 disabled={article.status === "InUse"}
                                 key={article.id}
+                                className="max-w-full"
                                 onSelect={() => {
                                   handleArticleSelect(
                                     article.id!,
@@ -283,7 +286,7 @@ export function ToolDispatchForm({ onClose }: FormProps) {
                                       : "opacity-0"
                                   )}
                                 />
-                                <p className="font-medium">
+                                <p className="min-w-0 truncate font-medium">
                                   <span className="text-muted-foreground">
                                     SN:{" "}
                                   </span>

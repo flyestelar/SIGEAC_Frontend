@@ -6,6 +6,8 @@ import PreviewVoluntaryReportPdfDialog from "@/components/dialogs/aerolinea/sms/
 import { ContentLayout } from "@/components/layout/ContentLayout";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { format } from "date-fns";
+import { es } from "date-fns/locale";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import {
   Dialog,
@@ -29,9 +31,11 @@ import {
   Phone,
   User,
   File,
+  Download,
+  CalendarCheck,
 } from "lucide-react";
 import Image from "next/image";
-import ImageZoom from "@/components/ui/ImageZoom"; //funcion de zoom para imagenes
+import ImageZoom from "@/components/ui/ImageZoom";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 
@@ -49,7 +53,29 @@ const ShowVoluntaryReport = () => {
   });
 
   // ==========================================================
-  // ACCIONES
+  // HANDLERS
+  // ==========================================================
+  const handleDownloadImage = async (url: string, filename: string) => {
+    try {
+      const response = await fetch(url);
+      const blob = await response.blob();
+      const blobUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = blobUrl;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(blobUrl);
+    } catch (error) {
+      console.error("Error downloading image:", error);
+      // Fallback: open in a new tab if fetch fails due to CORS
+      window.open(url, "_blank");
+    }
+  };
+
+  // ==========================================================
+  // ACTIONS
   // ==========================================================
   const renderActionButtons = () => {
     if (!voluntaryReport) return null;
@@ -96,61 +122,94 @@ const ShowVoluntaryReport = () => {
   };
 
   // ==========================================================
-  // TARJETAS
+  // CARDS
   // ==========================================================
 
-  const renderBasicInfo = () => (
-    <Card>
-      <CardHeader className="pb-3">
-        <h3 className="text-lg font-semibold flex items-center gap-2">
-          <FileText className="w-5 h-5" />
-          Información General
-        </h3>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="flex items-center gap-3">
-          <FileText className="w-5 h-5 flex-shrink-0" />
-          <div>
-            <p className="text-sm font-medium">Número de Reporte</p>
-            <p className="font-semibold">
-              {voluntaryReport?.report_number
-                ? `RVP-${voluntaryReport.report_number}`
-                : "N/A"}
-            </p>
-          </div>
-        </div>
+  const renderBasicInfo = () => {
+    // 1. Tipamos el parámetro para evitar el error ts(7006)
+    const formatFriendlyDate = (dateString: string | null | undefined) => {
+      if (!dateString) return null;
+      // Evitamos problemas de zona horaria picando la cadena directamente
+      const soloFecha = dateString.split(' ')[0]; // Extrae "2026-04-10"
+      const [year, month, day] = soloFecha.split('-');
+      return `${day}-${month}-${year}`;
+    };
 
-        <div className="flex items-center gap-3">
-          <Calendar className="w-5 h-5 flex-shrink-0" />
-          <div>
-            <p className="text-sm font-medium">Fecha del Reporte</p>
-            <p className="font-medium">
-              {dateFormat(voluntaryReport?.report_date || "", "PPP")}
-            </p>
-          </div>
-        </div>
+    // 2. Usamos una referencia con 'any' para evitar que TS se queje de las propiedades faltantes
+    const reportData = voluntaryReport as any;
 
-        <div className="flex items-center justify-between">
+    return (
+      <Card>
+        <CardHeader className="pb-3">
+          <h3 className="text-lg font-semibold flex items-center gap-2">
+            <FileText className="w-5 h-5" />
+            Información General
+          </h3>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {/* Número de Reporte */}
           <div className="flex items-center gap-3">
-            <AlertCircle className="w-5 h-5 flex-shrink-0" />
-            <span className="text-sm font-medium">Estado</span>
+            <FileText className="w-5 h-5 flex-shrink-0" />
+            <div>
+              <p className="text-sm font-medium">Número de Reporte</p>
+              <p className="font-semibold">
+                {reportData?.report_number
+                  ? `RVP-${reportData.report_number}`
+                  : "N/A"}
+              </p>
+            </div>
           </div>
-          <Badge
-            variant={
-              voluntaryReport?.status === "CERRADO" ? "default" : "secondary"
-            }
-            className={
-              voluntaryReport?.status === "CERRADO"
-                ? "bg-green-100 text-green-800"
-                : "bg-red-100 text-red-800"
-            }
-          >
-            {voluntaryReport?.status}
-          </Badge>
-        </div>
-      </CardContent>
-    </Card>
-  );
+
+          {/* Fecha del Reporte */}
+          <div className="flex items-center gap-3">
+            <Calendar className="w-5 h-5 flex-shrink-0" />
+            <div>
+              <p className="text-sm font-medium">Fecha del Reporte</p>
+              <p className="font-medium">
+                {/* Ajustado para usar el valor de reportData */}
+                {reportData?.report_date 
+                  ? format(new Date(reportData.report_date.replace(/-/g, '/')), "PPP", { locale: es })
+                  : "N/A"}
+              </p>
+            </div>
+          </div>
+
+          {/* Estado */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <AlertCircle className="w-5 h-5 flex-shrink-0" />
+              <span className="text-sm font-medium">Estado</span>
+            </div>
+            <Badge
+              variant={
+                reportData?.status === "CERRADO" ? "default" : "secondary"
+              }
+              className={
+                reportData?.status === "CERRADO"
+                  ? "bg-green-100 text-green-800"
+                  : "bg-red-100 text-red-800"
+              }
+            >
+              {reportData?.status || "PENDIENTE"}
+            </Badge>
+          </div>
+
+          {/* Fecha de Cierre: Solo aparece si el estado es CERRADO y la fecha existe */}
+          {reportData?.status === "CERRADO" && reportData?.close_date && (
+            <div className="flex items-center gap-3 pt-3 mt-2 border-t border-dashed">
+              <CalendarCheck className="w-5 h-5 flex-shrink-0 text-green-600" />
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Fecha de Cierre</p>
+                <p className="font-semibold text-green-700">
+                  {formatFriendlyDate(reportData.close_date)}
+                </p>
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    );
+  };
 
   const renderLocationInfo = () => (
     <Card>
@@ -231,7 +290,7 @@ const ShowVoluntaryReport = () => {
                     <ChevronRight className="w-4 h-4 mt-1 flex-shrink-0" />
                     <span className="">{consequence.trim()}</span>
                   </li>
-                )
+                ),
             )}
           </ul>
         ) : (
@@ -297,16 +356,29 @@ const ShowVoluntaryReport = () => {
 
   const renderAttachments = () => (
     <div className="space-y-4">
-      {voluntaryReport?.imageUrl && (
+      {voluntaryReport?.imageUrl &&(
         <Card>
-          <CardHeader className="pb-3">
+          <CardHeader className="pb-3 flex flex-row items-center justify-between">
             <h3 className="text-lg font-semibold">Imagen Adjunta</h3>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                if (!voluntaryReport?.imageUrl) return;
+                handleDownloadImage(
+                  voluntaryReport.imageUrl,
+                  `Imagen-RVP-${voluntaryReport.report_number || "adjunta"}.jpg`,
+                );
+              }}
+            >
+              <Download className="w-4 h-4 mr-2" />
+              Descargar Imagen
+            </Button>
           </CardHeader>
           <CardContent>
             <Dialog>
               <DialogTrigger asChild>
                 <div className="relative group w-full max-w-sm h-64 mx-auto cursor-pointer">
-                  {/* ✅ USAR img NORMAL */}
                   <Image
                     src={voluntaryReport.imageUrl}
                     alt="Imagen del reporte"
@@ -329,8 +401,10 @@ const ShowVoluntaryReport = () => {
                 <DialogHeader>
                   <DialogTitle>Imagen del Reporte</DialogTitle>
                 </DialogHeader>
-                {/* Vista expandida: usamos `ImageZoom` en lugar de `<Image />` para habilitar zoom/pan dentro del diálogo. */}
-                <div className="relative h-[60vh] flex justify-center" onClick={(e) => e.stopPropagation()}>
+                <div
+                  className="relative h-[60vh] flex justify-center"
+                  onClick={(e) => e.stopPropagation()}
+                >
                   <ImageZoom
                     src={voluntaryReport.imageUrl}
                     alt="Imagen completa del reporte"
@@ -364,7 +438,7 @@ const ShowVoluntaryReport = () => {
   );
 
   // ==========================================================
-  // RETURN PRINCIPAL
+  // MAIN RETURN
   // ==========================================================
 
   return (
@@ -378,26 +452,21 @@ const ShowVoluntaryReport = () => {
         </div>
       )}
 
-      {/* CONTENIDO */}
+      {/* CONTENT */}
       {voluntaryReport && (
         <div className="space-y-6">
-          {/* PRIMER BLOQUE: Info General + Ubicación + Fecha */}
           <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
             {renderBasicInfo()}
             {renderLocationInfo()}
             {renderIdentificationDate()}
           </div>
 
-          {/* SEGUNDO BLOQUE: Descripción + Consecuencias */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {renderDescription()}
             {renderConsequences()}
           </div>
 
-          {/* TERCER BLOQUE: Reportero */}
           {renderReporterInfo()}
-
-          {/* CUARTO BLOQUE: Adjuntos */}
           {renderAttachments()}
         </div>
       )}

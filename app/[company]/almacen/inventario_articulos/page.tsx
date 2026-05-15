@@ -83,6 +83,7 @@ const InventarioArticulosPage = () => {
     true,
     undefined,
     debouncedSearch.trim() || undefined,
+    activeCategory === "CONSUMABLE" && consumableFilter === "QUIMICOS",
   )
 
   const articles = pagedArticles
@@ -142,9 +143,6 @@ const InventarioArticulosPage = () => {
       if ((activeCategory === "COMPONENT" || activeCategory === "PART") && componentCondition !== "all") {
         filtered = filtered.filter((a) => a.condition === componentCondition)
       }
-      if (activeCategory === "CONSUMABLE" && consumableFilter === "QUIMICOS") {
-        filtered = filtered.filter((a: any) => a.is_hazardous === true)
-      }
     }
 
     // Orden por vencimiento cuando aplica
@@ -167,7 +165,7 @@ const InventarioArticulosPage = () => {
     // ✅ Agrupar por PN en: all / component / part
     const shouldGroup = activeCategory === "all" || activeCategory === "COMPONENT" || activeCategory === "PART"
     return shouldGroup ? groupByPartNumber(filtered) : filtered
-  }, [articles, activeCategory, componentCondition, consumableFilter])
+  }, [articles, activeCategory, componentCondition])
 
   const serverPagination = pagedArticles?.pagination
     ? {

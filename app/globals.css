@@ -11,7 +11,7 @@
   --card-foreground: 226 5% 15%;
   --popover: 226 100% 100%;
   --popover-foreground: 226 100% 10%;
-  --primary: 226 100% 60%;
+  --primary: 226 95% 58%;
   --primary-foreground: 0 0% 100%;
   --secondary: 226 30% 90%;
   --secondary-foreground: 0 0% 0%;
@@ -68,7 +68,7 @@
   --card-foreground: 226 5% 100%;
   --popover: 226 50% 5%;
   --popover-foreground: 226 5% 100%;
-  --primary: 226 100% 60%;
+  --primary: 223 70% 45%;
   --primary-foreground: 0 0% 100%;
   --secondary: 226 30% 20%;
   --secondary-foreground: 0 0% 100%;
@@ -136,4 +136,90 @@
   z-index: 40;
   backdrop-filter: none;
   min-width: 100px;
+}
+@keyframes liquidMove {
+  0% {
+    transform: translateX(-30%) scaleY(1);
+  }
+  50% {
+    transform: translateX(30%) scaleY(1.2);
+  }
+  100% {
+    transform: translateX(-30%) scaleY(1);
+  }
+}
+
+.liquid-wave {
+  width: 200%;
+  height: 100%;
+  background: radial-gradient(
+    circle at 50% 50%,
+    rgba(255, 255, 255, 0.35),
+    transparent 60%
+  );
+  animation: liquidMove 3.5s ease-in-out infinite;
+  filter: blur(1px);
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+
+/* TODO LO AGREGADO DE AQUÍ PARA ABAJO ES PARTE DE LOS ESTILOS DEL ING BENJAMIN */
+/* Oculta botones nativos de mostrar contraseña y controles similares */
+input[type="password"]::-ms-reveal,
+input[type="password"]::-ms-clear,
+input[type="password"]::-webkit-credentials-auto-fill-button,
+input[type="password"]::-webkit-textfield-decoration-container,
+input[type="password"]::-webkit-password-toggle-button {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+  appearance: none !important;
+  -webkit-appearance: none !important;
+}
+
+@keyframes marquee-x {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(calc(-1 * var(--distance)));
+  }
+}
+
+.animate-marquee-x {
+  animation: marquee-x 6s ease-in-out infinite alternate;
+}
+.scrollbar-modern {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.12) transparent;
+}
+
+/* Chrome / Edge / Safari */
+.scrollbar-modern::-webkit-scrollbar {
+  width: 4px;
+}
+
+.scrollbar-modern::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scrollbar-modern::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.12);
+  border-radius: 999px;
+  transition: background 0.2s ease;
+}
+
+.scrollbar-modern:hover::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.22);
+}
+
+.scrollbar-modern::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.25);
 }

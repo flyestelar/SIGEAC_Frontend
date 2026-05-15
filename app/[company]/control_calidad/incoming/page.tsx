@@ -19,7 +19,6 @@ import { DataTable } from "./data-table";
 
 import LoadingPage from "@/components/misc/LoadingPage";
 import { useGetArticlesByStatus } from "@/hooks/mantenimiento/almacen/articulos/useGetArticlesByStatus";
-import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { IncomingArticle } from "./IncomingTypes";
 import { GenerateReceptionFormButton } from "./_components/GenerateReceptionFormButton";
@@ -30,8 +29,6 @@ import { w_columns } from "./w-columns";
 const IncomingControlPage = () => {
 
   const [selectedForForm, setSelectedForForm] = useState<IncomingArticle[]>([]);
-
-  const queryClient = useQueryClient();
 
   const { selectedCompany } = useCompanyStore();
 
@@ -81,7 +78,7 @@ const IncomingControlPage = () => {
           <h1 className="text-4xl font-bold">Control de Incoming</h1>
           <p className="text-sm text-muted-foreground italic">
             Aquí puede observar los artículos en flujo de Incoming y los que están
-            en espera por ubicar.
+            en espera por ubicación.
             <br />
             Filtre y/o busque si desea uno en específico.
           </p>
@@ -133,10 +130,6 @@ const IncomingControlPage = () => {
                 toolbar={
                   <GenerateReceptionFormButton
                     selected={selectedForForm}
-                    onDone={() => {
-                      // refresca ambas tablas
-                      queryClient.invalidateQueries({ queryKey: ["articles-by-status"] })
-                    }}
                   />
                 }
               />

@@ -1,68 +1,63 @@
 import { Company } from "@/types";
 import { create } from "zustand";
+import { persist } from "zustand/middleware";
 
-// Definimos la interfaz para los módulos
-interface Module {
-    id: number;
-    label: string;
-    value: string;
-}
-
-// Actualizamos el estado para usar el objeto Company
 interface CompanyState {
-    selectedCompany: Company | null;
-    selectedStation: string | null;
+  selectedCompany: Company | null;
+  selectedStation: string;
+
+  setSelectedCompany: (company: Company | null) => void;
+  setSelectedStation: (station: string) => void;
+  reset: () => void;
 }
 
-interface CompanyActions {
-    setSelectedCompany: (company: Company) => void;
-    setSelectedStation: (station: string) => void;
-    initFromLocalStorage: () => void;
-    reset: () => void;
-}
-
-const initialState: CompanyState = {
-    selectedCompany: null,
-    selectedStation: null,
+const initialState = {
+  selectedCompany: null,
+  selectedStation: "",
 };
 
-export const useCompanyStore = create<CompanyState & CompanyActions>((set) => ({
-    ...initialState,
+export const useCompanyStore = create<CompanyState>()(
+  persist(
+    (set, get) => ({
+      ...initialState,
 
-    setSelectedCompany: (company) => {
-        set({ selectedCompany: company });
-        // Guardamos el objeto como JSON en localStorage
-        localStorage.setItem('selectedCompany', JSON.stringify(company));
-    },
+      /**
+       * IMPORTANTE:
+       * cambiar empresa invalida cualquier estación previa
+       */
+      setSelectedCompany: (company) =>
+        set({
+          selectedCompany: company,
+          selectedStation: "",
+        }),
 
-    setSelectedStation: (station) => {
-        set({ selectedStation: station });
-        localStorage.setItem('selectedStation', station);
-    },
+      /**
+       * estación independiente, pero normalmente viene del bootstrap
+       */
+      setSelectedStation: (station) =>
+        set({
+          selectedStation: station,
+        }),
 
-    initFromLocalStorage: () => {
-        const savedSelectedCompany = localStorage.getItem('selectedCompany');
-        if (savedSelectedCompany) {
-            try {
-                // Parseamos el JSON guardado
-                const companyObj: Company = JSON.parse(savedSelectedCompany);
-                set({ selectedCompany: companyObj });
-            } catch (error) {
-                console.error("Error parsing saved company", error);
-                // Si hay error, limpiamos el valor inválido
-                localStorage.removeItem('selectedCompany');
-            }
-        }
+      /**
+       * reset total consistente
+       */
+      reset: () =>
+        set({
+          selectedCompany: null,
+          selectedStation: "",
+        }),
+    }),
+    {
+      name: "company-storage",
 
-        const savedSelectedStation = localStorage.getItem('selectedStation');
-        if (savedSelectedStation) {
-            set({ selectedStation: savedSelectedStation });
-        }
-    },
-
-    reset: () => {
-        set(initialState);
-        localStorage.removeItem('selectedCompany');
-        localStorage.removeItem('selectedStation');
+      /**
+       * Persistimos solo lo necesario
+       */
+      partialize: (state) => ({
+        selectedCompany: state.selectedCompany,
+        selectedStation: state.selectedStation,
+      }),
     }
-}));
+  )
+);
