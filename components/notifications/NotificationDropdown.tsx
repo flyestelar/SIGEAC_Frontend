@@ -36,11 +36,11 @@ export default function NotificationDropdown({ onClose }: Props) {
       <div className="fixed inset-0 z-40" onClick={onClose} />
 
       {/* container */}
-      <div className="absolute right-0 mt-2 w-96 rounded-xl border bg-background shadow-2xl isolate z-50 overflow-visible">
+      <div className="absolute right-0 mt-2 w-96 rounded-xl border bg-background shadow-2xl z-50 overflow-visible">
 
         {/* HEADER */}
 
-        <div className="flex items-center justify-between px-4 py-3 bg-muted/40 backdrop-blur rounded-t-xl">
+        <div className="relative z-20 flex items-center justify-between px-4 py-3 bg-muted/40 backdrop-blur rounded-t-xl">
 
           {/* LEFT INFO */}
           <div className="flex flex-col">
@@ -85,25 +85,23 @@ export default function NotificationDropdown({ onClose }: Props) {
         <Separator />
 
         {/* CONTENT */}
-        <div className="max-h-[calc(2*72px)] overflow-y-auto scrollbar-thin">
-
+          <div
+            className={`scrollbar-modern transition-colors relative z-10 ${
+              notifications.length > 0
+                ? 'max-h-[180px] overflow-y-auto bg-muted/40'
+                : ''
+            }`}
+          >
           {notifications.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-10 text-center">
               <Inbox className="w-10 h-10 text-muted-foreground mb-2" />
-              <p className="text-sm font-medium">
-                Sin notificaciones
-              </p>
-              <p className="text-xs text-muted-foreground">
-                Todo está al día
-              </p>
+              <p className="text-sm font-medium">Sin notificaciones</p>
+              <p className="text-xs text-muted-foreground">Todo está al día</p>
             </div>
           ) : (
-            <div className="divide-y">
+            <div className="flex flex-col gap-1 py-1">
               {notifications.map(n => (
-                <NotificationItem
-                  key={n.id}
-                  notification={n}
-                />
+                <NotificationItem key={n.id} notification={n} />
               ))}
             </div>
           )}

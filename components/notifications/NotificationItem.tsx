@@ -36,8 +36,11 @@ export default function NotificationItem({
   return (
     <div
       className={cn(
-        'group relative flex gap-3 px-4 py-3 cursor-pointer transition-all',
-        'hover:bg-muted/40 active:bg-muted/60',
+        'group relative flex gap-3 px-3 py-2 cursor-pointer transition-all',
+        'rounded-xl mx-1',
+        'bg-muted/20 hover:bg-muted/40',
+        'border border-transparent hover:border-border/30',
+        'shadow-sm',
         'overflow-hidden'
       )}
     >
@@ -45,7 +48,7 @@ export default function NotificationItem({
     {isUnread && (
     <div
         className="
-        absolute right-0 top-0 h-full w-20
+        absolute right-0 top-0 h-full w-20 overflow-visible
 
         flex items-center justify-center
 
