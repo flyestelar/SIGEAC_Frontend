@@ -583,7 +583,6 @@ export type Credit = Array<string>;
 export type DangerIdentification = {
   id: number;
   danger: string;
-  danger_area: string;
   current_defenses: string;
   risk_management_start_date: string;
   description: string;
@@ -596,6 +595,7 @@ export type DangerIdentification = {
   updated_by: string | null;
   voluntary_report_id: number | null;
   obligatory_report_id: number | null;
+  sms_area_id: number | null;
 };
 
 /**
@@ -605,7 +605,7 @@ export type DangerIdentificationRequest = {
   danger: string;
   current_defenses: string;
   risk_management_start_date: string;
-  danger_area: string;
+  sms_area_id?: number | null;
   description: string;
   possible_consequences: string;
   consequence_to_evaluate: string;
@@ -620,7 +620,8 @@ export type DangerIdentificationRequest = {
 export type DangerIdentificationResource = {
   id: number;
   danger: string;
-  danger_area: string;
+  danger_area: string | null;
+  sms_area_id: number | null;
   danger_type: string | null;
   risk_management_start_date: string | null;
   current_defenses: string | null;
@@ -634,6 +635,7 @@ export type DangerIdentificationResource = {
   registered_by: string;
   updated_by: string | null;
   information_source?: InformationSourceResource;
+  sms_area?: SmsArea;
   voluntary_report?: VoluntaryReport;
   obligatory_report?: ObligatoryReport;
   analysis?: AnalysisResource;
@@ -1039,12 +1041,35 @@ export type Module = {
 };
 
 /**
+ * NonRoutineTask
+ */
+export type NonRoutineTask = {
+  id: number;
+  work_order_item_task_id: number;
+  finding: string;
+  work_to_perform: string;
+  status: NonRoutineTaskStatus;
+  detected_by: string;
+  closed_by: string | null;
+  closed_at: string | null;
+  remarks: string | null;
+  created_by: string;
+  updated_by: string | null;
+  created_at: string | null;
+  updated_at: string | null;
+};
+
+/**
+ * NonRoutineTaskStatus
+ */
+export type NonRoutineTaskStatus = 'OPEN' | 'IN_PROGRESS' | 'CLOSED';
+
+/**
  * ObligatoryReport
  */
 export type ObligatoryReport = {
   id: number;
   report_number: string | null;
-  incident_location: string;
   description: string;
   report_date: string;
   incident_date: string;
@@ -1058,17 +1083,18 @@ export type ObligatoryReport = {
   registered_by: string;
   updated_by: string | null;
   reference_number: string | null;
-  station: string | null;
   danger_type: string | null;
   reporter_name: string | null;
   reporter_email: string | null;
   reporter_phone: string | null;
-  reporter_area: string | null;
   reporter_position: string | null;
   sms_coordinator: string | null;
   incidents: Array<unknown> | null;
   other_incidents: string | null;
   incident_location_other: string | null;
+  sms_area_id: number | null;
+  sms_finding_location_id: number | null;
+  sms_station_id: number | null;
 };
 
 /**
@@ -1080,7 +1106,9 @@ export type ObligatoryReportRequest = {
   report_date: string;
   incident_date: string;
   station?: string | null;
-  incident_location: string;
+  sms_station_id?: number | null;
+  incident_location?: string | null;
+  sms_finding_location_id?: number | null;
   incident_location_other?: string | null;
   danger_type?: string | null;
   incidents?: Array<string> | null;
@@ -1090,6 +1118,7 @@ export type ObligatoryReportRequest = {
   reporter_email?: string | null;
   reporter_phone?: string | null;
   reporter_area?: string | null;
+  sms_area_id?: number | null;
   reporter_position?: string | null;
   sms_coordinator?: string | null;
   aircraft_id?: string | null;
@@ -1110,7 +1139,9 @@ export type ObligatoryReportResource = {
   report_date: string | null;
   incident_date: string | null;
   station: string | null;
-  incident_location: string;
+  sms_station_id: number | null;
+  incident_location: string | null;
+  sms_finding_location_id: number | null;
   incident_location_other: string | null;
   danger_type: string | null;
   incidents: Array<unknown> | null;
@@ -1120,6 +1151,7 @@ export type ObligatoryReportResource = {
   reporter_email: string | null;
   reporter_phone: string | null;
   reporter_area: string | null;
+  sms_area_id: number | null;
   reporter_position: string | null;
   sms_coordinator: string | null;
   aircraft_id: number | null;
@@ -1134,6 +1166,9 @@ export type ObligatoryReportResource = {
   registered_by: string;
   updated_by: string | null;
   close_date: string | null;
+  sms_area?: SmsArea;
+  sms_finding_location?: SmsFindingLocation;
+  sms_station?: SmsStation;
   pilot?: PilotResource;
   copilot?: PilotResource;
   aircraft?: AircraftResource;
@@ -1328,6 +1363,33 @@ export type SafetyBulletins = {
   created_at: string | null;
   updated_at: string | null;
   sms_activity_id: number | null;
+};
+
+/**
+ * SmsArea
+ */
+export type SmsArea = {
+  id: number;
+  name: string;
+  slug: string;
+};
+
+/**
+ * SmsFindingLocation
+ */
+export type SmsFindingLocation = {
+  id: number;
+  name: string;
+  slug: string;
+};
+
+/**
+ * SmsStation
+ */
+export type SmsStation = {
+  id: number;
+  name: string;
+  slug: string;
 };
 
 /**
@@ -1878,7 +1940,9 @@ export type UpdateObligatoryReportRequest = {
   report_date?: string | null;
   incident_date?: string | null;
   station?: string | null;
+  sms_station_id?: number | null;
   incident_location?: string | null;
+  sms_finding_location_id?: number | null;
   incident_location_other?: string | null;
   danger_type?: string | null;
   incidents?: Array<string> | null;
@@ -1888,6 +1952,7 @@ export type UpdateObligatoryReportRequest = {
   reporter_email?: string | null;
   reporter_phone?: string | null;
   reporter_area?: string | null;
+  sms_area_id?: number | null;
   reporter_position?: string | null;
   sms_coordinator?: string | null;
   aircraft_id?: string | null;
@@ -1961,6 +2026,26 @@ export type UpdateRequisitionOrderRequest = {
 };
 
 /**
+ * UpdateSMSActivityAttendance
+ */
+export type UpdateSmsActivityAttendance = {
+  activity_name?: string;
+  activity_number?: string;
+  description?: string;
+  place?: string;
+  objetive?: string;
+  topics?: string;
+  end_date?: string;
+  start_date?: string;
+  duration?: string;
+  authorized_by?: string;
+  planned_by?: string;
+  executed_by?: string;
+  hour?: string;
+  mitigation_measure_id?: number | null;
+};
+
+/**
  * UpdateVoluntaryReportRequest
  */
 export type UpdateVoluntaryReportRequest = {
@@ -1968,7 +2053,7 @@ export type UpdateVoluntaryReportRequest = {
   source_reference?: string | null;
   report_date?: string;
   identification_date?: string;
-  station?: string;
+  sms_station_id?: number | null;
   airport_location?: string;
   is_anonymous?: string;
   description?: string;
@@ -1977,7 +2062,8 @@ export type UpdateVoluntaryReportRequest = {
   reporter_last_name?: string | null;
   reporter_phone?: string | null;
   reporter_email?: string | null;
-  reporter_area?: string | null;
+  sms_area_id?: number | null;
+  sms_finding_location_id?: number | null;
   reporter_position?: string | null;
   status?: 'CERRADO' | 'ABIERTO' | 'PROCESO';
   validation_status?: boolean | null;
@@ -2031,9 +2117,7 @@ export type VoluntaryReport = {
   report_number: string | null;
   report_date: string;
   identification_date: string;
-  station: string;
   description: string;
-  finding_location: string;
   possible_consequences: Array<unknown> | null;
   reporter_name: string | null;
   reporter_last_name: string | null;
@@ -2056,7 +2140,9 @@ export type VoluntaryReport = {
   source_reference: string | null;
   danger_type: string | null;
   finding_location_other: string | null;
-  reporter_area: string | null;
+  sms_area_id: number | null;
+  sms_finding_location_id: number | null;
+  sms_station_id: number | null;
 };
 
 /**
@@ -2067,9 +2153,9 @@ export type VoluntaryReportRequest = {
   source_reference?: string | null;
   report_date: string;
   identification_date: string;
-  station: string;
+  sms_station_id?: number | null;
   danger_type?: string | null;
-  finding_location: string;
+  sms_finding_location_id?: number | null;
   finding_location_other?: string | null;
   is_anonymous: boolean;
   description: string;
@@ -2078,7 +2164,7 @@ export type VoluntaryReportRequest = {
   reporter_last_name?: string | null;
   reporter_phone?: string | null;
   reporter_email?: string | null;
-  reporter_area?: string | null;
+  sms_area_id?: number | null;
   reporter_position?: string | null;
   status: 'CERRADO' | 'ABIERTO' | 'PROCESO';
   validation_status?: boolean | null;
@@ -2100,8 +2186,10 @@ export type VoluntaryReportResource = {
   report_date: string;
   identification_date: string | null;
   station: string | null;
-  finding_location: string | null;
+  sms_station_id: number | null;
+  sms_finding_location_id: number | null;
   finding_location_other: string | null;
+  finding_location: string | null;
   danger_type: string | null;
   description: string;
   possible_consequences: Array<unknown> | null;
@@ -2119,7 +2207,7 @@ export type VoluntaryReportResource = {
   is_anonymous: boolean;
   source_reference: string | null;
   recommendations: string | null;
-  reporter_area: string | null;
+  sms_area_id: number | null;
   reporter_position: string | null;
   validation_status: boolean | null;
   referred_to: string | null;
@@ -2128,6 +2216,9 @@ export type VoluntaryReportResource = {
   /**
    * 'sms_processed_date'      => $this->sms_processed_date !== null ? (string) $this->sms_processed_date : null,
    */
+  sms_area?: SmsArea;
+  sms_finding_location?: SmsFindingLocation;
+  sms_station?: SmsStation;
   danger_identification?: DangerIdentificationResource;
 };
 
@@ -14101,6 +14192,252 @@ export type ModulesCompanyModuleResponses = {
 
 export type ModulesCompanyModuleResponse = ModulesCompanyModuleResponses[keyof ModulesCompanyModuleResponses];
 
+export type NonRoutineTaskUpdateStatusData = {
+  body: {
+    status: 'OPEN' | 'IN_PROGRESS' | 'CLOSED';
+  };
+  path: {
+    id: number;
+  };
+  query?: never;
+  url: '/non-routine-tasks/{id}/status';
+};
+
+export type NonRoutineTaskUpdateStatusErrors = {
+  /**
+   * Unauthenticated
+   */
+  401: {
+    /**
+     * Error overview.
+     */
+    message: string;
+  };
+  /**
+   * Validation error
+   */
+  422: {
+    /**
+     * Errors overview.
+     */
+    message: string;
+    /**
+     * A detailed description of each field that failed validation.
+     */
+    errors: {
+      [key: string]: Array<string>;
+    };
+  };
+};
+
+export type NonRoutineTaskUpdateStatusError = NonRoutineTaskUpdateStatusErrors[keyof NonRoutineTaskUpdateStatusErrors];
+
+export type NonRoutineTaskUpdateStatusResponses = {
+  200: NonRoutineTask;
+};
+
+export type NonRoutineTaskUpdateStatusResponse =
+  NonRoutineTaskUpdateStatusResponses[keyof NonRoutineTaskUpdateStatusResponses];
+
+export type NonRoutineTasksIndexData = {
+  body?: never;
+  path?: never;
+  query: {
+    work_order_item_task_id: number;
+  };
+  url: '/non-routine-tasks';
+};
+
+export type NonRoutineTasksIndexErrors = {
+  /**
+   * Unauthenticated
+   */
+  401: {
+    /**
+     * Error overview.
+     */
+    message: string;
+  };
+  /**
+   * Validation error
+   */
+  422: {
+    /**
+     * Errors overview.
+     */
+    message: string;
+    /**
+     * A detailed description of each field that failed validation.
+     */
+    errors: {
+      [key: string]: Array<string>;
+    };
+  };
+};
+
+export type NonRoutineTasksIndexError = NonRoutineTasksIndexErrors[keyof NonRoutineTasksIndexErrors];
+
+export type NonRoutineTasksIndexResponses = {
+  200: Array<NonRoutineTask>;
+};
+
+export type NonRoutineTasksIndexResponse = NonRoutineTasksIndexResponses[keyof NonRoutineTasksIndexResponses];
+
+export type NonRoutineTasksStoreData = {
+  body: {
+    work_order_item_task_id: number;
+    finding: string;
+    work_to_perform: string;
+    remarks?: string | null;
+  };
+  path?: never;
+  query?: never;
+  url: '/non-routine-tasks';
+};
+
+export type NonRoutineTasksStoreErrors = {
+  /**
+   * Unauthenticated
+   */
+  401: {
+    /**
+     * Error overview.
+     */
+    message: string;
+  };
+  /**
+   * Validation error
+   */
+  422: {
+    /**
+     * Errors overview.
+     */
+    message: string;
+    /**
+     * A detailed description of each field that failed validation.
+     */
+    errors: {
+      [key: string]: Array<string>;
+    };
+  };
+};
+
+export type NonRoutineTasksStoreError = NonRoutineTasksStoreErrors[keyof NonRoutineTasksStoreErrors];
+
+export type NonRoutineTasksStoreResponses = {
+  201: NonRoutineTask;
+};
+
+export type NonRoutineTasksStoreResponse = NonRoutineTasksStoreResponses[keyof NonRoutineTasksStoreResponses];
+
+export type NonRoutineTasksDestroyData = {
+  body?: never;
+  path: {
+    id: number;
+  };
+  query?: never;
+  url: '/non-routine-tasks/{id}';
+};
+
+export type NonRoutineTasksDestroyErrors = {
+  /**
+   * Unauthenticated
+   */
+  401: {
+    /**
+     * Error overview.
+     */
+    message: string;
+  };
+};
+
+export type NonRoutineTasksDestroyError = NonRoutineTasksDestroyErrors[keyof NonRoutineTasksDestroyErrors];
+
+export type NonRoutineTasksDestroyResponses = {
+  200: {
+    message: 'Tarea no rutinaria eliminada.';
+  };
+};
+
+export type NonRoutineTasksDestroyResponse = NonRoutineTasksDestroyResponses[keyof NonRoutineTasksDestroyResponses];
+
+export type NonRoutineTasksShowData = {
+  body?: never;
+  path: {
+    id: number;
+  };
+  query?: never;
+  url: '/non-routine-tasks/{id}';
+};
+
+export type NonRoutineTasksShowErrors = {
+  /**
+   * Unauthenticated
+   */
+  401: {
+    /**
+     * Error overview.
+     */
+    message: string;
+  };
+};
+
+export type NonRoutineTasksShowError = NonRoutineTasksShowErrors[keyof NonRoutineTasksShowErrors];
+
+export type NonRoutineTasksShowResponses = {
+  200: string;
+};
+
+export type NonRoutineTasksShowResponse = NonRoutineTasksShowResponses[keyof NonRoutineTasksShowResponses];
+
+export type NonRoutineTasksUpdateData = {
+  body?: {
+    finding?: string;
+    work_to_perform?: string;
+    remarks?: string | null;
+  };
+  path: {
+    id: number;
+  };
+  query?: never;
+  url: '/non-routine-tasks/{id}';
+};
+
+export type NonRoutineTasksUpdateErrors = {
+  /**
+   * Unauthenticated
+   */
+  401: {
+    /**
+     * Error overview.
+     */
+    message: string;
+  };
+  /**
+   * Validation error
+   */
+  422: {
+    /**
+     * Errors overview.
+     */
+    message: string;
+    /**
+     * A detailed description of each field that failed validation.
+     */
+    errors: {
+      [key: string]: Array<string>;
+    };
+  };
+};
+
+export type NonRoutineTasksUpdateError = NonRoutineTasksUpdateErrors[keyof NonRoutineTasksUpdateErrors];
+
+export type NonRoutineTasksUpdateResponses = {
+  200: string;
+};
+
+export type NonRoutineTasksUpdateResponse = NonRoutineTasksUpdateResponses[keyof NonRoutineTasksUpdateResponses];
+
 export type ObligatoryReportIndexData = {
   body?: never;
   path: {
@@ -14437,6 +14774,15 @@ export type ObligatoryReportGeneratePdfReportErrors = {
    * Unauthenticated
    */
   401: {
+    /**
+     * Error overview.
+     */
+    message: string;
+  };
+  /**
+   * Not found
+   */
+  404: {
     /**
      * Error overview.
      */
@@ -18298,6 +18644,63 @@ export type SMsActivityShowResponses = {
 
 export type SMsActivityShowResponse = SMsActivityShowResponses[keyof SMsActivityShowResponses];
 
+export type SMsActivityUpdateData = {
+  body?: UpdateSmsActivityAttendance;
+  path: {
+    company: string;
+    id: string;
+  };
+  query?: never;
+  url: '/{company}/sms/activities/{id}';
+};
+
+export type SMsActivityUpdateErrors = {
+  /**
+   * Unauthenticated
+   */
+  401: {
+    /**
+     * Error overview.
+     */
+    message: string;
+  };
+  /**
+   * Authorization error
+   */
+  403: {
+    /**
+     * Error overview.
+     */
+    message: string;
+  };
+  /**
+   * Validation error
+   */
+  422: {
+    /**
+     * Errors overview.
+     */
+    message: string;
+    /**
+     * A detailed description of each field that failed validation.
+     */
+    errors: {
+      [key: string]: Array<string>;
+    };
+  };
+};
+
+export type SMsActivityUpdateError = SMsActivityUpdateErrors[keyof SMsActivityUpdateErrors];
+
+export type SMsActivityUpdateResponses = {
+  200: {
+    message: 'Actividad actualizada';
+    status: 200;
+  };
+};
+
+export type SMsActivityUpdateResponse = SMsActivityUpdateResponses[keyof SMsActivityUpdateResponses];
+
 export type SmsSmsActivityGetActivitiesStats0Data = {
   body?: never;
   path: {
@@ -19110,6 +19513,443 @@ export type SafetyBulletinDeleteDocumentResponses = {
 
 export type SafetyBulletinDeleteDocumentResponse =
   SafetyBulletinDeleteDocumentResponses[keyof SafetyBulletinDeleteDocumentResponses];
+
+export type SmsAreaIndexData = {
+  body?: never;
+  path: {
+    company: string;
+  };
+  query?: never;
+  url: '/{company}/sms/areas';
+};
+
+export type SmsAreaIndexResponses = {
+  200: Array<SmsArea>;
+};
+
+export type SmsAreaIndexResponse = SmsAreaIndexResponses[keyof SmsAreaIndexResponses];
+
+export type SmsAreaStoreData = {
+  body: {
+    name: string;
+  };
+  path: {
+    company: string;
+  };
+  query?: never;
+  url: '/{company}/sms/areas';
+};
+
+export type SmsAreaStoreErrors = {
+  /**
+   * Unauthenticated
+   */
+  401: {
+    /**
+     * Error overview.
+     */
+    message: string;
+  };
+  /**
+   * Validation error
+   */
+  422: {
+    /**
+     * Errors overview.
+     */
+    message: string;
+    /**
+     * A detailed description of each field that failed validation.
+     */
+    errors: {
+      [key: string]: Array<string>;
+    };
+  };
+};
+
+export type SmsAreaStoreError = SmsAreaStoreErrors[keyof SmsAreaStoreErrors];
+
+export type SmsAreaStoreResponses = {
+  200: string;
+};
+
+export type SmsAreaStoreResponse = SmsAreaStoreResponses[keyof SmsAreaStoreResponses];
+
+export type SmsAreaDestroyData = {
+  body?: never;
+  path: {
+    company: string;
+    id: number;
+  };
+  query?: never;
+  url: '/{company}/sms/areas/{id}';
+};
+
+export type SmsAreaDestroyErrors = {
+  /**
+   * Unauthenticated
+   */
+  401: {
+    /**
+     * Error overview.
+     */
+    message: string;
+  };
+};
+
+export type SmsAreaDestroyError = SmsAreaDestroyErrors[keyof SmsAreaDestroyErrors];
+
+export type SmsAreaDestroyResponses = {
+  200: {
+    message: 'Área eliminada';
+    status: 200;
+  };
+};
+
+export type SmsAreaDestroyResponse = SmsAreaDestroyResponses[keyof SmsAreaDestroyResponses];
+
+export type SmsAreaUpdateData = {
+  body: {
+    name: string;
+  };
+  path: {
+    company: string;
+    id: number;
+  };
+  query?: never;
+  url: '/{company}/sms/areas/{id}';
+};
+
+export type SmsAreaUpdateErrors = {
+  /**
+   * Unauthenticated
+   */
+  401: {
+    /**
+     * Error overview.
+     */
+    message: string;
+  };
+  /**
+   * Validation error
+   */
+  422: {
+    /**
+     * Errors overview.
+     */
+    message: string;
+    /**
+     * A detailed description of each field that failed validation.
+     */
+    errors: {
+      [key: string]: Array<string>;
+    };
+  };
+};
+
+export type SmsAreaUpdateError = SmsAreaUpdateErrors[keyof SmsAreaUpdateErrors];
+
+export type SmsAreaUpdateResponses = {
+  200: {
+    data: string;
+    message: 'Área actualizada';
+    status: 200;
+  };
+};
+
+export type SmsAreaUpdateResponse = SmsAreaUpdateResponses[keyof SmsAreaUpdateResponses];
+
+export type SmsFindingLocationIndexData = {
+  body?: never;
+  path: {
+    company: string;
+  };
+  query?: never;
+  url: '/{company}/sms/finding-locations';
+};
+
+export type SmsFindingLocationIndexResponses = {
+  200: Array<SmsFindingLocation>;
+};
+
+export type SmsFindingLocationIndexResponse = SmsFindingLocationIndexResponses[keyof SmsFindingLocationIndexResponses];
+
+export type SmsFindingLocationStoreData = {
+  body: {
+    name: string;
+  };
+  path: {
+    company: string;
+  };
+  query?: never;
+  url: '/{company}/sms/finding-locations';
+};
+
+export type SmsFindingLocationStoreErrors = {
+  /**
+   * Unauthenticated
+   */
+  401: {
+    /**
+     * Error overview.
+     */
+    message: string;
+  };
+  /**
+   * Validation error
+   */
+  422: {
+    /**
+     * Errors overview.
+     */
+    message: string;
+    /**
+     * A detailed description of each field that failed validation.
+     */
+    errors: {
+      [key: string]: Array<string>;
+    };
+  };
+};
+
+export type SmsFindingLocationStoreError = SmsFindingLocationStoreErrors[keyof SmsFindingLocationStoreErrors];
+
+export type SmsFindingLocationStoreResponses = {
+  200: string;
+};
+
+export type SmsFindingLocationStoreResponse = SmsFindingLocationStoreResponses[keyof SmsFindingLocationStoreResponses];
+
+export type SmsFindingLocationDestroyData = {
+  body?: never;
+  path: {
+    company: string;
+    id: number;
+  };
+  query?: never;
+  url: '/{company}/sms/finding-locations/{id}';
+};
+
+export type SmsFindingLocationDestroyErrors = {
+  /**
+   * Unauthenticated
+   */
+  401: {
+    /**
+     * Error overview.
+     */
+    message: string;
+  };
+};
+
+export type SmsFindingLocationDestroyError = SmsFindingLocationDestroyErrors[keyof SmsFindingLocationDestroyErrors];
+
+export type SmsFindingLocationDestroyResponses = {
+  200: {
+    message: 'Ubicación de hallazgo eliminada';
+    status: 200;
+  };
+};
+
+export type SmsFindingLocationDestroyResponse =
+  SmsFindingLocationDestroyResponses[keyof SmsFindingLocationDestroyResponses];
+
+export type SmsFindingLocationUpdateData = {
+  body: {
+    name: string;
+  };
+  path: {
+    company: string;
+    id: number;
+  };
+  query?: never;
+  url: '/{company}/sms/finding-locations/{id}';
+};
+
+export type SmsFindingLocationUpdateErrors = {
+  /**
+   * Unauthenticated
+   */
+  401: {
+    /**
+     * Error overview.
+     */
+    message: string;
+  };
+  /**
+   * Validation error
+   */
+  422: {
+    /**
+     * Errors overview.
+     */
+    message: string;
+    /**
+     * A detailed description of each field that failed validation.
+     */
+    errors: {
+      [key: string]: Array<string>;
+    };
+  };
+};
+
+export type SmsFindingLocationUpdateError = SmsFindingLocationUpdateErrors[keyof SmsFindingLocationUpdateErrors];
+
+export type SmsFindingLocationUpdateResponses = {
+  200: {
+    data: string;
+    message: 'Ubicación de hallazgo actualizada';
+    status: 200;
+  };
+};
+
+export type SmsFindingLocationUpdateResponse =
+  SmsFindingLocationUpdateResponses[keyof SmsFindingLocationUpdateResponses];
+
+export type SmsStationIndexData = {
+  body?: never;
+  path: {
+    company: string;
+  };
+  query?: never;
+  url: '/{company}/sms/stations';
+};
+
+export type SmsStationIndexResponses = {
+  200: Array<SmsStation>;
+};
+
+export type SmsStationIndexResponse = SmsStationIndexResponses[keyof SmsStationIndexResponses];
+
+export type SmsStationStoreData = {
+  body: {
+    name: string;
+  };
+  path: {
+    company: string;
+  };
+  query?: never;
+  url: '/{company}/sms/stations';
+};
+
+export type SmsStationStoreErrors = {
+  /**
+   * Unauthenticated
+   */
+  401: {
+    /**
+     * Error overview.
+     */
+    message: string;
+  };
+  /**
+   * Validation error
+   */
+  422: {
+    /**
+     * Errors overview.
+     */
+    message: string;
+    /**
+     * A detailed description of each field that failed validation.
+     */
+    errors: {
+      [key: string]: Array<string>;
+    };
+  };
+};
+
+export type SmsStationStoreError = SmsStationStoreErrors[keyof SmsStationStoreErrors];
+
+export type SmsStationStoreResponses = {
+  200: string;
+};
+
+export type SmsStationStoreResponse = SmsStationStoreResponses[keyof SmsStationStoreResponses];
+
+export type SmsStationDestroyData = {
+  body?: never;
+  path: {
+    company: string;
+    id: number;
+  };
+  query?: never;
+  url: '/{company}/sms/stations/{id}';
+};
+
+export type SmsStationDestroyErrors = {
+  /**
+   * Unauthenticated
+   */
+  401: {
+    /**
+     * Error overview.
+     */
+    message: string;
+  };
+};
+
+export type SmsStationDestroyError = SmsStationDestroyErrors[keyof SmsStationDestroyErrors];
+
+export type SmsStationDestroyResponses = {
+  200: {
+    message: 'Estación eliminada';
+    status: 200;
+  };
+};
+
+export type SmsStationDestroyResponse = SmsStationDestroyResponses[keyof SmsStationDestroyResponses];
+
+export type SmsStationUpdateData = {
+  body: {
+    name: string;
+  };
+  path: {
+    company: string;
+    id: number;
+  };
+  query?: never;
+  url: '/{company}/sms/stations/{id}';
+};
+
+export type SmsStationUpdateErrors = {
+  /**
+   * Unauthenticated
+   */
+  401: {
+    /**
+     * Error overview.
+     */
+    message: string;
+  };
+  /**
+   * Validation error
+   */
+  422: {
+    /**
+     * Errors overview.
+     */
+    message: string;
+    /**
+     * A detailed description of each field that failed validation.
+     */
+    errors: {
+      [key: string]: Array<string>;
+    };
+  };
+};
+
+export type SmsStationUpdateError = SmsStationUpdateErrors[keyof SmsStationUpdateErrors];
+
+export type SmsStationUpdateResponses = {
+  200: {
+    data: string;
+    message: 'Estación actualizada';
+    status: 200;
+  };
+};
+
+export type SmsStationUpdateResponse = SmsStationUpdateResponses[keyof SmsStationUpdateResponses];
 
 export type SurveyGetSurveyNumberBySettingData = {
   body?: never;
@@ -21469,6 +22309,15 @@ export type VoluntaryReportGeneratePdfErrors = {
    * Unauthenticated
    */
   401: {
+    /**
+     * Error overview.
+     */
+    message: string;
+  };
+  /**
+   * Not found
+   */
+  404: {
     /**
      * Error overview.
      */

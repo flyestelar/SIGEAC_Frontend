@@ -947,6 +947,24 @@ import type {
   ModulesUpdateData,
   ModulesUpdateErrors,
   ModulesUpdateResponses,
+  NonRoutineTasksDestroyData,
+  NonRoutineTasksDestroyErrors,
+  NonRoutineTasksDestroyResponses,
+  NonRoutineTasksIndexData,
+  NonRoutineTasksIndexErrors,
+  NonRoutineTasksIndexResponses,
+  NonRoutineTasksShowData,
+  NonRoutineTasksShowErrors,
+  NonRoutineTasksShowResponses,
+  NonRoutineTasksStoreData,
+  NonRoutineTasksStoreErrors,
+  NonRoutineTasksStoreResponses,
+  NonRoutineTasksUpdateData,
+  NonRoutineTasksUpdateErrors,
+  NonRoutineTasksUpdateResponses,
+  NonRoutineTaskUpdateStatusData,
+  NonRoutineTaskUpdateStatusErrors,
+  NonRoutineTaskUpdateStatusResponses,
   ObligatoryReportAcceptObligatoryReportData,
   ObligatoryReportAcceptObligatoryReportErrors,
   ObligatoryReportAcceptObligatoryReportResponses,
@@ -1354,6 +1372,31 @@ import type {
   SMsActivityUpdateCalendarActivityData,
   SMsActivityUpdateCalendarActivityErrors,
   SMsActivityUpdateCalendarActivityResponses,
+  SMsActivityUpdateData,
+  SMsActivityUpdateErrors,
+  SMsActivityUpdateResponses,
+  SmsAreaDestroyData,
+  SmsAreaDestroyErrors,
+  SmsAreaDestroyResponses,
+  SmsAreaIndexData,
+  SmsAreaIndexResponses,
+  SmsAreaStoreData,
+  SmsAreaStoreErrors,
+  SmsAreaStoreResponses,
+  SmsAreaUpdateData,
+  SmsAreaUpdateErrors,
+  SmsAreaUpdateResponses,
+  SmsFindingLocationDestroyData,
+  SmsFindingLocationDestroyErrors,
+  SmsFindingLocationDestroyResponses,
+  SmsFindingLocationIndexData,
+  SmsFindingLocationIndexResponses,
+  SmsFindingLocationStoreData,
+  SmsFindingLocationStoreErrors,
+  SmsFindingLocationStoreResponses,
+  SmsFindingLocationUpdateData,
+  SmsFindingLocationUpdateErrors,
+  SmsFindingLocationUpdateResponses,
   SmsFollowUpControlsFileData,
   SmsFollowUpControlsFileErrors,
   SmsFollowUpControlsFileResponses,
@@ -1366,6 +1409,17 @@ import type {
   SmsSmsActivityGetActivitiesStats0Data,
   SmsSmsActivityGetActivitiesStats0Errors,
   SmsSmsActivityGetActivitiesStats0Responses,
+  SmsStationDestroyData,
+  SmsStationDestroyErrors,
+  SmsStationDestroyResponses,
+  SmsStationIndexData,
+  SmsStationIndexResponses,
+  SmsStationStoreData,
+  SmsStationStoreErrors,
+  SmsStationStoreResponses,
+  SmsStationUpdateData,
+  SmsStationUpdateErrors,
+  SmsStationUpdateResponses,
   SmsVoluntaryReportsFileData,
   SmsVoluntaryReportsFileErrors,
   SmsVoluntaryReportsFileResponses,
@@ -6086,6 +6140,80 @@ export const modulesCompanyModule = <ThrowOnError extends boolean = false>(
     ...options,
   });
 
+export const nonRoutineTaskUpdateStatus = <ThrowOnError extends boolean = false>(
+  options: Options<NonRoutineTaskUpdateStatusData, ThrowOnError>,
+) =>
+  (options.client ?? client).patch<NonRoutineTaskUpdateStatusResponses, NonRoutineTaskUpdateStatusErrors, ThrowOnError>(
+    {
+      responseType: 'json',
+      security: [{ scheme: 'bearer', type: 'http' }],
+      url: '/non-routine-tasks/{id}/status',
+      ...options,
+      headers: {
+        'Content-Type': 'application/json',
+        ...options.headers,
+      },
+    },
+  );
+
+export const nonRoutineTasksIndex = <ThrowOnError extends boolean = false>(
+  options: Options<NonRoutineTasksIndexData, ThrowOnError>,
+) =>
+  (options.client ?? client).get<NonRoutineTasksIndexResponses, NonRoutineTasksIndexErrors, ThrowOnError>({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/non-routine-tasks',
+    ...options,
+  });
+
+export const nonRoutineTasksStore = <ThrowOnError extends boolean = false>(
+  options: Options<NonRoutineTasksStoreData, ThrowOnError>,
+) =>
+  (options.client ?? client).post<NonRoutineTasksStoreResponses, NonRoutineTasksStoreErrors, ThrowOnError>({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/non-routine-tasks',
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    },
+  });
+
+export const nonRoutineTasksDestroy = <ThrowOnError extends boolean = false>(
+  options: Options<NonRoutineTasksDestroyData, ThrowOnError>,
+) =>
+  (options.client ?? client).delete<NonRoutineTasksDestroyResponses, NonRoutineTasksDestroyErrors, ThrowOnError>({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/non-routine-tasks/{id}',
+    ...options,
+  });
+
+export const nonRoutineTasksShow = <ThrowOnError extends boolean = false>(
+  options: Options<NonRoutineTasksShowData, ThrowOnError>,
+) =>
+  (options.client ?? client).get<NonRoutineTasksShowResponses, NonRoutineTasksShowErrors, ThrowOnError>({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/non-routine-tasks/{id}',
+    ...options,
+  });
+
+export const nonRoutineTasksUpdate = <ThrowOnError extends boolean = false>(
+  options: Options<NonRoutineTasksUpdateData, ThrowOnError>,
+) =>
+  (options.client ?? client).put<NonRoutineTasksUpdateResponses, NonRoutineTasksUpdateErrors, ThrowOnError>({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/non-routine-tasks/{id}',
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    },
+  });
+
 /**
  * Display a listing of the resource
  */
@@ -7745,6 +7873,20 @@ export const sMsActivityShow = <ThrowOnError extends boolean = false>(
     ...options,
   });
 
+export const sMsActivityUpdate = <ThrowOnError extends boolean = false>(
+  options: Options<SMsActivityUpdateData, ThrowOnError>,
+) =>
+  (options.client ?? client).patch<SMsActivityUpdateResponses, SMsActivityUpdateErrors, ThrowOnError>({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/{company}/sms/activities/{id}',
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    },
+  });
+
 export const smsSMsActivityGetActivitiesStats0 = <ThrowOnError extends boolean = false>(
   options: Options<SmsSmsActivityGetActivitiesStats0Data, ThrowOnError>,
 ) =>
@@ -8026,6 +8168,146 @@ export const safetyBulletinDeleteDocument = <ThrowOnError extends boolean = fals
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/{company}/sms/bulletin/{id}/document',
     ...options,
+  });
+
+export const smsAreaIndex = <ThrowOnError extends boolean = false>(options: Options<SmsAreaIndexData, ThrowOnError>) =>
+  (options.client ?? client).get<SmsAreaIndexResponses, unknown, ThrowOnError>({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/{company}/sms/areas',
+    ...options,
+  });
+
+export const smsAreaStore = <ThrowOnError extends boolean = false>(options: Options<SmsAreaStoreData, ThrowOnError>) =>
+  (options.client ?? client).post<SmsAreaStoreResponses, SmsAreaStoreErrors, ThrowOnError>({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/{company}/sms/areas',
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    },
+  });
+
+export const smsAreaDestroy = <ThrowOnError extends boolean = false>(
+  options: Options<SmsAreaDestroyData, ThrowOnError>,
+) =>
+  (options.client ?? client).delete<SmsAreaDestroyResponses, SmsAreaDestroyErrors, ThrowOnError>({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/{company}/sms/areas/{id}',
+    ...options,
+  });
+
+export const smsAreaUpdate = <ThrowOnError extends boolean = false>(
+  options: Options<SmsAreaUpdateData, ThrowOnError>,
+) =>
+  (options.client ?? client).patch<SmsAreaUpdateResponses, SmsAreaUpdateErrors, ThrowOnError>({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/{company}/sms/areas/{id}',
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    },
+  });
+
+export const smsFindingLocationIndex = <ThrowOnError extends boolean = false>(
+  options: Options<SmsFindingLocationIndexData, ThrowOnError>,
+) =>
+  (options.client ?? client).get<SmsFindingLocationIndexResponses, unknown, ThrowOnError>({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/{company}/sms/finding-locations',
+    ...options,
+  });
+
+export const smsFindingLocationStore = <ThrowOnError extends boolean = false>(
+  options: Options<SmsFindingLocationStoreData, ThrowOnError>,
+) =>
+  (options.client ?? client).post<SmsFindingLocationStoreResponses, SmsFindingLocationStoreErrors, ThrowOnError>({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/{company}/sms/finding-locations',
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    },
+  });
+
+export const smsFindingLocationDestroy = <ThrowOnError extends boolean = false>(
+  options: Options<SmsFindingLocationDestroyData, ThrowOnError>,
+) =>
+  (options.client ?? client).delete<SmsFindingLocationDestroyResponses, SmsFindingLocationDestroyErrors, ThrowOnError>({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/{company}/sms/finding-locations/{id}',
+    ...options,
+  });
+
+export const smsFindingLocationUpdate = <ThrowOnError extends boolean = false>(
+  options: Options<SmsFindingLocationUpdateData, ThrowOnError>,
+) =>
+  (options.client ?? client).patch<SmsFindingLocationUpdateResponses, SmsFindingLocationUpdateErrors, ThrowOnError>({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/{company}/sms/finding-locations/{id}',
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    },
+  });
+
+export const smsStationIndex = <ThrowOnError extends boolean = false>(
+  options: Options<SmsStationIndexData, ThrowOnError>,
+) =>
+  (options.client ?? client).get<SmsStationIndexResponses, unknown, ThrowOnError>({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/{company}/sms/stations',
+    ...options,
+  });
+
+export const smsStationStore = <ThrowOnError extends boolean = false>(
+  options: Options<SmsStationStoreData, ThrowOnError>,
+) =>
+  (options.client ?? client).post<SmsStationStoreResponses, SmsStationStoreErrors, ThrowOnError>({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/{company}/sms/stations',
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    },
+  });
+
+export const smsStationDestroy = <ThrowOnError extends boolean = false>(
+  options: Options<SmsStationDestroyData, ThrowOnError>,
+) =>
+  (options.client ?? client).delete<SmsStationDestroyResponses, SmsStationDestroyErrors, ThrowOnError>({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/{company}/sms/stations/{id}',
+    ...options,
+  });
+
+export const smsStationUpdate = <ThrowOnError extends boolean = false>(
+  options: Options<SmsStationUpdateData, ThrowOnError>,
+) =>
+  (options.client ?? client).patch<SmsStationUpdateResponses, SmsStationUpdateErrors, ThrowOnError>({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/{company}/sms/stations/{id}',
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    },
   });
 
 export const surveyGetSurveyNumberBySetting = <ThrowOnError extends boolean = false>(
