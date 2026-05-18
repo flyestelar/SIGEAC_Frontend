@@ -1041,9 +1041,9 @@ export type Module = {
 };
 
 /**
- * NonRoutineTask
+ * NonRoutineTaskResource
  */
-export type NonRoutineTask = {
+export type NonRoutineTaskResource = {
   id: number;
   work_order_item_task_id: number;
   finding: string;
@@ -2272,6 +2272,7 @@ export type WorkOrderItemTaskResource = {
   review_by: string | null;
   order: number;
   task?: TaskCardResource;
+  non_routine_tasks?: Array<NonRoutineTaskResource>;
   created_at: string;
   updated_at: string;
 };
@@ -14233,7 +14234,10 @@ export type NonRoutineTaskUpdateStatusErrors = {
 export type NonRoutineTaskUpdateStatusError = NonRoutineTaskUpdateStatusErrors[keyof NonRoutineTaskUpdateStatusErrors];
 
 export type NonRoutineTaskUpdateStatusResponses = {
-  200: NonRoutineTask;
+  /**
+   * `NonRoutineTaskResource`
+   */
+  200: NonRoutineTaskResource;
 };
 
 export type NonRoutineTaskUpdateStatusResponse =
@@ -14278,7 +14282,10 @@ export type NonRoutineTasksIndexErrors = {
 export type NonRoutineTasksIndexError = NonRoutineTasksIndexErrors[keyof NonRoutineTasksIndexErrors];
 
 export type NonRoutineTasksIndexResponses = {
-  200: Array<NonRoutineTask>;
+  /**
+   * Array of `NonRoutineTaskResource`
+   */
+  200: Array<NonRoutineTaskResource>;
 };
 
 export type NonRoutineTasksIndexResponse = NonRoutineTasksIndexResponses[keyof NonRoutineTasksIndexResponses];
@@ -14325,7 +14332,10 @@ export type NonRoutineTasksStoreErrors = {
 export type NonRoutineTasksStoreError = NonRoutineTasksStoreErrors[keyof NonRoutineTasksStoreErrors];
 
 export type NonRoutineTasksStoreResponses = {
-  201: NonRoutineTask;
+  /**
+   * `NonRoutineTaskResource`
+   */
+  201: NonRoutineTaskResource;
 };
 
 export type NonRoutineTasksStoreResponse = NonRoutineTasksStoreResponses[keyof NonRoutineTasksStoreResponses];
@@ -14385,7 +14395,10 @@ export type NonRoutineTasksShowErrors = {
 export type NonRoutineTasksShowError = NonRoutineTasksShowErrors[keyof NonRoutineTasksShowErrors];
 
 export type NonRoutineTasksShowResponses = {
-  200: string;
+  /**
+   * `NonRoutineTaskResource`
+   */
+  200: NonRoutineTaskResource;
 };
 
 export type NonRoutineTasksShowResponse = NonRoutineTasksShowResponses[keyof NonRoutineTasksShowResponses];
@@ -14433,7 +14446,10 @@ export type NonRoutineTasksUpdateErrors = {
 export type NonRoutineTasksUpdateError = NonRoutineTasksUpdateErrors[keyof NonRoutineTasksUpdateErrors];
 
 export type NonRoutineTasksUpdateResponses = {
-  200: string;
+  /**
+   * `NonRoutineTaskResource`
+   */
+  200: NonRoutineTaskResource;
 };
 
 export type NonRoutineTasksUpdateResponse = NonRoutineTasksUpdateResponses[keyof NonRoutineTasksUpdateResponses];

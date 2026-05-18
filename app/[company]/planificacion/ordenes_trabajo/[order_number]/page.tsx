@@ -4,7 +4,6 @@ import { CompleteTasksBulkDialog } from '@/components/dialogs/mantenimiento/orde
 import { CompleteWorkOrderDialog } from '@/components/dialogs/mantenimiento/ordenes_trabajo/CompleteWorkOrderDialog';
 import { ContentLayout } from '@/components/layout/ContentLayout';
 import LoadingPage from '@/components/misc/LoadingPage';
-import { Accordion } from '@/components/ui/accordion';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -12,28 +11,15 @@ import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
 import { workOrdersShowOptions } from '@api/queries';
 import { useQuery } from '@tanstack/react-query';
-import { sumBy } from 'es-toolkit';
-import {
-  AlertCircle,
-  CalendarDays,
-  Check,
-  CheckCircle2,
-  Layers,
-  MessageSquareText,
-  Plane,
-  Settings2,
-  ShieldCheck,
-} from 'lucide-react';
+import { AlertCircle, CalendarDays, CheckCircle2, MessageSquareText, Plane, ShieldCheck } from 'lucide-react';
 import { useParams } from 'next/navigation';
 import { useState } from 'react';
 import { AircraftSection } from './_components/AircraftSection';
-import { ControlAccordionItem } from './_components/ControlAccordionItem';
 import { SummaryField } from './_components/SummaryField';
-import { WorkOrderComponentItemsSection } from './_components/WorkOrderComponentItemsSection';
-import { WorkOrderDirectiveItemsSection } from './_components/WorkOrderDirectiveItemsSection';
 import { WorkOrderHeader } from './_components/WorkOrderHeader';
 import { formatDate } from './_components/WorkOrderHelpers';
 import { getStatusConfig } from './_components/constants';
+import { WorkOrderTabs } from './_components/WorkOrderTabs';
 
 /* ─── Page ─── */
 
@@ -54,12 +40,7 @@ const WorkOrderPage = () => {
   const statusRaw = wo?.status?.toUpperCase() ?? '';
   const statusCfg = getStatusConfig(statusRaw);
   const aircraft = wo?.aircraft;
-  const items = wo?.items ?? [];
-  const componentItems = wo?.component_items ?? [];
-  const directiveItems = wo?.directive_items ?? [];
   const aircraftLocationLabel = aircraft?.location?.address ?? aircraft?.location?.cod_iata ?? '—';
-  const totalTasks = sumBy(items, (item) => item.tasks?.length ?? 0);
-  const pendingTasksCount = sumBy(items, (item) => (item.tasks ?? []).filter((task) => !task.review_by).length);
 
   if (isLoading) return <LoadingPage />;
 
@@ -114,60 +95,11 @@ const WorkOrderPage = () => {
               )}
             </section>
 
-            {/* Controls & Task Cards — Accordion in ScrollArea */}
-            <section className="overflow-hidden rounded-lg border bg-background">
-              <div className="flex items-center justify-between border-b px-5 py-3">
-                <div>
-                  <span className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
-                    Controles de Mantenimiento
-                  </span>
-                  <p className="mt-0.5 text-xs text-muted-foreground">
-                    {items.length} control{items.length !== 1 ? 'es' : ''} · {totalTasks} task card
-                    {totalTasks !== 1 ? 's' : ''}
-                  </p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    className="h-7 gap-1.5 text-[11px]"
-                    onClick={() => setBulkCompleteOpen(true)}
-                    disabled={pendingTasksCount === 0}
-                  >
-                    <Check className="size-3" />
-                    Completar por lote
-                  </Button>
-                  <Badge variant="outline" className="gap-1 text-[11px] tabular-nums">
-                    <Settings2 className="size-2.5" />
-                    {items.length}
-                  </Badge>
-                  <Badge variant="outline" className="gap-1 text-[11px] tabular-nums">
-                    <Layers className="size-2.5" />
-                    {totalTasks}
-                  </Badge>
-                </div>
-              </div>
-
-              {items.length === 0 ? (
-                <div className="flex flex-col items-center justify-center gap-1.5 py-12 text-muted-foreground">
-                  <Settings2 className="size-7 opacity-20" />
-                  <p className="text-sm">No hay controles asociados a esta orden.</p>
-                </div>
-              ) : (
-                <div className="max-h-[680px] overflow-y-auto">
-                  <Accordion type="multiple" className="divide-y">
-                    {items.map((item) => (
-                      <ControlAccordionItem key={item.id} item={item} orderNumber={order_number} />
-                    ))}
-                  </Accordion>
-                </div>
-              )}
-            </section>
-
-            <WorkOrderComponentItemsSection items={componentItems} />
-
-            <WorkOrderDirectiveItemsSection items={directiveItems} />
+            <WorkOrderTabs
+              workOrder={wo}
+              orderNumber={order_number}
+              onBulkComplete={() => setBulkCompleteOpen(true)}
+            />
           </div>
 
           {/* Sidebar */}
@@ -244,7 +176,7 @@ const WorkOrderPage = () => {
       />
       <CompleteTasksBulkDialog
         open={bulkCompleteOpen}
-        items={items}
+        items={wo.items ?? []}
         orderNumber={order_number}
         onOpenChange={setBulkCompleteOpen}
       />

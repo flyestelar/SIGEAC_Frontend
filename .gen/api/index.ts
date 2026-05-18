@@ -2176,7 +2176,7 @@ export type {
   ModulesUpdateErrors,
   ModulesUpdateResponse,
   ModulesUpdateResponses,
-  NonRoutineTask,
+  NonRoutineTaskResource,
   NonRoutineTasksDestroyData,
   NonRoutineTasksDestroyError,
   NonRoutineTasksDestroyErrors,
