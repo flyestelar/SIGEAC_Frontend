@@ -1,34 +1,20 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
+import { ButtonGroup } from '@/components/ui/button-group';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useUpdateNonRoutineTaskStatusMutation } from '@/hooks/planificacion/useNonRoutineTasks';
 import { NonRoutineTaskResource, NonRoutineTaskStatus } from '@api/types';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
-import {
-  ArrowRight,
-  CheckCircle2,
-  FileText,
-  LayoutGrid,
-  Loader2,
-  Table2,
-  User,
-} from 'lucide-react';
+import { CheckCircle2, FileText, LayoutGrid, Loader2, Play, Table2, User } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
 interface NonRoutineTasksListProps {
-  tasks: NonRoutineTaskResource[]
-  orderNumber?: string
+  tasks: NonRoutineTaskResource[];
+  orderNumber?: string;
 }
 
 const STATUS_META: Record<NonRoutineTaskStatus, { label: string; dot: string; bg: string; border: string }> = {
@@ -52,32 +38,34 @@ const STATUS_META: Record<NonRoutineTaskStatus, { label: string; dot: string; bg
   },
 };
 
-const TRANSITIONS: Record<NonRoutineTaskStatus, { to: NonRoutineTaskStatus; label: string }[]> = {
+const TRANSITIONS: Record<
+  NonRoutineTaskStatus,
+  { to: NonRoutineTaskStatus; label: string; icon: React.ElementType }[]
+> = {
   OPEN: [
-    { to: 'IN_PROGRESS', label: 'En progreso' },
-    { to: 'CLOSED', label: 'Cerrar' },
+    { to: 'IN_PROGRESS', label: 'En progreso', icon: Play },
+    { to: 'CLOSED', label: 'Cerrar', icon: CheckCircle2 },
   ],
-  IN_PROGRESS: [{ to: 'CLOSED', label: 'Cerrar' }],
+  IN_PROGRESS: [{ to: 'CLOSED', label: 'Cerrar', icon: CheckCircle2 }],
   CLOSED: [],
 };
 
 function StatusButton({
   task,
-  to,
-  label,
+  transition,
   orderNumber,
 }: {
-  task: NonRoutineTaskResource
-  to: NonRoutineTaskStatus
-  label: string
-  orderNumber?: string
+  task: NonRoutineTaskResource;
+  transition: { to: NonRoutineTaskStatus; label: string; icon: React.ElementType };
+  orderNumber?: string;
 }) {
   const mutation = useUpdateNonRoutineTaskStatusMutation(task.work_order_item_task_id, orderNumber);
+  const Icon = transition.icon;
 
   const handleClick = async () => {
     try {
-      await mutation.mutateAsync({ path: { id: task.id }, body: { status: to } });
-      toast.success(`Estado cambiado a ${STATUS_META[to].label}`);
+      await mutation.mutateAsync({ path: { id: task.id }, body: { status: transition.to } });
+      toast.success(`Estado cambiado a ${STATUS_META[transition.to].label}`);
     } catch (error: any) {
       toast.error(error.response?.data?.message || 'Ocurrió un error');
     }
@@ -89,14 +77,10 @@ function StatusButton({
       variant="outline"
       onClick={handleClick}
       disabled={mutation.isPending}
-      className="h-7 gap-1.5 text-[11px] font-medium"
+      className="h-7 gap-1 text-[11px] font-medium"
     >
-      {mutation.isPending ? (
-        <Loader2 className="size-3 animate-spin" />
-      ) : (
-        <ArrowRight className="size-3" />
-      )}
-      {label}
+      {mutation.isPending ? <Loader2 className="size-3 animate-spin" /> : <Icon className={'size-3'} />}
+      {transition.label}
     </Button>
   );
 }
@@ -127,9 +111,13 @@ export const NonRoutineTasksList = ({ tasks, orderNumber }: NonRoutineTasksListP
           className="h-7 gap-1.5 text-[11px] text-muted-foreground hover:text-foreground"
         >
           {viewMode === 'cards' ? (
-            <><Table2 className="size-3" /> Vista tabla</>
+            <>
+              <Table2 className="size-3" /> Vista tabla
+            </>
           ) : (
-            <><LayoutGrid className="size-3" /> Vista tarjetas</>
+            <>
+              <LayoutGrid className="size-3" /> Vista tarjetas
+            </>
           )}
         </Button>
       </div>
@@ -153,9 +141,7 @@ export const NonRoutineTasksList = ({ tasks, orderNumber }: NonRoutineTasksListP
                 )}
               >
                 <div className="flex items-start justify-between gap-3">
-                  <span className="font-mono text-[11px] font-semibold text-muted-foreground/60">
-                    #{task.id}
-                  </span>
+                  <span className="font-mono text-[11px] font-semibold text-muted-foreground/60">#{task.id}</span>
                   <StatusDotBadge status={task.status} />
                 </div>
 
@@ -178,11 +164,11 @@ export const NonRoutineTasksList = ({ tasks, orderNumber }: NonRoutineTasksListP
                     <User className="size-3" />
                     {task.detected_by}
                   </span>
-                  <div className="flex items-center gap-1">
+                  <ButtonGroup>
                     {TRANSITIONS[task.status].map((t) => (
-                      <StatusButton key={t.to} task={task} to={t.to} label={t.label} orderNumber={orderNumber} />
+                      <StatusButton key={t.to} task={task} transition={t} orderNumber={orderNumber} />
                     ))}
-                  </div>
+                  </ButtonGroup>
                 </div>
 
                 {task.closed_at && (
@@ -200,25 +186,22 @@ export const NonRoutineTasksList = ({ tasks, orderNumber }: NonRoutineTasksListP
           <Table>
             <TableHeader>
               <TableRow className="bg-muted/30">
-                <TableHead className="w-16 font-mono text-[10px] uppercase tracking-widest text-muted-foreground/60">
-                  ID
-                </TableHead>
                 <TableHead className="text-[10px] uppercase tracking-widest text-muted-foreground/60">
                   Hallazgo
                 </TableHead>
                 <TableHead className="text-[10px] uppercase tracking-widest text-muted-foreground/60">
                   Trabajo a Realizar
                 </TableHead>
-                <TableHead className="w-28 text-[10px] uppercase tracking-widest text-muted-foreground/60">
+                <TableHead className="w-28 whitespace-nowrap text-[10px] uppercase tracking-widest text-muted-foreground/60">
                   Estado
                 </TableHead>
-                <TableHead className="w-28 text-[10px] uppercase tracking-widest text-muted-foreground/60">
+                <TableHead className="w-28 whitespace-nowrap text-[10px] uppercase tracking-widest text-muted-foreground/60">
                   Detectado por
                 </TableHead>
-                <TableHead className="w-28 text-[10px] uppercase tracking-widest text-muted-foreground/60">
+                <TableHead className="w-28 whitespace-nowrap text-[10px] uppercase tracking-widest text-muted-foreground/60">
                   Cerrada
                 </TableHead>
-                <TableHead className="w-40 text-right text-[10px] uppercase tracking-widest text-muted-foreground/60">
+                <TableHead className="w-40 whitespace-nowrap text-right text-[10px] uppercase tracking-widest text-muted-foreground/60">
                   Acción
                 </TableHead>
               </TableRow>
@@ -228,7 +211,6 @@ export const NonRoutineTasksList = ({ tasks, orderNumber }: NonRoutineTasksListP
                 const meta = STATUS_META[task.status];
                 return (
                   <TableRow key={task.id} className={cn('group', meta.bg)}>
-                    <TableCell className="font-mono text-xs font-semibold text-muted-foreground/60">#{task.id}</TableCell>
                     <TableCell className="max-w-[240px]">
                       <span className="truncate text-sm font-medium" title={task.finding}>
                         {task.finding}
@@ -239,11 +221,11 @@ export const NonRoutineTasksList = ({ tasks, orderNumber }: NonRoutineTasksListP
                         {task.work_to_perform}
                       </span>
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="whitespace-nowrap">
                       <StatusDotBadge status={task.status} />
                     </TableCell>
-                    <TableCell className="text-sm text-muted-foreground">{task.detected_by}</TableCell>
-                    <TableCell className="text-sm text-muted-foreground">
+                    <TableCell className="whitespace-nowrap text-sm text-muted-foreground">{task.detected_by}</TableCell>
+                    <TableCell className="whitespace-nowrap text-sm text-muted-foreground">
                       {task.closed_at ? (
                         <span className="inline-flex items-center gap-1 text-emerald-600 dark:text-emerald-400">
                           <CheckCircle2 className="size-3" />
@@ -254,11 +236,11 @@ export const NonRoutineTasksList = ({ tasks, orderNumber }: NonRoutineTasksListP
                       )}
                     </TableCell>
                     <TableCell className="text-right">
-                      <div className="flex items-center justify-end gap-1">
+                      <ButtonGroup className="ml-auto">
                         {TRANSITIONS[task.status].map((t) => (
-                          <StatusButton key={t.to} task={task} to={t.to} label={t.label} orderNumber={orderNumber} />
+                          <StatusButton key={t.to} task={task} transition={t} orderNumber={orderNumber} />
                         ))}
-                      </div>
+                      </ButtonGroup>
                     </TableCell>
                   </TableRow>
                 );
