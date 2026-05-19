@@ -509,7 +509,7 @@ export function getMenuList(pathname: string, currentCompany: Company | null, us
                             roles: ["SUPERUSER", "JEFE_SMS", "ANALISTA_SMS"],
                             active:
                                 pathname === `/${currentCompany?.slug}/sms/ajustes/boletin`,
-                        },
+                        }
                     ],
                 },
             ],
@@ -799,6 +799,13 @@ export function getMenuList(pathname: string, currentCompany: Company | null, us
               label: "Fuentes de Informacion",
               active: pathname === "/ajustes/globales/fuentes_informacion",
               roles: ["JEFE_SMS", "ANALISTA_SMS", "SUPERUSER"],
+            },            
+            {
+                href: "/ajustes/globales/sms",
+                label: "Globales SMS",
+                roles: ["SUPERUSER", "JEFE_SMS", "ANALISTA_SMS"],
+                active:
+                    pathname === "/ajustes/globales/sms",
             },
           ],
         },

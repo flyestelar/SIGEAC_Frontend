@@ -46,7 +46,7 @@ export default function CreateAnalysesDialog({
             </Button>
           </DialogTrigger>
 
-          <DialogContent className="flex flex-col max-w-2xl m-2">
+          <DialogContent className="flex flex-col max-w-3xl m-2">
             <DialogHeader>
               <DialogTitle></DialogTitle>
               <DialogDescription></DialogDescription>

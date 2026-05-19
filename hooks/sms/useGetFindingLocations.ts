@@ -36,3 +36,36 @@ export const useCreateFindingLocation = () => {
     },
   });
 };
+
+export const useUpdateFindingLocation = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ company, id, name }: { company: string; id: number; name: string }) => {
+      const { data } = await axiosInstance.patch(`/${company}/sms/finding-locations/${id}`, { name });
+      return data;
+    },
+    onSuccess: (_, { company }) => {
+      queryClient.invalidateQueries({ queryKey: ["sms-finding-locations", company] });
+      toast.success("Lugar de identificación actualizado correctamente.");
+    },
+    onError: () => {
+      toast.error("No se pudo actualizar el lugar de identificación.");
+    },
+  });
+};
+
+export const useDeleteFindingLocation = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ company, id }: { company: string; id: number }) => {
+      await axiosInstance.delete(`/${company}/sms/finding-locations/${id}`);
+    },
+    onSuccess: (_, { company }) => {
+      queryClient.invalidateQueries({ queryKey: ["sms-finding-locations", company] });
+      toast.success("Lugar de identificación eliminado correctamente.");
+    },
+    onError: () => {
+      toast.error("No se pudo eliminar el lugar de identificación.");
+    },
+  });
+};

@@ -36,3 +36,36 @@ export const useCreateSmsStation = () => {
     },
   });
 };
+
+export const useUpdateSmsStation = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ company, id, name }: { company: string; id: number; name: string }) => {
+      const { data } = await axiosInstance.patch(`/${company}/sms/stations/${id}`, { name });
+      return data;
+    },
+    onSuccess: (_, { company }) => {
+      queryClient.invalidateQueries({ queryKey: ["sms-stations", company] });
+      toast.success("Estación actualizada correctamente.");
+    },
+    onError: () => {
+      toast.error("No se pudo actualizar la estación.");
+    },
+  });
+};
+
+export const useDeleteSmsStation = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ company, id }: { company: string; id: number }) => {
+      await axiosInstance.delete(`/${company}/sms/stations/${id}`);
+    },
+    onSuccess: (_, { company }) => {
+      queryClient.invalidateQueries({ queryKey: ["sms-stations", company] });
+      toast.success("Estación eliminada correctamente.");
+    },
+    onError: () => {
+      toast.error("No se pudo eliminar la estación.");
+    },
+  });
+};

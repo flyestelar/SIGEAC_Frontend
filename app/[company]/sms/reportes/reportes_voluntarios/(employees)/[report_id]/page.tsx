@@ -289,7 +289,7 @@ const ShowVoluntaryReport = () => {
                   />
                   <FieldRow label="Estación" value={voluntaryReport.station || (voluntaryReport as any).sms_station?.name} />
                   <FieldRow
-                    label="Localización Específica"
+                    label="Otra Localización"
                     value={voluntaryReport.finding_location_other}
                   />
                 </div>
