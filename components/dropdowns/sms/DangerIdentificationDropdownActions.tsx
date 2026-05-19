@@ -139,7 +139,7 @@ const DangerIdentificationDropdownActions = ({
                 </DropdownMenuItem>
               )}
 
-            <DropdownMenuItem
+            {/* <DropdownMenuItem
               disabled={downloadDangerIdentificationPdf.isPending}
               onClick={() =>
                 downloadDangerIdentificationPdf.mutate({
@@ -154,7 +154,7 @@ const DangerIdentificationDropdownActions = ({
                 <FileDown className="size-5 text-amber-500" />
               )}
               <p className="pl-2">Generar PDF</p>
-            </DropdownMenuItem>
+            </DropdownMenuItem> */}
           </DropdownMenuContent>
         </DropdownMenu>
 
