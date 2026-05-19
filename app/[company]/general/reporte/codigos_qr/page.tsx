@@ -108,9 +108,14 @@ const QrCodePage = () => {
                             <p className="text-[9px] uppercase tracking-widest text-slate-400 font-semibold mb-1">
                                 Destino
                             </p>
-                            <p className="font-mono text-[11px] text-slate-600 dark:text-slate-300 break-all leading-relaxed">
+                            <a
+                                href={qrSMSPage}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="font-mono text-[11px] text-blue-600 dark:text-blue-400 break-all leading-relaxed hover:underline"
+                            >
                                 {qrSMSPage}
-                            </p>
+                            </a>
                         </div>
 
                         {/* Info compañía */}
