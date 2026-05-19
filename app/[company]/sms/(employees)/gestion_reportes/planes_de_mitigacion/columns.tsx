@@ -110,17 +110,17 @@ export const columns: ColumnDef<MitigationTable>[] = [
     size: 120,
     minSize: 100,
   },
-  {
-    id: "reports",
-    header: () => (
-      <div className="text-center text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-        Reportes
-      </div>
-    ),
-    cell: ({ row }) => <ReportsCell mitigationTable={row.original} />,
-    size: 100,
-    minSize: 80,
-  },
+  // {
+  //   id: "reports",
+  //   header: () => (
+  //     <div className="text-center text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+  //       Reportes
+  //     </div>
+  //   ),
+  //   cell: ({ row }) => <ReportsCell mitigationTable={row.original} />,
+  //   size: 100,
+  //   minSize: 80,
+  // },
   {
     id: "actions",
     cell: ({ row }) => {
