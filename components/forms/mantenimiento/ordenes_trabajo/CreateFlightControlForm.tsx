@@ -1,58 +1,34 @@
-"use client";
+'use client';
 
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { zodResolver } from "@hookform/resolvers/zod";
-import {
-  CalendarIcon,
-  Check,
-  ChevronsUpDown,
-  Loader2,
-  Plane,
-  User,
-  Clock,
-} from "lucide-react";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-import { format } from "date-fns";
-import { es } from "date-fns/locale";
-import { Button } from "@/components/ui/button";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from "@/components/ui/command";
-import { Calendar } from "@/components/ui/calendar";
-import { cn } from "@/lib/utils";
-import {
-  useCreateFlightControl,
-  useUpdateFlightControl,
-} from "@/actions/planificacion/vuelos/actions";
-import { useCompanyStore } from "@/stores/CompanyStore";
-import { useGetMaintenanceAircrafts } from "@/hooks/planificacion/useGetMaintenanceAircrafts";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { CalendarIcon, Check, ChevronsUpDown, Loader2, Plane, User, Clock } from 'lucide-react';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
+import { format } from 'date-fns';
+import { es } from 'date-fns/locale';
+import { Button } from '@/components/ui/button';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
+import { Calendar } from '@/components/ui/calendar';
+import { cn } from '@/lib/utils';
+import { useCreateFlightControl, useUpdateFlightControl } from '@/actions/planificacion/vuelos/actions';
+import { useCompanyStore } from '@/stores/CompanyStore';
+import { useGetMaintenanceAircrafts } from '@/hooks/planificacion/useGetMaintenanceAircrafts';
+import { InputGroup, InputGroupAddon, InputGroupInput, InputGroupText } from '@/components/ui/input-group';
 
 const formSchema = z.object({
-  aircraft_id: z.string().min(1, "Selecciona una aeronave"),
+  aircraft_id: z.string().min(1, 'Selecciona una aeronave'),
   flight_number: z.string().optional(),
-  flight_date: z.date({ required_error: "Selecciona la fecha del vuelo" }),
-  origin: z.string().min(1, "Campo requerido"),
-  destination: z.string().min(1, "Campo requerido"),
+  flight_date: z.date({ required_error: 'Selecciona la fecha del vuelo' }),
+  origin: z.string().min(1, 'Campo requerido'),
+  destination: z.string().min(1, 'Campo requerido'),
   departure_time: z.string().optional(),
   arrival_time: z.string().optional(),
-  aircraft_operator: z.string().min(1, "Campo requerido"),
-  flight_hours: z.coerce.number().min(0, "Debe ser ≥ 0"),
-  flight_cycles: z.coerce.number().int().min(0, "Debe ser ≥ 0"),
+  aircraft_operator: z.string().min(1, 'Campo requerido'),
+  flight_hours: z.coerce.number().min(0, 'Debe ser ≥ 0'),
+  flight_cycles: z.coerce.number().int().min(0, 'Debe ser ≥ 0'),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -80,18 +56,12 @@ interface FormProps {
 function SectionHeader({ label }: { label: string }) {
   return (
     <div className="border-b bg-muted/20 px-4 py-2.5">
-      <span className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
-        {label}
-      </span>
+      <span className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">{label}</span>
     </div>
   );
 }
 
-export default function CreateFlightControlForm({
-  onClose,
-  defaultAircraftId,
-  flightData,
-}: FormProps) {
+export default function CreateFlightControlForm({ onClose, defaultAircraftId, flightData }: FormProps) {
   const { createFlightControl } = useCreateFlightControl();
   const { updateFlightControl } = useUpdateFlightControl();
   const { selectedCompany } = useCompanyStore();
@@ -109,27 +79,25 @@ export default function CreateFlightControlForm({
     defaultValues: flightData
       ? {
           aircraft_id: flightData.aircraft_id.toString(),
-          flight_number: flightData.flight_number ?? "",
+          flight_number: flightData.flight_number ?? '',
           origin: flightData.origin,
           destination: flightData.destination,
-          departure_time: flightData.departure_time ?? "",
-          arrival_time: flightData.arrival_time ?? "",
+          departure_time: flightData.departure_time ?? '',
+          arrival_time: flightData.arrival_time ?? '',
           aircraft_operator: flightData.aircraft_operator,
           flight_hours: Number(flightData.flight_hours),
           flight_cycles: Number(flightData.flight_cycles),
           flight_date:
-            typeof flightData.flight_date === "string"
-              ? new Date(flightData.flight_date)
-              : flightData.flight_date,
+            typeof flightData.flight_date === 'string' ? new Date(flightData.flight_date) : flightData.flight_date,
         }
       : {
-          aircraft_id: defaultAircraftId ?? "",
-          flight_number: "",
-          origin: "",
-          destination: "",
-          departure_time: "",
-          arrival_time: "",
-          aircraft_operator: "",
+          aircraft_id: defaultAircraftId ?? '',
+          flight_number: '',
+          origin: '',
+          destination: '',
+          departure_time: '',
+          arrival_time: '',
+          aircraft_operator: '',
           flight_hours: 0,
           flight_cycles: 0,
         },
@@ -138,7 +106,7 @@ export default function CreateFlightControlForm({
   const onSubmit = async (values: FormValues) => {
     const payload = {
       ...values,
-      flight_date: format(values.flight_date, "yyyy-MM-dd"),
+      flight_date: format(values.flight_date, 'yyyy-MM-dd'),
     };
     try {
       if (isEditMode) {
@@ -162,17 +130,15 @@ export default function CreateFlightControlForm({
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3">
-
         {/* ── IDENTIFICACIÓN ─────────────────────────────── */}
         <div className="overflow-hidden rounded-lg border bg-background">
           <SectionHeader label="Identificación" />
           <div className="grid grid-cols-3 gap-4 p-4">
-
             <FormField
               control={form.control}
               name="aircraft_id"
               render={({ field }) => (
-                <FormItem className="flex flex-col">
+                <FormItem>
                   <FormLabel>Aeronave</FormLabel>
                   <Popover>
                     <PopoverTrigger asChild>
@@ -181,10 +147,7 @@ export default function CreateFlightControlForm({
                           disabled={isAircraftsLoading || isAircraftsError || isEditMode}
                           variant="outline"
                           role="combobox"
-                          className={cn(
-                            "justify-between font-normal",
-                            !field.value && "text-muted-foreground",
-                          )}
+                          className={cn('justify-between font-normal', !field.value && 'text-muted-foreground')}
                         >
                           {isAircraftsLoading ? (
                             <Loader2 className="h-4 w-4 animate-spin" />
@@ -211,16 +174,12 @@ export default function CreateFlightControlForm({
                               <CommandItem
                                 key={aircraft.id}
                                 value={`${aircraft.id}`}
-                                onSelect={() =>
-                                  form.setValue("aircraft_id", aircraft.id.toString())
-                                }
+                                onSelect={() => form.setValue('aircraft_id', aircraft.id.toString())}
                               >
                                 <Check
                                   className={cn(
-                                    "mr-2 h-4 w-4",
-                                    `${aircraft.id}` === field.value
-                                      ? "opacity-100"
-                                      : "opacity-0",
+                                    'mr-2 h-4 w-4',
+                                    `${aircraft.id}` === field.value ? 'opacity-100' : 'opacity-0',
                                   )}
                                 />
                                 <span className="font-mono">{aircraft.acronym}</span>
@@ -242,8 +201,7 @@ export default function CreateFlightControlForm({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>
-                    Nro. Vuelo{" "}
-                    <span className="text-[10px] font-normal text-muted-foreground">(Opcional)</span>
+                    Nro. Vuelo <span className="text-[10px] font-normal text-muted-foreground">(Opcional)</span>
                   </FormLabel>
                   <FormControl>
                     <Input
@@ -262,22 +220,17 @@ export default function CreateFlightControlForm({
               control={form.control}
               name="flight_date"
               render={({ field }) => (
-                <FormItem className="flex flex-col">
+                <FormItem>
                   <FormLabel>Fecha de Vuelo</FormLabel>
                   <Popover>
                     <PopoverTrigger asChild>
                       <FormControl>
                         <Button
                           variant="outline"
-                          className={cn(
-                            "pl-3 text-left font-normal",
-                            !field.value && "text-muted-foreground",
-                          )}
+                          className={cn('pl-3 text-left font-normal', !field.value && 'text-muted-foreground')}
                         >
                           {field.value ? (
-                            <span className="text-sm">
-                              {format(field.value, "d MMM yyyy", { locale: es })}
-                            </span>
+                            <span className="text-sm">{format(field.value, 'd MMM yyyy', { locale: es })}</span>
                           ) : (
                             <span className="text-sm">Seleccionar…</span>
                           )}
@@ -290,9 +243,7 @@ export default function CreateFlightControlForm({
                         mode="single"
                         selected={field.value}
                         onSelect={field.onChange}
-                        disabled={(date) =>
-                          date > new Date() || date < new Date("1900-01-01")
-                        }
+                        disabled={(date) => date > new Date() || date < new Date('1900-01-01')}
                         autoFocus
                       />
                     </PopoverContent>
@@ -309,7 +260,6 @@ export default function CreateFlightControlForm({
           <SectionHeader label="Ruta" />
           <div className="p-4">
             <div className="grid grid-cols-[1fr_auto_1fr_auto_1fr_1fr] items-end gap-2">
-
               <FormField
                 control={form.control}
                 name="origin"
@@ -401,14 +351,13 @@ export default function CreateFlightControlForm({
         <div className="overflow-hidden rounded-lg border bg-background">
           <SectionHeader label="Tripulación y Métricas" />
           <div className="grid grid-cols-3 gap-4 p-4">
-
             <FormField
               control={form.control}
               name="aircraft_operator"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="flex items-center gap-1.5">
-                    <User className="h-3 w-3 text-muted-foreground" />
+                  <FormLabel>
+                    <User className="h-3 w-3 text-muted-foreground mr-1.5 inline" />
                     Piloto / Operador
                   </FormLabel>
                   <FormControl>
@@ -453,14 +402,7 @@ export default function CreateFlightControlForm({
                   <FormLabel>Ciclos</FormLabel>
                   <FormControl>
                     <div className="relative">
-                      <Input
-                        type="number"
-                        min="0"
-                        step="1"
-                        placeholder="0"
-                        className="pr-10 tabular-nums"
-                        {...field}
-                      />
+                      <Input type="number" min="0" step="1" placeholder="0" className="pr-10 tabular-nums" {...field} />
                       <span className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-xs font-medium text-muted-foreground">
                         cyc
                       </span>
@@ -477,12 +419,11 @@ export default function CreateFlightControlForm({
           {isPending ? (
             <Loader2 className="h-4 w-4 animate-spin" />
           ) : isEditMode ? (
-            "Actualizar Vuelo"
+            'Actualizar Vuelo'
           ) : (
-            "Registrar Vuelo"
+            'Registrar Vuelo'
           )}
         </Button>
-
       </form>
     </Form>
   );
