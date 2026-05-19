@@ -7,16 +7,19 @@ import { ContentLayout } from "@/components/layout/ContentLayout";
 import LoadingPage from "@/components/misc/LoadingPage";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { useDownloadDangerIdentificationPdf } from "@/actions/sms/peligros_identificados/actions";
 import { useGetDangerIdentificationById } from "@/hooks/sms/useGetDangerIdentificationById";
 import { useCompanyStore } from "@/stores/CompanyStore";
 import {
   AlertCircle,
   AlertTriangle,
   ChevronRight,
+  FileDown,
   FileText,
   Info,
   Layers,
   List,
+  Loader2,
   Shield,
 } from "lucide-react";
 import Link from "next/link";
@@ -25,6 +28,7 @@ import { useParams } from "next/navigation";
 const ShowDangerIdentification = () => {
   const { identification_id } = useParams<{ identification_id: string }>();
   const { selectedCompany } = useCompanyStore();
+  const { downloadDangerIdentificationPdf } = useDownloadDangerIdentificationPdf();
 
   const {
     data: dangerIdentification,
@@ -59,6 +63,25 @@ const ShowDangerIdentification = () => {
     <ContentLayout title="Identificación de Peligro">
       {/* Botones de acción */}
       <div className="flex justify-evenly flex-wrap gap-4 mb-6">
+        {dangerIdentification && (
+          <Button
+            disabled={downloadDangerIdentificationPdf.isPending}
+            onClick={() =>
+              downloadDangerIdentificationPdf.mutate({
+                company: selectedCompany!.slug,
+                id: dangerIdentification.id,
+              })
+            }
+          >
+            {downloadDangerIdentificationPdf.isPending ? (
+              <Loader2 className="size-4 animate-spin" />
+            ) : (
+              <FileDown className="size-4" />
+            )}
+            Generar PDF
+          </Button>
+        )}
+
         {dangerIdentification && status === "ABIERTO" && (
           <>
             <CreateDangerIdentificationDialog

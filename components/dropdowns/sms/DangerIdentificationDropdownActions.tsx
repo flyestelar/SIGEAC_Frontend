@@ -1,4 +1,4 @@
-import { useDeleteDangerIdentification } from "@/actions/sms/peligros_identificados/actions";
+import { useDeleteDangerIdentification, useDownloadDangerIdentificationPdf } from "@/actions/sms/peligros_identificados/actions";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,6 +11,7 @@ import {
   ClipboardPen,
   ClipboardPenLine,
   EyeIcon,
+  FileDown,
   Loader2,
   MoreHorizontal,
   Trash2,
@@ -41,6 +42,7 @@ const DangerIdentificationDropdownActions = ({
   const [openEditAnalyses, setOpenEditAnalyses] = useState<boolean>(false);
 
   const { deleteDangerIdentification } = useDeleteDangerIdentification();
+  const { downloadDangerIdentificationPdf } = useDownloadDangerIdentificationPdf();
   const [openCreateAnalysis, setOpenCreateAnalysis] = useState<boolean>(false);
   const [openDelete, setOpenDelete] = useState<boolean>(false);
   const router = useRouter();
@@ -136,6 +138,23 @@ const DangerIdentificationDropdownActions = ({
                   <p className="pl-2">Editar Analisis</p>
                 </DropdownMenuItem>
               )}
+
+            <DropdownMenuItem
+              disabled={downloadDangerIdentificationPdf.isPending}
+              onClick={() =>
+                downloadDangerIdentificationPdf.mutate({
+                  company: selectedCompany!.slug,
+                  id: dangerIdentification.id,
+                })
+              }
+            >
+              {downloadDangerIdentificationPdf.isPending ? (
+                <Loader2 className="size-5 animate-spin" />
+              ) : (
+                <FileDown className="size-5 text-amber-500" />
+              )}
+              <p className="pl-2">Generar PDF</p>
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
 

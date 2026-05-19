@@ -37,6 +37,7 @@ import {
   SquarePen,
   User2,
   UserRoundCog,
+  ShieldCheck,
 } from 'lucide-react';
 
 type Submenu = {
@@ -149,6 +150,39 @@ export function getMenuList(pathname: string, currentCompany: Company | null, us
             },
           ],
         },
+        {
+          href: `/${currentCompany?.slug}/general/reporte`,
+          label: "SMS",
+          active: pathname.includes(`/${currentCompany?.slug}/reporte`),
+          icon: ShieldCheck,
+          roles: [],
+          submenus: [
+              // {
+              //     href: `/${currentCompany?.slug}/general/reporte/voluntario`,
+              //     label: "Reporte Voluntario",
+              //     roles: [],
+              //     active:
+              //         pathname ===
+              //         `/${currentCompany?.slug}/general/reporte/voluntario`,
+              // },
+              // {
+              //     href: `/${currentCompany?.slug}/general/reporte/obligatorio`,
+              //     label: "Reporte Obligatorio",
+              //     roles: [],
+              //     active:
+              //         pathname ===
+              //         `/${currentCompany?.slug}/general/reporte/obligatorio`,
+              // },
+              {
+                  href: `/${currentCompany?.slug}/general/reporte/codigos_qr`,
+                  label: "Codigos QR",
+                  roles: [],
+                  active:
+                      pathname ===
+                      `/${currentCompany?.slug}/general/reporte/codigos_qr`,
+              },
+          ],
+      },
         {
           href: companyPath('/general/inventario'),
           label: 'Consultar Inventario',
