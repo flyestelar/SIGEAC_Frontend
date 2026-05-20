@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { FieldValues, Path, UseFormReturn } from 'react-hook-form';
 
 import { addYears, format, subYears } from 'date-fns';
@@ -33,6 +33,11 @@ export function DatePickerField<T extends FieldValues>({
   yearJump,
 }: DatePickerFieldProps<T>) {
   const [date, setDate] = useState<Date | undefined>(initialDate);
+  const initialDateTime = initialDate?.getTime();
+
+  useEffect(() => {
+    setDate(initialDateTime ? new Date(initialDateTime) : undefined);
+  }, [initialDateTime]);
 
   const handleYearJump = (value: string) => {
     const years = parseInt(value);
