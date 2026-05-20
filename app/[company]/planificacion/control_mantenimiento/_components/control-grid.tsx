@@ -1,108 +1,16 @@
 'use client';
 
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
-import { useCompanyStore } from '@/stores/CompanyStore';
 import { AircraftAverageMetric, MaintenanceControlResource } from '@api/types';
-import { ArrowLeft, BookOpen, ClipboardList, Edit, LayoutGrid, Table2 } from 'lucide-react';
-import Link from 'next/link';
+import { BookOpen, ClipboardList, LayoutGrid, Table2 } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { AircraftAverageSummaryCard } from './aircraft-average-summary-card';
 import { ControlCardView } from './control-card-view';
-import {
-  AlertBadge,
-  ComputedControl,
-  EnCursoBadge,
-  LEVEL_CONFIG,
-  LEVEL_PRIORITY,
-  METRIC_ICONS,
-  METRIC_UNITS,
-  computeMetrics,
-  worstStatus,
-} from './control-grid-shared';
+import { ComputedControl, LEVEL_PRIORITY, computeMetrics, worstStatus } from './control-grid-shared';
 import { ControlTableView } from './control-table-view';
-
-// ── SelectedControlHeader ──────────────────────────────────────────────────────
-
-function SelectedControlHeader({ computed, onBack }: { computed: ComputedControl; onBack: () => void }) {
-  const { selectedCompany } = useCompanyStore();
-  const { control, metrics, status } = computed;
-  const cfg = LEVEL_CONFIG[status];
-  const LevelIcon = cfg.icon;
-
-  return (
-    <Card className={`overflow-hidden ${cfg.cardBorder} ${cfg.cardBg}`}>
-      <CardContent className="px-4 py-3">
-        <div className="flex items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <button
-              type="button"
-              onClick={onBack}
-              className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-border/60 bg-background/80 text-muted-foreground transition-colors hover:bg-muted/40 hover:text-foreground"
-            >
-              <ArrowLeft className="h-3.5 w-3.5" />
-            </button>
-            <div className={`flex h-5 w-5 shrink-0 items-center justify-center rounded ${cfg.iconBg}`}>
-              <LevelIcon className={`h-3 w-3 ${cfg.iconText}`} />
-            </div>
-            <div>
-              <p className="text-sm font-semibold text-foreground">{control.title}</p>
-              <p className="font-mono text-[10px] text-muted-foreground">{control.manual_reference}</p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-1.5">
-            {control.in_progress && (
-              <EnCursoBadge workOrderLabel={control.last_execution?.work_order?.order_number} />
-            )}
-            <AlertBadge status={status} size="small" />
-            <Button asChild variant="ghost" size="icon" className="h-6 w-6">
-              <Link href={`/${selectedCompany?.slug}/planificacion/control_mantenimiento/${control.id}/editar`}>
-                <Edit className="h-3 w-3" />
-              </Link>
-            </Button>
-          </div>
-        </div>
-
-        {metrics.length > 0 && (
-          <div className="mt-3 flex flex-wrap items-center gap-3">
-            {metrics.map((metric) => {
-              const metricCfg = LEVEL_CONFIG[metric.status];
-              const MetricIcon = METRIC_ICONS[metric.type];
-              return (
-                <div
-                  key={metric.type}
-                  className="flex items-center gap-2 rounded-md border border-border/60 bg-muted/20 px-3 py-1.5"
-                >
-                  <MetricIcon className="h-3 w-3 text-muted-foreground" />
-                  <span className="font-mono text-xs font-semibold tabular-nums">
-                    <span className={metricCfg.iconText}>{metric.consumed.toFixed(1)}</span>
-                    <span className="text-muted-foreground">/{metric.interval}</span>
-                    <span className="ml-0.5 text-[10px] font-normal text-muted-foreground">
-                      {METRIC_UNITS[metric.type]}
-                    </span>
-                  </span>
-                  <span className="font-mono text-[10px] text-muted-foreground">
-                    ({metric.remaining.toFixed(1)} {METRIC_UNITS[metric.type]} rest.)
-                  </span>
-                  <Progress
-                    value={metric.percentage}
-                    className="h-1.5 w-16"
-                    indicatorClassName={metricCfg.progressIndicator}
-                  />
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </CardContent>
-    </Card>
-  );
-}
 
 // ── Loading skeleton ───────────────────────────────────────────────────────────
 
@@ -145,12 +53,11 @@ function ControlGridSkeleton() {
 
 interface ControlGridProps {
   controls: MaintenanceControlResource[];
-  selectedControlId: number | null;
   onSelectControl: (id: number | null) => void;
   averages: AircraftAverageMetric | null;
 }
 
-export function ControlGrid({ controls, selectedControlId, onSelectControl, averages }: ControlGridProps) {
+export function ControlGrid({ controls, onSelectControl, averages }: ControlGridProps) {
   const [viewMode, setViewMode] = useState<'cards' | 'table'>('cards');
 
   const computedControls = useMemo<ComputedControl[]>(() => {
@@ -164,11 +71,6 @@ export function ControlGrid({ controls, selectedControlId, onSelectControl, aver
   const sortedControls = useMemo(() => {
     return [...computedControls].sort((a, b) => LEVEL_PRIORITY[a.status] - LEVEL_PRIORITY[b.status]);
   }, [computedControls]);
-
-  const selectedComputed = useMemo(
-    () => sortedControls.find((c) => c.control.id === selectedControlId) ?? null,
-    [sortedControls, selectedControlId],
-  );
 
   if (controls.length === 0) {
     return (
@@ -187,15 +89,6 @@ export function ControlGrid({ controls, selectedControlId, onSelectControl, aver
           </div>
         </CardContent>
       </Card>
-    );
-  }
-
-  // ── Selected state: show header + tasks ──
-  if (selectedComputed) {
-    return (
-      <div className="space-y-4">
-        <SelectedControlHeader computed={selectedComputed} onBack={() => onSelectControl(null)} />
-      </div>
     );
   }
 

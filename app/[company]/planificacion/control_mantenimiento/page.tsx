@@ -2,7 +2,6 @@
 
 import { ContentLayout } from '@/components/layout/ContentLayout';
 import LoadingPage from '@/components/misc/LoadingPage';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useGetMaintenanceAircrafts } from '@/hooks/planificacion/useGetMaintenanceAircrafts';
 import { useCompanyStore } from '@/stores/CompanyStore';
@@ -37,12 +36,6 @@ export default function MaintenanceDashboard() {
           <h2 className="text-xl font-semibold text-foreground">Control de Mantenimiento</h2>
 
           <div className="flex items-center gap-2">
-            <Button asChild variant="outline" className="gap-2">
-              <Link href={`/${selectedCompany?.slug}/planificacion/control_mantenimiento/alertas`}>
-                <Siren className="h-4 w-4" />
-                Dashboard Alertas
-              </Link>
-            </Button>
             <Button asChild className="gap-2">
               <Link href={`/${selectedCompany?.slug}/planificacion/control_mantenimiento/nuevo`}>
                 <Plus className="h-4 w-4" />

@@ -7,16 +7,8 @@ import { Separator } from '@/components/ui/separator';
 import { AircraftResource, MaintenanceControlResource } from '@api/types';
 import { addDays, format } from 'date-fns';
 import { es } from 'date-fns/locale';
-import {
-  AlertTriangle,
-  CalendarClock,
-  Clock,
-  Gauge,
-  RefreshCw,
-  ShieldCheck,
-  TrendingUp,
-  TriangleAlert,
-} from 'lucide-react';
+import { CalendarClock, Clock, Gauge, RefreshCw, TrendingUp } from 'lucide-react';
+import { AlertBadge, LEVEL_CONFIG } from './control-grid-shared';
 import { ProjectionChart } from './projection-chart';
 
 // ── Types ────────────────────────────────────────────────────
@@ -49,47 +41,6 @@ type ComputedEstimation = {
 // ── Constants ────────────────────────────────────────────────
 
 const METRIC_ICONS = { fh: Clock, fc: RefreshCw } as const;
-
-const STATUS_CONFIG: Record<
-  AlertLevel,
-  {
-    icon: typeof ShieldCheck;
-    label: string;
-    badgeClass: string;
-    progressClass: string;
-    accentText: string;
-    accentBg: string;
-    accentBorder: string;
-  }
-> = {
-  OVERDUE: {
-    icon: TriangleAlert,
-    label: 'Vencido',
-    badgeClass: 'border-red-500/30 bg-red-500/10 text-red-600 dark:text-red-400',
-    progressClass: 'bg-red-500',
-    accentText: 'text-red-600 dark:text-red-400',
-    accentBg: 'bg-red-500/5 dark:bg-red-950/20',
-    accentBorder: 'border-red-500/20',
-  },
-  WARNING: {
-    icon: AlertTriangle,
-    label: 'Próximo',
-    badgeClass: 'border-amber-500/30 bg-amber-500/10 text-amber-600 dark:text-amber-400',
-    progressClass: 'bg-amber-500',
-    accentText: 'text-amber-600 dark:text-amber-400',
-    accentBg: 'bg-amber-500/5 dark:bg-amber-950/20',
-    accentBorder: 'border-amber-500/20',
-  },
-  OK: {
-    icon: ShieldCheck,
-    label: 'En tiempo',
-    badgeClass: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400',
-    progressClass: 'bg-emerald-500',
-    accentText: 'text-emerald-600 dark:text-emerald-400',
-    accentBg: 'bg-emerald-500/5 dark:bg-emerald-950/20',
-    accentBorder: 'border-emerald-500/20',
-  },
-};
 
 // ── Helpers ──────────────────────────────────────────────────
 
@@ -127,14 +78,13 @@ function computeEstimation(metric: EstimationMetric): ComputedEstimation | null 
 
 function EstimationRow({ metric }: { metric: EstimationMetric }) {
   const estimation = computeEstimation(metric);
-  console.log('Estimation for', metric, estimation);
   const Icon = METRIC_ICONS[metric.key];
 
   if (!estimation) {
     return (
-      <div className="flex items-center gap-4 rounded-lg border border-border/40 bg-muted/10 px-5 py-4">
-        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-border/50 bg-muted/30">
-          <Icon className="h-4 w-4 text-muted-foreground" />
+      <div className="flex h-full items-center gap-3 rounded-lg border border-border/40 bg-muted/10 px-4 py-3">
+        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-border/50 bg-muted/30">
+          <Icon className="h-3.5 w-3.5 text-muted-foreground" />
         </div>
         <div>
           <p className="text-sm font-medium text-foreground">{metric.label}</p>
@@ -144,46 +94,38 @@ function EstimationRow({ metric }: { metric: EstimationMetric }) {
     );
   }
 
-  const cfg = STATUS_CONFIG[estimation.status];
-  const StatusIcon = cfg.icon;
+  const cfg = LEVEL_CONFIG[estimation.status];
 
   return (
-    <Card className={`overflow-hidden border-l-4 ${cfg.accentBorder} ${cfg.accentBg}`}>
+    <Card className={`h-full overflow-hidden rounded-xl border ${cfg.accentBorder}`}>
       <CardContent className="p-0">
         {/* Header strip */}
-        <div className="flex items-center justify-between gap-3 px-5 py-3">
-          <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-border/50 bg-background">
-              <Icon className="h-4 w-4 text-primary" />
-            </div>
-            <div>
+        <div className="flex flex-wrap items-start justify-between gap-2 px-3 py-2.5">
+          <div className="flex min-w-0 items-center gap-2.5">
+            <div className="min-w-0">
               <div className="flex items-center gap-2">
-                <p className="text-sm font-semibold text-foreground">{metric.label}</p>
-                <Badge variant="outline" className="h-5 px-1.5 font-mono text-[10px]">
-                  {metric.unit}
+                <p className="truncate text-sm font-semibold text-foreground">
+                  <Icon className="inline h-4 w-4 text-primary mr-1" />
+                  {metric.label}
+                </p>
+                <Badge variant="outline" className="h-4.5 px-1.5 font-mono text-xs">
+                  {fmt(metric.interval!)} {metric.unit}
                 </Badge>
               </div>
-              <p className="mt-0.5 text-[11px] text-muted-foreground">
-                Intervalo: <span className="font-mono font-medium text-foreground">{fmt(metric.interval!)}</span>{' '}
-                {metric.unit}
-              </p>
             </div>
           </div>
 
-          <Badge variant="outline" className={`gap-1 ${cfg.badgeClass}`}>
-            <StatusIcon className="h-3 w-3" />
-            {cfg.label}
-          </Badge>
+          <AlertBadge status={estimation.status} />
         </div>
 
         <Separator className="opacity-50" />
 
         {/* Metrics grid */}
-        <div className="grid grid-cols-4 divide-x divide-border/40">
+        <div className="grid grid-cols-2 divide-x divide-y divide-border/40">
           {/* Consumed */}
-          <div className="space-y-1 px-5 py-4">
+          <div className="space-y-1 px-3 py-2.5">
             <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">Consumido</p>
-            <p className="font-mono text-lg font-semibold tabular-nums">
+            <p className="font-mono text-base font-semibold tabular-nums">
               <span className={cfg.accentText}>{fmt(metric.consumed!)}</span>
             </p>
             <p className="font-mono text-[11px] text-muted-foreground">
@@ -192,52 +134,51 @@ function EstimationRow({ metric }: { metric: EstimationMetric }) {
           </div>
 
           {/* Remaining */}
-          <div className="space-y-1 px-5 py-4">
+          <div className="space-y-1 px-3 py-2.5">
             <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">Restante</p>
-            <p className="font-mono text-lg font-semibold tabular-nums">{fmt(estimation.remaining)}</p>
+            <p className="font-mono text-base font-semibold tabular-nums">{fmt(estimation.remaining)}</p>
             <p className="font-mono text-[11px] text-muted-foreground">{metric.unit} por consumir</p>
           </div>
 
           {/* Daily average */}
-          <div className="space-y-1 px-5 py-4">
+          <div className="space-y-1 px-3 py-2.5">
             <p className="flex items-center gap-1 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
               <TrendingUp className="h-3 w-3" />
               Promedio
             </p>
             {estimation.averagePerDay > 0 ? (
               <>
-                <p className="font-mono text-lg font-semibold tabular-nums">{fmt(estimation.averagePerDay, 2)}</p>
-                <p className="font-mono text-[11px] text-muted-foreground">{metric.unit}/día</p>
+                <p className="font-mono text-base font-semibold tabular-nums">
+                  {fmt(estimation.averagePerDay, 2)}{' '}
+                  <span className="font-mono text-[11px] text-muted-foreground">{metric.unit}/día</span>
+                </p>
               </>
             ) : (
-              <>
-                <p className="text-sm font-medium text-muted-foreground/60">—</p>
-                <p className="text-[11px] text-muted-foreground/60">Sin datos</p>
-              </>
+              <p className="text-[11px] text-muted-foreground/60">Sin datos</p>
             )}
           </div>
 
           {/* Estimated date */}
-          <div className="space-y-1 px-5 py-4">
+          <div className="space-y-1 px-3 py-2.5">
             <p className="flex items-center gap-1 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
               <CalendarClock className="h-3 w-3" />
               Próx. vencimiento
             </p>
             {estimation.estimatedDate ? (
               <>
-                <p className="font-mono text-lg font-semibold tabular-nums">
-                  {format(estimation.estimatedDate, 'dd MMM yy', { locale: es })}
-                </p>
-                <p className="text-[11px] text-muted-foreground">
-                  {estimation.daysToDue === 0 ? (
-                    <span className={cfg.accentText}>Vencido</span>
-                  ) : (
-                    <>
-                      en{' '}
-                      <span className="font-mono font-medium text-foreground">{estimation.daysToDue}</span> día
-                      {estimation.daysToDue !== 1 && 's'}
-                    </>
-                  )}
+                <p className="font-mono text-base font-semibold tabular-nums">
+                  {format(estimation.estimatedDate, 'dd MMM yy', { locale: es })}{' '}
+                  <span className="text-[11px] text-muted-foreground">
+                    &mdash;{' '}
+                    {estimation.daysToDue === 0 ? (
+                      <span className={cfg.accentText}>Vencido</span>
+                    ) : (
+                      <>
+                        en <span className="font-mono font-medium text-foreground">{estimation.daysToDue}</span> día
+                        {estimation.daysToDue !== 1 && 's'}
+                      </>
+                    )}
+                  </span>
                 </p>
               </>
             ) : (
@@ -250,8 +191,8 @@ function EstimationRow({ metric }: { metric: EstimationMetric }) {
         </div>
 
         {/* Progress bar */}
-        <div className="px-5 pb-4">
-          <div className="flex items-center justify-between pb-1.5">
+        <div className="px-3 pb-2.5">
+          <div className="flex items-center justify-between pb-1">
             <p className="text-[11px] text-muted-foreground">
               <Gauge className="mr-1 inline-block h-3 w-3" />
               Progreso de consumo
@@ -260,7 +201,7 @@ function EstimationRow({ metric }: { metric: EstimationMetric }) {
               {fmt(estimation.percentage, 0)}%
             </p>
           </div>
-          <Progress value={estimation.percentage} className="h-2" indicatorClassName={cfg.progressClass} />
+          <Progress value={estimation.percentage} className="h-1.5" indicatorClassName={cfg.progressIndicator} />
         </div>
       </CardContent>
     </Card>
@@ -290,13 +231,15 @@ export function EstimationsPanel({ control, aircraft }: EstimationsPanelProps) {
   ];
 
   return (
-    <div className="grid gap-4 xl:grid-cols-12">
-      <div className="space-y-4 xl:col-span-5">
+    <div className="space-y-4">
+      <div className="flex flex-wrap gap-3 flex-col md:flex-row">
         {metrics.map((metric) => (
-          <EstimationRow key={metric.key} metric={metric} />
+          <div key={metric.key} className="flex-1">
+            <EstimationRow key={metric.key} metric={metric} />
+          </div>
         ))}
       </div>
-      <div className="xl:col-span-7">
+      <div>
         <ProjectionChart metrics={metrics} />
       </div>
     </div>
