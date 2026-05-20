@@ -22,7 +22,6 @@ import {
   SortingState,
   useReactTable,
 } from "@tanstack/react-table"
-import { useRouter } from "next/navigation"
 import { useState } from "react"
 
 interface DataTableProps<TData, TValue> {
@@ -55,17 +54,13 @@ export function DataTable<TData, TValue>({
     }
   })
 
-  const router = useRouter();
-
-  const isFiltered = table.getState().columnFilters.length > 0
-
   return (
     <div>
-      <div className="flex items-center py-4">
+      <div className="flex items-center mb-4">
         <CreateFlightControlDialog />
         <DataTableViewOptions table={table} />
       </div>
-      <div className="rounded-md border mb-4">
+      <div className="rounded-md border mb-4 whitespace-nowrap">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
