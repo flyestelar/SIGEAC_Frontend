@@ -1,22 +1,19 @@
 'use client';
 
-import Image from 'next/image';
+import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useEffect, useMemo, useState } from 'react';
+import Image from 'next/image';
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { CalendarIcon, Loader2, Wrench } from 'lucide-react';
 import { useForm } from 'react-hook-form';
-import { z } from 'zod';
-
-import { CalendarIcon, FileUpIcon, Loader2, Wrench } from 'lucide-react';
 
 import {
   useConfirmIncomingArticle,
   useCreateArticle,
 } from '@/actions/mantenimiento/almacen/inventario/articulos/actions';
-
 import { MultiInputField } from '@/components/misc/MultiInputField';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
@@ -26,130 +23,33 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
-
 import { useGetConditions } from '@/hooks/administracion/useGetConditions';
 import { useGetManufacturers } from '@/hooks/general/fabricantes/useGetManufacturers';
 import { useGetBatchesByCategory } from '@/hooks/mantenimiento/almacen/renglones/useGetBatchesByCategory';
-
 import { cn } from '@/lib/utils';
 import { useCompanyStore } from '@/stores/CompanyStore';
-import { Batch } from '@/types';
 
 import loadingGif from '@/public/images/loading2.gif';
-import { EditingArticle } from './RegisterArticleForm';
 
-/* ------------------------------- Schema ------------------------------- */
+import { ArticleFormProps } from '../_lib/types';
+import { normalizeUpper } from '../_lib/utils';
+import { CertificatesSection, ConditionSelect, DatePickerField, ManufacturerSelect } from './fields';
+import { toolFormSchema, ToolFormValues } from './schemas/tool.schema';
 
-const fileMaxBytes = 10_000_000; // 10 MB
-
-const formSchema = z
-  .object({
-    article_type: z.string().optional(),
-    inspector: z.string({ message: 'Debe ingresar un inspector.' }),
-    reception_date: z.string({ message: 'Debe ingresar una fecha de recepción.' }),
-    part_number: z.string().min(2, 'Al menos 2 caracteres.'),
-    alternative_part_number: z
-      .preprocess(
-        (val) => {
-          if (val === '' || val == null) return [];
-          if (Array.isArray(val)) return val;
-          if (typeof val === 'string') {
-            return val
-              .split(/[\n,;]+/g)
-              .map((s) => s.trim())
-              .filter(Boolean);
-          }
-          return [];
-        },
-        z.array(z.string().min(2)),
-      )
-      .optional(),
-    serial: z.string().optional(),
-    model: z.string().optional(),
-    description: z.string().min(2, 'Al menos 2 caracteres.'),
-    zone: z.string().min(1, 'Campo requerido'),
-    manufacturer_id: z.string().min(1, 'Seleccione un fabricante'),
-    condition_id: z.string().min(1, 'Seleccione una condición'),
-    batch_id: z.string().min(1, 'Seleccione una categoría'),
-
-    // Calibración
-    needs_calibration: z.boolean().optional(),
-    calibration_date: z.date().optional(),
-    next_calibration: z.union([z.coerce.number().int().positive(), z.nan()]).optional(), // ingresado solo si needs_calibration
-
-    // Archivos
-    certificate_8130: z
-      .instanceof(File, { message: 'Archivo inválido.' })
-      .refine((f) => f.size <= fileMaxBytes, 'Máx. 10 MB.')
-      .optional(),
-    certificate_fabricant: z
-      .instanceof(File, { message: 'Archivo inválido.' })
-      .refine((f) => f.size <= fileMaxBytes, 'Máx. 10 MB.')
-      .optional(),
-    certificate_vendor: z
-      .instanceof(File, { message: 'Archivo inválido.' })
-      .refine((f) => f.size <= fileMaxBytes, 'Máx. 10 MB.')
-      .optional(),
-    image: z.instanceof(File).optional(),
-  })
-  .superRefine((vals, ctx) => {
-    if (vals.needs_calibration) {
-      if (!vals.calibration_date) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: 'Ingrese la última fecha de calibración.',
-          path: ['calibration_date'],
-        });
-      }
-      if (
-        vals.next_calibration === undefined ||
-        vals.next_calibration === null ||
-        Number.isNaN(vals.next_calibration) ||
-        (typeof vals.next_calibration === 'number' && vals.next_calibration <= 0)
-      ) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: 'Ingrese días para la próxima calibración (número > 0).',
-          path: ['next_calibration'],
-        });
-      }
-    }
-  });
-
-type FormValues = z.infer<typeof formSchema>;
-
-export default function CreateToolForm({
-  initialData,
-  isEditing,
-}: {
-  initialData?: EditingArticle;
-  isEditing?: boolean;
-}) {
+export default function CreateToolForm({ initialData, isEditing }: ArticleFormProps) {
   const router = useRouter();
   const { selectedCompany } = useCompanyStore();
 
-  const {
-    data: batches,
-    isPending: isBatchesLoading,
-    isError: isBatchesError,
-  } = useGetBatchesByCategory('herramienta');
-  const {
-    data: manufacturers,
-    isLoading: isManufacturerLoading,
-    isError: isManufacturerError,
-  } = useGetManufacturers(selectedCompany?.slug);
+  const { data: batches, isPending: isBatchesLoading, isError: isBatchesError } = useGetBatchesByCategory('herramienta');
+  const { data: manufacturers, isLoading: isManufacturerLoading, isError: isManufacturerError } = useGetManufacturers(selectedCompany?.slug);
   const { data: conditions, isLoading: isConditionsLoading, error: isConditionsError } = useGetConditions();
 
   const { createArticle } = useCreateArticle();
   const { confirmIncoming } = useConfirmIncomingArticle();
-  const [receptionDate, setReceptionDate] = useState<Date | undefined>(
-    initialData?.reception_date ? new Date(initialData.reception_date) : undefined,
-  );
 
-  const form = useForm<FormValues>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<ToolFormValues>({
+    resolver: zodResolver(toolFormSchema),
     defaultValues: {
       part_number: initialData?.part_number || '',
       inspector: initialData?.inspector || '',
@@ -171,16 +71,10 @@ export default function CreateToolForm({
   useEffect(() => {
     if (!initialData) return;
 
-    const recDate = initialData.reception_date
-      ? new Date(initialData.reception_date)
-      : undefined;
-
-    setReceptionDate(recDate);
-
     form.reset({
       part_number: initialData.part_number || '',
       inspector: initialData.inspector || '',
-      reception_date: recDate ? format(recDate, 'yyyy-MM-dd') : '',
+      reception_date: initialData.reception_date || '',
       alternative_part_number: initialData.alternative_part_number || [],
       serial: initialData.serial || '',
       description: initialData.description || '',
@@ -195,27 +89,19 @@ export default function CreateToolForm({
   }, [initialData, form]);
 
   const busy =
-    isBatchesLoading ||
-    isManufacturerLoading ||
-    isConditionsLoading ||
-    createArticle.isPending ||
-    confirmIncoming.isPending;
+    isBatchesLoading || isManufacturerLoading || isConditionsLoading || createArticle.isPending || confirmIncoming.isPending;
 
-  const batchesOptions = useMemo<Batch[] | undefined>(() => batches, [batches]);
+  const isCalibrated = form.watch('needs_calibration');
 
-  const normalizeUpper = (s?: string) => s?.trim().toUpperCase() ?? '';
-
-  const onSubmit = async (values: FormValues) => {
+  const onSubmit = async (values: ToolFormValues) => {
     if (!selectedCompany?.slug) return;
 
     const payload: any = {
       ...values,
       article_type: 'tool',
       part_number: normalizeUpper(values.part_number),
-      reception_date: receptionDate ? format(receptionDate, 'yyyy-MM-dd') : undefined,
       alternative_part_number: values.alternative_part_number?.map((v) => normalizeUpper(v)) ?? [],
       calibration_date: values.calibration_date ? format(values.calibration_date, 'yyyy-MM-dd') : undefined,
-      // `next_calibration` se envía tal cual como número
     };
 
     if (isEditing) {
@@ -232,8 +118,6 @@ export default function CreateToolForm({
     }
   };
 
-  const isCalibrated = form.watch('needs_calibration');
-
   return (
     <Form {...form}>
       <form className="flex flex-col gap-6 max-w-7xl mx-auto" onSubmit={form.handleSubmit(onSubmit)}>
@@ -246,7 +130,6 @@ export default function CreateToolForm({
             </CardTitle>
           </CardHeader>
           <CardContent className="grid grid-cols-1 xl:grid-cols-3 gap-4">
-            {/* Inspector */}
             <FormField
               control={form.control}
               name="inspector"
@@ -260,50 +143,11 @@ export default function CreateToolForm({
                 </FormItem>
               )}
             />
-            {/* Fecha de recepción */}
-            <FormField
-              control={form.control}
+            <DatePickerField
+              form={form}
               name="reception_date"
-              render={() => (
-                <FormItem className="flex flex-col p-0 mt-2.5 w-full">
-                  <FormLabel>Fecha de recepción</FormLabel>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <FormControl>
-                        <Button
-                          variant="outline"
-                          className={cn('w-full pl-3 text-left font-normal', !receptionDate && 'text-muted-foreground')}
-                        >
-                          {receptionDate ? (
-                            format(receptionDate, 'PPP', { locale: es })
-                          ) : (
-                            <span>Seleccione una fecha...</span>
-                          )}
-                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                        </Button>
-                      </FormControl>
-                    </PopoverTrigger>
-
-                    <PopoverContent className="w-auto p-0" align="start">
-                      <Calendar
-                        locale={es}
-                        mode="single"
-                        selected={receptionDate}
-                        onSelect={(d) => {
-                          setReceptionDate(d);
-                          form.setValue('reception_date', d ? format(d, 'yyyy-MM-dd') : '', {
-                            shouldDirty: true,
-                            shouldValidate: true,
-                          });
-                        }}
-                        initialFocus
-                        month={receptionDate}
-                      />
-                    </PopoverContent>
-                  </Popover>
-                  <FormMessage />
-                </FormItem>
-              )}
+              label="Fecha de recepción"
+              initialDate={initialData?.reception_date ? new Date(initialData.reception_date) : undefined}
             />
             <FormField
               control={form.control}
@@ -343,7 +187,7 @@ export default function CreateToolForm({
                     <MultiInputField
                       values={field.value || []}
                       onChange={field.onChange}
-                      placeholder={`Ej: P/N-ALT-01, PN-ALT-02`}
+                      placeholder="Ej: P/N-ALT-01, PN-ALT-02"
                       label=""
                     />
                   </FormControl>
@@ -360,61 +204,22 @@ export default function CreateToolForm({
             <CardTitle className="text-xl">Clasificación y estado</CardTitle>
           </CardHeader>
           <CardContent className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-            <FormField
-              control={form.control}
+            <ManufacturerSelect
+              form={form}
               name="manufacturer_id"
-              render={({ field }) => (
-                <FormItem className="w-full">
-                  <FormLabel>Fabricante</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value} disabled={isManufacturerLoading}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder={isManufacturerLoading ? 'Cargando...' : 'Seleccione...'} />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {manufacturers?.map((m) => (
-                        <SelectItem key={m.id} value={m.id.toString()}>
-                          {`${m.name} - ${m.type ?? ''}`}
-                        </SelectItem>
-                      ))}
-                      {isManufacturerError && (
-                        <div className="p-2 text-sm text-muted-foreground">Error al cargar fabricantes.</div>
-                      )}
-                    </SelectContent>
-                  </Select>
-                  <FormDescription>Marca del fabricante.</FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
+              manufacturers={manufacturers}
+              isLoading={isManufacturerLoading}
+              isError={isManufacturerError}
+              description="Marca del fabricante."
+              filterType={null}
             />
-            <FormField
-              control={form.control}
+            <ConditionSelect
+              form={form}
               name="condition_id"
-              render={({ field }) => (
-                <FormItem className="w-full">
-                  <FormLabel>Condición</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value} disabled={isConditionsLoading}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder={isConditionsLoading ? 'Cargando...' : 'Seleccione...'} />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {conditions?.map((c) => (
-                        <SelectItem key={c.id} value={c.id.toString()}>
-                          {c.name}
-                        </SelectItem>
-                      ))}
-                      {isConditionsError && (
-                        <div className="p-2 text-sm text-muted-foreground">Error al cargar condiciones.</div>
-                      )}
-                    </SelectContent>
-                  </Select>
-                  <FormDescription>Estado físico/operativo.</FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
+              conditions={conditions}
+              isLoading={isConditionsLoading}
+              isError={!!isConditionsError}
+              description="Estado físico/operativo."
             />
             <FormField
               control={form.control}
@@ -429,12 +234,12 @@ export default function CreateToolForm({
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {batchesOptions?.map((b) => (
+                      {batches?.map((b) => (
                         <SelectItem key={b.id} value={b.id.toString()}>
                           {b.name}
                         </SelectItem>
                       ))}
-                      {(!batchesOptions || batchesOptions.length === 0) && !isBatchesLoading && !isBatchesError && (
+                      {(!batches || batches.length === 0) && !isBatchesLoading && !isBatchesError && (
                         <div className="p-2 text-sm text-muted-foreground text-center">
                           No se han encontrado categorías.
                         </div>
@@ -487,7 +292,6 @@ export default function CreateToolForm({
                 </FormItem>
               )}
             />
-
             {isCalibrated && (
               <>
                 <FormField
@@ -533,7 +337,6 @@ export default function CreateToolForm({
                     </FormItem>
                   )}
                 />
-
                 <FormField
                   control={form.control}
                   name="next_calibration"
@@ -580,126 +383,22 @@ export default function CreateToolForm({
                 </FormItem>
               )}
             />
-
-            <Separator />
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="image"
-                render={() => (
-                  <FormItem>
-                    <FormLabel>Imagen</FormLabel>
-                    <FormControl>
-                      <div className="relative h-10 w-full">
-                        <FileUpIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 z-10" />
-                        <Input
-                          type="file"
-                          accept="image/*"
-                          onChange={(e) => {
-                            const f = e.target.files?.[0];
-                            if (f) form.setValue('image', f, { shouldDirty: true, shouldValidate: true });
-                          }}
-                          className="pl-10 pr-3 py-2 w-full border border-gray-300 rounded shadow-sm focus:outline-none focus:ring-2 focus:ring-[#6E23DD] focus:border-transparent cursor-pointer"
-                        />
-                      </div>
-                    </FormControl>
-                    <FormDescription>Imagen descriptiva de la herramienta.</FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <div className="space-y-4">
-                <FormField
-                  control={form.control}
-                  name="certificate_8130"
-                  render={() => (
-                    <FormItem>
-                      <FormLabel>Certificado 8130</FormLabel>
-                      <FormControl>
-                        <div className="relative h-10 w-full">
-                          <FileUpIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 z-10" />
-                          <Input
-                            type="file"
-                            accept=".pdf,image/*"
-                            onChange={(e) => {
-                              const f = e.target.files?.[0];
-                              if (f) form.setValue('certificate_8130', f, { shouldDirty: true, shouldValidate: true });
-                            }}
-                            className="pl-10 pr-3 py-2 w-full border border-gray-300 rounded shadow-sm focus:outline-none focus:ring-2 focus:ring-[#6E23DD] focus:border-transparent cursor-pointer"
-                          />
-                        </div>
-                      </FormControl>
-                      <FormDescription>PDF o imagen. Máx. 10 MB.</FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="certificate_fabricant"
-                  render={() => (
-                    <FormItem>
-                      <FormLabel>Certificado del fabricante</FormLabel>
-                      <FormControl>
-                        <div className="relative h-10 w-full">
-                          <FileUpIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 z-10" />
-                          <Input
-                            type="file"
-                            accept=".pdf,image/*"
-                            onChange={(e) => {
-                              const f = e.target.files?.[0];
-                              if (f)
-                                form.setValue('certificate_fabricant', f, { shouldDirty: true, shouldValidate: true });
-                            }}
-                            className="pl-10 pr-3 py-2 w-full border border-gray-300 rounded shadow-sm focus:outline-none focus:ring-2 focus:ring-[#6E23DD] focus:border-transparent cursor-pointer"
-                          />
-                        </div>
-                      </FormControl>
-                      <FormDescription>PDF o imagen. Máx. 10 MB.</FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="certificate_vendor"
-                  render={() => (
-                    <FormItem>
-                      <FormLabel>Certificado del vendedor</FormLabel>
-                      <FormControl>
-                        <div className="relative h-10 w-full">
-                          <FileUpIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 z-10" />
-                          <Input
-                            type="file"
-                            accept=".pdf,image/*"
-                            onChange={(e) => {
-                              const f = e.target.files?.[0];
-                              if (f)
-                                form.setValue('certificate_vendor', f, { shouldDirty: true, shouldValidate: true });
-                            }}
-                            className="pl-10 pr-3 py-2 w-full border border-gray-300 rounded shadow-sm focus:outline-none focus:ring-2 focus:ring-[#6E23DD] focus:border-transparent cursor-pointer"
-                          />
-                        </div>
-                      </FormControl>
-                      <FormDescription>PDF o imagen. Máx. 10 MB.</FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-            </div>
           </CardContent>
         </Card>
+
+        <CertificatesSection
+          form={form}
+          imageName="image"
+          cert8130Name="certificate_8130"
+          certFabricantName="certificate_fabricant"
+          certVendorName="certificate_vendor"
+        />
 
         {/* Acciones */}
         <div className="flex items-center gap-3">
           <Button
             className="bg-primary text-white hover:bg-blue-900 disabled:bg-slate-100 disabled:text-slate-400"
-            disabled={busy || !selectedCompany || !form.getValues('part_number') || !form.getValues('batch_id')}
+            disabled={busy || !selectedCompany}
             type="submit"
           >
             {busy ? (
@@ -708,7 +407,6 @@ export default function CreateToolForm({
               <span>{isEditing ? 'Confirmar ingreso' : 'Crear herramienta'}</span>
             )}
           </Button>
-
           {busy && (
             <div className="inline-flex items-center text-sm text-muted-foreground gap-2">
               <Loader2 className="h-4 w-4 animate-spin" />

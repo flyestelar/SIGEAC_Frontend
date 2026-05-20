@@ -1,4 +1,4 @@
-import { EditingArticle } from '@/components/forms/mantenimiento/almacen/RegisterArticleForm';
+import { EditingArticle } from '@/app/[company]/almacen/ingreso/registrar_ingreso/_lib/types';
 import axios from '@/lib/axios';
 import { useQuery } from '@tanstack/react-query';
 
