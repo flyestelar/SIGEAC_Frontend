@@ -251,7 +251,6 @@ export default function CreateConsumableForm({ initialData, isEditing }: Article
               name="fabrication_date"
               label="Fecha de Fabricación"
               description="Fecha de creación del artículo."
-              yearJump="past"
               initialDate={
                 initialData?.consumable?.fabrication_date
                   ? new Date(initialData.consumable.fabrication_date)
@@ -263,7 +262,6 @@ export default function CreateConsumableForm({ initialData, isEditing }: Article
               name="caducate_date"
               label="Fecha de Caducidad"
               description="Fecha límite del artículo."
-              yearJump="future"
               initialDate={
                 initialData?.consumable?.caducate_date ? new Date(initialData.consumable.caducate_date) : undefined
               }

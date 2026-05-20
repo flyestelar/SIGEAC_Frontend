@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { FieldValues, Path, UseFormReturn } from 'react-hook-form';
 
-import { addYears, format, subYears } from 'date-fns';
+import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { CalendarIcon } from 'lucide-react';
 
@@ -11,7 +11,6 @@ import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 import { FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
 
 interface DatePickerFieldProps<T extends FieldValues> {
@@ -20,8 +19,6 @@ interface DatePickerFieldProps<T extends FieldValues> {
   label: string;
   description?: string;
   initialDate?: Date;
-  /** 'past' = subYears, 'future' = addYears, undefined = no year jump */
-  yearJump?: 'past' | 'future';
 }
 
 export function DatePickerField<T extends FieldValues>({
@@ -30,7 +27,6 @@ export function DatePickerField<T extends FieldValues>({
   label,
   description,
   initialDate,
-  yearJump,
 }: DatePickerFieldProps<T>) {
   const [date, setDate] = useState<Date | undefined>(initialDate);
   const initialDateTime = initialDate?.getTime();
@@ -38,12 +34,6 @@ export function DatePickerField<T extends FieldValues>({
   useEffect(() => {
     setDate(initialDateTime ? new Date(initialDateTime) : undefined);
   }, [initialDateTime]);
-
-  const handleYearJump = (value: string) => {
-    const years = parseInt(value);
-    const newDate = yearJump === 'future' ? addYears(new Date(), years) : subYears(new Date(), years);
-    setDate(newDate);
-  };
 
   const handleSelect = (d: Date | undefined) => {
     setDate(d);
@@ -73,20 +63,17 @@ export function DatePickerField<T extends FieldValues>({
               </FormControl>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0" align="start">
-              {yearJump && (
-                <Select onValueChange={handleYearJump}>
-                  <SelectTrigger className="p-3">
-                    <SelectValue placeholder="Seleccione una opcion..." />
-                  </SelectTrigger>
-                  <SelectContent position="popper">
-                    <SelectItem value="0">Actual</SelectItem>
-                    <SelectItem value="5">{yearJump === 'future' ? '5 años' : 'Ir 5 años atrás'}</SelectItem>
-                    <SelectItem value="10">{yearJump === 'future' ? '10 años' : 'Ir 10 años atrás'}</SelectItem>
-                    <SelectItem value="15">{yearJump === 'future' ? '15 años' : 'Ir 15 años atrás'}</SelectItem>
-                  </SelectContent>
-                </Select>
-              )}
-              <Calendar locale={es} mode="single" selected={date} onSelect={handleSelect} initialFocus month={date} />
+              <Calendar
+                locale={es}
+                mode="single"
+                captionLayout="dropdown-buttons"
+                selected={date}
+                onSelect={handleSelect}
+                month={date}
+                fromYear={2000}
+                toYear={2040}
+                initialFocus
+              />
             </PopoverContent>
           </Popover>
           {description && <FormDescription>{description}</FormDescription>}

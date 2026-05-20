@@ -251,7 +251,6 @@ export default function CreateComponentForm({ initialData, isEditing }: ArticleF
               name="fabrication_date"
               label="Fecha de Fabricación"
               description="Fecha de creación del artículo."
-              yearJump="past"
               initialDate={
                 initialData?.component?.fabrication_date ? new Date(initialData.component.fabrication_date) : undefined
               }
@@ -261,7 +260,6 @@ export default function CreateComponentForm({ initialData, isEditing }: ArticleF
               name="caducate_date"
               label="Fecha de caducidad"
               description="Fecha límite del artículo."
-              yearJump="future"
               initialDate={
                 initialData?.component?.caducate_date ? new Date(initialData.component.caducate_date) : undefined
               }
@@ -271,7 +269,6 @@ export default function CreateComponentForm({ initialData, isEditing }: ArticleF
               name="calendary_date"
               label="Fecha de Calendario"
               description="Fecha límite del componente."
-              yearJump="past"
               initialDate={
                 initialData?.component?.calendary_date ? new Date(initialData.component.calendary_date) : undefined
               }
