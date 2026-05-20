@@ -681,7 +681,7 @@ export const policyCardsData = [
 
 export const policyImages = [
   {
-    src: `${process.env.NEXT_PUBLIC_STORAGE_BASE_URL}sms/images/promotions/hangar_politicas.png`,
+    src: `${process.env.NEXT_PUBLIC_STORAGE_BASE_URL}sms/images/promotions/hangar_politicas.jpg`,
     alt: "Política 1",
   }
 ];
