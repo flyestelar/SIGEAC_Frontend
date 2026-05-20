@@ -9,11 +9,8 @@ import { format } from 'date-fns';
 import { Check, ChevronsUpDown, Loader2 } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 
-import {
-  useConfirmIncomingArticle,
-  useCreateArticle,
-  useUpdateArticle,
-} from '@/actions/mantenimiento/almacen/inventario/articulos/actions';
+import type { ArticleData } from '@/actions/mantenimiento/almacen/inventario/articulos/actions';
+import { useCreateArticle, useUpdateArticle } from '@/actions/mantenimiento/almacen/inventario/articulos/actions';
 import { MultiInputField } from '@/components/misc/MultiInputField';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -43,13 +40,16 @@ export default function CreateConsumableForm({ initialData, isEditing }: Article
   const { selectedCompany } = useCompanyStore();
 
   const { data: batches, isPending: isBatchesLoading, isError: isBatchesError } = useGetBatchesByCategory('consumible');
-  const { data: manufacturers, isLoading: isManufacturerLoading, isError: isManufacturerError } = useGetManufacturers(selectedCompany?.slug);
+  const {
+    data: manufacturers,
+    isLoading: isManufacturerLoading,
+    isError: isManufacturerError,
+  } = useGetManufacturers(selectedCompany?.slug);
   const { data: conditions, isLoading: isConditionsLoading, error: isConditionsError } = useGetConditions();
   const { data: secondaryUnits, isLoading: secondaryLoading } = useGetSecondaryUnits();
 
   const { createArticle } = useCreateArticle();
   const { updateArticle } = useUpdateArticle();
-  const { confirmIncoming } = useConfirmIncomingArticle();
 
   const [secondaryOpen, setSecondaryOpen] = useState(false);
   const [secondarySelected, setSecondarySelected] = useState<Convertion | null>(null);
@@ -71,22 +71,18 @@ export default function CreateConsumableForm({ initialData, isEditing }: Article
       lot_number: initialData?.consumable?.lot_number || '',
       caducate_date: initialData?.consumable?.caducate_date ?? undefined,
       fabrication_date: initialData?.consumable?.fabrication_date ?? undefined,
-      quantity: (initialData as any)?.quantity ?? 0,
-      is_managed: (initialData as any)?.is_managed ?? true,
+      quantity: initialData?.consumable?.quantity ? parseFloat(initialData.consumable.quantity) : 0,
+      is_managed: initialData?.consumable?.is_managed ?? true,
     },
   });
 
   useEffect(() => {
     if (!initialData) return;
 
-    const fabDate = initialData.consumable?.fabrication_date;
-    const cadDate = initialData.consumable?.caducate_date;
-    const recDate = initialData.reception_date;
-
     form.reset({
       part_number: initialData.part_number ?? '',
       inspector: initialData.inspector ?? '',
-      reception_date: recDate ?? '',
+      reception_date: initialData.reception_date ?? '',
       alternative_part_number:
         typeof initialData?.alternative_part_number === 'string' ? [] : (initialData?.alternative_part_number ?? []),
       batch_id: initialData.batches?.id?.toString() ?? '',
@@ -95,10 +91,10 @@ export default function CreateConsumableForm({ initialData, isEditing }: Article
       description: initialData.description ?? '',
       zone: initialData.zone ?? '',
       lot_number: initialData.consumable?.lot_number ?? '',
-      caducate_date: cadDate ?? undefined,
-      fabrication_date: fabDate ?? undefined,
-      quantity: (initialData as any)?.quantity ?? 0,
-      is_managed: (initialData as any)?.is_managed ?? true,
+      caducate_date: initialData.consumable?.caducate_date ?? undefined,
+      fabrication_date: initialData.consumable?.fabrication_date ?? undefined,
+      quantity: initialData.consumable?.quantity ? parseFloat(initialData.consumable.quantity) : 0,
+      is_managed: initialData.consumable?.is_managed ?? true,
     });
   }, [initialData, form]);
 
@@ -111,12 +107,16 @@ export default function CreateConsumableForm({ initialData, isEditing }: Article
   }, [secondarySelected, secondaryQuantity, form]);
 
   const busy =
-    isBatchesLoading || isManufacturerLoading || isConditionsLoading || createArticle.isPending || confirmIncoming.isPending;
+    isBatchesLoading ||
+    isManufacturerLoading ||
+    isConditionsLoading ||
+    createArticle.isPending ||
+    updateArticle.isPending;
 
   const onSubmit = async (values: ConsumableFormValues) => {
     if (!selectedCompany?.slug) return;
 
-    const payload = {
+    const payload: ArticleData = {
       ...values,
       part_number: normalizeUpper(values.part_number),
       article_type: 'consumable',
@@ -125,8 +125,11 @@ export default function CreateConsumableForm({ initialData, isEditing }: Article
     };
 
     if (isEditing && initialData) {
+      const updatePayload = { ...payload };
+      delete updatePayload.article_type;
+
       await updateArticle.mutateAsync({
-        data: payload,
+        data: updatePayload,
         id: initialData.id,
         company: selectedCompany.slug,
       });
@@ -231,7 +234,11 @@ export default function CreateConsumableForm({ initialData, isEditing }: Article
               label="Fecha de Fabricación"
               description="Fecha de creación del artículo."
               yearJump="past"
-              initialDate={initialData?.consumable?.fabrication_date ? new Date(initialData.consumable.fabrication_date) : undefined}
+              initialDate={
+                initialData?.consumable?.fabrication_date
+                  ? new Date(initialData.consumable.fabrication_date)
+                  : undefined
+              }
             />
             <DatePickerField
               form={form}
@@ -239,7 +246,9 @@ export default function CreateConsumableForm({ initialData, isEditing }: Article
               label="Fecha de Caducidad"
               description="Fecha límite del artículo."
               yearJump="future"
-              initialDate={initialData?.consumable?.caducate_date ? new Date(initialData.consumable.caducate_date) : undefined}
+              initialDate={
+                initialData?.consumable?.caducate_date ? new Date(initialData.consumable.caducate_date) : undefined
+              }
             />
             <ManufacturerSelect
               form={form}

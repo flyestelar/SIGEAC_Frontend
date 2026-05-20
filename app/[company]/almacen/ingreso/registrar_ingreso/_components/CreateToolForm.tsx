@@ -10,10 +10,8 @@ import { es } from 'date-fns/locale';
 import { CalendarIcon, Loader2, Wrench } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 
-import {
-  useConfirmIncomingArticle,
-  useCreateArticle,
-} from '@/actions/mantenimiento/almacen/inventario/articulos/actions';
+import type { ArticleData } from '@/actions/mantenimiento/almacen/inventario/articulos/actions';
+import { useCreateArticle, useUpdateArticle } from '@/actions/mantenimiento/almacen/inventario/articulos/actions';
 import { MultiInputField } from '@/components/misc/MultiInputField';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
@@ -41,12 +39,20 @@ export default function CreateToolForm({ initialData, isEditing }: ArticleFormPr
   const router = useRouter();
   const { selectedCompany } = useCompanyStore();
 
-  const { data: batches, isPending: isBatchesLoading, isError: isBatchesError } = useGetBatchesByCategory('herramienta');
-  const { data: manufacturers, isLoading: isManufacturerLoading, isError: isManufacturerError } = useGetManufacturers(selectedCompany?.slug);
+  const {
+    data: batches,
+    isPending: isBatchesLoading,
+    isError: isBatchesError,
+  } = useGetBatchesByCategory('herramienta');
+  const {
+    data: manufacturers,
+    isLoading: isManufacturerLoading,
+    isError: isManufacturerError,
+  } = useGetManufacturers(selectedCompany?.slug);
   const { data: conditions, isLoading: isConditionsLoading, error: isConditionsError } = useGetConditions();
 
   const { createArticle } = useCreateArticle();
-  const { confirmIncoming } = useConfirmIncomingArticle();
+  const { updateArticle } = useUpdateArticle();
 
   const form = useForm<ToolFormValues>({
     resolver: zodResolver(toolFormSchema),
@@ -62,9 +68,9 @@ export default function CreateToolForm({ initialData, isEditing }: ArticleFormPr
       manufacturer_id: initialData?.manufacturer?.id?.toString() || '',
       condition_id: initialData?.condition?.id?.toString() || '',
       batch_id: initialData?.batches?.id?.toString() || '',
-      needs_calibration: initialData?.tool?.needs_calibration ?? false,
+      needs_calibration: !!initialData?.tool?.needs_calibration,
       calibration_date: initialData?.tool?.calibration_date ? new Date(initialData.tool.calibration_date) : undefined,
-      next_calibration: undefined,
+      next_calibration: initialData?.tool?.next_calibration ? Number(initialData.tool.next_calibration) : undefined,
     },
   });
 
@@ -82,21 +88,25 @@ export default function CreateToolForm({ initialData, isEditing }: ArticleFormPr
       manufacturer_id: initialData.manufacturer?.id?.toString() || '',
       condition_id: initialData.condition?.id?.toString() || '',
       batch_id: initialData.batches?.id?.toString() || '',
-      needs_calibration: initialData.tool?.needs_calibration ?? false,
+      needs_calibration: !!initialData.tool?.needs_calibration,
       calibration_date: initialData.tool?.calibration_date ? new Date(initialData.tool.calibration_date) : undefined,
-      next_calibration: undefined,
+      next_calibration: initialData.tool?.next_calibration ? Number(initialData.tool.next_calibration) : undefined,
     });
   }, [initialData, form]);
 
   const busy =
-    isBatchesLoading || isManufacturerLoading || isConditionsLoading || createArticle.isPending || confirmIncoming.isPending;
+    isBatchesLoading ||
+    isManufacturerLoading ||
+    isConditionsLoading ||
+    createArticle.isPending ||
+    updateArticle.isPending;
 
   const isCalibrated = form.watch('needs_calibration');
 
   const onSubmit = async (values: ToolFormValues) => {
     if (!selectedCompany?.slug) return;
 
-    const payload: any = {
+    const payload: ArticleData = {
       ...values,
       article_type: 'tool',
       part_number: normalizeUpper(values.part_number),
@@ -104,12 +114,16 @@ export default function CreateToolForm({ initialData, isEditing }: ArticleFormPr
       calibration_date: values.calibration_date ? format(values.calibration_date, 'yyyy-MM-dd') : undefined,
     };
 
-    if (isEditing) {
-      await confirmIncoming.mutateAsync({
-        values: { ...payload, id: (initialData as any)?.id, status: 'Stored' },
+    if (isEditing && initialData) {
+      const updatePayload = { ...payload };
+      delete updatePayload.article_type;
+
+      await updateArticle.mutateAsync({
+        data: updatePayload,
         company: selectedCompany.slug,
+        id: initialData.id,
       });
-      router.push(`/${selectedCompany.slug}/almacen/ingreso/en_recepcion`);
+      router.push(`/${selectedCompany.slug}/almacen/inventario`);
     } else {
       await createArticle.mutateAsync({
         company: selectedCompany.slug,

@@ -9,11 +9,8 @@ import { format } from 'date-fns';
 import { Loader2 } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 
-import {
-  useConfirmIncomingArticle,
-  useCreateArticle,
-  useUpdateArticle,
-} from '@/actions/mantenimiento/almacen/inventario/articulos/actions';
+import type { ArticleData } from '@/actions/mantenimiento/almacen/inventario/articulos/actions';
+import { useCreateArticle, useUpdateArticle } from '@/actions/mantenimiento/almacen/inventario/articulos/actions';
 import { MultiInputField } from '@/components/misc/MultiInputField';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -37,12 +34,15 @@ export default function CreateComponentForm({ initialData, isEditing }: ArticleF
   const { selectedCompany } = useCompanyStore();
 
   const { data: batches, isPending: isBatchesLoading, isError: isBatchesError } = useGetBatchesByCategory('componente');
-  const { data: manufacturers, isLoading: isManufacturerLoading, isError: isManufacturerError } = useGetManufacturers(selectedCompany?.slug);
+  const {
+    data: manufacturers,
+    isLoading: isManufacturerLoading,
+    isError: isManufacturerError,
+  } = useGetManufacturers(selectedCompany?.slug);
   const { data: conditions, isLoading: isConditionsLoading, error: isConditionsError } = useGetConditions();
 
   const { createArticle } = useCreateArticle();
   const { updateArticle } = useUpdateArticle();
-  const { confirmIncoming } = useConfirmIncomingArticle();
 
   const form = useForm<ComponentFormValues>({
     resolver: zodResolver(componentFormSchema),
@@ -69,15 +69,11 @@ export default function CreateComponentForm({ initialData, isEditing }: ArticleF
   useEffect(() => {
     if (!initialData) return;
 
-    const fabDate = initialData.component?.fabrication_date;
-    const cadDate = initialData.component?.caducate_date;
-    const recDate = initialData.reception_date;
-
     form.reset({
       part_number: initialData.part_number ?? '',
       serial: initialData.serial ?? '',
       inspector: initialData.inspector ?? '',
-      reception_date: recDate ?? '',
+      reception_date: initialData.reception_date ?? '',
       alternative_part_number: initialData.alternative_part_number ?? [],
       batch_id: initialData.batches?.id?.toString() ?? '',
       manufacturer_id: initialData.manufacturer?.id?.toString() ?? '',
@@ -86,19 +82,23 @@ export default function CreateComponentForm({ initialData, isEditing }: ArticleF
       zone: initialData.zone ?? '',
       hour_date: initialData.component?.hour_date ? parseInt(initialData.component.hour_date) : undefined,
       cycle_date: initialData.component?.cycle_date ? parseInt(initialData.component.cycle_date) : undefined,
-      caducate_date: cadDate ?? undefined,
-      fabrication_date: fabDate ?? undefined,
+      caducate_date: initialData.component?.caducate_date ?? undefined,
+      fabrication_date: initialData.component?.fabrication_date ?? undefined,
       calendary_date: initialData.component?.calendary_date ?? undefined,
     });
   }, [initialData, form]);
 
   const busy =
-    isBatchesLoading || isManufacturerLoading || isConditionsLoading || createArticle.isPending || confirmIncoming.isPending;
+    isBatchesLoading ||
+    isManufacturerLoading ||
+    isConditionsLoading ||
+    createArticle.isPending ||
+    updateArticle.isPending;
 
   const onSubmit = async (values: ComponentFormValues) => {
     if (!selectedCompany?.slug) return;
 
-    const payload = {
+    const payload: ArticleData = {
       ...values,
       article_type: 'component',
       part_number: normalizeUpper(values.part_number),
@@ -107,8 +107,11 @@ export default function CreateComponentForm({ initialData, isEditing }: ArticleF
     };
 
     if (isEditing && initialData) {
+      const updatePayload = { ...payload };
+      delete updatePayload.article_type;
+
       await updateArticle.mutateAsync({
-        data: { ...payload, batch_id: payload.batch_id, article_type: 'componente' },
+        data: updatePayload,
         company: selectedCompany.slug,
         id: initialData.id,
       });
@@ -249,7 +252,9 @@ export default function CreateComponentForm({ initialData, isEditing }: ArticleF
               label="Fecha de Fabricación"
               description="Fecha de creación del artículo."
               yearJump="past"
-              initialDate={initialData?.component?.fabrication_date ? new Date(initialData.component.fabrication_date) : undefined}
+              initialDate={
+                initialData?.component?.fabrication_date ? new Date(initialData.component.fabrication_date) : undefined
+              }
             />
             <DatePickerField
               form={form}
@@ -257,7 +262,9 @@ export default function CreateComponentForm({ initialData, isEditing }: ArticleF
               label="Fecha de caducidad"
               description="Fecha límite del artículo."
               yearJump="future"
-              initialDate={initialData?.component?.caducate_date ? new Date(initialData.component.caducate_date) : undefined}
+              initialDate={
+                initialData?.component?.caducate_date ? new Date(initialData.component.caducate_date) : undefined
+              }
             />
             <DatePickerField
               form={form}
@@ -265,7 +272,9 @@ export default function CreateComponentForm({ initialData, isEditing }: ArticleF
               label="Fecha de Calendario"
               description="Fecha límite del componente."
               yearJump="past"
-              initialDate={initialData?.component?.calendary_date ? new Date(initialData.component.calendary_date) : undefined}
+              initialDate={
+                initialData?.component?.calendary_date ? new Date(initialData.component.calendary_date) : undefined
+              }
             />
             <FormField
               control={form.control}

@@ -7,7 +7,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Biohazard, ClipboardCheck, Loader2, MoreHorizontal } from 'lucide-react';
+import { Biohazard, Loader2, MoreHorizontal } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '../../../ui/button';
 import {
@@ -19,14 +19,8 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '../../../ui/dialog';
-import { useRouter } from 'next/navigation';
-import { useCompanyStore } from '@/stores/CompanyStore';
-
 const InReceptionDropdownActions = ({ id }: { id: number }) => {
   const [open, setOpen] = useState<boolean>(false);
-
-  const router = useRouter();
-  const { selectedCompany } = useCompanyStore();
 
   const { updateArticleStatus } = useUpdateArticleStatus();
 
@@ -47,12 +41,6 @@ const InReceptionDropdownActions = ({ id }: { id: number }) => {
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="center" className="flex gap-2 justify-center">
-          <DropdownMenuItem
-            onClick={() => router.push(`/${selectedCompany?.slug}/almacen/ingreso/confirmar_ingreso/${id}`)}
-            className="cursor-pointer"
-          >
-            <ClipboardCheck className="size-5" />
-          </DropdownMenuItem>
           <DialogTrigger asChild>
             <DropdownMenuItem className="cursor-pointer">
               <Biohazard className="size-5" />
