@@ -624,10 +624,9 @@ export function CreateVoluntaryReportForm({
                   <FormLabel>Referencia de la Fuente</FormLabel>
                   <FormControl>
                     <Input
-                      type="number"
                       placeholder="Número de referencia"
                       {...field}
-                      onChange={(e) => field.onChange(e.target.value)}
+                      onChange={(e) => field.onChange(e.target.value.toUpperCase())}
                     />
                   </FormControl>
                   <FormMessage className="text-xs" />
