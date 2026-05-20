@@ -35,6 +35,8 @@ import { normalizeUpper } from '../_lib/utils';
 import { BatchCombobox, CertificatesSection, ConditionSelect, DatePickerField, ManufacturerSelect } from './fields';
 import { consumableFormSchema, ConsumableFormValues } from './schemas/consumable.schema';
 
+type SecondaryUnitOption = Pick<Convertion, 'id' | 'secondary_unit' | 'convertion_rate' | 'quantity_unit'>;
+
 export default function CreateConsumableForm({ initialData, isEditing }: ArticleFormProps) {
   const router = useRouter();
   const { selectedCompany } = useCompanyStore();
@@ -52,8 +54,10 @@ export default function CreateConsumableForm({ initialData, isEditing }: Article
   const { updateArticle } = useUpdateArticle();
 
   const [secondaryOpen, setSecondaryOpen] = useState(false);
-  const [secondarySelected, setSecondarySelected] = useState<Convertion | null>(null);
+  const [secondarySelected, setSecondarySelected] = useState<SecondaryUnitOption | null>(null);
   const [secondaryQuantity, setSecondaryQuantity] = useState<number | undefined>();
+
+  const initialConvertion = initialData?.consumable?.convertions?.[0];
 
   const form = useForm<ConsumableFormValues>({
     resolver: zodResolver(consumableFormSchema),
@@ -73,11 +77,24 @@ export default function CreateConsumableForm({ initialData, isEditing }: Article
       fabrication_date: initialData?.consumable?.fabrication_date ?? undefined,
       quantity: initialData?.consumable?.quantity ? parseFloat(initialData.consumable.quantity) : 0,
       is_managed: initialData?.consumable?.is_managed ?? true,
+      convertion_id: initialConvertion?.id,
     },
   });
 
   useEffect(() => {
     if (!initialData) return;
+
+    const selectedConvertion =
+      secondaryUnits?.find((unit) => unit.id === initialData.consumable?.convertions?.[0]?.id) ??
+      initialData.consumable?.convertions?.[0] ??
+      null;
+    const baseQuantity = initialData.consumable?.quantity ? parseFloat(initialData.consumable.quantity) : 0;
+    const conversionFactor = selectedConvertion
+      ? (selectedConvertion.convertion_rate ?? 1) * (selectedConvertion.quantity_unit ?? 1)
+      : 1;
+
+    setSecondarySelected(selectedConvertion);
+    setSecondaryQuantity(conversionFactor > 0 ? baseQuantity / conversionFactor : baseQuantity);
 
     form.reset({
       part_number: initialData.part_number ?? '',
@@ -95,8 +112,9 @@ export default function CreateConsumableForm({ initialData, isEditing }: Article
       fabrication_date: initialData.consumable?.fabrication_date ?? undefined,
       quantity: initialData.consumable?.quantity ? parseFloat(initialData.consumable.quantity) : 0,
       is_managed: initialData.consumable?.is_managed ?? true,
+      convertion_id: selectedConvertion?.id,
     });
-  }, [initialData, form]);
+  }, [initialData, secondaryUnits, form]);
 
   // Secondary unit → quantity conversion
   useEffect(() => {
@@ -353,6 +371,7 @@ export default function CreateConsumableForm({ initialData, isEditing }: Article
               <Input
                 type="number"
                 inputMode="decimal"
+                value={secondaryQuantity ?? ''}
                 onChange={(e) => {
                   const n = parseFloat(e.target.value);
                   setSecondaryQuantity(Number.isNaN(n) ? undefined : n);
