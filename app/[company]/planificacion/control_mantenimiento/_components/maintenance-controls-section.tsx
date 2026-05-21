@@ -1,7 +1,7 @@
 import { maintenanceControlsIndexOptions } from '@api/queries';
 import { AircraftResource } from '@api/types';
 import { useQuery } from '@tanstack/react-query';
-import { useMemo } from 'react';
+import { memo, useMemo } from 'react';
 import { ControlGrid } from './control-grid';
 import { MaintenanceControlDetail } from './maintenance-control-detail';
 
@@ -12,7 +12,7 @@ interface MaintenanceControlsSectionProps {
   selectedAircraftId: number | null;
 }
 
-export function MaintenanceControlsSection({
+function MaintenanceControlsSection({
   selectedControlId,
   onSelectControl,
   selectedAircraft,
@@ -65,3 +65,5 @@ export function MaintenanceControlsSection({
     </div>
   );
 }
+
+export default memo(MaintenanceControlsSection);

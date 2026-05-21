@@ -4,28 +4,46 @@ import { ContentLayout } from '@/components/layout/ContentLayout';
 import LoadingPage from '@/components/misc/LoadingPage';
 import { Button } from '@/components/ui/button';
 import { useGetMaintenanceAircrafts } from '@/hooks/planificacion/useGetMaintenanceAircrafts';
-import { useCompanyStore } from '@/stores/CompanyStore';
-import { Plus, Settings2, Siren } from 'lucide-react';
+import { useCompanySlug } from '@/stores/CompanyStore';
+import { Plus, Settings2 } from 'lucide-react';
 import Link from 'next/link';
-import { useMemo, useState } from 'react';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { useCallback, useDeferredValue, useMemo, useState } from 'react';
 import { AircraftSelector } from './_components/aircraft-selector';
-import { MaintenanceControlsSection } from './_components/maintenance-controls-section';
+import MaintenanceControlsSection from './_components/maintenance-controls-section';
 
 export default function MaintenanceDashboard() {
-  const { selectedCompany } = useCompanyStore();
-  const [selectedAircraftId, setSelectedAircraftId] = useState<number | null>(null);
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const selectedCompanySlug = useCompanySlug();
+  const { data: aircraft = [], isLoading } = useGetMaintenanceAircrafts(selectedCompanySlug);
+  const selectedAircraftId = useMemo(() => {
+    const aircraftId = searchParams.get('aircraft_id');
+    if (!aircraftId) return null;
+
+    const parsedAircraftId = Number(aircraftId);
+    return Number.isNaN(parsedAircraftId) ? null : parsedAircraftId;
+  }, [searchParams]);
+
   const [selectedControlId, setSelectedControlId] = useState<number | null>(null);
 
-  const { data: aircraft = [], isLoading } = useGetMaintenanceAircrafts(selectedCompany?.slug);
+  const handleSelectAircraft = useCallback(
+    (id: number) => {
+      const params = new URLSearchParams(searchParams);
+      params.set('aircraft_id', id.toString());
+      router.push(`${pathname}?${params.toString()}`, { scroll: false });
+      setSelectedControlId(null);
+    },
+    [pathname, router, searchParams],
+  );
 
-  const selectedAircraft = useMemo(() => {
-    return aircraft.find((ac) => ac.id === selectedAircraftId) ?? null;
-  }, [aircraft, selectedAircraftId]);
+  const deferredSelectedAircraftId = useDeferredValue(selectedAircraftId);
 
-  const handleSelectAircraft = (id: number) => {
-    setSelectedAircraftId(id);
-    setSelectedControlId(null);
-  };
+  const deferredSelectedAircraft = useMemo(
+    () => aircraft.find((ac) => ac.id === deferredSelectedAircraftId) ?? null,
+    [aircraft, deferredSelectedAircraftId],
+  );
 
   if (isLoading) return <LoadingPage />;
 
@@ -37,7 +55,7 @@ export default function MaintenanceDashboard() {
 
           <div className="flex items-center gap-2">
             <Button asChild className="gap-2">
-              <Link href={`/${selectedCompany?.slug}/planificacion/control_mantenimiento/nuevo`}>
+              <Link href={`/${selectedCompanySlug}/planificacion/control_mantenimiento/nuevo`}>
                 <Plus className="h-4 w-4" />
                 Nuevo Control
               </Link>
@@ -55,8 +73,8 @@ export default function MaintenanceDashboard() {
           <MaintenanceControlsSection
             selectedControlId={selectedControlId}
             onSelectControl={setSelectedControlId}
-            selectedAircraft={selectedAircraft}
-            selectedAircraftId={selectedAircraftId}
+            selectedAircraft={deferredSelectedAircraft}
+            selectedAircraftId={deferredSelectedAircraftId}
           />
         </div>
       </main>

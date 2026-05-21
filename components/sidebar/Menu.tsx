@@ -13,10 +13,6 @@ import { useCompanyStore } from '@/stores/CompanyStore';
 import { SidebarGroup, SidebarGroupLabel, SidebarMenu, SidebarMenuItem, useSidebar } from '../ui/sidebar';
 import { LeafItem } from './LeafItem';
 
-interface MenuProps {
-  isOpen?: boolean;
-}
-
 function GroupHeader({ label, collapsed }: { label?: string; collapsed: boolean }) {
   if (!label) return <div className="h-3" />;
 
@@ -62,43 +58,49 @@ export function Menu() {
   return (
     <TooltipProvider disableHoverableContent>
       <ScrollArea className="[&>div>div[style]]:!block">
-        {menuList.map(({ groupLabel, menus }) => {
-          const groupKey = groupLabel ?? `group-${menus[0]?.href ?? 'unknown'}`;
+        {useMemo(
+          () =>
+            menuList.map(({ groupLabel, menus }) => {
+              const groupKey = groupLabel ?? `group-${menus[0]?.href ?? 'unknown'}`;
 
-          return (
-            <SidebarGroup className="w-full" key={groupKey}>
-              <GroupHeader label={groupLabel} collapsed={collapsed && isOpen !== undefined && !isMobile} />
-              <SidebarMenu>
-                {menus.map(({ href, label, icon: Icon, submenus }) => {
-                  const hasSubmenus = submenus.length > 0;
-                  const isActive = !!href && (hasSubmenus ? pathname.startsWith(href) : pathname === href);
-                  return submenus.length === 0 ? (
-                    <SidebarMenuItem key={`${label}-${href}`}>
-                      <LeafItem
-                        key={`${label}-${href}`}
-                        href={href}
-                        label={label}
-                        Icon={Icon}
-                        active={isActive}
-                        collapsed={collapsed && isOpen !== undefined && !isMobile}
-                      />
-                    </SidebarMenuItem>
-                  ) : (
-                    <CollapseMenuButton
-                      key={`${label}-${href}`}
-                      icon={Icon}
-                      label={label}
-                      active={isActive}
-                      submenus={submenus}
-                      isOpen={isOpen}
-                      isMobile={isMobile}
-                    />
-                  );
-                })}
-              </SidebarMenu>
-            </SidebarGroup>
-          );
-        })}
+              return (
+                <SidebarGroup className="w-full" key={groupKey}>
+                  <GroupHeader label={groupLabel} collapsed={collapsed && isOpen !== undefined && !isMobile} />
+                  <SidebarMenu>
+                    {menus.map(({ href, label, icon: Icon, submenus }) => {
+                      const hasSubmenus = submenus.length > 0;
+                      const isActive = !!href && (hasSubmenus ? pathname.startsWith(href) : pathname === href);
+                      const isSubmenuActive = submenus.some((submenu) => pathname === submenu.href);
+                      return submenus.length === 0 ? (
+                        <SidebarMenuItem key={`${label}-${href}`}>
+                          <LeafItem
+                            key={`${label}-${href}`}
+                            href={href}
+                            label={label}
+                            Icon={Icon}
+                            active={isActive}
+                            collapsed={collapsed && isOpen !== undefined && !isMobile}
+                          />
+                        </SidebarMenuItem>
+                      ) : (
+                        <CollapseMenuButton
+                          key={`${label}-${href}`}
+                          icon={Icon}
+                          label={label}
+                          active={isActive}
+                          submenus={submenus.map((s) => ({ ...s, active: pathname === s.href }))}
+                          isOpen={isOpen}
+                          isSubmenuActive={isSubmenuActive}
+                          isMobile={isMobile}
+                        />
+                      );
+                    })}
+                  </SidebarMenu>
+                </SidebarGroup>
+              );
+            }),
+          [collapsed, isMobile, isOpen, menuList, pathname],
+        )}
       </ScrollArea>
     </TooltipProvider>
   );

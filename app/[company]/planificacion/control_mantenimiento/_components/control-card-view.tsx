@@ -12,7 +12,7 @@ interface ControlCardViewProps {
 
 export function ControlCardView({ controls, onSelectControl, averages }: ControlCardViewProps) {
   return (
-    <div className="grid gap-4 md:grid-cols-2 2xl:grid-cols-3">
+    <div className="grid gap-4 grid-cols-[repeat(auto-fit,minmax(340px,1fr))]">
       {controls.map((computed) => (
         <ControlCard
           key={computed.control.id}

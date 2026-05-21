@@ -1,18 +1,16 @@
 'use client';
 
-import {
-  parseMaintenanceInterval
-} from '@/actions/planificacion/control_mantenimiento/excelProcessor';
+import { parseMaintenanceInterval } from '@/actions/planificacion/control_mantenimiento/excelProcessor';
 import { MultiAircraftSelect } from '@/components/forms/MultiAircraftSelect';
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import MaintenanceControlTasksFormSection from './MaintenanceControlTasksFormSection';
-import { Separator } from '@/components/ui/separator';
 
 const taskSchema = z.object({
   description: z.string().trim().min(1, 'La descripción es obligatoria').default(''),
@@ -49,7 +47,7 @@ interface MaintenanceControlFormProps {
 const MaintenanceControlForm = ({ submitting, onCancel, onSubmit, initialValues }: MaintenanceControlFormProps) => {
   const form = useForm<MaintenanceControlFormValues>({
     resolver: zodResolver(maintenanceControlSchema),
-    defaultValues: {
+    values: {
       title: '',
       description: '',
       manual_reference: '',
@@ -62,7 +60,7 @@ const MaintenanceControlForm = ({ submitting, onCancel, onSubmit, initialValues 
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-y-4">
         <FormField
           control={form.control}
           name="title"

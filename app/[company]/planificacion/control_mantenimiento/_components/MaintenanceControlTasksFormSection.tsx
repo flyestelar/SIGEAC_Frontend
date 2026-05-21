@@ -262,7 +262,7 @@ function MaintenanceControlTasksFormSection() {
         onConfirm={confirmImport}
       />
 
-      <div className="overflow-hidden rounded-md border">
+      <div className="flex flex-col rounded-md border">
         <div className="p-2 border-b">
           <Input
             placeholder="Buscar tareas..."
@@ -271,7 +271,7 @@ function MaintenanceControlTasksFormSection() {
             className="w-full"
           />
         </div>
-        <div className="max-h-[460px] overflow-auto">
+        <div className="max-h-[460px] overflow-auto flex-1 contain-layout">
           <table className="w-full min-w-[720px] text-sm">
             <thead className="sticky top-0 z-10 bg-muted">
               <tr>

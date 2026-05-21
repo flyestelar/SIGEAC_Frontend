@@ -17,37 +17,41 @@ import {
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 import { DropdownMenuArrow } from '@radix-ui/react-dropdown-menu';
-import {
-  SidebarMenuItem,
-  SidebarMenuSub,
-  SidebarMenuSubButton,
-  SidebarMenuSubItem
-} from '../ui/sidebar';
+import { SidebarMenuItem, SidebarMenuSub, SidebarMenuSubButton, SidebarMenuSubItem } from '../ui/sidebar';
 import { LeafItem } from './LeafItem';
 
 type Submenu = {
   href: string;
   label: string;
+  active: boolean;
 };
 
 interface CollapseMenuButtonProps {
   icon: LucideIcon;
   label: string;
   active: boolean;
+  isSubmenuActive: boolean;
   submenus: Submenu[];
   isOpen: boolean | undefined;
   isMobile: boolean;
 }
 
-export function CollapseMenuButton({ icon: Icon, label, active, submenus, isOpen, isMobile }: CollapseMenuButtonProps) {
-  const pathname = usePathname();
-  const isSubmenuActive = submenus.some((submenu) => pathname === submenu.href);
-
+export function CollapseMenuButton({
+  icon: Icon,
+  label,
+  active,
+  isSubmenuActive,
+  submenus,
+  isOpen,
+  isMobile,
+}: CollapseMenuButtonProps) {
   const [isCollapsed, setIsCollapsed] = useState<boolean>(isSubmenuActive);
 
   const buttonClassName = cn(!isOpen && 'mx-auto');
 
-  const button = <LeafItem active={active || isSubmenuActive} collapsed={!isOpen && !isMobile} chevron label={label} Icon={Icon} />;
+  const button = (
+    <LeafItem active={active || isSubmenuActive} collapsed={!isOpen && !isMobile} chevron label={label} Icon={Icon} />
+  );
   return (
     <SidebarMenuItem>
       <DropdownMenu>
@@ -68,8 +72,7 @@ export function CollapseMenuButton({ icon: Icon, label, active, submenus, isOpen
             {isOpen ? (
               <CollapsibleContent>
                 <SidebarMenuSub>
-                  {submenus.map(({ href, label }, index) => {
-                    const subMenuActive = pathname === href;
+                  {submenus.map(({ href, label, active: subMenuActive }, index) => {
                     return (
                       <SidebarMenuSubItem key={index}>
                         <SidebarMenuSubButton isActive={subMenuActive} className={buttonClassName} asChild>
