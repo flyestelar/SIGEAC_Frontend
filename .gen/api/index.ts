@@ -1933,6 +1933,7 @@ export type {
   HardTimeTraceabilityIndexErrors,
   HardTimeTraceabilityIndexResponse,
   HardTimeTraceabilityIndexResponses,
+  HardTimeTraceabilityResource,
   InformationSourceResource,
   InformationSourcesDestroyData,
   InformationSourcesDestroyError,

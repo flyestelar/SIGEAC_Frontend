@@ -511,6 +511,7 @@ export type Company = {
   isOMAC: boolean | null;
   registered_by: string;
   updated_by: string | null;
+  logo: string | null;
 };
 
 /**
@@ -854,6 +855,24 @@ export type HardTimeIntervalResource = {
   compliances: Array<HardTimeComplianceResource> | Array<string>;
   created_at: string | null;
   updated_at: string | null;
+};
+
+/**
+ * HardTimeTraceabilityResource
+ */
+export type HardTimeTraceabilityResource = {
+  slot: AircraftComponentSlotResource;
+  component: AircraftPartResource | null;
+  installation: HardTimeInstallationResource;
+  compliances_count?: number;
+  compliances: Array<{
+    id: number;
+    compliance_date: string;
+    work_order: {
+      id: number;
+      order_number: string;
+    } | null;
+  }>;
 };
 
 /**
@@ -1896,7 +1915,7 @@ export type UpdateIntervalRequest = {
  * UpdateMaintenanceControlRequest
  */
 export type UpdateMaintenanceControlRequest = {
-  manual_reference?: string;
+  manual_reference?: string | null;
   title?: string;
   description?: string | null;
   interval_fc?: number | null;
@@ -12431,8 +12450,11 @@ export type HardTimeTraceabilityIndexErrors = {
 export type HardTimeTraceabilityIndexError = HardTimeTraceabilityIndexErrors[keyof HardTimeTraceabilityIndexErrors];
 
 export type HardTimeTraceabilityIndexResponses = {
+  /**
+   * Array of `HardTimeTraceabilityResource`
+   */
   200: {
-    data: string;
+    data: Array<HardTimeTraceabilityResource>;
   };
 };
 

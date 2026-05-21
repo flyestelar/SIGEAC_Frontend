@@ -106,14 +106,6 @@ export function AircraftAverageSummaryCard({ averages }: AircraftAverageSummaryC
       hint: 'Ciclos promedio por día',
     },
     {
-      icon: Plane,
-      label: 'Vuelos en rango',
-      value: formatInt(averages.flights_count),
-      unit: averages.flights_count === 1 ? 'vuelo' : 'vuelos',
-      accent: 'emerald',
-      hint: `${formatInt(averages.days_in_range)} día${averages.days_in_range === 1 ? '' : 's'} evaluados`,
-    },
-    {
       icon: Activity,
       label: 'Total FH período',
       value: formatNumber(averages.total_flight_hours, 1),
@@ -138,11 +130,22 @@ export function AircraftAverageSummaryCard({ averages }: AircraftAverageSummaryC
             Promedios de utilización
           </p>
         </div>
-        <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
-          <CalendarClock className="h-3.5 w-3.5" />
-          <span className="font-mono">
-            {formatDate(averages.from_date)} – {formatDate(averages.to_date)}
-          </span>
+        <div className="flex flex-col items-end gap-1 text-[11px] text-muted-foreground sm:flex-row sm:items-center sm:gap-3">
+          <div className="flex items-center gap-1.5">
+            <CalendarClock className="h-3.5 w-3.5" />
+            <span className="font-mono">
+              {formatDate(averages.from_date)} – {formatDate(averages.to_date)}
+            </span>
+          </div>
+          <div className="flex items-center gap-2 rounded-md border border-emerald-500/20 bg-emerald-500/10 px-2.5 py-1 text-emerald-700 dark:text-emerald-300">
+            <Plane className="h-3.5 w-3.5" />
+            <span className="font-medium text-foreground">
+              {formatInt(averages.flights_count)} {averages.flights_count === 1 ? 'vuelo' : 'vuelos'}
+            </span>
+            <span className="text-[10px] text-muted-foreground">
+              en rango · {formatInt(averages.days_in_range)} día{averages.days_in_range === 1 ? '' : 's'} evaluados
+            </span>
+          </div>
         </div>
       </div>
 

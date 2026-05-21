@@ -28,7 +28,10 @@ export function HardTimeTraceabilityClient() {
   const { selectedCompany } = useCompanyStore();
   const [serialNumber, setSerialNumber] = useState('');
   const deferredSerialNumber = useDeferredValue(serialNumber);
-  const { data = [], isFetching } = useGetHardTimeTraceability(deferredSerialNumber);
+  const { data, isFetching } = useGetHardTimeTraceability(deferredSerialNumber);
+
+  const items = data?.data ?? [];
+  const canSearch = serialNumber.trim().length >= 2;
 
   return (
     <ContentLayout title="Trazabilidad Hard Time">
@@ -65,7 +68,7 @@ export function HardTimeTraceabilityClient() {
             </div>
 
             <div className="flex items-center gap-3 text-sm text-muted-foreground">
-              <Badge variant="outline">{data.length} registro(s)</Badge>
+              <Badge variant="outline">{items.length} registro(s)</Badge>
               {isFetching && <span>Buscando…</span>}
             </div>
           </CardContent>
@@ -77,7 +80,8 @@ export function HardTimeTraceabilityClient() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Aeronave</TableHead>
-                  <TableHead>Ubicación</TableHead>
+                  <TableHead>Slot / parte</TableHead>
+                  <TableHead>Serial / PN</TableHead>
                   <TableHead>Montado</TableHead>
                   <TableHead>Desmontado</TableHead>
                   <TableHead>FH / FC montaje</TableHead>
@@ -85,14 +89,27 @@ export function HardTimeTraceabilityClient() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {data.length > 0 ? (
-                  data.map((record) => (
-                    <TableRow key={`${record.installation.id}-${record.component?.id ?? 'x'}`}>
-                      <TableCell>{record.aircraft?.acronym ?? '—'}</TableCell>
+                {items.length > 0 ? (
+                  items.map((record) => (
+                    <TableRow key={record.installation.id}>
                       <TableCell>
                         <div>
-                          <p className="font-medium">{record.component?.position ?? '—'}</p>
-                          <p className="text-xs text-muted-foreground">{record.component?.description ?? '—'}</p>
+                          <p className="font-medium">{record.slot.aircraft?.acronym ?? '—'}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {record.slot.aircraft?.model ?? record.slot.aircraft?.serial ?? '—'}
+                          </p>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div>
+                          <p className="font-medium">{record.slot.position ?? '—'}</p>
+                          <p className="text-xs text-muted-foreground">{record.slot.description ?? '—'}</p>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="space-y-0.5 font-mono text-xs">
+                          <p>{record.installation.serial_number ?? '—'}</p>
+                          <p className="text-muted-foreground">{record.installation.part_number ?? '—'}</p>
                         </div>
                       </TableCell>
                       <TableCell>{formatDate(record.installation.installed_at)}</TableCell>
@@ -106,17 +123,24 @@ export function HardTimeTraceabilityClient() {
                           <div>{record.compliances_count}</div>
                           {record.compliances?.slice(0, 2).map((compliance) => (
                             <div key={compliance.id} className="text-xs text-muted-foreground">
-                              {formatDate(compliance.compliance_date)} · {compliance.work_order?.order_number ?? 'Sin OT'}
+                              {formatDate(compliance.compliance_date)} ·{' '}
+                              {compliance.work_order?.order_number ?? 'Sin OT'}
                             </div>
                           ))}
                         </div>
                       </TableCell>
                     </TableRow>
                   ))
+                ) : isFetching && canSearch ? (
+                  <TableRow>
+                    <TableCell colSpan={7} className="text-center text-muted-foreground">
+                      Buscando trazabilidad...
+                    </TableCell>
+                  </TableRow>
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={6} className="text-center text-muted-foreground">
-                      {serialNumber.trim().length < 2
+                    <TableCell colSpan={7} className="text-center text-muted-foreground">
+                      {!canSearch
                         ? 'Escribe al menos 2 caracteres para buscar.'
                         : 'No se encontraron resultados.'}
                     </TableCell>
