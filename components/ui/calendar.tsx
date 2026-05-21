@@ -17,8 +17,8 @@ function Calendar({
   classNames,
   showOutsideDays = true,
   captionLayout = "dropdown",
-  fromYear = 2000,
-  toYear = 2040,
+  startMonth = new Date(2000, 0),
+  endMonth = new Date(2040, 11),
   buttonVariant = "outline",
   formatters,
   components,
@@ -39,8 +39,8 @@ function Calendar({
         className
       )}
       captionLayout={captionLayout}
-      fromYear={fromYear}
-      toYear={toYear}
+      startMonth={startMonth}
+      endMonth={endMonth}
       formatters={{
         formatMonthDropdown: (date) =>
           date.toLocaleString("default", { month: "short" }),

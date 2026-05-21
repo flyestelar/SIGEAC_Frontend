@@ -336,9 +336,6 @@ export default function CreateDangerIdentificationForm({
                         selected={field.value}
                         onSelect={field.onChange}
                         initialFocus
-                        fromYear={2000}
-                        toYear={new Date().getFullYear()}
-                        captionLayout="dropdown"
                       />
                     </PopoverContent>
                   </Popover>

@@ -66,12 +66,9 @@ export function DatePickerField<T extends FieldValues>({
               <Calendar
                 locale={es}
                 mode="single"
-                captionLayout="dropdown-buttons"
                 selected={date}
                 onSelect={handleSelect}
                 month={date}
-                fromYear={2000}
-                toYear={2040}
                 initialFocus
               />
             </PopoverContent>

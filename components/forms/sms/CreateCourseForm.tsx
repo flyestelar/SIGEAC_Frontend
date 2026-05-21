@@ -242,9 +242,8 @@ export function CreateCourseForm({
                         selected={field.value}
                         onSelect={field.onChange}
                         initialFocus
-                        fromYear={1988}
-                        toYear={new Date().getFullYear() + 5}
-                        captionLayout="dropdown"
+                        startMonth={new Date(1988, 0)}
+                        endMonth={new Date(new Date().getFullYear() + 5, 11)}
                       />
                     </PopoverContent>
                   </Popover>
@@ -283,9 +282,8 @@ export function CreateCourseForm({
                         selected={field.value}
                         onSelect={field.onChange}
                         initialFocus
-                        fromYear={1980}
-                        toYear={new Date().getFullYear() + 5}
-                        captionLayout="dropdown"
+                        startMonth={new Date(1980, 0)}
+                        endMonth={new Date(new Date().getFullYear() + 5, 11)}
                       />
                     </PopoverContent>
                   </Popover>

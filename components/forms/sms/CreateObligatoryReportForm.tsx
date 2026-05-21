@@ -189,9 +189,8 @@ function DateField({
             onSelect={onChange}
             disabled={(date) => date > new Date()}
             initialFocus
-            fromYear={1980}
-            toYear={new Date().getFullYear()}
-            captionLayout="dropdown"
+            startMonth={new Date(1980, 0)}
+            endMonth={new Date()}
             components={{
               Dropdown: ({ options, classNames, components: _c, ...props }) => (
                 <select {...props} className="bg-popover text-popover-foreground text-sm rounded px-1 py-0.5">

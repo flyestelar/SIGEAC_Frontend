@@ -256,9 +256,6 @@ export default function CreateMitigationMeasureForm({
                       selected={field.value || undefined} // Convert null to undefined
                       onSelect={field.onChange}
                       initialFocus
-                      fromYear={2000}
-                      toYear={new Date().getFullYear()}
-                      captionLayout="dropdown"
                     />
                   </PopoverContent>
                 </Popover>

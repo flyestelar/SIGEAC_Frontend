@@ -244,9 +244,8 @@ export function CreateSafetyBulletinForm({
                         onSelect={field.onChange}
                         disabled={false}
                         initialFocus
-                        fromYear={1988}
-                        toYear={new Date().getFullYear() + 5}
-                        captionLayout="dropdown-buttons"
+                        startMonth={new Date(1988, 0)}
+                        endMonth={new Date(new Date().getFullYear() + 5, 11)}
                         components={{
                           Dropdown: (props) => (
                             <select

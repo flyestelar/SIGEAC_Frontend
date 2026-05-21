@@ -472,9 +472,6 @@ export function CreateVoluntaryReportForm({
                           selected={field.value}
                           onSelect={field.onChange}
                           initialFocus
-                          fromYear={2000}
-                          toYear={new Date().getFullYear()}
-                          captionLayout="dropdown"
                           components={{
                             Dropdown: ({ options, classNames, components: _c, ...props }) => (
                               <select {...props} className="bg-popover text-popover-foreground">
@@ -522,9 +519,6 @@ export function CreateVoluntaryReportForm({
                           selected={field.value}
                           onSelect={field.onChange}
                           initialFocus
-                          fromYear={2000}
-                          toYear={new Date().getFullYear()}
-                          captionLayout="dropdown"
                           components={{
                             Dropdown: ({ options, classNames, components: _c, ...props }) => (
                               <select {...props} className="bg-popover text-popover-foreground">
