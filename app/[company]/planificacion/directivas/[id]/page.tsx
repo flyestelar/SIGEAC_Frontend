@@ -20,7 +20,6 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -39,12 +38,10 @@ import {
   AlertCircle,
   ArrowLeft,
   CheckCheck,
-  FileBadge2,
   Pencil,
   Plus,
   RotateCcw,
   Search,
-  ShieldCheck,
   Trash2,
 } from 'lucide-react';
 import Link from 'next/link';
@@ -87,54 +84,22 @@ const getUrgencyBadgeClass = (urgency: string) => {
   return 'border-slate-500/30 bg-slate-500/10 text-slate-700';
 };
 
-const CompactStat = ({
-  label,
-  value,
-  tone = 'default',
-  hint,
-}: {
-  label: string;
-  value: React.ReactNode;
-  tone?: 'default' | 'warning' | 'danger' | 'success' | 'info';
-  hint?: string;
-}) => {
-  const toneClass = {
-    default: 'border-border/80 bg-background text-foreground',
-    warning: 'border-amber-500/30 bg-amber-500/10 text-amber-700',
-    danger: 'border-red-500/30 bg-red-500/10 text-red-700',
-    success: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-700',
-    info: 'border-sky-500/30 bg-sky-500/10 text-sky-700',
-  }[tone];
-
-  return (
-    <div className={cn('rounded-2xl border px-3 py-3 shadow-sm', toneClass)}>
-      <p className="text-[10px] font-semibold uppercase tracking-[0.2em] opacity-80">{label}</p>
-      <p className="mt-2 font-mono text-2xl font-semibold leading-none">{value}</p>
-      {hint ? <p className="mt-2 text-xs opacity-75">{hint}</p> : null}
+const EmptyTab = ({ title, description }: { title: string; description: string }) => (
+  <div className="flex min-h-[220px] flex-col items-center justify-center gap-2 rounded-lg border border-dashed p-8 text-center bg-background">
+    <div className="mx-auto flex h-11 w-11 items-center justify-center rounded border border-dashed border-border bg-muted/30 text-muted-foreground">
+      <AlertCircle className="size-5" />
     </div>
-  );
-};
-
-const MetaItem = ({ label, value }: { label: string; value: React.ReactNode }) => (
-  <div className="rounded-2xl border border-border/70 bg-muted/20 px-3 py-3">
-    <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">{label}</p>
-    <div className="mt-2 text-sm font-semibold text-foreground">{value}</div>
+    <div className="mt-2 space-y-1.5">
+      <p className="font-medium text-foreground">{title}</p>
+      <p className="max-w-xl text-sm text-foreground/80">{description}</p>
+    </div>
   </div>
 );
 
-const EmptyTab = ({ title, description }: { title: string; description: string }) => (
-  <Card className="rounded-3xl border border-dashed bg-background">
-    <CardContent className="flex min-h-[220px] flex-col items-center justify-center gap-2 p-8 text-center">
-      <p className="text-sm font-medium">{title}</p>
-      <p className="max-w-xl text-sm text-muted-foreground">{description}</p>
-    </CardContent>
-  </Card>
-);
-
 const InlineMetric = ({ label, value }: { label: string; value: React.ReactNode }) => (
-  <div className="min-w-0 rounded-xl border border-border/70 bg-muted/20 px-3 py-2">
-    <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">{label}</p>
-    <p className="mt-1 text-sm font-semibold text-foreground">{value}</p>
+  <div className="min-w-0">
+    <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">{label}</p>
+    <p className="mt-1 text-sm font-semibold text-foreground truncate">{value}</p>
   </div>
 );
 
@@ -148,25 +113,25 @@ const TabSummaryPill = ({
   tone?: 'default' | 'warning' | 'danger' | 'success' | 'info';
 }) => {
   const toneClass = {
-    default: 'border-border/70 bg-background',
-    warning: 'border-amber-500/30 bg-amber-500/10',
-    danger: 'border-red-500/30 bg-red-500/10',
-    success: 'border-emerald-500/30 bg-emerald-500/10',
-    info: 'border-sky-500/30 bg-sky-500/10',
+    default: 'border-border bg-muted/30 text-foreground',
+    warning: 'border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-400',
+    danger: 'border-red-500/30 bg-red-500/10 text-red-700 dark:text-red-400',
+    success: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400',
+    info: 'border-sky-500/30 bg-sky-500/10 text-sky-700 dark:text-sky-400',
   }[tone];
 
   return (
-    <div className={cn('rounded-full border px-3 py-1.5', toneClass)}>
-      <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">{label}</span>
-      <span className="ml-2 text-sm font-semibold text-foreground">{value}</span>
+    <div className={cn('flex items-center gap-1.5 rounded-full border px-2.5 py-1', toneClass)}>
+      <span className="text-[10px] font-semibold uppercase tracking-widest opacity-80">{label}</span>
+      <span className="text-xs font-semibold">{value}</span>
     </div>
   );
 };
 
 const SectionCard = ({ children, className }: { children: React.ReactNode; className?: string }) => (
-  <Card className={cn('rounded-3xl border bg-background shadow-sm', className)}>
-    <CardContent className="p-4 md:p-5">{children}</CardContent>
-  </Card>
+  <div className={cn('overflow-hidden rounded-lg border bg-background', className)}>
+    <div className="p-5">{children}</div>
+  </div>
 );
 
 export default function AirworthinessDirectiveDetailPage() {
@@ -369,190 +334,138 @@ export default function AirworthinessDirectiveDetailPage() {
 
   return (
     <ContentLayout title={directive.ad_number}>
-      <div className="space-y-5 py-4">
-        <SectionCard className="overflow-hidden border-slate-200/80 bg-gradient-to-br from-background via-background to-slate-50/60">
-          <div className="space-y-5">
-            <div className="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
-              <div className="min-w-0 space-y-4">
+      <div className="space-y-4 py-4">
+        <section className="overflow-hidden rounded-lg border bg-background">
+          <div className="flex flex-col gap-3 px-4 py-3 sm:px-5">
+            <div className="flex flex-col gap-3 xl:flex-row xl:items-start xl:justify-between">
+              <div className="min-w-0 space-y-2">
                 <Link href={`/${selectedCompany?.slug}/planificacion/directivas`} className="inline-flex">
-                  <Button variant="ghost" size="sm" className="gap-2 px-0 text-muted-foreground hover:bg-transparent">
-                    <ArrowLeft className="h-4 w-4" />
-                    Volver al índice
+                  <Button variant="ghost" size="sm" className="-ml-2 gap-1.5 px-2 text-xs text-muted-foreground hover:bg-transparent">
+                    <ArrowLeft className="h-3.5 w-3.5" />
+                    Volver
                   </Button>
                 </Link>
 
-                <div className="flex items-center gap-2 text-muted-foreground">
-                  <FileBadge2 className="h-4 w-4" />
-                  <span className="text-[11px] font-semibold uppercase tracking-[0.22em]">Directiva</span>
+                <div className="flex flex-wrap items-center gap-2">
+                  <h1 className="text-2xl font-semibold tracking-[0.08em]">{directive.ad_number}</h1>
+                  <Badge variant="outline" className="border-slate-500/30 bg-slate-500/10 text-slate-700 dark:text-slate-300 text-[10px] px-2 py-0 leading-4">
+                    {directive.authority}
+                  </Badge>
+                  <Badge
+                    variant="outline"
+                    className={`text-[10px] px-2 py-0 leading-4 ${
+                      directive.is_recurring
+                        ? 'border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-300'
+                        : 'border-slate-500/30 bg-slate-500/10 text-slate-700 dark:text-slate-300'
+                    }`}
+                  >
+                    {directive.is_recurring ? 'Recurrente' : 'Única'}
+                  </Badge>
+                  <Badge
+                    variant="outline"
+                    className={`text-[10px] px-2 py-0 leading-4 ${
+                      (summary?.has_pdf_document ?? Boolean(directive.pdf_document_url))
+                        ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300'
+                        : 'border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-300'
+                    }`}
+                  >
+                    {(summary?.has_pdf_document ?? Boolean(directive.pdf_document_url))
+                      ? 'PDF disponible'
+                      : 'PDF pendiente'}
+                  </Badge>
                 </div>
 
-                <div className="space-y-3">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <h1 className="font-mono text-3xl font-semibold tracking-[0.08em]">{directive.ad_number}</h1>
-                    <Badge variant="outline" className="border-slate-500/30 bg-slate-500/10 text-slate-700">
-                      {directive.authority}
-                    </Badge>
-                    <Badge
-                      variant="outline"
-                      className={
-                        directive.is_recurring
-                          ? 'border-amber-500/30 bg-amber-500/10 text-amber-700'
-                          : 'border-slate-500/30 bg-slate-500/10 text-slate-700'
-                      }
-                    >
-                      {directive.is_recurring ? 'Recurrente' : 'Única'}
-                    </Badge>
-                    <Badge
-                      variant="outline"
-                      className={
-                        (summary?.has_pdf_document ?? Boolean(directive.pdf_document_url))
-                          ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-700'
-                          : 'border-amber-500/30 bg-amber-500/10 text-amber-700'
-                      }
-                    >
-                      {(summary?.has_pdf_document ?? Boolean(directive.pdf_document_url))
-                        ? 'PDF disponible'
-                        : 'PDF pendiente'}
-                    </Badge>
-                  </div>
-
-                  <p className="max-w-4xl text-sm leading-6 text-foreground/80">
-                    {directive.subject_description || 'Sin descripción registrada para esta directiva.'}
+                {directive.subject_description && (
+                  <p className="max-w-3xl text-xs leading-relaxed text-foreground/70">
+                    {directive.subject_description}
                   </p>
-                </div>
+                )}
               </div>
 
-              <div className="flex flex-wrap items-center gap-2 xl:justify-end">
+              <div className="flex items-center gap-2">
                 <ViewAirworthinessDirectivePdfDialog
                   adNumber={directive.ad_number}
                   pdfUrl={directive.pdf_document_url}
                 />
-                <Button size="sm" onClick={() => setIsEditDirectiveOpen(true)}>
-                  Editar directiva
+                <Button size="sm" variant="outline" onClick={() => setIsEditDirectiveOpen(true)}>
+                  <Pencil className="mr-1.5 h-3.5 w-3.5" />
+                  Editar
                 </Button>
               </div>
             </div>
 
-            <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-              <MetaItem label="Emisión" value={formatDate(directive.issue_date)} />
-              <MetaItem label="Vigencia" value={formatDate(directive.effective_date)} />
-              <MetaItem
-                label="Evaluadas / Aplicables"
-                value={`${summary?.total_aircraft_evaluated ?? 0} / ${summary?.total_applicable_aircraft ?? 0}`}
-              />
-              <MetaItem label="Pendientes config." value={summary?.pending_configuration_count ?? 0} />
+            <div className="flex flex-wrap items-center gap-x-5 gap-y-1 border-t pt-3 text-xs text-muted-foreground">
+              <span>Emisión: <strong className="text-foreground">{formatDate(directive.issue_date)}</strong></span>
+              <span>Vigencia: <strong className="text-foreground">{formatDate(directive.effective_date)}</strong></span>
             </div>
+          </div>
 
-            <div className="grid gap-4 xl:grid-cols-[1.2fr_1fr]">
-              <div className="rounded-3xl border border-border/70 bg-background/80 p-4">
-                <div className="mb-3 flex items-center justify-between gap-3">
-                  <div>
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
-                      Cobertura de flota
-                    </p>
-                    <p className="mt-1 text-sm text-muted-foreground">
-                      Qué aeronaves fueron evaluadas y cómo quedó su aplicabilidad.
-                    </p>
-                  </div>
-                </div>
-                <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-                  <CompactStat label="Evaluadas" value={summary?.total_aircraft_evaluated ?? 0} />
-                  <CompactStat label="Aplicables" value={summary?.total_applicable_aircraft ?? 0} tone="success" />
-                  <CompactStat label="No aplicables" value={summary?.total_non_applicable_aircraft ?? 0} />
-                  <CompactStat label="Pend. config." value={summary?.pending_configuration_count ?? 0} tone="warning" />
-                </div>
+          <div className="grid gap-px bg-border md:grid-cols-2 border-t">
+            <div className="bg-background px-4 py-3">
+              <p className="mb-2 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+                Cobertura de flota
+              </p>
+              <div className="flex flex-wrap gap-2">
+                <TabSummaryPill label="Evaluadas" value={summary?.total_aircraft_evaluated ?? 0} />
+                <TabSummaryPill label="Aplican" value={summary?.total_applicable_aircraft ?? 0} tone="success" />
+                <TabSummaryPill label="No aplican" value={summary?.total_non_applicable_aircraft ?? 0} />
+                <TabSummaryPill label="Pend. config" value={summary?.pending_configuration_count ?? 0} tone="warning" />
               </div>
-
-              <div className="rounded-3xl border border-border/70 bg-background/80 p-4">
-                <div className="mb-3 flex items-start justify-between gap-3">
-                  <div>
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
-                      Seguimiento de cumplimiento
-                    </p>
-                    <p className="mt-1 text-sm text-muted-foreground">
-                      Señales operativas para priorizar acciones de control y ejecución.
-                    </p>
-                  </div>
-                  <div className="rounded-2xl border border-sky-500/30 bg-sky-500/5 px-3 py-2">
-                    <div className="flex items-start gap-2">
-                      <ShieldCheck className="mt-0.5 h-4 w-4 text-sky-700" />
-                      <div>
-                        <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-sky-700">
-                          Estado conectado
-                        </p>
-                        <p className="mt-1 text-xs leading-5 text-foreground/75">
-                          Aplicabilidad, control y ejecuciones vinculadas.
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-                  <CompactStat label="Abiertos" value={summary?.total_open_controls ?? 0} tone="warning" />
-                  <CompactStat label="Cerrados" value={summary?.total_closed_controls ?? 0} tone="success" />
-                  <CompactStat label="Recurrentes" value={summary?.total_recurrent_controls ?? 0} />
-                  <CompactStat
-                    label="Próx. / Venc."
-                    value={`${summary?.upcoming_due_count ?? 0} / ${summary?.overdue_count ?? 0}`}
-                    tone="danger"
-                  />
-                </div>
+            </div>
+            <div className="bg-background px-4 py-3">
+              <p className="mb-2 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+                Seguimiento de cumplimiento
+              </p>
+              <div className="flex flex-wrap gap-2">
+                <TabSummaryPill label="Abiertos" value={summary?.total_open_controls ?? 0} tone="warning" />
+                <TabSummaryPill label="Cerrados" value={summary?.total_closed_controls ?? 0} tone="success" />
+                <TabSummaryPill label="Recurrentes" value={summary?.total_recurrent_controls ?? 0} />
+                <TabSummaryPill label="Vencidas" value={summary?.overdue_count ?? 0} tone="danger" />
               </div>
             </div>
           </div>
-        </SectionCard>
+        </section>
 
         <Tabs defaultValue="applicability" className="space-y-4">
-          <TabsList className="h-auto w-full flex-wrap justify-start gap-2 rounded-3xl border bg-muted/30 p-2">
+          <TabsList className="h-auto w-full flex-wrap justify-start gap-2 rounded-lg border bg-muted/20 p-2">
             <TabsTrigger
               value="applicability"
-              className="rounded-2xl px-4 py-2 text-[11px] uppercase tracking-[0.18em] data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+              className="rounded px-4 py-2 text-[11px] font-semibold uppercase tracking-widest data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
             >
               Aplicabilidad
             </TabsTrigger>
             <TabsTrigger
               value="control"
-              className="rounded-2xl px-4 py-2 text-[11px] uppercase tracking-[0.18em] data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+              className="rounded px-4 py-2 text-[11px] font-semibold uppercase tracking-widest data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
             >
               Control
             </TabsTrigger>
             <TabsTrigger
               value="executions"
-              className="rounded-2xl px-4 py-2 text-[11px] uppercase tracking-[0.18em] data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+              className="rounded px-4 py-2 text-[11px] font-semibold uppercase tracking-widest data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
             >
               Ejecuciones
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="applicability" className="space-y-4">
-            <SectionCard>
-              <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-                <div className="space-y-3">
-                  <div>
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
-                      Aplicabilidad por aeronave
-                    </p>
-                    <p className="mt-1 text-sm text-muted-foreground">
-                      Vista compacta del estado de evaluación y motivo registrado.
-                    </p>
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    <TabSummaryPill label="Evaluadas" value={summary?.total_aircraft_evaluated ?? 0} />
-                    <TabSummaryPill label="Aplicables" value={summary?.total_applicable_aircraft ?? 0} tone="success" />
-                    <TabSummaryPill
-                      label="Pend. config."
-                      value={summary?.pending_configuration_count ?? 0}
-                      tone="warning"
-                    />
-                  </div>
-                </div>
-
-                <Button size="sm" onClick={openCreateApplicability}>
-                  <Plus className="mr-2 h-4 w-4" />
-                  Nueva aplicabilidad
-                </Button>
+          <TabsContent value="applicability" className="space-y-3">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div className="flex flex-wrap items-center gap-2">
+                <TabSummaryPill label="Evaluadas" value={summary?.total_aircraft_evaluated ?? 0} />
+                <TabSummaryPill label="Aplicables" value={summary?.total_applicable_aircraft ?? 0} tone="success" />
+                {!!summary?.pending_configuration_count && (
+                  <TabSummaryPill
+                    label="Pend. config."
+                    value={summary?.pending_configuration_count}
+                    tone="warning"
+                  />
+                )}
               </div>
-            </SectionCard>
+              <Button size="sm" onClick={openCreateApplicability}>
+                <Plus className="mr-2 h-4 w-4" />
+                Nueva aplicabilidad
+              </Button>
+            </div>
 
             <CreateAirworthinessDirectiveApplicabilityDialog
               directiveId={directiveId}
@@ -570,56 +483,55 @@ export default function AirworthinessDirectiveDetailPage() {
                 description="Esta directiva todavía no tiene aeronaves evaluadas en aplicabilidad."
               />
             ) : (
-              <div className="space-y-3">
+              <div className="space-y-1.5">
                 {applicabilities.map((item) => (
-                  <SectionCard key={item.id} className="transition-colors hover:bg-muted/20">
-                    <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
-                      <div className="min-w-0 flex-1 space-y-3">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <p className="text-base font-semibold">{item.aircraft?.acronym ?? `#${item.aircraft_id}`}</p>
-                          {item.is_applicable ? (
-                            <Badge
-                              variant="outline"
-                              className="border-emerald-500/30 bg-emerald-500/10 text-emerald-700"
-                            >
-                              Aplica
-                            </Badge>
-                          ) : (
-                            <Badge variant="outline" className="border-slate-500/30 bg-slate-500/10 text-slate-700">
-                              No aplica
-                            </Badge>
-                          )}
-                        </div>
-
-                        <div className="grid gap-3 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
-                          <InlineMetric
-                            label="Aeronave"
-                            value={item.aircraft?.aircraft_type?.full_name ?? item.aircraft?.model ?? 'Sin modelo'}
-                          />
-                          <InlineMetric
-                            label={item.is_applicable ? 'Observación' : 'Motivo'}
-                            value={item.non_applicability_reason || 'Sin observaciones registradas.'}
-                          />
-                        </div>
-                      </div>
-
-                      <div className="flex items-center justify-end gap-1 xl:pl-4">
-                        <Button variant="ghost" size="icon" onClick={() => openEditApplicability(item)}>
-                          <Pencil className="h-4 w-4" />
-                          <span className="sr-only">Editar aplicabilidad</span>
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => openDeleteApplicability(item)}
-                          disabled={deleteApplicability.isPending}
+                  <div
+                    key={item.id}
+                    className="flex items-center gap-3 rounded-lg border bg-background px-4 py-2.5 transition-colors hover:bg-muted/20"
+                  >
+                    <div className="flex min-w-0 flex-1 items-center gap-3">
+                      <span className="text-sm font-semibold whitespace-nowrap">
+                        {item.aircraft?.acronym ?? `#${item.aircraft_id}`}
+                      </span>
+                      {item.is_applicable ? (
+                        <Badge
+                          variant="outline"
+                          className="border-emerald-500/30 bg-emerald-500/10 text-emerald-700 text-[10px] px-2 py-0 leading-4"
                         >
-                          <Trash2 className="h-4 w-4" />
-                          <span className="sr-only">Eliminar aplicabilidad</span>
-                        </Button>
-                      </div>
+                          Aplica
+                        </Badge>
+                      ) : (
+                        <Badge
+                          variant="outline"
+                          className="border-slate-500/30 bg-slate-500/10 text-slate-700 text-[10px] px-2 py-0 leading-4"
+                        >
+                          No aplica
+                        </Badge>
+                      )}
+                      <span className="hidden sm:block text-xs text-muted-foreground truncate">
+                        {item.aircraft?.aircraft_type?.full_name ?? item.aircraft?.model ?? ''}
+                      </span>
+                      <span className="text-xs text-muted-foreground truncate">
+                        {item.non_applicability_reason || '—'}
+                      </span>
                     </div>
-                  </SectionCard>
+                    <div className="flex items-center gap-1 shrink-0">
+                      <Button variant="ghost" size="icon" className="size-7" onClick={() => openEditApplicability(item)}>
+                        <Pencil className="h-3.5 w-3.5" />
+                        <span className="sr-only">Editar</span>
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="size-7"
+                        onClick={() => openDeleteApplicability(item)}
+                        disabled={deleteApplicability.isPending}
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                        <span className="sr-only">Eliminar</span>
+                      </Button>
+                    </div>
+                  </div>
                 ))}
               </div>
             )}
