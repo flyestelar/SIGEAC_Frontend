@@ -36,6 +36,9 @@ export const ReportsCell = ({ mitigationTable }: ReportsCellProps) => {
           downloadMitigationPlanPdf.mutate({
             company: selectedCompany!.slug,
             id: mitigationTable.mitigation_plan!.id,
+            report_number:
+              mitigationTable.voluntary_report?.report_number ??
+              mitigationTable.obligatory_report?.report_number,
           })
         }
       >
@@ -57,6 +60,9 @@ export const ReportsCell = ({ mitigationTable }: ReportsCellProps) => {
             downloadAnalysisPdf.mutate({
               company: selectedCompany!.slug,
               id: mitigationTable.id,
+              report_number:
+                mitigationTable.voluntary_report?.report_number ??
+                mitigationTable.obligatory_report?.report_number,
             })
           }
         >

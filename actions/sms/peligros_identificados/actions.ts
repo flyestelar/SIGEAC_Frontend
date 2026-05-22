@@ -116,7 +116,7 @@ export const useDeleteDangerIdentification = () => {
 
 export const useDownloadDangerIdentificationPdf = () => {
   const downloadMutation = useMutation({
-    mutationFn: async ({ company, id }: { company: string; id: number | string }) => {
+    mutationFn: async ({ company, id, report_number }: { company: string; id: number | string; report_number?: string }) => {
       const response = await axiosInstance.get(
         `/${company}/sms/danger-identifications/${id}/pdf`,
         { responseType: "blob" }
@@ -124,7 +124,7 @@ export const useDownloadDangerIdentificationPdf = () => {
       const url = window.URL.createObjectURL(new Blob([response.data], { type: "application/pdf" }));
       const link = document.createElement("a");
       link.href = url;
-      link.download = `identificacion-peligro-${id}.pdf`;
+      link.download = `identificacion-peligro-${report_number ?? id}.pdf`;
       link.click();
       window.URL.revokeObjectURL(url);
     },

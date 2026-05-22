@@ -145,6 +145,9 @@ const DangerIdentificationDropdownActions = ({
                 downloadDangerIdentificationPdf.mutate({
                   company: selectedCompany!.slug,
                   id: dangerIdentification.id,
+                  report_number:
+                    dangerIdentification.voluntary_report?.report_number ??
+                    dangerIdentification.obligatory_report?.report_number,
                 })
               }
             >
