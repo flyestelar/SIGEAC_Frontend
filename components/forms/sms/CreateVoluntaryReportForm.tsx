@@ -41,11 +41,11 @@ import { VoluntaryReportResource } from "@/.gen/api/types.gen";
 import { addDays, format } from "date-fns";
 import { es } from "date-fns/locale";
 import { CalendarIcon, Loader2, Plus, X } from "lucide-react";
-import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Label } from "@/components/ui/label";
 import { useCompanyStore } from "@/stores/CompanyStore";
+import axiosInstance from "@/lib/axios";
 import { useGetSmsStations } from "@/hooks/sms/useGetSmsStations";
 import { useGetFindingLocations } from "@/hooks/sms/useGetFindingLocations";
 import { useGetSmsAreas } from "@/hooks/sms/useGetSmsAreas";
@@ -97,6 +97,42 @@ export function CreateVoluntaryReportForm({
   const [openCreateStation, setOpenCreateStation] = useState(false);
   const [openCreateLocation, setOpenCreateLocation] = useState(false);
   const [openCreateArea, setOpenCreateArea] = useState(false);
+  const [authenticatedImageUrl, setAuthenticatedImageUrl] = useState<string | null>(null);
+  const [authenticatedDocumentUrl, setAuthenticatedDocumentUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!initialData?.image) return;
+    const imageUrl = (initialData.image as string).startsWith("http")
+      ? (initialData.image as string)
+      : `${process.env.NEXT_PUBLIC_STORAGE_BASE_URL}${initialData.image}`;
+    let blobUrl: string | null = null;
+    axiosInstance.get(imageUrl, { responseType: "blob" })
+      .then((response) => {
+        blobUrl = URL.createObjectURL(response.data);
+        setAuthenticatedImageUrl(blobUrl);
+      })
+      .catch(() => setAuthenticatedImageUrl(null));
+    return () => {
+      if (blobUrl) URL.revokeObjectURL(blobUrl);
+    };
+  }, [initialData?.image]);
+
+  useEffect(() => {
+    if (!initialData?.document) return;
+    const docUrl = (initialData.document as string).startsWith("http")
+      ? (initialData.document as string)
+      : `${process.env.NEXT_PUBLIC_STORAGE_BASE_URL}${initialData.document}`;
+    let blobUrl: string | null = null;
+    axiosInstance.get(docUrl, { responseType: "blob" })
+      .then((response) => {
+        blobUrl = URL.createObjectURL(new Blob([response.data], { type: "application/pdf" }));
+        setAuthenticatedDocumentUrl(blobUrl);
+      })
+      .catch(() => setAuthenticatedDocumentUrl(null));
+    return () => {
+      if (blobUrl) URL.revokeObjectURL(blobUrl);
+    };
+  }, [initialData?.document]);
 
   const FormSchema = z.object({
     identification_date: z
@@ -190,10 +226,7 @@ export function CreateVoluntaryReportForm({
       )
       .optional(),
     is_anonymous: z.boolean(),
-    source_reference: z
-      .string()
-      .regex(/^\d*$/, { message: "Solo se permiten números" })
-      .optional(),
+    source_reference: z.string().optional(),
   });
 
   type FormSchemaType = z.infer<typeof FormSchema>;
@@ -880,20 +913,17 @@ export function CreateVoluntaryReportForm({
                   <FormItem>
                     <FormLabel>Imagen del Reporte</FormLabel>
                     <div className="flex flex-col gap-3">
-                      {(field.value instanceof File || initialData?.image) && (
+                      {(field.value instanceof File || authenticatedImageUrl) && (
                         <div className="relative w-24 h-24 border rounded-md overflow-hidden">
-                          <Image
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
                             src={
                               field.value instanceof File
                                 ? URL.createObjectURL(field.value)
-                                : initialData!.image!.startsWith("http")
-                                  ? initialData!.image!
-                                  : `${process.env.NEXT_PUBLIC_STORAGE_BASE_URL}${initialData!.image}`
+                                : authenticatedImageUrl!
                             }
                             alt="Preview"
-                            fill
-                            className="object-contain"
-                            onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+                            className="w-full h-full object-contain"
                           />
                         </div>
                       )}
@@ -919,12 +949,28 @@ export function CreateVoluntaryReportForm({
                   <FormItem>
                     <FormLabel>Documento PDF</FormLabel>
                     <div className="flex flex-col gap-3">
-                      {field.value && (
+                      {field.value instanceof File ? (
                         <div>
                           <p className="text-xs text-muted-foreground">Archivo seleccionado:</p>
                           <p className="font-semibold text-sm">{field.value.name}</p>
                         </div>
-                      )}
+                      ) : initialData?.document ? (
+                        <div>
+                          <p className="text-xs text-muted-foreground">Documento actual:</p>
+                          {authenticatedDocumentUrl ? (
+                            <a
+                              href={authenticatedDocumentUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-sm font-semibold text-blue-600 underline hover:text-blue-800"
+                            >
+                              Ver documento
+                            </a>
+                          ) : (
+                            <p className="text-xs text-muted-foreground">Cargando documento...</p>
+                          )}
+                        </div>
+                      ) : null}
                       <FormControl>
                         <Input
                           type="file"
