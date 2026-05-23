@@ -2,6 +2,8 @@ import { WorkOrder } from '@/types'
 import React from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Plus } from 'lucide-react'
 
 type WorkOrderTask = WorkOrder["work_order_tasks"][0]
 
@@ -9,12 +11,14 @@ const TaskCard = ({
   index,
   task,
   onClick,
-  isNonRoutine = false
+  isNonRoutine = false,
+  onCreateNonRoutine,
 }: {
   task: WorkOrderTask,
   index: number,
   isNonRoutine?: boolean,
-  onClick: () => void
+  onClick: () => void,
+  onCreateNonRoutine?: () => void,
 }) => {
   return (
     <Card
@@ -88,6 +92,21 @@ const TaskCard = ({
             </div>
           </div>
         </div>
+
+        {!isNonRoutine && !task.non_routine && task.status === "ABIERTO" && onCreateNonRoutine && (
+          <Button
+            variant="outline"
+            size="sm"
+            className="w-full mt-2"
+            onClick={(e) => {
+              e.stopPropagation()
+              onCreateNonRoutine()
+            }}
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Generar No Rutinaria
+          </Button>
+        )}
       </CardContent>
     </Card>
   )

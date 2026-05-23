@@ -82,3 +82,32 @@ export const useUpdateNoRoutineTask = () => {
     updateNoRoutineTask: updateMutation,
   }
 }
+
+
+export const useUpdateNonRoutineCode = () => {
+
+  const queryClient = useQueryClient()
+
+  const updateCodeMutation = useMutation({
+      mutationFn: async ({ id, code, company, order_number }: { id: string, code: string, company: string, order_number: string }) => {
+          await axiosInstance.patch(`/${company}/non-routine/${id}/code`, { code })
+        },
+      onSuccess: (_data, variables) => {
+          queryClient.invalidateQueries({ queryKey: ['work-orders'], exact: false })
+          queryClient.invalidateQueries({ queryKey: ['work-order', variables.order_number, variables.company] })
+          toast.success("¡Actualizado!", {
+              description: `El código de la no rutinaria ha sido actualizado correctamente.`
+          })
+        },
+      onError: (error: AxiosError) => {
+          console.log(error)
+          toast.error('Oops!', {
+            description: 'No se pudo actualizar el código de la no rutinaria.'
+          })
+        },
+      }
+  )
+  return {
+    updateNonRoutineCode: updateCodeMutation,
+  }
+}

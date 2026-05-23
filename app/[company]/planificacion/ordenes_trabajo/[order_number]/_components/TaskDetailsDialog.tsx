@@ -99,6 +99,7 @@ export const TaskDetailsDialog = ({
     "assign"
   );
   const [isEditing, setIsEditing] = useState(false);
+  const [isNonRoutineDialogOpen, setIsNonRoutineDialogOpen] = useState(false);
 
   const { updateWorkOrderTask } = useUpdateWorkOrderTask();
   const { updateNoRoutineTask } = useUpdateNoRoutineTask();
@@ -621,9 +622,16 @@ export const TaskDetailsDialog = ({
                     !isEditing && (
                       <div className="flex gap-2 items-center">
                         {!selectedTask.non_routine && !isNonRoutine && (
-                          <CreateNoRutineDialog
-                            task_id={selectedTask.id.toString()}
-                          />
+                          <>
+                            <Button variant="outline" onClick={() => setIsNonRoutineDialogOpen(true)}>
+                              Generar - No Rutinario
+                            </Button>
+                            <CreateNoRutineDialog
+                              task_id={selectedTask.id.toString()}
+                              open={isNonRoutineDialogOpen}
+                              onOpenChange={setIsNonRoutineDialogOpen}
+                            />
+                          </>
                         )}
                         <Button
                           onClick={handleCompleteTask}

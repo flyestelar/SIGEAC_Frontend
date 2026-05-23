@@ -12,6 +12,7 @@ import { Check, Filter, Grid, List, Loader2, PackageCheck, Plus, Search } from "
 import { useState } from "react"
 import TaskCard from "./TaskCard"
 import { AddRoutineTaskDialog } from "./AddRoutineTaskDialog"
+import CreateNoRutineDialog from "./CreateNoRutineDialog"
 
 type WorkOrderTask = WorkOrder["work_order_tasks"][0]
 
@@ -33,6 +34,8 @@ export const RoutineTasksList = ({
   const [searchTerm, setSearchTerm] = useState("")
   const [viewMode, setViewMode] = useState<"cards" | "table">("cards")
   const [statusFilter, setStatusFilter] = useState<"all" | "ABIERTO" | "CERRADO">("all")
+  const [nonRoutineTargetId, setNonRoutineTargetId] = useState<string | null>(null)
+  const [isNonRoutineDialogOpen, setIsNonRoutineDialogOpen] = useState(false)
 
   const filteredTasks = tasks
     .filter(task => {
@@ -134,10 +137,14 @@ export const RoutineTasksList = ({
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filteredTasks.map((task, _index) => (
             <TaskCard
-            index={_index}
+              index={_index}
               key={task.id}
               task={task}
               onClick={() => onTaskClick(task)}
+              onCreateNonRoutine={() => {
+                setNonRoutineTargetId(task.id.toString())
+                setIsNonRoutineDialogOpen(true)
+              }}
             />
           ))}
         </div>
@@ -223,6 +230,17 @@ export const RoutineTasksList = ({
             </TableBody>
           </Table>
         </div>
+      )}
+
+      {nonRoutineTargetId && (
+        <CreateNoRutineDialog
+          task_id={nonRoutineTargetId}
+          open={isNonRoutineDialogOpen}
+          onOpenChange={(open) => {
+            setIsNonRoutineDialogOpen(open)
+            if (!open) setNonRoutineTargetId(null)
+          }}
+        />
       )}
     </div>
   )
