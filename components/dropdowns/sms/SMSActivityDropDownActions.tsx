@@ -150,7 +150,7 @@ const SMSActivityDropDownActions = ({
 
       {/* DIALOGO DE ELIMINAR */}
       <Dialog open={openDelete} onOpenChange={setOpenDelete}>
-        <DialogContent>
+        <DialogContent className="w-[calc(100vw-1rem)] sm:max-w-md rounded-2xl p-4 sm:p-6">
           <DialogHeader>
             <DialogTitle className="text-center">
               ¿Seguro que desea eliminar la actividad?
@@ -186,53 +186,50 @@ const SMSActivityDropDownActions = ({
 
       {/* DIALOGO DE EDITAR */}
       <Dialog open={openEdit} onOpenChange={setOpenEdit}>
-        <DialogContent className="flex flex-col max-w-2xl m-2">
+        <DialogContent className="flex flex-col w-[calc(100vw-1rem)] sm:max-w-2xl max-h-[90dvh] overflow-y-auto rounded-2xl p-4 sm:p-6">
           <DialogHeader>
-            <DialogTitle className="text-center">
-              Edicion de Actividad
-            </DialogTitle>
-            <CreateSMSActivityForm
-              initialData={smsActivity}
-              isEditing={true}
-              onClose={() => setOpenEdit(false)}
-            />
+            <DialogTitle className="text-center">Edición de Actividad</DialogTitle>
+            <DialogDescription></DialogDescription>
           </DialogHeader>
+          <CreateSMSActivityForm
+            initialData={smsActivity}
+            isEditing={true}
+            onClose={() => setOpenEdit(false)}
+          />
         </DialogContent>
       </Dialog>
 
       {/* DIALOGO DE ADD FORM */}
       <Dialog open={openAdd} onOpenChange={setOpenAdd}>
-        <DialogContent className="flex flex-col max-w-2xl m-2">
+        <DialogContent className="flex flex-col w-[calc(100vw-1rem)] sm:max-w-2xl max-h-[90dvh] overflow-y-auto rounded-2xl p-4 sm:p-6">
           <DialogHeader>
-            <DialogTitle className="text-center font-light">
-              Agregar o eliminar personas
-            </DialogTitle>
-            <AddToSMSActivity
-              initialData={smsActivity}
-              onClose={() => setOpenAdd(false)}
-            />
+            <DialogTitle className="text-center">Agregar o eliminar personas</DialogTitle>
+            <DialogDescription></DialogDescription>
           </DialogHeader>
+          <AddToSMSActivity
+            initialData={smsActivity}
+            onClose={() => setOpenAdd(false)}
+          />
         </DialogContent>
       </Dialog>
 
       {/* DIALOGO DE ASISTENCIA */}
       <Dialog open={openAttendance} onOpenChange={setOpenAttendance}>
-        <DialogContent className="flex flex-col max-w-2xl m-2">
+        <DialogContent className="flex flex-col w-[calc(100vw-1rem)] sm:max-w-2xl max-h-[90dvh] overflow-y-auto rounded-2xl p-4 sm:p-6">
           <DialogHeader>
-            <DialogTitle className="text-center font-light">
-              Asistencia
-            </DialogTitle>
-            <AddSMSActivityAttendanceForm
-              initialData={smsActivity}
-              onClose={() => setOpenAttendance(false)}
-            />
+            <DialogTitle className="text-center">Asistencia</DialogTitle>
+            <DialogDescription></DialogDescription>
           </DialogHeader>
+          <AddSMSActivityAttendanceForm
+            initialData={smsActivity}
+            onClose={() => setOpenAttendance(false)}
+          />
         </DialogContent>
       </Dialog>
 
       {/* DIALOGO PARA CERRAR UNA ACTIVIDAD */}
       <Dialog open={closeActivity} onOpenChange={setCloseActivity}>
-        <DialogContent>
+        <DialogContent className="w-[calc(100vw-1rem)] sm:max-w-md rounded-2xl p-4 sm:p-6">
           <DialogHeader>
             <DialogTitle className="text-center">
               ¿Seguro que desea cerrar la actividad?
@@ -267,7 +264,7 @@ const SMSActivityDropDownActions = ({
 
       {/* DIALOGO PARA REABRIR UNA ACTIVIDAD */}
       <Dialog open={openReopen} onOpenChange={setOpenReopen}>
-        <DialogContent>
+        <DialogContent className="w-[calc(100vw-1rem)] sm:max-w-md rounded-2xl p-4 sm:p-6">
           <DialogHeader>
             <DialogTitle className="text-center">
               ¿Desea reabrir la actividad?

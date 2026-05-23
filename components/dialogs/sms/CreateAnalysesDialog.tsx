@@ -1,7 +1,6 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -32,44 +31,42 @@ export default function CreateAnalysesDialog({
 }: FormProps) {
   const [open, setOpen] = useState(false);
   return (
-    <>
-      <Card className="flex">
-        <Dialog open={open} onOpenChange={setOpen}>
-          <DialogTrigger asChild>
-            <Button
-              onClick={() => setOpen(true)}
-              variant="outline"
-              size="sm"
-              className=" hidden h-8 lg:flex"
-            >
-              {buttonTitle}
-            </Button>
-          </DialogTrigger>
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button
+          onClick={() => setOpen(true)}
+          variant="outline"
+          size="sm"
+          className="h-8"
+        >
+          {buttonTitle}
+        </Button>
+      </DialogTrigger>
 
-          <DialogContent className="flex flex-col max-w-3xl m-2">
-            <DialogHeader>
-              <DialogTitle></DialogTitle>
-              <DialogDescription></DialogDescription>
-            </DialogHeader>
+      <DialogContent className="flex flex-col w-[calc(100vw-1rem)] sm:max-w-3xl max-h-[90dvh] p-4 sm:p-6 rounded-2xl">
+        <DialogHeader>
+          <DialogTitle>{isEditing ? "Editar Análisis" : "Crear Análisis"}</DialogTitle>
+          <DialogDescription>
+            Selecciona la probabilidad y severidad del riesgo.
+          </DialogDescription>
+        </DialogHeader>
 
-            {isEditing && initialData ? (
-              <CreateAnalysisForm
-                id={id}
-                name={name}
-                isEditing={true}
-                initialData={initialData}
-                onClose={() => setOpen(false)}
-              />
-            ) : (
-              <CreateAnalysisForm
-                onClose={() => setOpen(false)}
-                name={name}
-                id={id}
-              />
-            )}
-          </DialogContent>
-        </Dialog>
-      </Card>
-    </>
+        {isEditing && initialData ? (
+          <CreateAnalysisForm
+            id={id}
+            name={name}
+            isEditing={true}
+            initialData={initialData}
+            onClose={() => setOpen(false)}
+          />
+        ) : (
+          <CreateAnalysisForm
+            onClose={() => setOpen(false)}
+            name={name}
+            id={id}
+          />
+        )}
+      </DialogContent>
+    </Dialog>
   );
 }

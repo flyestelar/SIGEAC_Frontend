@@ -27,8 +27,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Analysis } from "@/types";
-import { Separator } from "@radix-ui/react-select";
-import { ScrollArea } from "@/components/ui/scroll-area";
 
 import { useRouter } from "next/navigation";
 import { useCompanyStore } from "@/stores/CompanyStore";
@@ -160,97 +158,103 @@ export default function CreateAnalysisForm({
     <Form {...form}>
       <form
         onSubmit={form.handleSubmit(onSubmit)}
-        className="flex flex-col space-y-3"
+        className="flex flex-col gap-3"
       >
-      <ScrollArea className="h-[60vh] pr-4">
-        <div className="flex flex-col space-y-3">
-        <FormLabel className="text-lg text-center m-2"></FormLabel>
+        <div className="overflow-y-auto h-[55vh] sm:h-[60vh] pr-1">
+          <div className="flex flex-col gap-4 pb-2">
 
-        <FormField
-          control={form.control}
-          name="probability"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Probabilidad del riesgo</FormLabel>
-              <Select
-                onValueChange={(value) => {
-                  field.onChange(value);
-                  setCurrentSelection(value + (currentSeverity || ""));
-                }}
-                value={field.value}
-              >
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Seleccionar probabilidad de riesgo" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  {PROBABILITY.map((probability, index) => (
-                    <SelectItem key={index} value={probability.value}>
-                      <span>
-                        {probability.name} ({probability.value})
-                      </span>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <FormDescription>
-                Elegir la probabilidad del riesgo
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="severity"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Severidad del riesgo</FormLabel>
-              <Select
-                onValueChange={(value) => {
-                  field.onChange(value);
-                  setCurrentSelection((currentProbability || "") + value);
-                }}
-                value={field.value}
-              >
-                <FormControl>
-                  <SelectTrigger
-                  >
-                    <SelectValue placeholder="Seleccionar severidad del peligro" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  {SEVERITY.map((severity, index) => (
-                    <SelectItem key={index} value={severity.value}>
-                      <span>
-                        {severity.name} ({severity.value})
-                      </span>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <FormDescription>Elegir la severidad del riesgo</FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+            {/* Selects en grid lado a lado en sm+ */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <FormField
+                control={form.control}
+                name="probability"
+                render={({ field }) => (
+                  <FormItem className="rounded-xl border border-gray-200 dark:border-gray-700 p-3">
+                    <FormLabel className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+                      Probabilidad del riesgo
+                    </FormLabel>
+                    <Select
+                      onValueChange={(value) => {
+                        field.onChange(value);
+                        setCurrentSelection(value + (currentSeverity || ""));
+                      }}
+                      value={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger className="rounded-lg mt-1">
+                          <SelectValue placeholder="Seleccionar probabilidad" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent className="rounded-xl">
+                        {PROBABILITY.map((probability, index) => (
+                          <SelectItem key={index} value={probability.value}>
+                            {probability.name} ({probability.value})
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-        <RiskMatrix
-          onCellClick={handleCellClick}
-          selectedProbability={currentProbability}
-          selectedSeverity={currentSeverity}
-        />
+              <FormField
+                control={form.control}
+                name="severity"
+                render={({ field }) => (
+                  <FormItem className="rounded-xl border border-gray-200 dark:border-gray-700 p-3">
+                    <FormLabel className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+                      Severidad del riesgo
+                    </FormLabel>
+                    <Select
+                      onValueChange={(value) => {
+                        field.onChange(value);
+                        setCurrentSelection((currentProbability || "") + value);
+                      }}
+                      value={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger className="rounded-lg mt-1">
+                          <SelectValue placeholder="Seleccionar severidad" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent className="rounded-xl">
+                        {SEVERITY.map((severity, index) => (
+                          <SelectItem key={index} value={severity.value}>
+                            {severity.name} ({severity.value})
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
 
-        <div className="flex justify-between items-center gap-x-4">
-          <Separator className="flex-1" />
-          <p className="text-muted-foreground">SIGEAC</p>
-          <Separator className="flex-1" />
+            {/* Matriz de riesgo */}
+            <div className="rounded-xl border border-gray-200 dark:border-gray-700 p-3">
+              <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3">
+                Matriz de Riesgo
+              </p>
+              <RiskMatrix
+                onCellClick={handleCellClick}
+                selectedProbability={currentProbability}
+                selectedSeverity={currentSeverity}
+              />
+            </div>
+
+            <div className="flex items-center gap-3">
+              <div className="flex-1 h-px bg-border" />
+              <p className="text-xs text-muted-foreground">SIGEAC</p>
+              <div className="flex-1 h-px bg-border" />
+            </div>
+          </div>
         </div>
-        </div>
-      </ScrollArea>
+
         <Button
           type="submit"
+          className="rounded-xl w-full"
           disabled={updateAnalyses.isPending || createAnalysis.isPending}
         >
           {isEditing ? "Actualizar" : "Enviar"}

@@ -38,14 +38,14 @@ import { cn } from "@/lib/utils";
 import { useCompanyStore } from "@/stores/CompanyStore";
 import { SmsActivityResource } from "@/.gen/api/types.gen";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Separator } from "@radix-ui/react-select";
+import { Separator } from "@/components/ui/separator";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { CalendarIcon, Loader2, Plus, X } from "lucide-react";
+import axiosInstance from "@/lib/axios";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import Image from "next/image";
 import { z } from "zod";
 
 const FormSchema = z
@@ -105,6 +105,33 @@ export default function CreateSMSActivityForm({
     const { data: employees, isLoading: isLoadingEmployees } =
         useGetEmployeesByDepartment("SMS", selectedStation, selectedCompany?.slug);
     const { data: mitigationTable } = useGetMitigationTable(selectedCompany?.slug);
+
+    const [authenticatedImageUrl, setAuthenticatedImageUrl] = useState<string | null>(null);
+    const [authenticatedDocumentUrl, setAuthenticatedDocumentUrl] = useState<string | null>(null);
+
+    useEffect(() => {
+        if (!initialData?.image) return;
+        const url = (initialData.image as string).startsWith("http")
+            ? (initialData.image as string)
+            : `${process.env.NEXT_PUBLIC_STORAGE_BASE_URL}${initialData.image}`;
+        let blobUrl: string | null = null;
+        axiosInstance.get(url, { responseType: "blob" })
+            .then((res) => { blobUrl = URL.createObjectURL(res.data); setAuthenticatedImageUrl(blobUrl); })
+            .catch(() => setAuthenticatedImageUrl(null));
+        return () => { if (blobUrl) URL.revokeObjectURL(blobUrl); };
+    }, [initialData?.image]);
+
+    useEffect(() => {
+        if (!initialData?.document) return;
+        const url = (initialData.document as string).startsWith("http")
+            ? (initialData.document as string)
+            : `${process.env.NEXT_PUBLIC_STORAGE_BASE_URL}${initialData.document}`;
+        let blobUrl: string | null = null;
+        axiosInstance.get(url, { responseType: "blob" })
+            .then((res) => { blobUrl = URL.createObjectURL(new Blob([res.data], { type: "application/pdf" })); setAuthenticatedDocumentUrl(blobUrl); })
+            .catch(() => setAuthenticatedDocumentUrl(null));
+        return () => { if (blobUrl) URL.revokeObjectURL(blobUrl); };
+    }, [initialData?.document]);
 
     const measureGroups = (mitigationTable ?? [])
         .filter((mt) => (mt.mitigation_plan?.measures?.length ?? 0) > 0)
@@ -253,7 +280,7 @@ export default function CreateSMSActivityForm({
                 className="flex flex-col gap-4 flex-1 min-h-0 overflow-y-auto p-2"
             >
                 {/* Fila 1: Número | Título | Nombre */}
-                <div className="grid grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <FormField
                         control={form.control}
                         name="activity_number"
@@ -302,8 +329,8 @@ export default function CreateSMSActivityForm({
                     />
                 </div>
 
-                {/* Fila 2: Fecha Inicio | Fecha Final | Hora Inicio | Hora Final */}
-                <div className="grid grid-cols-4 gap-4">
+                {/* Fila 2a: Fecha Inicio | Fecha Final */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <FormField
                         control={form.control}
                         name="start_date"
@@ -323,7 +350,7 @@ export default function CreateSMSActivityForm({
                                                 {field.value
                                                     ? format(field.value, "PPP", { locale: es })
                                                     : <span>Seleccionar fecha</span>}
-                                                <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                                <CalendarIcon className="ml-auto h-4 w-4 opacity-50 flex-shrink-0" />
                                             </Button>
                                         </FormControl>
                                     </PopoverTrigger>
@@ -362,7 +389,7 @@ export default function CreateSMSActivityForm({
                                                 {field.value
                                                     ? format(field.value, "PPP", { locale: es })
                                                     : <span>Seleccionar fecha</span>}
-                                                <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                                <CalendarIcon className="ml-auto h-4 w-4 opacity-50 flex-shrink-0" />
                                             </Button>
                                         </FormControl>
                                     </PopoverTrigger>
@@ -382,6 +409,10 @@ export default function CreateSMSActivityForm({
                             </FormItem>
                         )}
                     />
+                </div>
+
+                {/* Fila 2b: Hora Inicio | Hora Final */}
+                <div className="grid grid-cols-2 gap-4">
                     <FormField
                         control={form.control}
                         name="start_time"
@@ -426,8 +457,8 @@ export default function CreateSMSActivityForm({
                     />
                 </div>
 
-                {/* Fila 3: Lugar | Objetivo | Boletín */}
-                <div className="grid grid-cols-3 gap-4">
+                {/* Fila 3: Lugar | Objetivo */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <FormField
                         control={form.control}
                         name="place"
@@ -559,7 +590,7 @@ export default function CreateSMSActivityForm({
                 />
 
                 {/* Fila 6: Autorizado | Elaborado | Realizado */}
-                <div className="grid grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <FormField
                         control={form.control}
                         name="authorized_by"
@@ -638,7 +669,7 @@ export default function CreateSMSActivityForm({
                 </div>
 
                 {/* Fila 7: Imagen | Documento */}
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <FormField
                         control={form.control}
                         name="image"
@@ -646,17 +677,13 @@ export default function CreateSMSActivityForm({
                             <FormItem>
                                 <FormLabel>Imagen de la Actividad</FormLabel>
                                 <div className="flex flex-col gap-3">
-                                    {(field.value instanceof File || initialData?.image) && (
-                                        <div className="relative w-24 h-24 border rounded-md overflow-hidden">
-                                            <Image
-                                                src={
-                                                    field.value instanceof File
-                                                        ? URL.createObjectURL(field.value)
-                                                        : initialData?.image || ""
-                                                }
-                                                alt="Preview"
-                                                fill
-                                                className="object-contain"
+                                    {(field.value instanceof File || authenticatedImageUrl) && (
+                                        <div className="w-full h-40 border rounded-lg overflow-hidden bg-muted">
+                                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                                            <img
+                                                src={field.value instanceof File ? URL.createObjectURL(field.value) : authenticatedImageUrl!}
+                                                alt="Preview de imagen"
+                                                className="w-full h-full object-contain"
                                             />
                                         </div>
                                     )}
@@ -682,15 +709,28 @@ export default function CreateSMSActivityForm({
                             <FormItem>
                                 <FormLabel>Documento PDF</FormLabel>
                                 <div className="flex flex-col gap-3">
-                                    {field.value instanceof File && (
-                                        <div>
-                                            <p className="text-sm text-muted-foreground">Archivo seleccionado:</p>
-                                            <p className="font-semibold text-sm">{field.value.name}</p>
+                                    {field.value instanceof File ? (
+                                        <div className="rounded-lg border border-border bg-muted/40 px-3 py-2">
+                                            <p className="text-xs text-muted-foreground">Archivo seleccionado:</p>
+                                            <p className="font-semibold text-sm truncate">{field.value.name}</p>
                                         </div>
-                                    )}
-                                    {!(field.value instanceof File) && initialData?.document && typeof initialData.document === "string" && (
-                                        <p className="text-sm text-green-600">✓ Documento existente cargado</p>
-                                    )}
+                                    ) : initialData?.document ? (
+                                        <div className="rounded-lg border border-border bg-muted/40 px-3 py-2">
+                                            <p className="text-xs text-muted-foreground">Documento actual:</p>
+                                            {authenticatedDocumentUrl ? (
+                                                <a
+                                                    href={authenticatedDocumentUrl}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="text-sm font-semibold text-blue-600 dark:text-blue-400 underline hover:text-blue-800"
+                                                >
+                                                    Ver documento
+                                                </a>
+                                            ) : (
+                                                <p className="text-xs text-muted-foreground">Cargando documento...</p>
+                                            )}
+                                        </div>
+                                    ) : null}
                                     <FormControl>
                                         <Input
                                             type="file"
