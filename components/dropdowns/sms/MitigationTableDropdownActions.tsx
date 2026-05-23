@@ -1,6 +1,7 @@
 import {
   useCloseReport,
   useDeleteMitigationPlan,
+  useDownloadCloseReportPdf,
   useOpenReport,
 } from "@/actions/sms/planes_de_mitigation/actions";
 import CreateAnalysisForm from "@/components/forms/sms/CreateAnalysisForm";
@@ -29,6 +30,7 @@ import {
   ClipboardList,
   ClipboardPenLine,
   FilePenLine,
+  FileDown,
   Loader2,
   LockKeyhole,
   LockKeyholeOpen,
@@ -59,6 +61,7 @@ const MitigationTableDropdownActions = ({
   const [closeDate, setCloseDate] = useState<string>("");
   const { closeReportByMitigationId } = useCloseReport();
   const { openReportByMitigationId } = useOpenReport();
+  const { downloadCloseReportPdf } = useDownloadCloseReportPdf();
   const { theme } = useTheme();
 
   const handleDelete = async (id: number | string) => {
@@ -174,6 +177,28 @@ const MitigationTableDropdownActions = ({
               <DropdownMenuItem onClick={() => setOpenReport(true)}>
                 <LockKeyholeOpen className="size-5" />
                 <p className="pl-2">Abrir Reporte</p>
+              </DropdownMenuItem>
+            )}
+
+            {isReportClosed() && mitigationTable.mitigation_plan?.id && (
+              <DropdownMenuItem
+                disabled={downloadCloseReportPdf.isPending}
+                onClick={() =>
+                  downloadCloseReportPdf.mutate({
+                    company: selectedCompany!.slug,
+                    id: mitigationTable.mitigation_plan!.id,
+                    report_number:
+                      mitigationTable.voluntary_report?.report_number ??
+                      mitigationTable.obligatory_report?.report_number,
+                  })
+                }
+              >
+                {downloadCloseReportPdf.isPending ? (
+                  <Loader2 className="size-5 animate-spin" />
+                ) : (
+                  <FileDown className="size-5" />
+                )}
+                <p className="pl-2">Descargar PDF</p>
               </DropdownMenuItem>
             )}
 
