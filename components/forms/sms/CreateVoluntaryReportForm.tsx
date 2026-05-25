@@ -475,7 +475,7 @@ export function CreateVoluntaryReportForm({
             <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
               Fechas
             </p>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <FormField
                 control={form.control}
                 name="identification_date"

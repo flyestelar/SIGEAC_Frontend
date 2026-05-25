@@ -48,7 +48,7 @@ export default function PreviewObligatoryReportPdfDialog({
       onClick={handleDownload}
       variant="outline"
       size="sm"
-      className="hidden h-8 lg:flex"
+      className="h-8"
       disabled={isDownloading}
     >
       {isDownloading ? (

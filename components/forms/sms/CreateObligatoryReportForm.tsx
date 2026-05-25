@@ -236,7 +236,7 @@ export function CreateObligatoryReportForm({
   const { createObligatoryReport } = useCreateObligatoryReport();
   const { updateObligatoryReport } = useUpdateObligatoryReport();
 
-  const { data: nextNumberData, isPending: isLoadingNextNumber } =
+  const { data: nextNumberData, isLoading: isLoadingNextNumber, isError: isErrorNextNumber } =
     useGetNextReportNumber(selectedCompany?.slug || null);
 
   const { data: stations, isLoading: isLoadingStations } = useGetSmsStations(selectedCompany?.slug);
@@ -272,9 +272,11 @@ export function CreateObligatoryReportForm({
 
   useEffect(() => {
     if (initialData && isEditing) {
-      if (initialData.report_number) form.setValue("report_number", initialData.report_number);
+      if (initialData.report_number) {
+        form.setValue("report_number", initialData.report_number, { shouldDirty: false });
+      }
     } else if (!isEditing && nextNumberData?.next_number) {
-      form.setValue("report_number", String(nextNumberData.next_number));
+      form.setValue("report_number", String(nextNumberData.next_number), { shouldDirty: false });
     }
   }, [initialData, isEditing, nextNumberData, form]);
 
@@ -340,7 +342,7 @@ export function CreateObligatoryReportForm({
                 Reporte Obligatorio de Suceso
               </span>
             </div>
-            {reportCode && (
+            {(reportCode || isLoadingNextNumber) && (
               <div className="flex items-center gap-1.5 bg-amber-500/10 border border-amber-500/30 rounded px-2.5 py-1">
                 <span className="text-[10px] font-semibold text-amber-600/70 dark:text-amber-400/70 tracking-widest">ROS</span>
                 <span className="text-[10px] text-amber-500/50">—</span>
@@ -364,15 +366,22 @@ export function CreateObligatoryReportForm({
                 render={({ field }) => (
                   <FormItem>
                     <FieldLabel>Código del Reporte</FieldLabel>
-                    <div className="flex items-center h-9 border border-border rounded-md bg-muted/20 overflow-hidden">
-                      <span className="px-2.5 border-r border-border text-[11px] font-bold text-amber-500 bg-amber-500/10 h-full flex items-center tracking-wider">
+                    <div className="flex items-center h-9 border border-border rounded-md overflow-hidden focus-within:ring-1 focus-within:ring-amber-500/40 focus-within:border-amber-500/50">
+                      <span className="px-2.5 border-r border-border text-[11px] font-bold text-amber-500 bg-amber-500/10 h-full flex items-center tracking-wider shrink-0">
                         ROS
                       </span>
-                      <span className="px-2.5 font-mono text-sm font-semibold text-foreground flex-1 flex items-center">
-                        {isLoadingNextNumber
-                          ? <Loader2 className="h-3.5 w-3.5 animate-spin text-amber-500" />
-                          : (field.value || <span className="text-muted-foreground/50">···</span>)}
-                      </span>
+                      {isLoadingNextNumber ? (
+                        <span className="px-2.5 flex-1 flex items-center">
+                          <Loader2 className="h-3.5 w-3.5 animate-spin text-amber-500" />
+                        </span>
+                      ) : (
+                        <input
+                          {...field}
+                          placeholder="Ingrese el código"
+                          className="px-2.5 font-mono text-sm font-semibold flex-1 h-full bg-muted/20 outline-none text-foreground placeholder:text-muted-foreground/50 placeholder:font-normal"
+                          onChange={(e) => field.onChange(e.target.value.toUpperCase())}
+                        />
+                      )}
                     </div>
                     <FormMessage className="text-xs" />
                   </FormItem>
@@ -443,7 +452,7 @@ export function CreateObligatoryReportForm({
 
         {/* ── 02 Fechas ── */}
         <Section num="02" icon={CalendarIcon} title="Fechas del Evento">
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <FormField
               control={form.control}
               name="incident_date"

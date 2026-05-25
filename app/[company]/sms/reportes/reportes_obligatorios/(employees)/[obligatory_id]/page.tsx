@@ -108,13 +108,13 @@ function StatusBadge({ status }: { status: string | undefined }) {
 /* ── Page ─────────────────────────────────────────────────── */
 
 const ShowObligatoryReport = () => {
-  const { obligarory_id } = useParams<{ obligarory_id: string }>();
+  const { obligatory_id } = useParams<{ obligatory_id: string }>();
   const router = useRouter();
   const { selectedCompany } = useCompanyStore();
 
   const { data: report, isLoading, isError } = useGetObligatoryReportById({
     company: selectedCompany?.slug ?? null,
-    id: obligarory_id,
+    id: obligatory_id,
   });
 
   const resolveUrl = (path: string | null | undefined) => {
@@ -187,9 +187,9 @@ const ShowObligatoryReport = () => {
 
       {/* ── Top bar ── */}
       <div className="border border-border rounded-lg overflow-hidden mb-4">
-        <div className="flex items-center justify-between flex-wrap gap-3 px-4 py-2.5 bg-muted/50 border-b border-border">
+        <div className="flex flex-col gap-2 px-4 py-2.5 bg-muted/50 border-b border-border sm:flex-row sm:items-center sm:justify-between">
 
-          {/* Left: back + code + status */}
+          {/* Back + code + status */}
           <div className="flex items-center gap-3">
             <Button
               variant="ghost"
@@ -211,7 +211,7 @@ const ShowObligatoryReport = () => {
             <StatusBadge status={report?.status} />
           </div>
 
-          {/* Right: actions */}
+          {/* Actions — wrap on mobile so all buttons are visible */}
           <div className="flex items-center gap-2 flex-wrap">
             {report && isOpen && !report.danger_identification && (
               <CreateDangerIdentificationDialog

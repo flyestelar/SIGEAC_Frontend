@@ -44,7 +44,7 @@ export default function DeleteObligatoryReportDialog(data: data) {
               onClick={() => setOpen(true)}
               variant="outline"
               size="sm"
-              className=" hidden h-8 lg:flex"
+              className="h-8"
             >
               Eliminar
             </Button>

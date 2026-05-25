@@ -35,12 +35,12 @@ export default function CreateObligatoryReportDialog({
               onClick={() => setOpen(true)}
               variant="outline"
               size="sm"
-              className=" hidden h-8 lg:flex"
+              className="h-8"
             >
               {title}
             </Button>
           </DialogTrigger>
-          <DialogContent className="flex flex-col max-w-2xl m-2 max-h-screen overflow-auto">
+          <DialogContent className="flex flex-col max-w-2xl m-2 max-h-screen overflow-auto rounded-2xl">
             <DialogHeader>
               <DialogTitle></DialogTitle>
               <DialogDescription></DialogDescription>
