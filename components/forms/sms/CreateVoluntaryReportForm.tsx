@@ -332,6 +332,13 @@ export function CreateVoluntaryReportForm({
   };
 
   const onSubmit = async (data: FormSchemaType) => {
+    if (newConsequence.trim() !== "") {
+      const flushed = [...(data.possible_consequences ?? []), newConsequence.trim()];
+      data.possible_consequences = flushed;
+      setConsequences(flushed);
+      setNewConsequence("");
+    }
+
     if (isAnonymous) {
       data.reporter_name = "";
       data.reporter_last_name = "";
