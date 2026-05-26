@@ -315,7 +315,7 @@ export function CreateVoluntaryReportForm({
       form.setValue("possible_consequences", updatedConsequences);
     }
   };
-
+ //Este comentario es para subir a vercel
   // Eliminar una consecuencia
   const removeConsequence = (index: number) => {
     const updatedConsequences = consequences.filter((_, i) => i !== index);
