@@ -42,7 +42,7 @@ import { addDays, format } from "date-fns";
 import { es } from "date-fns/locale";
 import { CalendarIcon, Loader2, Plus, X } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Label } from "@/components/ui/label";
 import { useCompanyStore } from "@/stores/CompanyStore";
 import axiosInstance from "@/lib/axios";
@@ -168,7 +168,9 @@ export function CreateVoluntaryReportForm({
       .max(900, {
         message: "La descripción no debe exceder los 900 caracteres",
       }),
-    possible_consequences: z.array(z.string()),
+    possible_consequences: z.array(z.string()).min(1, {
+      message: "Debe agregar al menos una consecuencia posible.",
+    }),
     recommendations: z
       .string()
       .min(3, {
@@ -331,14 +333,17 @@ export function CreateVoluntaryReportForm({
     }
   };
 
-  const onSubmit = async (data: FormSchemaType) => {
+  const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     if (newConsequence.trim() !== "") {
-      const flushed = [...(data.possible_consequences ?? []), newConsequence.trim()];
-      data.possible_consequences = flushed;
-      setConsequences(flushed);
+      const updated = [...consequences, newConsequence.trim()];
+      setConsequences(updated);
       setNewConsequence("");
+      form.setValue("possible_consequences", updated, { shouldValidate: false });
     }
+    form.handleSubmit(onSubmit)(e);
+  };
 
+  const onSubmit = async (data: FormSchemaType) => {
     if (isAnonymous) {
       data.reporter_name = "";
       data.reporter_last_name = "";
@@ -370,6 +375,7 @@ export function CreateVoluntaryReportForm({
           ...data,
           report_date: data.report_date.toISOString(),
           identification_date: data.identification_date.toISOString(),
+
           status: (shouldEnableField ? "ABIERTO" : "PROCESO") as "ABIERTO" | "PROCESO" | "CERRADO",
           is_anonymous: (data.is_anonymous ? 1 : 0) as 0 | 1,
         },
@@ -394,7 +400,7 @@ export function CreateVoluntaryReportForm({
     <>
     <Form {...form}>
       <form
-        onSubmit={form.handleSubmit(onSubmit)}
+        onSubmit={handleFormSubmit}
         className="flex w-full flex-col gap-4 p-1"
       >
           <FormLabel className="text-lg text-center m-2">
