@@ -42,7 +42,7 @@ import { addDays, format } from "date-fns";
 import { es } from "date-fns/locale";
 import { CalendarIcon, Loader2, Plus, X } from "lucide-react";
 import { useRouter } from "next/navigation";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Label } from "@/components/ui/label";
 import { useCompanyStore } from "@/stores/CompanyStore";
 import axiosInstance from "@/lib/axios";
@@ -168,9 +168,7 @@ export function CreateVoluntaryReportForm({
       .max(900, {
         message: "La descripción no debe exceder los 900 caracteres",
       }),
-    possible_consequences: z.array(z.string()).min(1, {
-      message: "Debe agregar al menos una consecuencia posible.",
-    }),
+    possible_consequences: z.array(z.string()),
     recommendations: z
       .string()
       .min(3, {
@@ -333,17 +331,24 @@ export function CreateVoluntaryReportForm({
     }
   };
 
-  const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    if (newConsequence.trim() !== "") {
-      const updated = [...consequences, newConsequence.trim()];
-      setConsequences(updated);
-      setNewConsequence("");
-      form.setValue("possible_consequences", updated, { shouldValidate: false });
-    }
-    form.handleSubmit(onSubmit)(e);
-  };
-
   const onSubmit = async (data: FormSchemaType) => {
+    // Merge any text typed but not confirmed with Enter
+    const finalConsequences =
+      newConsequence.trim() !== ""
+        ? [...(data.possible_consequences ?? []), newConsequence.trim()]
+        : (data.possible_consequences ?? []);
+
+    if (finalConsequences.length === 0) {
+      form.setError("possible_consequences", {
+        type: "manual",
+        message: "Debe agregar al menos una consecuencia posible.",
+      });
+      return;
+    }
+
+    setConsequences(finalConsequences);
+    setNewConsequence("");
+
     if (isAnonymous) {
       data.reporter_name = "";
       data.reporter_last_name = "";
@@ -363,6 +368,7 @@ export function CreateVoluntaryReportForm({
         id: initialData.id.toString(),
         data: {
           ...rest,
+          possible_consequences: finalConsequences,
           status: initialData.status ?? "",
           danger_identification_id: initialData.danger_identification_id ?? null,
         },
@@ -373,9 +379,9 @@ export function CreateVoluntaryReportForm({
         company: selectedCompany!.slug,
         reportData: {
           ...data,
+          possible_consequences: finalConsequences,
           report_date: data.report_date.toISOString(),
           identification_date: data.identification_date.toISOString(),
-
           status: (shouldEnableField ? "ABIERTO" : "PROCESO") as "ABIERTO" | "PROCESO" | "CERRADO",
           is_anonymous: (data.is_anonymous ? 1 : 0) as 0 | 1,
         },
@@ -400,7 +406,7 @@ export function CreateVoluntaryReportForm({
     <>
     <Form {...form}>
       <form
-        onSubmit={handleFormSubmit}
+        onSubmit={form.handleSubmit(onSubmit)}
         className="flex w-full flex-col gap-4 p-1"
       >
           <FormLabel className="text-lg text-center m-2">
