@@ -60,7 +60,7 @@ export function CreateCourseForm({
     .object({
       name: z.string(),
       description: z.string(),
-      course_type: z.string(),
+      course_type: z.string().min(1, "Debes seleccionar un tipo de curso"),
       instructor: z.string().optional(),
       end_date: z
         .date()
@@ -242,16 +242,8 @@ export function CreateCourseForm({
                         selected={field.value}
                         onSelect={field.onChange}
                         initialFocus
-                        fromYear={1988}
-                        toYear={new Date().getFullYear() + 5}
-                        captionLayout="dropdown-buttons"
-                        components={{
-                          Dropdown: (props) => (
-                            <select {...props} className="bg-popover text-popover-foreground">
-                              {props.children}
-                            </select>
-                          ),
-                        }}
+                        startMonth={new Date(1988, 0)}
+                        endMonth={new Date(new Date().getFullYear() + 5, 11)}
                       />
                     </PopoverContent>
                   </Popover>
@@ -290,16 +282,8 @@ export function CreateCourseForm({
                         selected={field.value}
                         onSelect={field.onChange}
                         initialFocus
-                        fromYear={1980}
-                        toYear={new Date().getFullYear() + 5}
-                        captionLayout="dropdown-buttons"
-                        components={{
-                          Dropdown: (props) => (
-                            <select {...props} className="bg-popover text-popover-foreground">
-                              {props.children}
-                            </select>
-                          ),
-                        }}
+                        startMonth={new Date(1980, 0)}
+                        endMonth={new Date(new Date().getFullYear() + 5, 11)}
                       />
                     </PopoverContent>
                   </Popover>

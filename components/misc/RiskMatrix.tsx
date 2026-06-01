@@ -49,23 +49,26 @@ const RiskMatrix: FC<RiskMatrixProps> = ({ onCellClick, selectedProbability, sel
   };
 
   return (
-    <div className="flex flex-col items-center">
-      <table className="table-auto border-collapse border border-gray-400">
+    <div className="w-full overflow-x-auto">
+      <table className="table-auto border-collapse border border-gray-400 min-w-[340px] text-xs sm:text-sm">
         <thead>
           <tr>
             <th></th>
-            <th colSpan={5} className="border border-gray-400 p-2 text-center">
+            <th colSpan={5} className="border border-gray-400 p-1 sm:p-2 text-center">
               Severidad del Riesgo
             </th>
           </tr>
           <tr>
-            <th className="flex justify-center items-center">Probabilidad</th>
+            <th className="border border-gray-400 p-1 sm:p-2 text-center text-xs">
+              Probabilidad
+            </th>
             {severities.map((severity) => (
               <th
                 key={severity.code}
-                className="border border-gray-400 p-2 text-center font-semibold"
+                className="border border-gray-400 p-1 sm:p-2 text-center font-semibold"
               >
-                {severity.name} {severity.code}
+                <span className="hidden sm:inline">{severity.name} </span>
+                {severity.code}
               </th>
             ))}
           </tr>
@@ -73,8 +76,8 @@ const RiskMatrix: FC<RiskMatrixProps> = ({ onCellClick, selectedProbability, sel
         <tbody>
           {probabilities.map((probability) => (
             <tr key={probability.value}>
-              <td className="flex-col border border-gray-400 p-2 text-center font-semibold">
-                <p>{probability.name}</p>
+              <td className="border border-gray-400 p-1 sm:p-2 text-center font-semibold text-xs">
+                <p className="hidden sm:block">{probability.name}</p>
                 <p>{probability.value}</p>
               </td>
               {severities.map((severity) => {
@@ -85,7 +88,7 @@ const RiskMatrix: FC<RiskMatrixProps> = ({ onCellClick, selectedProbability, sel
                   <td
                     key={`${severity.code}-${probability.value}`}
                     onClick={() => onCellClick?.(String(probability.value), severity.code)}
-                    className={`border border-gray-400 p-4 ${getRiskColor(
+                    className={`border border-gray-400 p-2 sm:p-4 ${getRiskColor(
                       severity.code,
                       probability.value
                     )} text-center ${onCellClick ? "cursor-pointer" : ""} ${isSelected ? "ring-4 ring-inset ring-white font-bold" : ""}`}

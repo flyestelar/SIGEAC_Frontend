@@ -7,23 +7,19 @@ import { ContentLayout } from "@/components/layout/ContentLayout";
 import LoadingPage from "@/components/misc/LoadingPage";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+import { useDownloadDangerIdentificationPdf } from "@/actions/sms/peligros_identificados/actions";
 import { useGetDangerIdentificationById } from "@/hooks/sms/useGetDangerIdentificationById";
 import { useCompanyStore } from "@/stores/CompanyStore";
 import {
   AlertCircle,
   AlertTriangle,
   ChevronRight,
+  FileDown,
   FileText,
   Info,
   Layers,
   List,
+  Loader2,
   Shield,
 } from "lucide-react";
 import Link from "next/link";
@@ -32,6 +28,7 @@ import { useParams } from "next/navigation";
 const ShowDangerIdentification = () => {
   const { identification_id } = useParams<{ identification_id: string }>();
   const { selectedCompany } = useCompanyStore();
+  const { downloadDangerIdentificationPdf } = useDownloadDangerIdentificationPdf();
 
   const {
     data: dangerIdentification,
@@ -64,135 +61,140 @@ const ShowDangerIdentification = () => {
 
   return (
     <ContentLayout title="Identificación de Peligro">
+      <div className="mt-6 flex flex-col gap-4">
       {/* Botones de acción */}
-      <div className="flex justify-evenly flex-wrap gap-4 mb-6">
+      <div className="flex flex-wrap gap-2">
+        {dangerIdentification && (
+          <Button
+            size="sm"
+            disabled={downloadDangerIdentificationPdf.isPending}
+            onClick={() =>
+              downloadDangerIdentificationPdf.mutate({
+                company: selectedCompany!.slug,
+                id: dangerIdentification.id,
+                report_number:
+                  dangerIdentification.voluntary_report?.report_number ??
+                  dangerIdentification.obligatory_report?.report_number,
+              })
+            }
+          >
+            {downloadDangerIdentificationPdf.isPending ? (
+              <Loader2 className="size-4 animate-spin" />
+            ) : (
+              <FileDown className="size-4" />
+            )}
+            Generar PDF
+          </Button>
+        )}
+
         {dangerIdentification && status === "ABIERTO" && (
           <>
-            <Dialog>
-              <DialogTrigger asChild>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="hidden h-8 lg:flex"
-                >
-                  Editar Identificación
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="max-h-[90vh] overflow-y-auto">
-                <DialogHeader></DialogHeader>
-                <CreateDangerIdentificationDialog
-                  title="Editar Identificación"
-                  id={id}
-                  isEditing={true}
-                  initialData={dangerIdentification}
-                  reportType={reportType}
-                />
-              </DialogContent>
-            </Dialog>
-
-            <div className="flex items-center">
-              <DeleteDangerIdentificationDialog
-                id={dangerIdentification.id}
-                company={selectedCompany!.slug}
-              />
-            </div>
+            <CreateDangerIdentificationDialog
+              title="Editar Identificación"
+              id={id}
+              isEditing={true}
+              initialData={dangerIdentification}
+              reportType={reportType}
+            />
+            <DeleteDangerIdentificationDialog
+              id={dangerIdentification.id}
+              company={selectedCompany!.slug}
+            />
           </>
         )}
 
-        {dangerIdentification &&
-          !dangerIdentification.analysis &&
-          status === "ABIERTO" && (
-            <div className="flex items-center">
-              <CreateAnalysesDialog
-                buttonTitle="Crear Análisis"
-                name="identification"
-                id={dangerIdentification.id}
-              />
-            </div>
-          )}
+        {dangerIdentification && !dangerIdentification.analysis && status === "ABIERTO" && (
+          <CreateAnalysesDialog
+            buttonTitle="Crear Análisis"
+            name="identification"
+            id={dangerIdentification.id}
+          />
+        )}
 
         {dangerIdentification?.analysis && status === "ABIERTO" && (
-          <div className="flex items-center">
-            <CreateAnalysesDialog
-              buttonTitle="Editar Análisis"
-              name="identification"
-              id={dangerIdentification.id}
-              isEditing={true}
-              initialData={dangerIdentification.analysis}
-            />
-          </div>
+          <CreateAnalysesDialog
+            buttonTitle="Editar Análisis"
+            name="identification"
+            id={dangerIdentification.id}
+            isEditing={true}
+            initialData={dangerIdentification.analysis}
+          />
         )}
       </div>
 
       {/* Contenido principal */}
-      <div className="flex flex-col justify-center items-center border border-gray-300 rounded-lg p-8 gap-6 shadow-md dark:border-gray-700">
-        <div className="flex items-center gap-3">
-          <AlertTriangle className="w-10 h-10 text-yellow-600" />
-          <h1 className="text-3xl font-bold text-center text-gray-800 dark:text-white">
+      <div className="mt-8 border border-gray-300 dark:border-gray-700 rounded-lg shadow-sm overflow-hidden">
+
+        {/* Header de la sección */}
+        <div className="flex items-center gap-3 px-4 py-4 border-b border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
+          <AlertTriangle className="w-5 h-5 text-yellow-600 flex-shrink-0" />
+          <h1 className="text-base font-semibold text-gray-800 dark:text-white">
             Detalles de Identificación de Peligro
           </h1>
         </div>
 
         {dangerIdentification && (
-          <div className="w-full space-y-6">
-            {/* Información básica del peligro */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="border border-gray-300 dark:border-gray-600 p-6 rounded-lg space-y-3">
-                <div className="flex items-center justify-center gap-3">
-                  <AlertTriangle className="w-6 h-6 text-gray-600 dark:text-gray-300 flex-shrink-0" />
-                  <p className="text-lg font-semibold text-gray-700 dark:text-gray-300">
-                    <span className="font-bold">Peligro:</span>{" "}
-                    {dangerIdentification.danger}
-                  </p>
-                </div>
+          <div className="p-4 space-y-4">
+
+            {/* Información básica — apilada en móvil, 3 columnas en md+ */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div className="border border-gray-200 dark:border-gray-600 rounded-lg p-4 space-y-1">
+                <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground flex items-center gap-1.5">
+                  <AlertTriangle className="w-3.5 h-3.5" />
+                  Peligro
+                </p>
+                <p className="text-sm font-medium text-gray-800 dark:text-gray-100">
+                  {dangerIdentification.danger}
+                </p>
               </div>
 
-              <div className="border border-gray-300 dark:border-gray-600 p-6 rounded-lg">
-                <div className="flex items-center gap-3">
-                  <Layers className="w-6 h-6 text-gray-600 dark:text-gray-300 flex-shrink-0" />
-                  <p className="text-lg font-semibold text-gray-700 dark:text-gray-300">
-                    <span className="font-bold">Área de Peligro:</span>{" "}
-                    {dangerIdentification.danger_area}
-                  </p>
-                </div>
+              <div className="border border-gray-200 dark:border-gray-600 rounded-lg p-4 space-y-1">
+                <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground flex items-center gap-1.5">
+                  <Layers className="w-3.5 h-3.5" />
+                  Área de Peligro
+                </p>
+                <p className="text-sm font-medium text-gray-800 dark:text-gray-100">
+                  {dangerIdentification.danger_area ||
+                    dangerIdentification.sms_area?.name ||
+                    "—"}
+                </p>
               </div>
 
-              <div className="border border-gray-300 dark:border-gray-600 p-6 rounded-lg">
-                <div className="flex items-center gap-3">
-                  <FileText className="w-6 h-6 text-gray-600 dark:text-gray-300 flex-shrink-0" />
-                  <p className="text-lg font-semibold text-gray-700 dark:text-gray-300">
-                    <span className="font-bold">Tipo de Peligro:</span>{" "}
-                    {dangerIdentification.danger_type}
-                  </p>
-                </div>
+              <div className="border border-gray-200 dark:border-gray-600 rounded-lg p-4 space-y-1">
+                <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground flex items-center gap-1.5">
+                  <FileText className="w-3.5 h-3.5" />
+                  Tipo de Peligro
+                </p>
+                <p className="text-sm font-medium text-gray-800 dark:text-gray-100">
+                  {dangerIdentification.danger_type}
+                </p>
               </div>
             </div>
 
-            <div className="flex gap-2">
-              {/* Fuente de información */}
+            {/* Fuente de información + Descripción — apiladas en móvil, lado a lado en lg+ */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
               {dangerIdentification.information_source && (
-                <div className="border border-gray-300 dark:border-gray-600 p-6 rounded-lg w-full">
-                  <h3 className="text-xl font-semibold mb-4 flex items-center gap-3">
-                    <Info className="w-6 h-6" />
+                <div className="border border-gray-200 dark:border-gray-600 rounded-lg p-4 space-y-3">
+                  <h3 className="text-sm font-semibold flex items-center gap-2 text-gray-700 dark:text-gray-200">
+                    <Info className="w-4 h-4 flex-shrink-0" />
                     Fuente de Información
                   </h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-1">
-                      <p className="font-medium text-gray-700 dark:text-gray-300">
-                        Nombre:
+                  <div className="space-y-2">
+                    <div>
+                      <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+                        Nombre
                       </p>
-                      <p className="text-gray-600 dark:text-gray-400">
+                      <p className="text-sm text-gray-700 dark:text-gray-300">
                         {dangerIdentification.information_source.name}
                       </p>
                     </div>
-                    <div className="space-y-1">
-                      <p className="font-medium text-gray-700 dark:text-gray-300">
-                        Método de identificación:
+                    <div>
+                      <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground mb-1">
+                        Método de identificación
                       </p>
                       <Badge
-                        className={`justify-center items-center text-center font-bold text-sm px-3 py-1 ${
-                          dangerIdentification.information_source.type ===
-                          "PROACTIVO"
+                        className={`text-xs font-bold px-2 py-0.5 ${
+                          dangerIdentification.information_source.type === "PROACTIVO"
                             ? "bg-green-200 text-green-800 border-green-200 dark:bg-green-900/40 dark:text-green-300 dark:border-green-700"
                             : "bg-red-100 text-red-800 border-red-200 dark:bg-red-900/30 dark:text-red-300 dark:border-red-700"
                         }`}
@@ -204,33 +206,32 @@ const ShowDangerIdentification = () => {
                 </div>
               )}
 
-              {/* Descripción */}
-              <div className="border border-gray-300 dark:border-gray-600 p-6 rounded-lg w-full">
-                <h3 className="text-xl font-semibold mb-4 flex items-center gap-3">
-                  <FileText className="w-6 h-6" />
+              <div className="border border-gray-200 dark:border-gray-600 rounded-lg p-4 space-y-3">
+                <h3 className="text-sm font-semibold flex items-center gap-2 text-gray-700 dark:text-gray-200">
+                  <FileText className="w-4 h-4 flex-shrink-0" />
                   Descripción
                 </h3>
-                <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
+                <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
                   {dangerIdentification.description || "N/A"}
                 </p>
               </div>
             </div>
 
-            <div className="flex gap-2">
-              {/* Consecuencias */}
+            {/* Consecuencias + Defensas — apiladas en móvil, lado a lado en lg+ */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
               {dangerIdentification.possible_consequences && (
-                <div className="border border-gray-300 dark:border-gray-600 p-6 rounded-lg w-full">
-                  <h3 className="text-xl font-semibold mb-4 flex items-center gap-3">
-                    <List className="w-6 h-6" />
+                <div className="border border-gray-200 dark:border-gray-600 rounded-lg p-4 space-y-3">
+                  <h3 className="text-sm font-semibold flex items-center gap-2 text-gray-700 dark:text-gray-200">
+                    <List className="w-4 h-4 flex-shrink-0" />
                     Posibles Consecuencias
                   </h3>
-                  <ul className="space-y-3">
+                  <ul className="space-y-2">
                     {dangerIdentification.possible_consequences
-                      .split(",")
+                      .split("~")
                       .map((consequence, index) => (
-                        <li key={index} className="flex items-start gap-3">
-                          <ChevronRight className="w-5 h-5 mt-1 flex-shrink-0 text-gray-500" />
-                          <span className="text-gray-600 dark:text-gray-400">
+                        <li key={index} className="flex items-start gap-2">
+                          <ChevronRight className="w-4 h-4 mt-0.5 flex-shrink-0 text-gray-400" />
+                          <span className="text-sm text-gray-600 dark:text-gray-400">
                             {consequence.trim()}
                           </span>
                         </li>
@@ -239,20 +240,19 @@ const ShowDangerIdentification = () => {
                 </div>
               )}
 
-              {/* Defensas actuales */}
               {dangerIdentification.current_defenses && (
-                <div className="border border-gray-300 dark:border-gray-600 p-6 rounded-lg w-full">
-                  <h3 className="text-xl font-semibold mb-4 flex items-center gap-3">
-                    <Shield className="w-6 h-6" />
+                <div className="border border-gray-200 dark:border-gray-600 rounded-lg p-4 space-y-3">
+                  <h3 className="text-sm font-semibold flex items-center gap-2 text-gray-700 dark:text-gray-200">
+                    <Shield className="w-4 h-4 flex-shrink-0" />
                     Defensas Actuales
                   </h3>
-                  <ul className="space-y-3">
+                  <ul className="space-y-2">
                     {dangerIdentification.current_defenses
-                      .split(",")
+                      .split("~")
                       .map((defense, index) => (
-                        <li key={index} className="flex items-start gap-3">
-                          <ChevronRight className="w-5 h-5 mt-1 flex-shrink-0 text-gray-500" />
-                          <span className="text-gray-600 dark:text-gray-400">
+                        <li key={index} className="flex items-start gap-2">
+                          <ChevronRight className="w-4 h-4 mt-0.5 flex-shrink-0 text-gray-400" />
+                          <span className="text-sm text-gray-600 dark:text-gray-400">
                             {defense.trim()}
                           </span>
                         </li>
@@ -262,20 +262,22 @@ const ShowDangerIdentification = () => {
               )}
             </div>
 
-            {/* Análisis de causa raíz */}
-            <div className="border border-gray-300 dark:border-gray-600 p-6 rounded-lg">
-              <h3 className="text-xl font-semibold mb-4 flex items-center gap-3">
-                <AlertCircle className="w-6 h-6" />
+            {/* Análisis de causa raíz — ocupa todo el ancho */}
+            <div className="border border-gray-200 dark:border-gray-600 rounded-lg p-4 space-y-3">
+              <h3 className="text-sm font-semibold flex items-center gap-2 text-gray-700 dark:text-gray-200">
+                <AlertCircle className="w-4 h-4 flex-shrink-0" />
                 Análisis de Causa Raíz
               </h3>
-              <ul className="space-y-3">
+              <ul className="space-y-2">
                 {dangerIdentification.root_cause_analysis
-                  .split(",")
+                  .split("~")
                   .map((analysis, index) => (
-                    <li key={index} className="flex items-start gap-3">
-                      <ChevronRight className="w-5 h-5 mt-1 flex-shrink-0 text-gray-500" />
-                      <span className="text-gray-600 dark:text-gray-400">
-                        {index === 0 ? "¿Por qué Sucedió?" : "¿Por qué?"}{" "}
+                    <li key={index} className="flex items-start gap-2">
+                      <ChevronRight className="w-4 h-4 mt-0.5 flex-shrink-0 text-gray-400" />
+                      <span className="text-sm text-gray-600 dark:text-gray-400">
+                        <span className="font-medium text-gray-700 dark:text-gray-300">
+                          {index === 0 ? "¿Por qué Sucedió? " : "¿Por qué? "}
+                        </span>
                         {analysis.trim()}
                       </span>
                     </li>
@@ -286,35 +288,32 @@ const ShowDangerIdentification = () => {
         )}
 
         {isError && (
-          <div className="border border-red-300 dark:border-red-700 rounded-lg p-8 w-full flex flex-col items-center gap-6">
-            <div className="flex flex-col items-center gap-4">
-              <AlertCircle className="h-14 w-14 text-red-500" />
-              <h1 className="text-2xl font-bold text-center text-red-600 dark:text-red-400">
-                Error al cargar la identificación
-              </h1>
-              <p className="text-lg text-red-700 dark:text-red-300 text-center">
-                No se pudieron cargar los datos de la identificación de peligro
-              </p>
-              <div className="flex gap-4 mt-4">
-                <Button
-                  variant="outline"
-                  onClick={() => window.location.reload()}
-                  className="border-red-300 text-red-700 hover:bg-red-100 dark:hover:bg-red-800/30 h-10 px-4"
-                >
-                  Reintentar
+          <div className="p-6 flex flex-col items-center gap-4">
+            <AlertCircle className="h-10 w-10 text-red-500" />
+            <h1 className="text-lg font-bold text-center text-red-600 dark:text-red-400">
+              Error al cargar la identificación
+            </h1>
+            <p className="text-sm text-red-700 dark:text-red-300 text-center">
+              No se pudieron cargar los datos de la identificación de peligro
+            </p>
+            <div className="flex flex-wrap justify-center gap-3 mt-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => window.location.reload()}
+                className="border-red-300 text-red-700 hover:bg-red-100 dark:hover:bg-red-800/30"
+              >
+                Reintentar
+              </Button>
+              <Link href="/transmandu/sms/peligros_identificados">
+                <Button variant="outline" size="sm" className="hover:bg-gray-100 dark:hover:bg-gray-700">
+                  Volver a la lista
                 </Button>
-                <Link href="/transmandu/sms/peligros_identificados">
-                  <Button
-                    variant="outline"
-                    className="hover:bg-gray-100 dark:hover:bg-gray-700 h-10 px-4"
-                  >
-                    Volver a la lista
-                  </Button>
-                </Link>
-              </div>
+              </Link>
             </div>
           </div>
         )}
+      </div>
       </div>
     </ContentLayout>
   );

@@ -23,7 +23,7 @@ const fetchAttendanceList = async ({
   activity_id: string;
 }): Promise<AttendanceData[]> => {
   const { data } = await axiosInstance.get(
-    `/${company}/sms/activities/${activity_id}/attendance-list`
+    `/${company}/sms/activities/${activity_id}/enrolled-employees`
   );
   return data;
 };

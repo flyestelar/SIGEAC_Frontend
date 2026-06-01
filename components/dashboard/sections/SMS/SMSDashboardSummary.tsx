@@ -271,7 +271,7 @@ export default function DashboardSummary({
                     className="p-4 border rounded flex gap-2 w-full items-center justify-between"
                   >
                     <p>Fecha: {dateFormat(report.report_date, "yyyy-MM-dd")}</p>
-                    <p>Aeronave: {report.aircraft.acronym}</p>
+                    <p>Aeronave: {report.aircraft?.acronym ?? "N/A"}</p>
                     <p>Lugar de Incidente: {report.incident_location}</p>
                     <Badge className="bg-red-500">Obligatorio</Badge>
                     <Button className="" variant="outline">

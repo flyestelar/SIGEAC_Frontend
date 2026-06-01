@@ -28,7 +28,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 
-import { Separator } from "@radix-ui/react-select";
+import { Separator } from "@/components/ui/separator";
 import {
   useCreateMitigationMeasure,
   useUpdateMitigationMeasure,
@@ -143,7 +143,7 @@ export default function CreateMitigationMeasureForm({
           )}
         />
 
-        <div className="flex justify-center items-center gap-2">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <FormField
             control={form.control}
             name="implementation_responsible"
@@ -178,7 +178,7 @@ export default function CreateMitigationMeasureForm({
           />
         </div>
 
-        <div className="flex justify-center items-center gap-2">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <FormField
             control={form.control}
             name="estimated_date"
@@ -256,9 +256,6 @@ export default function CreateMitigationMeasureForm({
                       selected={field.value || undefined} // Convert null to undefined
                       onSelect={field.onChange}
                       initialFocus
-                      fromYear={2000}
-                      toYear={new Date().getFullYear()}
-                      captionLayout="dropdown"
                     />
                   </PopoverContent>
                 </Popover>

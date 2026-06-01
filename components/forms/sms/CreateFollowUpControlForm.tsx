@@ -27,10 +27,18 @@ import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 
 import { useCreateFollowUpControl } from "@/actions/sms/controles_de_seguimiento/actions";
-import { Separator } from "@radix-ui/react-select";
+import { useGetActivitiesByMeasure } from "@/hooks/sms/useGetActivitiesByMeasure";
+import { Separator } from "@/components/ui/separator";
 import { useParams } from "next/navigation";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import Image from "next/image";
 import { useCompanyStore } from "@/stores/CompanyStore";
 const FormSchema = z.object({
@@ -42,6 +50,8 @@ const FormSchema = z.object({
   date: z
     .date()
     .refine((val) => !isNaN(val.getTime()), { message: "Invalid Date" }),
+
+  sms_activity_id: z.number().nullable().optional(),
 
   image: z
     .instanceof(File)
@@ -77,9 +87,13 @@ export default function CreateFollowUpControlForm({ onClose, id }: FormProps) {
   const { selectedCompany } = useCompanyStore();
 
   const { createFollowUpControl } = useCreateFollowUpControl();
+  const { data: activities } = useGetActivitiesByMeasure({
+    company: selectedCompany?.slug,
+    measure_id: id,
+  });
   const form = useForm<FormSchemaType>({
     resolver: zodResolver(FormSchema),
-    defaultValues: { date: new Date() },
+    defaultValues: { date: new Date(), sms_activity_id: null },
   });
 
   const onSubmit = async (data: FormSchemaType) => {
@@ -100,49 +114,74 @@ export default function CreateFollowUpControlForm({ onClose, id }: FormProps) {
     <Form {...form}>
       <form
         onSubmit={form.handleSubmit(onSubmit)}
-        className="flex flex-col space-y-3"
+        className="flex flex-col gap-4"
       >
-        <FormLabel className="text-lg text-center m-2">
-          Control de Seguimiento
-        </FormLabel>
-
         <FormField
           control={form.control}
           name="description"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Descripcion del Control</FormLabel>
+              <FormLabel className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+                Descripción del Control
+              </FormLabel>
               <FormControl>
-                <Textarea placeholder="" {...field} />
+                <Textarea placeholder="Describe el control de seguimiento" {...field} />
               </FormControl>
               <FormMessage className="text-xs" />
             </FormItem>
           )}
         />
+
+        <FormField
+          control={form.control}
+          name="sms_activity_id"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+                Actividad SMS Vinculada (opcional)
+              </FormLabel>
+              <Select
+                onValueChange={(val) => field.onChange(val === "none" ? null : Number(val))}
+                value={field.value != null ? String(field.value) : "none"}
+              >
+                <FormControl>
+                  <SelectTrigger className="w-full">
+                    <span className="truncate">
+                      <SelectValue placeholder="Sin actividad vinculada" />
+                    </span>
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <SelectItem value="none">Sin actividad vinculada</SelectItem>
+                  {activities?.map((a) => (
+                    <SelectItem key={a.id} value={String(a.id)}>
+                      {a.activity_number} — {a.title || a.activity_name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
         <FormField
           control={form.control}
           name="date"
           render={({ field }) => (
-            <FormItem className="flex flex-col mt-2.5 w-full">
-              <FormLabel>Fecha del Seguimiento</FormLabel>
+            <FormItem className="flex flex-col">
+              <FormLabel className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+                Fecha del Seguimiento
+              </FormLabel>
               <Popover>
                 <PopoverTrigger asChild>
                   <FormControl>
                     <Button
-                      variant={"outline"}
-                      className={cn(
-                        "w-full pl-3 text-left font-normal",
-                        !field.value && "text-muted-foreground"
-                      )}
+                      variant="outline"
+                      className={cn("w-full pl-3 text-left font-normal", !field.value && "text-muted-foreground")}
                     >
-                      {field.value ? (
-                        format(field.value, "PPP", {
-                          locale: es,
-                        })
-                      ) : (
-                        <span>Seleccione una fecha</span>
-                      )}
-                      <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                      {field.value ? format(field.value, "PPP", { locale: es }) : <span>Seleccione una fecha</span>}
+                      <CalendarIcon className="ml-auto h-4 w-4 opacity-50 flex-shrink-0" />
                     </Button>
                   </FormControl>
                 </PopoverTrigger>
@@ -151,11 +190,11 @@ export default function CreateFollowUpControlForm({ onClose, id }: FormProps) {
                     mode="single"
                     selected={field.value}
                     onSelect={field.onChange}
-                    disabled={(date) => date > new Date()} // Solo deshabilitar fechas futuras
+                    disabled={(date) => date > new Date()}
                     initialFocus
-                    startMonth={new Date(1980, 0)} // Año mínimo que se mostrará
-                    endMonth={new Date(new Date().getFullYear(), 11)} // Año máximo (actual)
-                    captionLayout="dropdown" // Selectores de año/mes
+                    startMonth={new Date(1980, 0)}
+                    endMonth={new Date(new Date().getFullYear(), 11)}
+                    captionLayout="dropdown"
                   />
                 </PopoverContent>
               </Popover>
@@ -164,25 +203,25 @@ export default function CreateFollowUpControlForm({ onClose, id }: FormProps) {
           )}
         />
 
-        <div className="flex justify-center items-center gap-2">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <FormField
             control={form.control}
             name="image"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Imagen General</FormLabel>
-
-                <div className="flex items-center gap-4">
+                <FormLabel className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+                  Imagen General
+                </FormLabel>
+                <div className="flex flex-col gap-2">
                   {field.value && (
                     <Image
                       src={URL.createObjectURL(field.value)}
                       alt="Preview"
-                      className="h-16 w-16 rounded-md object-cover"
-                      width={64}
-                      height={64}
+                      className="h-32 w-full rounded-lg object-cover border"
+                      width={400}
+                      height={128}
                     />
                   )}
-
                   <FormControl>
                     <Input
                       type="file"
@@ -191,7 +230,6 @@ export default function CreateFollowUpControlForm({ onClose, id }: FormProps) {
                     />
                   </FormControl>
                 </div>
-
                 <FormMessage />
               </FormItem>
             )}
@@ -202,16 +240,14 @@ export default function CreateFollowUpControlForm({ onClose, id }: FormProps) {
             name="document"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Documento PDF</FormLabel>
-                <div className="flex items-center gap-4">
+                <FormLabel className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+                  Documento PDF
+                </FormLabel>
+                <div className="flex flex-col gap-2">
                   {field.value && (
-                    <div>
-                      <p className="text-sm text-gray-500">
-                        Archivo seleccionado:
-                      </p>
-                      <p className="font-semibold text-sm">
-                        {field.value.name}
-                      </p>
+                    <div className="rounded-lg border border-border bg-muted/40 px-3 py-2">
+                      <p className="text-xs text-muted-foreground">Archivo seleccionado:</p>
+                      <p className="font-semibold text-sm truncate">{field.value.name}</p>
                     </div>
                   )}
                   <FormControl>
@@ -227,12 +263,16 @@ export default function CreateFollowUpControlForm({ onClose, id }: FormProps) {
             )}
           />
         </div>
-        <div className="flex justify-between items-center gap-x-4">
+
+        <div className="flex items-center gap-3 text-muted-foreground">
           <Separator className="flex-1" />
-          <p className="text-muted-foreground">SIGEAC</p>
+          <span className="text-xs">SIGEAC</span>
           <Separator className="flex-1" />
         </div>
-        <Button>Enviar </Button>
+
+        <Button type="submit" disabled={createFollowUpControl.isPending} className="w-full rounded-xl">
+          {createFollowUpControl.isPending ? "Enviando..." : "Enviar"}
+        </Button>
       </form>
     </Form>
   );

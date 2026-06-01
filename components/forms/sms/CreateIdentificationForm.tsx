@@ -33,6 +33,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useGetInformationSources } from "@/hooks/sms/useGetInformationSource";
+import { useGetSmsAreas } from "@/hooks/sms/useGetSmsAreas";
 import { cn } from "@/lib/utils";
 import { useCompanyStore } from "@/stores/CompanyStore";
 import { DangerIdentification } from "@/types";
@@ -46,6 +47,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { CreateInformationSourceForm } from "@/components/forms/sms/CreateInformationSourceForm";
+import { CreateSmsAreaForm } from "@/components/forms/sms/CreateSmsAreaForm";
 import { CalendarIcon, Loader2, Plus, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -55,7 +57,7 @@ const FormSchema = z.object({
     .string()
     .min(3, { message: "El peligro debe tener al menos 3 caracteres" })
     .max(1000, { message: "El peligro no debe exceder los 245 caracteres" }),
-  danger_area: z.string(),
+  sms_area_id: z.number().optional(),
   risk_management_start_date: z
     .date()
     .refine((val) => !isNaN(val.getTime()), { message: "Invalid Date" }),
@@ -119,6 +121,7 @@ export default function CreateDangerIdentificationForm({
   const { selectedCompany } = useCompanyStore();
   const { data: informationSources, isLoading: isLoadingSources } =
     useGetInformationSources(selectedCompany?.slug);
+  const { data: smsAreas, isLoading: isLoadingAreas } = useGetSmsAreas(selectedCompany?.slug);
   const { createDangerIdentification } = useCreateDangerIdentification();
   const { updateDangerIdentification } = useUpdateDangerIdentification();
   const router = useRouter();
@@ -133,40 +136,8 @@ export default function CreateDangerIdentificationForm({
   const [newAnalysis, setNewAnalysis] = useState("");
 
   const [openCreateSource, setOpenCreateSource] = useState(false);
+  const [openCreateArea, setOpenCreateArea] = useState(false);
 
-  const AREAS = [
-    "ANONIMO",
-    "APTO",
-    "DISPATCH",
-    "GSE",
-    "GTE. EST.",
-    "SUMINISTRO",
-    "INAC",
-    "MTTO",
-    "ING",
-    "INST. CAP",
-    "N/A",
-    "OMA",
-    "OPS",
-    "QMS",
-    "RR.HH",
-    "SGC",
-    "SMS",
-    "TDC",
-    "TDM",
-    "TFC",
-    "CARG",
-    "QMS_AVSEC",
-    "GTE_EQUIPAJE",
-    "TALLER_SUPERVIVENCIA",
-    "NDT",
-    "AUDITORIA_INTERNA",
-    "AEROPUERTO",
-    "SSL",
-    "TECNOLOGIA",
-    "INFRAESTRUCTURA",
-    "AVSEC",
-  ];
   const DANGER_TYPES = ["ORGANIZACIONAL", "TECNICO", "HUMANO", "NATURAL"];
 
   const form = useForm<FormSchemaType>({
@@ -180,7 +151,7 @@ export default function CreateDangerIdentificationForm({
         ? addDays(new Date(initialData.risk_management_start_date), 1)
         : new Date(),
       consequence_to_evaluate: initialData?.consequence_to_evaluate || "",
-      danger_area: initialData?.danger_area || "",
+      sms_area_id: (initialData as any)?.sms_area_id || undefined,
       danger_type: initialData?.danger_type || "",
       root_cause_analysis: initialData?.root_cause_analysis || "",
       description: initialData?.description || "",
@@ -193,7 +164,7 @@ export default function CreateDangerIdentificationForm({
       const splitAndFilter = (str: string | undefined) =>
         str
           ? str
-              .split(",")
+              .split("~")
               .map((s) => s.trim())
               .filter(Boolean)
           : [];
@@ -209,14 +180,14 @@ export default function CreateDangerIdentificationForm({
     if (newDefense.trim()) {
       const updated = [...defenses, newDefense.trim()];
       setDefenses(updated);
-      form.setValue("current_defenses", updated.join(","));
+      form.setValue("current_defenses", updated.join("~"));
       setNewDefense("");
     }
   };
   const removeDefense = (index: number) => {
     const updated = defenses.filter((_, i) => i !== index);
     setDefenses(updated);
-    form.setValue("current_defenses", updated.join(","));
+    form.setValue("current_defenses", updated.join("~"));
   };
   const handleDefenseKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") {
@@ -230,14 +201,14 @@ export default function CreateDangerIdentificationForm({
     if (newConsequence.trim()) {
       const updated = [...consequences, newConsequence.trim()];
       setConsequences(updated);
-      form.setValue("possible_consequences", updated.join(","));
+      form.setValue("possible_consequences", updated.join("~"));
       setNewConsequence("");
     }
   };
   const removeConsequence = (index: number) => {
     const updated = consequences.filter((_, i) => i !== index);
     setConsequences(updated);
-    form.setValue("possible_consequences", updated.join(","));
+    form.setValue("possible_consequences", updated.join("~"));
   };
   const handleConsequenceKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") {
@@ -251,14 +222,14 @@ export default function CreateDangerIdentificationForm({
     if (newAnalysis.trim()) {
       const updated = [...analyses, newAnalysis.trim()];
       setAnalyses(updated);
-      form.setValue("root_cause_analysis", updated.join(","));
+      form.setValue("root_cause_analysis", updated.join("~"));
       setNewAnalysis("");
     }
   };
   const removeAnalysis = (index: number) => {
     const updated = analyses.filter((_, i) => i !== index);
     setAnalyses(updated);
-    form.setValue("root_cause_analysis", updated.join(","));
+    form.setValue("root_cause_analysis", updated.join("~"));
   };
   const handleAnalysisKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") {
@@ -365,9 +336,6 @@ export default function CreateDangerIdentificationForm({
                         selected={field.value}
                         onSelect={field.onChange}
                         initialFocus
-                        fromYear={2000}
-                        toYear={new Date().getFullYear()}
-                        captionLayout="dropdown-buttons"
                       />
                     </PopoverContent>
                   </Popover>
@@ -392,20 +360,36 @@ export default function CreateDangerIdentificationForm({
           <div className="grid grid-cols-2 gap-3">
             <FormField
               control={form.control}
-              name="danger_area"
+              name="sms_area_id"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className={fieldLabel}>Área</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value}>
+                  <div className="flex items-center justify-between">
+                    <FormLabel className={fieldLabel}>Área</FormLabel>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="h-6 gap-1 px-2 text-xs text-amber-600 hover:text-amber-700 hover:bg-amber-50"
+                      onClick={() => setOpenCreateArea(true)}
+                    >
+                      <Plus className="h-3 w-3" />
+                      Nueva
+                    </Button>
+                  </div>
+                  <Select
+                    onValueChange={(val) => field.onChange(Number(val))}
+                    value={field.value?.toString()}
+                    disabled={isLoadingAreas}
+                  >
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Seleccionar área..." />
+                        <SelectValue placeholder={isLoadingAreas ? "Cargando..." : "Seleccionar área..."} />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {AREAS.map((area, index) => (
-                        <SelectItem key={index} value={area}>
-                          {area}
+                      {smsAreas?.map((area) => (
+                        <SelectItem key={area.id} value={area.id.toString()}>
+                          {area.name}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -610,7 +594,7 @@ export default function CreateDangerIdentificationForm({
                 <Plus className="h-4 w-4" />
               </Button>
             </div>
-            {analyses.length > 0 && (
+            {analyses.length > 0 ? (
               <div className="flex flex-col gap-1.5 pt-2">
                 {analyses.map((item, index) => (
                   <div key={index} className="flex items-center justify-between gap-2 bg-muted/50 border rounded-md px-3 py-1.5">
@@ -624,7 +608,9 @@ export default function CreateDangerIdentificationForm({
                   </div>
                 ))}
               </div>
-            )}
+            ) : form.formState.isSubmitted ? (
+              <p className="text-xs text-destructive">Debe agregar al menos un análisis de causa raíz</p>
+            ) : null}
           </FormItem>
           <FormField
             control={form.control}
@@ -659,6 +645,16 @@ export default function CreateDangerIdentificationForm({
           </DialogDescription>
         </DialogHeader>
         <CreateInformationSourceForm onClose={() => setOpenCreateSource(false)} />
+      </DialogContent>
+    </Dialog>
+
+    <Dialog open={openCreateArea} onOpenChange={setOpenCreateArea}>
+      <DialogContent className="max-w-sm">
+        <DialogHeader>
+          <DialogTitle>Nueva Área</DialogTitle>
+          <DialogDescription>El área quedará disponible en el selector.</DialogDescription>
+        </DialogHeader>
+        <CreateSmsAreaForm onClose={() => setOpenCreateArea(false)} />
       </DialogContent>
     </Dialog>
     </>

@@ -8,6 +8,7 @@ export default function proxy(req: NextRequest) {
   if (
     // Permitir rutas públicas
     PUBLIC_ROUTES.includes(pathname) ||
+    pathname.startsWith('/acceso_publico') ||
     // Ignorar archivos estáticos y assets internos
     pathname.startsWith('/_next') ||
     pathname.startsWith('/favicon.ico') ||

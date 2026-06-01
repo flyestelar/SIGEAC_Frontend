@@ -10,6 +10,7 @@ interface FollowUpControlData {
     mitigation_measure_id: number | string;
     image?: File | string;
     document?: File | string;
+    sms_activity_id?: number | null;
   };
 }
 
@@ -22,6 +23,7 @@ interface updateFolllowUpControlData {
     mitigation_measure_id: string | number;
     image?: File | string;
     document?: File | string;
+    sms_activity_id?: number | null;
   };
 }
 
@@ -90,7 +92,7 @@ export const useUpdateFollowUpControl = () => {
   const updateFollowUpControlMutation = useMutation({
     mutationFn: async ({ company, id, data }: updateFolllowUpControlData) => {
       await axiosInstance.post(
-        `/${company}/sms/update-follow-up-controls/${id}`,
+        `/${company}/sms/follow-up-controls/update/${id}`,
         data,
         {
           headers: {

@@ -27,7 +27,7 @@ export default function CreateSMSActivityDialog({
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="flex flex-col max-w-2xl m-2">
+        <DialogContent className="flex flex-col w-[calc(100vw-1rem)] sm:max-w-2xl max-h-[90dvh] overflow-y-auto rounded-2xl p-4 sm:p-6">
           <DialogHeader>
             <DialogTitle></DialogTitle>
             <DialogDescription></DialogDescription>

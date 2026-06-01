@@ -1,7 +1,18 @@
 import { VoluntaryReportStoreResponse } from '@/.gen/api/types.gen';
 import axiosInstance from '@/lib/axios';
+import { isAxiosError } from 'axios';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
+
+const extractErrorMessage = (error: unknown, fallback: string): string => {
+  if (!isAxiosError(error)) return fallback;
+  const data = error.response?.data;
+  if (data?.errors) {
+    const messages = Object.values(data.errors as Record<string, string[]>).flat();
+    if (messages.length) return messages.join(' ');
+  }
+  return data?.message ?? fallback;
+};
 
 interface VoluntaryReportData {
   company: string | null;
@@ -10,19 +21,20 @@ interface VoluntaryReportData {
     source_reference?: string | null;
     identification_date: string;
     report_date: string;
-    station: string;
-    finding_location: string;
+    sms_station_id?: number;
+    sms_finding_location_id?: number;
     finding_location_other: string;
     danger_type: string;
     is_anonymous: boolean | 0 | 1;
     description: string;
-    possible_consequences: string;
+    possible_consequences: string[];
     recommendations: string;
     status: 'ABIERTO' | 'PROCESO' | 'CERRADO';
     reporter_name?: string | null;
     reporter_last_name?: string | null;
     reporter_phone?: string | null;
     reporter_email?: string | null;
+    sms_area_id?: number;
     image?: File | string | null;
     document?: File | string | null;
   };
@@ -34,12 +46,12 @@ interface UpdateVoluntaryReportData {
     report_number?: string;
     report_date: Date | string;
     identification_date: Date | string;
-    station: string;
-    finding_location: string;
+    sms_station_id?: number;
+    sms_finding_location_id?: number;
     finding_location_other: string;
     danger_type: string;
     description: string;
-    possible_consequences: string;
+    possible_consequences: string[];
     recommendations: string;
     danger_identification_id: number | null;
     status: string;
@@ -78,10 +90,7 @@ export const useCreateVoluntaryReport = () => {
       });
     },
     onError: (error) => {
-      toast.error('Oops!', {
-        description: 'No se pudo crear el reporte...',
-      });
-      console.log(error);
+      toast.error('Error', { description: extractErrorMessage(error, 'No se pudo crear el reporte.') });
     },
   });
   return {
@@ -107,10 +116,8 @@ export const useDeleteVoluntaryReport = () => {
         description: `¡El reporte ha sido eliminada correctamente!`,
       });
     },
-    onError: (e) => {
-      toast.error('Oops!', {
-        description: '¡Hubo un error al eliminar el reporte!',
-      });
+    onError: (error) => {
+      toast.error('Error', { description: extractErrorMessage(error, 'No se pudo eliminar el reporte.') });
     },
   });
 
@@ -125,7 +132,7 @@ export const useUpdateVoluntaryReport = () => {
   const updateVoluntaryReportMutation = useMutation({
     mutationKey: ['voluntary-reports'],
     mutationFn: async ({ company, id, data }: UpdateVoluntaryReportData) => {
-      const response = await axiosInstance.post(`/${company}/sms/update-voluntary-reports/${id}`, data, {
+      const response = await axiosInstance.post(`/${company}/sms/voluntary-reports/update/${id}`, data, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
@@ -140,10 +147,7 @@ export const useUpdateVoluntaryReport = () => {
       });
     },
     onError: (error) => {
-      toast.error('Oops!', {
-        description: 'No se pudo actualizar el reporte voluntario...',
-      });
-      console.log(error);
+      toast.error('Error', { description: extractErrorMessage(error, 'No se pudo actualizar el reporte voluntario.') });
     },
   });
   return {
@@ -167,10 +171,7 @@ export const useAcceptVoluntaryReport = () => {
       });
     },
     onError: (error) => {
-      toast.error('Oops!', {
-        description: 'No se pudo aceptar el reporte voluntario...',
-      });
-      console.log(error);
+      toast.error('Error', { description: extractErrorMessage(error, 'No se pudo aceptar el reporte voluntario.') });
     },
   });
   return {

@@ -1,6 +1,6 @@
 'use client';
 
-import RegisterArticleForm from '@/components/forms/mantenimiento/almacen/RegisterArticleForm';
+import RegisterArticleForm from './_components/RegisterArticleForm';
 import { ContentLayout } from '@/components/layout/ContentLayout';
 import {
   Breadcrumb,

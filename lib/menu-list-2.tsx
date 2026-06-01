@@ -36,6 +36,7 @@ import {
   User2,
   Wrench,
   UserRoundCog,
+  ShieldCheck,
 } from 'lucide-react';
 
 type Submenu = {
@@ -132,6 +133,29 @@ export function getMenuList(currentCompany: Company | null, userRoles: string[])
             {
               href: companyPath('/general/cursos/estadisticas'),
               label: 'Estadisticas',
+            },
+          ],
+        },
+        {
+          href: companyPath('/general/reporte'),
+          label: 'SMS',
+          icon: ShieldCheck,
+          roles: [],
+          submenus: [
+            // {
+            //     href: companyPath('/general/reporte/voluntario'),
+            //     label: "Reporte Voluntario",
+            //     roles: [],
+            // },
+            // {
+            //     href: companyPath('/general/reporte/obligatorio'),
+            //     label: "Reporte Obligatorio",
+            //     roles: [],
+            // },
+            {
+              href: companyPath('/general/reporte/codigos_qr'),
+              label: 'Codigos QR',
+              roles: [],
             },
           ],
         },
@@ -349,7 +373,7 @@ export function getMenuList(currentCompany: Company | null, userRoles: string[])
         },
 
         // {
-        //   href: companyPath('/sms/certificados'),
+        //   href: `/${currentCompany?.slug}/sms/certificados`,
         //   label: "Certificados",
         //   icon: Award,
         //   roles: ["SUPERUSER", "JEFE_SMS", "ANALISTA_SMS"],
@@ -357,7 +381,7 @@ export function getMenuList(currentCompany: Company | null, userRoles: string[])
         // },
 
         {
-          href: '',
+          href: companyPath('/sms/promocion'),
           label: 'Promoción',
           icon: CalendarClock,
           roles: ['SUPERUSER', 'JEFE_SMS', 'ANALISTA_SMS'],
@@ -378,14 +402,14 @@ export function getMenuList(currentCompany: Company | null, userRoles: string[])
               roles: ['SUPERUSER', 'JEFE_SMS', 'ANALISTA_SMS'],
             },
             // {
-            //   href: companyPath('/sms/promocion/boletines'),
+            //   href: `/${currentCompany?.slug}/sms/promocion/boletines`,
             //   label: "Boletines",
             //   roles: ["SUPERUSER", "JEFE_SMS", "ANALISTA_SMS"],
             // },
           ],
         },
         {
-          href: '',
+          href: companyPath('/sms/gestion_encuestas'),
           label: 'Gestión de Encuestas',
           icon: ClipboardCheck,
           roles: ['SUPERUSER', 'JEFE_SMS', 'ANALISTA_SMS'],
@@ -403,7 +427,7 @@ export function getMenuList(currentCompany: Company | null, userRoles: string[])
           ],
         },
         {
-          href: '',
+          href: companyPath('/sms/ajustes'),
           label: 'Ajustes SMS',
           icon: Settings,
           roles: ['SUPERUSER', 'JEFE_SMS', 'ANALISTA_SMS'],
@@ -643,36 +667,47 @@ export function getMenuList(currentCompany: Company | null, userRoles: string[])
           href: '/ajustes/globales',
           label: 'Globales',
           icon: Globe,
-          roles: ['ANALISTA_ALMACEN', 'JEFE_ALMACEN', 'SUPERUSER'],
+          roles: ['ANALISTA_ALMACEN', 'JEFE_ALMACEN', 'SUPERUSER', 'JEFE_SMS', 'ANALISTA_SMS'],
           submenus: [
             {
               href: '/ajustes/globales/unidades',
               label: 'Unidades',
+              roles: ['ANALISTA_ALMACEN', 'JEFE_ALMACEN', 'SUPERUSER'],
             },
             {
               href: '/ajustes/globales/fabricantes',
               label: 'Fabricantes',
+              roles: ['ANALISTA_ALMACEN', 'JEFE_ALMACEN', 'SUPERUSER'],
             },
             {
               href: '/ajustes/globales/proveedores',
               label: 'Proveedores',
+              roles: ['ANALISTA_ALMACEN', 'JEFE_ALMACEN', 'SUPERUSER'],
             },
             {
               href: '/ajustes/globales/terceros',
               label: 'Terceros',
+              roles: ['ANALISTA_ALMACEN', 'JEFE_ALMACEN', 'SUPERUSER'],
             },
             {
               href: '/ajustes/globales/clientes',
               label: 'Clientes',
+              roles: ['ANALISTA_ALMACEN', 'JEFE_ALMACEN', 'SUPERUSER'],
             },
             {
               href: '/ajustes/globales/condiciones',
               label: 'Condiciones',
+              roles: ['ANALISTA_ALMACEN', 'JEFE_ALMACEN', 'SUPERUSER'],
             },
             {
               href: '/ajustes/globales/fuentes_informacion',
               label: 'Fuentes de Informacion',
               roles: ['JEFE_SMS', 'ANALISTA_SMS', 'SUPERUSER'],
+            },
+            {
+              href: '/ajustes/globales/sms',
+              label: 'Globales SMS',
+              roles: ['SUPERUSER', 'JEFE_SMS', 'ANALISTA_SMS'],
             },
           ],
         },
@@ -777,7 +812,7 @@ export function getMenuList(currentCompany: Company | null, userRoles: string[])
 
   const filteredMenu = fullMenu.filter((group) => {
     if (group.groupLabel === 'General' && userRoles.some((r) => ['JEFE_ALMACEN', 'ANALISTA_ALMACEN'].includes(r))) {
-    return false;
+      return false;
     }
     return true;
   });

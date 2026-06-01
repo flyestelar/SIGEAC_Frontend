@@ -41,11 +41,24 @@ import { VoluntaryReportResource } from "@/.gen/api/types.gen";
 import { addDays, format } from "date-fns";
 import { es } from "date-fns/locale";
 import { CalendarIcon, Loader2, Plus, X } from "lucide-react";
-import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Label } from "@/components/ui/label";
 import { useCompanyStore } from "@/stores/CompanyStore";
+import axiosInstance from "@/lib/axios";
+import { useGetSmsStations } from "@/hooks/sms/useGetSmsStations";
+import { useGetFindingLocations } from "@/hooks/sms/useGetFindingLocations";
+import { useGetSmsAreas } from "@/hooks/sms/useGetSmsAreas";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { CreateSmsStationForm } from "@/components/forms/sms/CreateSmsStationForm";
+import { CreateFindingLocationForm } from "@/components/forms/sms/CreateFindingLocationForm";
+import { CreateSmsAreaForm } from "@/components/forms/sms/CreateSmsAreaForm";
 
 interface FormProps {
   onClose: () => void;
@@ -61,12 +74,10 @@ export function CreateVoluntaryReportForm({
   const { selectedCompany } = useCompanyStore();
   const { createVoluntaryReport } = useCreateVoluntaryReport();
   const { updateVoluntaryReport } = useUpdateVoluntaryReport();
-  const [isAnonymous, setIsAnonymous] = useState(true);
+  const [isAnonymous, setIsAnonymous] = useState(initialData ? (initialData.is_anonymous ?? true) : true);
   const router = useRouter();
   const [consequences, setConsequences] = useState<string[]>([]);
   const [newConsequence, setNewConsequence] = useState("");
-
-  const [previewImage, setPreviewImage] = useState<string | null>(null);
 
   const { user } = useAuth();
 
@@ -78,6 +89,50 @@ export function CreateVoluntaryReportForm({
 
   const { data: nextNumberData, isPending: isLoadingNextNumber } =
     useGetNextReportNumber(selectedCompany?.slug || null);
+
+  const { data: stations, isLoading: isLoadingStations } = useGetSmsStations(selectedCompany?.slug);
+  const { data: findingLocations, isLoading: isLoadingLocations } = useGetFindingLocations(selectedCompany?.slug);
+  const { data: smsAreas, isLoading: isLoadingAreas } = useGetSmsAreas(selectedCompany?.slug);
+
+  const [openCreateStation, setOpenCreateStation] = useState(false);
+  const [openCreateLocation, setOpenCreateLocation] = useState(false);
+  const [openCreateArea, setOpenCreateArea] = useState(false);
+  const [authenticatedImageUrl, setAuthenticatedImageUrl] = useState<string | null>(null);
+  const [authenticatedDocumentUrl, setAuthenticatedDocumentUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!initialData?.image) return;
+    const imageUrl = (initialData.image as string).startsWith("http")
+      ? (initialData.image as string)
+      : `${process.env.NEXT_PUBLIC_STORAGE_BASE_URL}${initialData.image}`;
+    let blobUrl: string | null = null;
+    axiosInstance.get(imageUrl, { responseType: "blob" })
+      .then((response) => {
+        blobUrl = URL.createObjectURL(response.data);
+        setAuthenticatedImageUrl(blobUrl);
+      })
+      .catch(() => setAuthenticatedImageUrl(null));
+    return () => {
+      if (blobUrl) URL.revokeObjectURL(blobUrl);
+    };
+  }, [initialData?.image]);
+
+  useEffect(() => {
+    if (!initialData?.document) return;
+    const docUrl = (initialData.document as string).startsWith("http")
+      ? (initialData.document as string)
+      : `${process.env.NEXT_PUBLIC_STORAGE_BASE_URL}${initialData.document}`;
+    let blobUrl: string | null = null;
+    axiosInstance.get(docUrl, { responseType: "blob" })
+      .then((response) => {
+        blobUrl = URL.createObjectURL(new Blob([response.data], { type: "application/pdf" }));
+        setAuthenticatedDocumentUrl(blobUrl);
+      })
+      .catch(() => setAuthenticatedDocumentUrl(null));
+    return () => {
+      if (blobUrl) URL.revokeObjectURL(blobUrl);
+    };
+  }, [initialData?.document]);
 
   const FormSchema = z.object({
     identification_date: z
@@ -101,8 +156,8 @@ export function CreateVoluntaryReportForm({
           })
           .optional(),
 
-    station: z.string(),
-    finding_location: z.string(),
+    sms_station_id: z.number().optional(),
+    sms_finding_location_id: z.number().optional(),
     finding_location_other: z.string(),
     danger_type: z.string(),
     description: z
@@ -113,14 +168,7 @@ export function CreateVoluntaryReportForm({
       .max(900, {
         message: "La descripción no debe exceder los 900 caracteres",
       }),
-    possible_consequences: z
-      .string()
-      .min(3, {
-        message: "Las consecuencias deben tener al menos 3 caracteres",
-      })
-      .max(999, {
-        message: "Las consecuencias no debe exceder los 255 caracteres",
-      }),
+    possible_consequences: z.array(z.string()),
     recommendations: z
       .string()
       .min(3, {
@@ -158,7 +206,7 @@ export function CreateVoluntaryReportForm({
       })
       .email({ message: "Formato de correo electrónico inválido" })
       .optional(),
-      reporter_area: z.string().optional(),
+      sms_area_id: z.number().optional(),
       reporter_position: z.string().optional(),
     image: z
       .instanceof(File)
@@ -177,7 +225,8 @@ export function CreateVoluntaryReportForm({
         "Solo se permiten archivos PDF",
       )
       .optional(),
-    is_anonymous: z.boolean()
+    is_anonymous: z.boolean(),
+    source_reference: z.string().optional(),
   });
 
   type FormSchemaType = z.infer<typeof FormSchema>;
@@ -185,15 +234,20 @@ export function CreateVoluntaryReportForm({
   const form = useForm<FormSchemaType>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
-      report_number: initialData?.report_number || "",
-      station: initialData?.station || "",
+      report_number: (initialData?.report_number && initialData.report_number !== "N/A") ? initialData.report_number : "",
+      sms_station_id: (initialData as any)?.sms_station_id || undefined,
       description: initialData?.description || "",
-      possible_consequences: initialData?.possible_consequences || "",
+      possible_consequences: Array.isArray(initialData?.possible_consequences)
+        ? (initialData.possible_consequences as string[])
+        : initialData?.possible_consequences
+          ? (initialData.possible_consequences as string).split("~").filter((item) => item.trim() !== "")
+          : [],
       recommendations: initialData?.recommendations || "",
-      finding_location: initialData?.finding_location || "",
+      sms_finding_location_id: (initialData as any)?.sms_finding_location_id || undefined,
       finding_location_other: initialData?.finding_location_other || "",
       danger_type: initialData?.danger_type || "",
-      is_anonymous: initialData ? !initialData.is_anonymous : true,
+      is_anonymous: initialData?.is_anonymous ?? true,
+      source_reference: (initialData as any)?.source_reference?.toString() || "",
       identification_date: initialData?.identification_date
         ? addDays(new Date(initialData.identification_date), 1)
         : new Date(),
@@ -215,8 +269,8 @@ export function CreateVoluntaryReportForm({
       ...(initialData?.reporter_phone && {
         reporter_phone: initialData.reporter_phone,
       }),
-      ...(initialData?.reporter_area && {
-        reporter_area: initialData.reporter_area,
+      ...((initialData as any)?.sms_area_id && {
+        sms_area_id: (initialData as any).sms_area_id,
       }),
       ...(initialData?.reporter_position && {
         reporter_position: initialData.reporter_position,
@@ -224,27 +278,28 @@ export function CreateVoluntaryReportForm({
     },
   });
 
+  const selectedFindingLocationId = form.watch("sms_finding_location_id");
+  const selectedFindingLocation = findingLocations?.find(l => l.id === selectedFindingLocationId);
+  const isOtherLocation = selectedFindingLocation?.name?.toUpperCase() === 'OTRO';
+
   useEffect(() => {
     if (initialData && isEditing) {
-      if (
-        initialData.reporter_email &&
-        initialData.reporter_name &&
-        initialData.reporter_last_name &&
-        initialData.reporter_phone
-      ) {
-        setIsAnonymous(false);
-      }
+      const anonymous = initialData.is_anonymous ?? true;
+      setIsAnonymous(anonymous);
+      form.setValue("is_anonymous", anonymous);
 
       // Inicializar las consecuencias si hay datos iniciales
       if (initialData.possible_consequences) {
-        const initialConsequences = initialData.possible_consequences
-          .split(",")
-          .filter((item) => item.trim() !== "");
+        const initialConsequences = Array.isArray(initialData.possible_consequences)
+          ? (initialData.possible_consequences as string[])
+          : (initialData.possible_consequences as string).split("~").filter(Boolean);
         setConsequences(initialConsequences);
       }
 
-      if (initialData.report_number) {
+      if (initialData.report_number && initialData.report_number !== "N/A") {
         form.setValue("report_number", initialData.report_number);
+      } else if (nextNumberData?.next_number) {
+        form.setValue("report_number", String(nextNumberData.next_number));
       }
     } else if (!isEditing && nextNumberData?.next_number) {
       form.setValue("report_number", String(nextNumberData.next_number));
@@ -254,22 +309,18 @@ export function CreateVoluntaryReportForm({
   // Agregar una consecuencia
   const addConsequence = () => {
     if (newConsequence.trim() !== "") {
-      setConsequences([...consequences, newConsequence.trim()]);
-      setNewConsequence("");
-
-      // Actualizar el campo del formulario
       const updatedConsequences = [...consequences, newConsequence.trim()];
-      form.setValue("possible_consequences", updatedConsequences.join(","));
+      setConsequences(updatedConsequences);
+      setNewConsequence("");
+      form.setValue("possible_consequences", updatedConsequences);
     }
   };
-
+ //Este comentario es para subir a vercel
   // Eliminar una consecuencia
   const removeConsequence = (index: number) => {
     const updatedConsequences = consequences.filter((_, i) => i !== index);
     setConsequences(updatedConsequences);
-
-    // Actualizar el campo del formulario
-    form.setValue("possible_consequences", updatedConsequences.join(","));
+    form.setValue("possible_consequences", updatedConsequences);
   };
 
   // Manejar la tecla Enter en el input
@@ -281,6 +332,23 @@ export function CreateVoluntaryReportForm({
   };
 
   const onSubmit = async (data: FormSchemaType) => {
+    // Merge any text typed but not confirmed with Enter
+    const finalConsequences =
+      newConsequence.trim() !== ""
+        ? [...(data.possible_consequences ?? []), newConsequence.trim()]
+        : (data.possible_consequences ?? []);
+
+    if (finalConsequences.length === 0) {
+      form.setError("possible_consequences", {
+        type: "manual",
+        message: "Debe agregar al menos una consecuencia posible.",
+      });
+      return;
+    }
+
+    setConsequences(finalConsequences);
+    setNewConsequence("");
+
     if (isAnonymous) {
       data.reporter_name = "";
       data.reporter_last_name = "";
@@ -289,13 +357,20 @@ export function CreateVoluntaryReportForm({
     }
 
     if (initialData && isEditing) {
+      const {
+        is_anonymous: _ia,
+        sms_area_id: _sa,
+        reporter_position: _rp,
+        ...rest
+      } = data;
       const value = {
         company: selectedCompany!.slug,
         id: initialData.id.toString(),
         data: {
-          ...data,
+          ...rest,
+          possible_consequences: finalConsequences,
           status: initialData.status ?? "",
-          danger_identification_id: initialData?.danger_identification_id,
+          danger_identification_id: initialData.danger_identification_id ?? null,
         },
       };
       await updateVoluntaryReport.mutateAsync(value);
@@ -304,6 +379,7 @@ export function CreateVoluntaryReportForm({
         company: selectedCompany!.slug,
         reportData: {
           ...data,
+          possible_consequences: finalConsequences,
           report_date: data.report_date.toISOString(),
           identification_date: data.identification_date.toISOString(),
           status: (shouldEnableField ? "ABIERTO" : "PROCESO") as "ABIERTO" | "PROCESO" | "CERRADO",
@@ -327,6 +403,7 @@ export function CreateVoluntaryReportForm({
   };
 
   return (
+    <>
     <Form {...form}>
       <form
         onSubmit={form.handleSubmit(onSubmit)}
@@ -371,37 +448,38 @@ export function CreateVoluntaryReportForm({
               />
               <FormField
                 control={form.control}
-                name="station"
+                name="sms_station_id"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Estación</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <div className="flex items-center justify-between">
+                      <FormLabel>Estación</FormLabel>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="h-6 gap-1 px-2 text-xs text-amber-600 hover:text-amber-700 hover:bg-amber-50"
+                        onClick={() => setOpenCreateStation(true)}
+                      >
+                        <Plus className="h-3 w-3" />
+                        Nueva
+                      </Button>
+                    </div>
+                    <Select
+                      onValueChange={(val) => field.onChange(Number(val))}
+                      value={field.value?.toString()}
+                      disabled={isLoadingStations}
+                    >
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Seleccionar estación" />
+                          <SelectValue placeholder={isLoadingStations ? "Cargando..." : "Seleccionar estación"} />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="PZO">Puerto Ordaz</SelectItem>
-                        <SelectItem value="MIQ">MIQ</SelectItem>
-                        <SelectItem value="PMV">PMV</SelectItem>
-                        <SelectItem value="MAR">MAR</SelectItem>
-                        <SelectItem value="VIG">VIG</SelectItem>
-                        <SelectItem value="BNS">BNS</SelectItem>
-                        <SelectItem value="STD">STD</SelectItem>
-                        <SelectItem value="STB">STB</SelectItem>
-                        <SelectItem value="MUN">MUN</SelectItem>
-                        <SelectItem value="SVSA">SVSA</SelectItem>
-                        <SelectItem value="MADRID">MADRID</SelectItem>
-                        <SelectItem value="CHILE">CHILE</SelectItem>
-                        <SelectItem value="HAVANA">HAVANA</SelectItem>
-                        <SelectItem value="SVZ">SVZ</SelectItem>
-                        <SelectItem value="CANAIMA">CANAIMA</SelectItem>
-                        <SelectItem value="MDPC">MDPC</SelectItem>
-                        <SelectItem value="LIMA">LIMA</SelectItem>
-                        <SelectItem value="PTY">PTY</SelectItem>
-                        <SelectItem value="SKBO">SKBO</SelectItem>
-                        <SelectItem value="N/A">NO APLICA</SelectItem>
+                        {stations?.map((s) => (
+                          <SelectItem key={s.id} value={s.id.toString()}>
+                            {s.name}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -416,7 +494,7 @@ export function CreateVoluntaryReportForm({
             <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
               Fechas
             </p>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <FormField
                 control={form.control}
                 name="identification_date"
@@ -446,9 +524,6 @@ export function CreateVoluntaryReportForm({
                           selected={field.value}
                           onSelect={field.onChange}
                           initialFocus
-                          fromYear={2000}
-                          toYear={new Date().getFullYear()}
-                          captionLayout="dropdown"
                           components={{
                             Dropdown: ({ options, classNames, components: _c, ...props }) => (
                               <select {...props} className="bg-popover text-popover-foreground">
@@ -496,9 +571,6 @@ export function CreateVoluntaryReportForm({
                           selected={field.value}
                           onSelect={field.onChange}
                           initialFocus
-                          fromYear={2000}
-                          toYear={new Date().getFullYear()}
-                          captionLayout="dropdown"
                           components={{
                             Dropdown: ({ options, classNames, components: _c, ...props }) => (
                               <select {...props} className="bg-popover text-popover-foreground">
@@ -529,42 +601,59 @@ export function CreateVoluntaryReportForm({
               
               <FormField
                 control={form.control}
-                name="finding_location"
+                name="sms_finding_location_id"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Lugar de Identificación</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <div className="flex items-center justify-between">
+                      <FormLabel>Lugar de Identificación</FormLabel>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="h-6 gap-1 px-2 text-xs text-amber-600 hover:text-amber-700 hover:bg-amber-50"
+                        onClick={() => setOpenCreateLocation(true)}
+                      >
+                        <Plus className="h-3 w-3" />
+                        Nuevo
+                      </Button>
+                    </div>
+                    <Select
+                      onValueChange={(val) => field.onChange(Number(val))}
+                      value={field.value?.toString()}
+                      disabled={isLoadingLocations}
+                    >
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Seleccionar" />
+                          <SelectValue placeholder={isLoadingLocations ? "Cargando..." : "Seleccionar"} />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="HANGAR">HANGAR</SelectItem>
-                        <SelectItem value="PLATAFORMA">PLATAFORMA</SelectItem>
-                        <SelectItem value="AREA_ADMON">AREA ADMON</SelectItem>
-                        <SelectItem value="AERONAVE">AERONAVE</SelectItem>
-                        <SelectItem value="AEROPUERTO">AEROPUERTO</SelectItem>
-                        <SelectItem value="N/A">NO APLICA</SelectItem>
+                        {findingLocations?.map((loc) => (
+                          <SelectItem key={loc.id} value={loc.id.toString()}>
+                            {loc.name}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-              <FormField
-                control={form.control}
-                name="finding_location_other"
-                render={({ field }) => (
-                  <FormItem className="col-span-2">
-                    <FormLabel>Otro Lugar de Identificación</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Especificar" {...field} />
-                    </FormControl>
-                    <FormMessage className="text-xs" />
-                  </FormItem>
-                )}
-              />
+              {isOtherLocation && (
+                <FormField
+                  control={form.control}
+                  name="finding_location_other"
+                  render={({ field }) => (
+                    <FormItem className="col-span-2">
+                      <FormLabel>Otro Lugar de Identificación</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Especificar" {...field} />
+                      </FormControl>
+                      <FormMessage className="text-xs" />
+                    </FormItem>
+                  )}
+                />
+              )}
             </div>
           </div>
 
@@ -573,6 +662,23 @@ export function CreateVoluntaryReportForm({
             <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
               Clasificación y Descripción
             </p>
+            <FormField
+              control={form.control}
+              name="source_reference"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Referencia de la Fuente</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="Número de referencia"
+                      {...field}
+                      onChange={(e) => field.onChange(e.target.value.toUpperCase())}
+                    />
+                  </FormControl>
+                  <FormMessage className="text-xs" />
+                </FormItem>
+              )}
+            />
             <FormField
               control={form.control}
               name="danger_type"
@@ -691,7 +797,10 @@ export function CreateVoluntaryReportForm({
                 name="is_anonymous"
                 checked={isAnonymous}
                 onCheckedChange={(checked) => {
-                  if (typeof checked === "boolean") setIsAnonymous(checked);
+                  if (typeof checked === "boolean") {
+                    setIsAnonymous(checked);
+                    form.setValue("is_anonymous", checked);
+                  }
                 }}
               />
               <Label htmlFor="anonymous-report" className="text-sm">
@@ -755,118 +864,44 @@ export function CreateVoluntaryReportForm({
                 
                 <FormField
                     control={form.control}
-                    name="reporter_area"
+                    name="sms_area_id"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Area</FormLabel>
+                        <div className="flex items-center justify-between">
+                          <FormLabel>Área</FormLabel>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            className="h-6 gap-1 px-2 text-xs text-amber-600 hover:text-amber-700 hover:bg-amber-50"
+                            onClick={() => setOpenCreateArea(true)}
+                          >
+                            <Plus className="h-3 w-3" />
+                            Nueva
+                          </Button>
+                        </div>
                         <Select
-                          onValueChange={field.onChange}
-                          defaultValue={field.value}
+                          onValueChange={(val) => field.onChange(Number(val))}
+                          value={field.value?.toString()}
+                          disabled={isLoadingAreas}
                         >
                           <FormControl>
                             <SelectTrigger>
-                              <SelectValue placeholder="Seleccionar área" />
+                              <SelectValue placeholder={isLoadingAreas ? "Cargando..." : "Seleccionar área"} />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            <SelectItem value="ANONIMO">ANONIMO</SelectItem>
-                            <SelectItem value="APTO">
-                              APTO
-                            </SelectItem>
-                            <SelectItem value="DISPATCH">
-                              DISPATCH
-                            </SelectItem>
-                            <SelectItem value="GSE">
-                              GSE
-                            </SelectItem>
-                            <SelectItem value="GTE. EST.">
-                              GTE. EST.
-                            </SelectItem>
-                            <SelectItem value="SUMINISTRO">
-                              SUMINISTRO
-                            </SelectItem>
-                            <SelectItem value="INAC">
-                              INAC
-                            </SelectItem>
-                            <SelectItem value="MTTO">
-                              MANTENIMIENTO
-                            </SelectItem>
-                            <SelectItem value="ING">
-                              INGENIERIA
-                            </SelectItem>
-                            <SelectItem value="INST. CAP">
-                              INST. CAP
-                            </SelectItem>
-                            <SelectItem value="N/A">
-                              NO APLICA
-                            </SelectItem>
-                            <SelectItem value="OMA">
-                              OMA
-                            </SelectItem>
-                            <SelectItem value="OPS">
-                              OPS
-                            </SelectItem>
-                            <SelectItem value="QMS">
-                              QMS
-                            </SelectItem>
-                            <SelectItem value="RR.HH">
-                              RECURSOS HUMANOS
-                            </SelectItem>
-                            <SelectItem value="SGC">
-                              SGC
-                            </SelectItem>
-                            <SelectItem value="SMS">
-                              SMS
-                            </SelectItem>
-                            <SelectItem value="TDC">
-                              TDC
-                            </SelectItem>
-                            <SelectItem value="TDM">
-                              TDM
-                            </SelectItem>
-                            <SelectItem value="TFC">
-                              TFC
-                            </SelectItem>
-                            <SelectItem value="CARG">
-                              CARG
-                            </SelectItem>
-                            <SelectItem value="QMS_AVSEC">
-                              QMS AVSEC
-                            </SelectItem>
-                            <SelectItem value="GTE_EQUIPAJE">
-                              GTE EQUIPAJE
-                            </SelectItem>
-                            <SelectItem value="TALLER_SUPERVIVENCIA">
-                              TALLER DE SUPERVIVENCIA
-                            </SelectItem>
-                            <SelectItem value="NDT">
-                              NDT
-                            </SelectItem>
-                            <SelectItem value="AUDITORIA_INTERNA">
-                              AUDITORIA INTERNA
-                            </SelectItem>
-                            <SelectItem value="AEROPUERTO">
-                              AEROPUERTO
-                          </SelectItem>
-
-                          <SelectItem value="SSL">
-                            SSL
-                          </SelectItem>
-                          <SelectItem value="TECNOLOGIA">
-                            TECNOLOGIA
-                          </SelectItem>
-                          <SelectItem value="INFRAESTRUCTURA">
-                            INFRAESTRUCTURA
-                          </SelectItem>
-
-
-                          <SelectItem value="AVSEC">AVSEC</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                            {smsAreas?.map((area) => (
+                              <SelectItem key={area.id} value={area.id.toString()}>
+                                {area.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                 <FormField
                   control={form.control}
                   name="reporter_position"
@@ -897,17 +932,17 @@ export function CreateVoluntaryReportForm({
                   <FormItem>
                     <FormLabel>Imagen del Reporte</FormLabel>
                     <div className="flex flex-col gap-3">
-                      {(field.value instanceof File || initialData?.image) && (
+                      {(field.value instanceof File || authenticatedImageUrl) && (
                         <div className="relative w-24 h-24 border rounded-md overflow-hidden">
-                          <Image
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
                             src={
                               field.value instanceof File
                                 ? URL.createObjectURL(field.value)
-                                : initialData?.image || ""
+                                : authenticatedImageUrl!
                             }
                             alt="Preview"
-                            fill
-                            className="object-contain"
+                            className="w-full h-full object-contain"
                           />
                         </div>
                       )}
@@ -933,12 +968,28 @@ export function CreateVoluntaryReportForm({
                   <FormItem>
                     <FormLabel>Documento PDF</FormLabel>
                     <div className="flex flex-col gap-3">
-                      {field.value && (
+                      {field.value instanceof File ? (
                         <div>
                           <p className="text-xs text-muted-foreground">Archivo seleccionado:</p>
                           <p className="font-semibold text-sm">{field.value.name}</p>
                         </div>
-                      )}
+                      ) : initialData?.document ? (
+                        <div>
+                          <p className="text-xs text-muted-foreground">Documento actual:</p>
+                          {authenticatedDocumentUrl ? (
+                            <a
+                              href={authenticatedDocumentUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-sm font-semibold text-blue-600 underline hover:text-blue-800"
+                            >
+                              Ver documento
+                            </a>
+                          ) : (
+                            <p className="text-xs text-muted-foreground">Cargando documento...</p>
+                          )}
+                        </div>
+                      ) : null}
                       <FormControl>
                         <Input
                           type="file"
@@ -971,5 +1022,36 @@ export function CreateVoluntaryReportForm({
           </Button>
       </form>
     </Form>
+
+    <Dialog open={openCreateStation} onOpenChange={setOpenCreateStation}>
+      <DialogContent className="max-w-sm">
+        <DialogHeader>
+          <DialogTitle>Nueva Estación</DialogTitle>
+          <DialogDescription>La estación quedará disponible en el selector.</DialogDescription>
+        </DialogHeader>
+        <CreateSmsStationForm onClose={() => setOpenCreateStation(false)} />
+      </DialogContent>
+    </Dialog>
+
+    <Dialog open={openCreateLocation} onOpenChange={setOpenCreateLocation}>
+      <DialogContent className="max-w-sm">
+        <DialogHeader>
+          <DialogTitle>Nuevo Lugar de Identificación</DialogTitle>
+          <DialogDescription>El lugar quedará disponible en el selector.</DialogDescription>
+        </DialogHeader>
+        <CreateFindingLocationForm onClose={() => setOpenCreateLocation(false)} />
+      </DialogContent>
+    </Dialog>
+
+    <Dialog open={openCreateArea} onOpenChange={setOpenCreateArea}>
+      <DialogContent className="max-w-sm">
+        <DialogHeader>
+          <DialogTitle>Nueva Área</DialogTitle>
+          <DialogDescription>El área quedará disponible en el selector.</DialogDescription>
+        </DialogHeader>
+        <CreateSmsAreaForm onClose={() => setOpenCreateArea(false)} />
+      </DialogContent>
+    </Dialog>
+    </>
   );
 }

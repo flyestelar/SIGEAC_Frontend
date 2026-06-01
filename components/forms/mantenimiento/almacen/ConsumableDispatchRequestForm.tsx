@@ -122,7 +122,7 @@ interface FormProps {
 
 export function ConsumableDispatchForm({ onClose }: FormProps) {
   const { user } = useAuth();
-  const { selectedCompany } = useCompanyStore();
+  const { selectedCompany, selectedStation } = useCompanyStore();
   const [openRequestedBy, setOpenRequestedBy] = useState(false);
   const [requestBy, setRequestedBy] = useState<Employee>();
   const { createDispatchRequest } = useCreateDispatchRequest();
@@ -134,7 +134,11 @@ export function ConsumableDispatchForm({ onClose }: FormProps) {
   } = useGetMaintenanceAircrafts(selectedCompany?.slug);
   const { data: workshops, isLoading: isWorkshopsLoading, isError: isWorkshopsError } = useGetWorkshopsByLocation();
   const { data: batches, isPending: isBatchesLoading } = useGetBatchesWithInWarehouseArticles('CONSUMIBLE');
-  const { data: employees, isLoading: employeesLoading, isError: employeesError } = useGetEmployeesByDepartment('MANP');
+  const {
+    data: employees,
+    isLoading: employeesLoading,
+    isError: employeesError,
+  } = useGetEmployeesByDepartment('MANP', selectedStation, selectedCompany?.slug);
   const {
     data: warehouseEmployees,
     isLoading: warehouseEmployeesLoading,

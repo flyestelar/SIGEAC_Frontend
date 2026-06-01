@@ -162,8 +162,7 @@ export function CreateCreditForm({ onClose }: FormProps) {
                         }}
                         initialFocus
                         startMonth={new Date(2000, 0)}
-                        toYear={new Date().getFullYear() + 1}
-                        captionLayout="dropdown"
+                        endMonth={new Date(new Date().getFullYear() + 1, 11)}
                       />
                     </PopoverContent>
                   </Popover>

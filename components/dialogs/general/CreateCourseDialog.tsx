@@ -10,13 +10,13 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Course } from "@/types";
+import { CourseResource } from "@/.gen/api/types.gen";
 import { useState } from "react";
 import { CreateCourseForm } from "@/components/forms/sms/CreateCourseForm";
 
 interface FormProps {
   title: string;
-  initialData?: Course;
+  initialData?: CourseResource;
   isEditing?: boolean;
 }
 

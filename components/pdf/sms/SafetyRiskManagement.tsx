@@ -1278,7 +1278,7 @@ export const FirstPage = ({
       >
         {/* Dividimos el string por comas y mapeamos cada elemento */}
         {identification.root_cause_analysis
-          .split(",")
+          .split("~")
           .concat(Array(5).fill("")) // Asegura que haya al menos 5 elementos
           .slice(0, 5) // Toma solo los primeros 5 elementos
           .map((cause, index) => (
@@ -1558,7 +1558,7 @@ export const SecondPage = ({
       >
         {/* Tomamos solo los primeros 5 elementos del array dividido */}
         {identification.possible_consequences
-          .split(",")
+          .split("~")
           .slice(0, 5)
           .map((cause, index) => (
             <Text key={index} style={styles.cellText}>
@@ -1574,13 +1574,13 @@ export const SecondPage = ({
           ...Array(
             Math.max(
               0,
-              5 - identification.possible_consequences.split(",").length
+              5 - identification.possible_consequences.split("~").length
             )
           ),
         ].map((_, index) => (
           <Text key={`empty-${index}`} style={styles.cellText}>
             <Text style={[styles.cellText, styles.boldTitle]}>
-              {identification.possible_consequences.split(",").length +
+              {identification.possible_consequences.split("~").length +
                 index +
                 1}
               .{" "}
@@ -1626,7 +1626,7 @@ export const SecondPage = ({
       >
         {/* Tomamos solo los primeros 5 elementos del array dividido */}
         {identification.current_defenses
-          .split(",")
+          .split("~")
           .slice(0, 5)
           .map((cause, index) => (
             <Text key={index} style={styles.cellText}>
@@ -1640,12 +1640,12 @@ export const SecondPage = ({
         {/* Rellenamos con líneas vacías si hay menos de 5 elementos */}
         {[
           ...Array(
-            Math.max(0, 5 - identification.current_defenses.split(",").length)
+            Math.max(0, 5 - identification.current_defenses.split("~").length)
           ),
         ].map((_, index) => (
           <Text key={`empty-${index}`} style={styles.cellText}>
             <Text style={[styles.cellText, styles.boldTitle]}>
-              {identification.current_defenses.split(",").length + index + 1}.{" "}
+              {identification.current_defenses.split("~").length + index + 1}.{" "}
             </Text>
           </Text>
         ))}
@@ -2250,7 +2250,7 @@ export const SecondPage = ({
       </View>
     </View>
 
-    {identification.possible_consequences.split(",").map((cause, index) => {
+    {identification.possible_consequences.split("~").map((cause, index) => {
       const trimmedCause = cause.trim();
       const isMatch =
         trimmedCause === identification.consequence_to_evaluate?.trim();

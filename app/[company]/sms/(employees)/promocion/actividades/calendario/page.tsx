@@ -21,12 +21,17 @@ const CalendarServicesPage = () => {
   
   return (
     <ContentLayout title="Planificación de Actividades SMS">
-      <div className="flex flex-col text-center justify-center gap-2 mb-6">
-        <h1 className="font-bold text-5xl">Calendario de Actividades SMS</h1>
-        <p className="text-muted-foreground italic text-sm">
+      <div className="flex flex-col text-center justify-center gap-1 sm:gap-2 mb-3 sm:mb-6 px-2">
+        <h1 className="font-bold text-2xl sm:text-4xl md:text-5xl leading-tight">
+          Calendario de Actividades SMS
+        </h1>
+        <p className="text-muted-foreground italic text-xs sm:text-sm">
           Aquí puede llevar un registro de todas las actividades de SMS
-          registradas en el sistema. <br />
-          Puede crear o editar las actividades de ser necesarios.
+          registradas en el sistema.{" "}
+          <span className="hidden sm:inline">
+            <br />
+            Puede crear o editar las actividades de ser necesarios.
+          </span>
         </p>
       </div>
         <Calendar

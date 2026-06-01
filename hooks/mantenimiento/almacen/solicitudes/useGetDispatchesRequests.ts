@@ -1,8 +1,13 @@
 import { DispatchArticle } from '@/app/[company]/almacen/salidas/page';
 import axios from '@/lib/axios';
 import { useCompanyStore } from '@/stores/CompanyStore';
-import { WorkOrder } from '@/types';
+import { MaintenanceAircraft, WorkOrder, Workshop } from '@/types';
 import { useQuery } from '@tanstack/react-query';
+
+interface ThirdParty {
+  id: number;
+  name: string;
+}
 
 interface IDispatch {
   id: number;
@@ -14,6 +19,9 @@ interface IDispatch {
   submission_date: string;
   status: 'PROCESO' | 'APROBADO' | 'RECHAZADO';
   work_order?: WorkOrder;
+  aircraft?: MaintenanceAircraft;
+  workshop?: Workshop;
+  third_party?: ThirdParty;
   articles: DispatchArticle[];
 }
 

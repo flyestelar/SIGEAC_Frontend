@@ -267,3 +267,17 @@ Authentication and roles are managed centrally:
 **OpenAPI types auto-generated.** Never edit `.gen/api/types.gen.ts` by hand. Run `npm run api:generate` to regenerate from backend spec.
 
 **Prettier format enforced.** ESLint includes formatting rules. Run `npm run lint -- --fix` before commits to auto-format.
+
+## Agent skills
+
+### Issue tracker
+
+Issues are tracked in GitHub Issues on `flyestelar/SIGEAC_Frontend`. See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+Default label vocabulary (needs-triage, needs-info, ready-for-agent, ready-for-human, wontfix). See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Single-context layout — one `CONTEXT.md` and `docs/adr/` at the repo root. See `docs/agents/domain.md`.

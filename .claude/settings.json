@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(Get-ChildItem -Recurse \"d:\\\\SIGEAC_frontend_estelar\\\\SIGEAC_Frontend\\\\app\\\\[company]\\\\sms\\\\reportes\")",
+      "Bash(Select-Object FullName)",
+      "Bash(Sort-Object FullName)",
+      "Read(//d/SIGEAC_frontend_estelar/SIGEAC_Frontend/app/**)"
+    ]
+  }
+}

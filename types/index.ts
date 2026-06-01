@@ -953,6 +953,8 @@ export type DangerIdentification = {
   danger: string;
   current_defenses: string;
   danger_area: string;
+  sms_area_id: number | null;
+  sms_area?: { id: number; name: string; slug: string } | null;
   danger_type: string;
   description: string;
   possible_consequences: string;
@@ -972,6 +974,8 @@ export type FollowUpControl = {
   mitigation_measure_id: number;
   image?: File | string;
   document?: File | string;
+  sms_activity_id?: number | null;
+  sms_activity?: SMSActivity | null;
 };
 
 export type MitigationMeasure = {
@@ -1085,6 +1089,7 @@ export type SMSActivity = {
   planned_by: string;
   executed_by: string;
   status: string;
+  mitigation_measure_id?: number | null;
 };
 
 export type SMSActivityAttendance = {
@@ -1392,6 +1397,7 @@ export type HardTimeCreateComponentData = {
 
 export type SafetyBulletin = {
   id: number;
+  sms_activity_id: number | null;
   title: string;
   description: string;
   date: string;

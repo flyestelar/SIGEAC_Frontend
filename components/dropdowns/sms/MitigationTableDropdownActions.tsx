@@ -1,6 +1,7 @@
 import {
   useCloseReport,
   useDeleteMitigationPlan,
+  useDownloadCloseReportPdf,
   useOpenReport,
 } from "@/actions/sms/planes_de_mitigation/actions";
 import CreateAnalysisForm from "@/components/forms/sms/CreateAnalysisForm";
@@ -29,6 +30,7 @@ import {
   ClipboardList,
   ClipboardPenLine,
   FilePenLine,
+  FileDown,
   Loader2,
   LockKeyhole,
   LockKeyholeOpen,
@@ -59,6 +61,7 @@ const MitigationTableDropdownActions = ({
   const [closeDate, setCloseDate] = useState<string>("");
   const { closeReportByMitigationId } = useCloseReport();
   const { openReportByMitigationId } = useOpenReport();
+  const { downloadCloseReportPdf } = useDownloadCloseReportPdf();
   const { theme } = useTheme();
 
   const handleDelete = async (id: number | string) => {
@@ -177,6 +180,28 @@ const MitigationTableDropdownActions = ({
               </DropdownMenuItem>
             )}
 
+            {isReportClosed() && mitigationTable.mitigation_plan?.id && (
+              <DropdownMenuItem
+                disabled={downloadCloseReportPdf.isPending}
+                onClick={() =>
+                  downloadCloseReportPdf.mutate({
+                    company: selectedCompany!.slug,
+                    id: mitigationTable.mitigation_plan!.id,
+                    report_number:
+                      mitigationTable.voluntary_report?.report_number ??
+                      mitigationTable.obligatory_report?.report_number,
+                  })
+                }
+              >
+                {downloadCloseReportPdf.isPending ? (
+                  <Loader2 className="size-5 animate-spin" />
+                ) : (
+                  <FileDown className="size-5" />
+                )}
+                <p className="pl-2">Descargar PDF</p>
+              </DropdownMenuItem>
+            )}
+
             {/* OPCION PARA CREAR Y/O EDIAR UN PLAN DE MITGACION ASOCIADO A LA GESTION DE UN REPROTE */}
             {!mitigationTable.mitigation_plan ? (
               <DropdownMenuItem onClick={() => setOpenCreatePlan(true)}>
@@ -227,29 +252,21 @@ const MitigationTableDropdownActions = ({
         </DropdownMenu>
 
         <Dialog open={openDelete} onOpenChange={setOpenDelete}>
-          <DialogContent>
+          <DialogContent className="w-[calc(100vw-1rem)] sm:max-w-md rounded-2xl p-4 sm:p-6">
             <DialogHeader>
               <DialogTitle className="text-center">
-                ¿Seguro que desea eliminar el plan de mitigacion??
+                ¿Seguro que desea eliminar el plan de mitigación?
               </DialogTitle>
-              <DialogDescription className="text-center p-2 mb-0 pb-0">
+              <DialogDescription className="text-center pt-1">
                 Esta acción es irreversible y estaría eliminando por completo el
-                plan de mitigacion seleccionado.
+                plan de mitigación seleccionado.
               </DialogDescription>
             </DialogHeader>
 
-            <DialogFooter className="flex flex-col-reverse gap-2 md:gap-0">
-              <Button
-                className="bg-rose-400 hover:bg-white hover:text-black hover:border hover:border-black"
-                onClick={() => setOpenDelete(false)}
-                type="submit"
-              >
-                Cancelar
-              </Button>
-
+            <DialogFooter className="flex flex-col gap-2 mt-2 sm:flex-row-reverse">
               <Button
                 disabled={deleteMitigationPlan.isPending}
-                className="hover:bg-white hover:text-black hover:border hover:border-black transition-all"
+                className="rounded-xl hover:bg-white hover:text-black hover:border hover:border-black transition-all"
                 onClick={() =>
                   mitigationTable.mitigation_plan?.id
                     ? handleDelete(mitigationTable.mitigation_plan.id)
@@ -258,16 +275,21 @@ const MitigationTableDropdownActions = ({
               >
                 {deleteMitigationPlan.isPending ? (
                   <Loader2 className="size-4 animate-spin" />
-                ) : (
-                  <p>Confirmar</p>
-                )}
+                ) : "Confirmar"}
+              </Button>
+              <Button
+                variant="outline"
+                className="rounded-xl"
+                onClick={() => setOpenDelete(false)}
+              >
+                Cancelar
               </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
 
         <Dialog open={openCreatePlan} onOpenChange={setOpenCreatePlan}>
-          <DialogContent className="flex flex-col max-w-2xl m-2">
+          <DialogContent className="flex flex-col w-[calc(100vw-1rem)] sm:max-w-2xl max-h-[90dvh] overflow-y-auto rounded-2xl p-4 sm:p-6">
             <DialogHeader>
               <DialogTitle></DialogTitle>
               <DialogDescription></DialogDescription>
@@ -281,7 +303,7 @@ const MitigationTableDropdownActions = ({
         </Dialog>
 
         <Dialog open={openCreateAnalysis} onOpenChange={setOpenCreateAnalysis}>
-          <DialogContent className="flex flex-col max-w-2xl m-2">
+          <DialogContent className="flex flex-col w-[calc(100vw-1rem)] sm:max-w-3xl max-h-[90dvh] overflow-y-auto rounded-2xl p-4 sm:p-6">
             <DialogHeader>
               <DialogTitle>Análisis Post Mitigación</DialogTitle>
               <DialogDescription>Análisis Post Mitigación</DialogDescription>
@@ -298,7 +320,7 @@ const MitigationTableDropdownActions = ({
         </Dialog>
 
         <Dialog open={openEditAnalyses} onOpenChange={setOpenEditAnalyses}>
-          <DialogContent className="flex flex-col max-w-2xl m-2">
+          <DialogContent className="flex flex-col w-[calc(100vw-1rem)] sm:max-w-2xl max-h-[90dvh] overflow-y-auto rounded-2xl p-4 sm:p-6">
             <DialogHeader>
               <DialogTitle className="text-center">
                 Editar Analisis Post Mitigación
@@ -319,7 +341,7 @@ const MitigationTableDropdownActions = ({
         </Dialog>
 
         <Dialog open={openCreateMeasure} onOpenChange={setOpenCreateMeasure}>
-          <DialogContent className="flex flex-col max-w-2xl m-2">
+          <DialogContent className="flex flex-col w-[calc(100vw-1rem)] sm:max-w-2xl max-h-[90dvh] overflow-y-auto rounded-2xl p-4 sm:p-6">
             <DialogHeader>
               <DialogTitle></DialogTitle>
               <DialogDescription></DialogDescription>
@@ -335,7 +357,7 @@ const MitigationTableDropdownActions = ({
         </Dialog>
 
         <Dialog open={openEditPlan} onOpenChange={setOpenEditPlan}>
-          <DialogContent className="flex flex-col max-w-2xl m-2">
+          <DialogContent className="flex flex-col w-[calc(100vw-1rem)] sm:max-w-2xl max-h-[90dvh] overflow-y-auto rounded-2xl p-4 sm:p-6">
             <DialogHeader>
               <DialogTitle></DialogTitle>
               <DialogDescription></DialogDescription>
@@ -353,19 +375,18 @@ const MitigationTableDropdownActions = ({
         </Dialog>
 
 <Dialog open={closeReport} onOpenChange={setCloseReport}>
-  <DialogContent>
+  <DialogContent className="w-[calc(100vw-1rem)] sm:max-w-md rounded-2xl p-4 sm:p-6">
     <DialogHeader>
       <DialogTitle className="text-center">
         ¿Seguro que desea cerrar el reporte?
       </DialogTitle>
-      <DialogDescription className="text-center p-2 mb-0 pb-0">
+      <DialogDescription className="text-center pt-1">
         Esta acción es irreversible. Por favor, seleccione la fecha de cierre para completar el proceso.
       </DialogDescription>
     </DialogHeader>
 
-    {/* Campo de Fecha añadido */}
-    <div className="flex flex-col gap-2 py-4">
-      <label htmlFor="fecha_cierre" className="text-sm font-medium">
+    <div className="flex flex-col gap-2 py-3">
+      <label htmlFor="fecha_cierre" className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
         Fecha de cierre
       </label>
       <input
@@ -373,25 +394,14 @@ const MitigationTableDropdownActions = ({
         type="date"
         value={closeDate}
         onChange={(e) => setCloseDate(e.target.value)}
-        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+        className="flex h-10 w-full rounded-xl border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
       />
     </div>
 
-    <DialogFooter className="flex flex-col-reverse gap-2 md:gap-0">
-      <Button
-        className="bg-rose-400 hover:bg-rose-500 text-white"
-        onClick={() => {
-          setCloseReport(false);
-          setCloseDate("");
-        }}
-        type="button"
-      >
-        Cancelar
-      </Button>
-
+    <DialogFooter className="flex flex-col gap-2 sm:flex-row-reverse">
       <Button
         disabled={closeReportByMitigationId.isPending || !closeDate}
-        className="hover:bg-primary/90 transition-all"
+        className="rounded-xl hover:bg-primary/90 transition-all"
         onClick={() =>
           mitigationTable.mitigation_plan?.id
             ? handleCloseReport(
@@ -403,38 +413,35 @@ const MitigationTableDropdownActions = ({
       >
         {closeReportByMitigationId.isPending ? (
           <Loader2 className="size-4 animate-spin" />
-        ) : (
-          <p>Confirmar Cierre</p>
-        )}
+        ) : "Confirmar Cierre"}
+      </Button>
+      <Button
+        variant="outline"
+        className="rounded-xl"
+        onClick={() => { setCloseReport(false); setCloseDate(""); }}
+      >
+        Cancelar
       </Button>
     </DialogFooter>
   </DialogContent>
 </Dialog>
 
         <Dialog open={openReport} onOpenChange={setOpenReport}>
-          <DialogContent>
+          <DialogContent className="w-[calc(100vw-1rem)] sm:max-w-md rounded-2xl p-4 sm:p-6">
             <DialogHeader>
               <DialogTitle className="text-center">
-                ¿Seguro que desea abrir el reporte??
+                ¿Seguro que desea abrir el reporte?
               </DialogTitle>
-              <DialogDescription className="text-center p-2 mb-0 pb-0">
+              <DialogDescription className="text-center pt-1">
                 Esta acción es irreversible y estaría habilitando editar
-                información
+                información.
               </DialogDescription>
             </DialogHeader>
 
-            <DialogFooter className="flex flex-col-reverse gap-2 md:gap-0">
-              <Button
-                className="bg-rose-400 hover:bg-white hover:text-black hover:border hover:border-black"
-                onClick={() => setCloseReport(false)}
-                type="submit"
-              >
-                Cancelar
-              </Button>
-
+            <DialogFooter className="flex flex-col gap-2 mt-2 sm:flex-row-reverse">
               <Button
                 disabled={closeReportByMitigationId.isPending}
-                className="hover:bg-white hover:text-black hover:border hover:border-black transition-all"
+                className="rounded-xl hover:bg-white hover:text-black hover:border hover:border-black transition-all"
                 onClick={() =>
                   mitigationTable.mitigation_plan?.id
                     ? handleOpenReport(
@@ -446,9 +453,14 @@ const MitigationTableDropdownActions = ({
               >
                 {openReportByMitigationId.isPending ? (
                   <Loader2 className="size-4 animate-spin" />
-                ) : (
-                  <p>Confirmar</p>
-                )}
+                ) : "Confirmar"}
+              </Button>
+              <Button
+                variant="outline"
+                className="rounded-xl"
+                onClick={() => setOpenReport(false)}
+              >
+                Cancelar
               </Button>
             </DialogFooter>
           </DialogContent>

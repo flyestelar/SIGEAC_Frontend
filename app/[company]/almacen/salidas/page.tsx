@@ -36,6 +36,11 @@ export interface DispatchArticle {
   dispatch_quantity: string | number;
 }
 
+interface ThirdParty {
+  id: number;
+  name: string;
+}
+
 interface IDispatch {
   id: number;
   request_number: string;
@@ -47,6 +52,7 @@ interface IDispatch {
   work_order?: WorkOrder;
   aircraft?: MaintenanceAircraft;
   workshop?: Workshop;
+  third_party?: ThirdParty;
   status: 'PROCESO' | 'APROBADO' | 'RECHAZADO';
   articles: DispatchArticle[];
 }
@@ -70,7 +76,9 @@ function mapDispatchesToGroups(dispatches: IDispatch[]): DispatchGroupRow[] {
       ? dispatch.aircraft.acronym
       : dispatch.workshop
         ? dispatch.workshop.name
-        : 'N/A',
+        : dispatch.third_party
+          ? dispatch.third_party.name
+          : 'N/A',
     submission_date: dispatch.submission_date,
     status: dispatch.status,
     requested_by: dispatch.requested_by,

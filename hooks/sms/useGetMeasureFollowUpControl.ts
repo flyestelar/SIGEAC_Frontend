@@ -9,14 +9,14 @@ interface data {
 
 const fetchMeasureFollowUpControl = async ({ company, measure_id }: data) => {
   const { data } = await axiosInstance.get(
-    `/${company}/sms/measure/${measure_id}/controls`
+    `/${company}/sms/follow-up-controls/by-measure/${measure_id}`
   );
   return data;
 };
 
 export const useGetMeasureFollowUpControl = (data: data) => {
   return useQuery<FollowUpControl[]>({
-    queryKey: ["follow-up-controls"],
+    queryKey: ["follow-up-controls", data.measure_id],
     queryFn: () => fetchMeasureFollowUpControl(data),
     staleTime: 1000 * 60 * 5, // 5 minutos
   });

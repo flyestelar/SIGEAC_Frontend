@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -32,34 +31,33 @@ export default function CreateDangerIdentificationDialog({
   const [open, setOpen] = useState(false);
 
   return (
-    <Card className="flex">
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogTrigger asChild>
-          <Button
-            onClick={() => setOpen(true)}
-            variant="outline"
-            size="sm"
-            className="hidden h-8 lg:flex"
-          >
-            {title}
-          </Button>
-        </DialogTrigger>
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button
+          onClick={() => setOpen(true)}
+          variant="outline"
+          size="sm"
+          className="h-8"
+        >
+          {title}
+        </Button>
+      </DialogTrigger>
 
-        <DialogContent className="sm:max-w-[65%] max-h-[80vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>{title}</DialogTitle>
-          </DialogHeader>
+      <DialogContent className="w-[calc(100vw-1rem)] sm:max-w-[65%] max-h-[90dvh] overflow-y-auto rounded-2xl p-4 sm:p-6">
+        <DialogHeader>
+          <DialogTitle>{title}</DialogTitle>
+        </DialogHeader>
 
-          <div className="mt-2">
-            <CreateDangerIdentificationForm
-              id={id}
-              initialData={initialData}
-              isEditing={isEditing}
-              reportType={reportType}
-            />
-          </div>
-        </DialogContent>
-      </Dialog>
-    </Card>
+        <div className="mt-2">
+          <CreateDangerIdentificationForm
+            id={id}
+            initialData={initialData}
+            isEditing={isEditing}
+            reportType={reportType}
+            onClose={() => setOpen(false)}
+          />
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }

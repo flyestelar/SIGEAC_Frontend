@@ -14,7 +14,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 
 import {
   useCreateObligatoryReport,
@@ -30,14 +30,25 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/contexts/AuthContext";
-import { useGetAircraftAcronyms } from "@/hooks/aerolinea/aeronaves/useGetAircraftAcronyms";
-import { useGetPilots } from "@/hooks/sms/useGetPilots";
 import { cn } from "@/lib/utils";
 import { useCompanyStore } from "@/stores/CompanyStore";
 import { ObligatoryReportResource } from "@/.gen/api/types.gen";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
-import { CalendarIcon, Loader2 } from "lucide-react";
+import {
+  CalendarIcon,
+  FileText,
+  Loader2,
+  MapPin,
+  AlertTriangle,
+  User,
+  Paperclip,
+  Send,
+  ChevronRight,
+  ImageIcon,
+  FileIcon,
+  CheckCircle2,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
 import {
   Select,
@@ -46,6 +57,21 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useGetSmsStations } from "@/hooks/sms/useGetSmsStations";
+import { useGetFindingLocations } from "@/hooks/sms/useGetFindingLocations";
+import { useGetSmsAreas } from "@/hooks/sms/useGetSmsAreas";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { CreateSmsStationForm } from "@/components/forms/sms/CreateSmsStationForm";
+import { CreateFindingLocationForm } from "@/components/forms/sms/CreateFindingLocationForm";
+import { CreateSmsAreaForm } from "@/components/forms/sms/CreateSmsAreaForm";
+import { useState } from "react";
+import { Plus } from "lucide-react";
 
 interface FormProps {
   isEditing?: boolean;
@@ -62,11 +88,8 @@ const FormSchema = z.object({
   incident_date: z
     .date()
     .refine((val) => !isNaN(val.getTime()), { message: "Fecha inválida" }),
-  station: z.string().optional(),
-  incident_location: z
-    .string()
-    .min(3, { message: "El lugar del incidente debe tener al menos 3 caracteres" })
-    .max(50, { message: "El lugar del incidente no debe exceder los 50 caracteres" }),
+  sms_station_id: z.number().optional(),
+  sms_finding_location_id: z.number().optional(),
   incident_location_other: z.string().optional(),
   danger_type: z.string().optional(),
   description: z
@@ -75,7 +98,7 @@ const FormSchema = z.object({
   reporter_name: z.string().optional(),
   reporter_email: z.string().email({ message: "Correo inválido" }).optional().or(z.literal("")),
   reporter_phone: z.string().optional(),
-  reporter_area: z.string().optional(),
+  sms_area_id: z.number().optional(),
   reporter_position: z.string().optional(),
   pilot_id: z.string().optional(),
   copilot_id: z.string().optional(),
@@ -100,6 +123,102 @@ const FormSchema = z.object({
 
 type FormSchemaType = z.infer<typeof FormSchema>;
 
+/* ── Section wrapper ── */
+function Section({
+  num,
+  icon: Icon,
+  title,
+  children,
+}: {
+  num: string;
+  icon: React.ElementType;
+  title: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="relative rounded-lg border border-border overflow-hidden mb-2.5 border-l-[3px] border-l-amber-500">
+      <div className="flex items-center gap-0 px-0 py-0 bg-muted/40 border-b border-border">
+        <div className="flex items-center justify-center w-10 h-full py-2 border-r border-border/60 bg-amber-500/5">
+          <span className="font-mono text-[12px] font-bold text-amber-500 tabular-nums">{num}</span>
+        </div>
+        <div className="flex items-center gap-2 px-3 py-2 flex-1">
+          <Icon className="w-3 h-3 text-amber-600/70" />
+          <span className="text-[10px] font-semibold tracking-[0.2em] uppercase text-muted-foreground">{title}</span>
+        </div>
+      </div>
+      <div className="p-4 bg-background">{children}</div>
+    </div>
+  );
+}
+
+/* ── DatePicker field ── */
+function DateField({
+  label,
+  value,
+  onChange,
+}: {
+  label: string;
+  value: Date;
+  onChange: (d: Date | undefined) => void;
+}) {
+  return (
+    <div className="flex flex-col gap-1.5">
+      <span className="text-[10px] font-semibold tracking-[0.18em] uppercase text-muted-foreground block">
+        {label}
+      </span>
+      <Popover>
+        <PopoverTrigger asChild>
+          <Button
+            variant="outline"
+            className={cn(
+              "w-full justify-between text-left font-normal h-9 text-sm border-border hover:border-amber-500/50 hover:bg-amber-500/5 transition-colors group",
+              !value && "text-muted-foreground",
+            )}
+          >
+            <span className="flex items-center gap-2">
+              <CalendarIcon className="h-3.5 w-3.5 text-amber-500/70 group-hover:text-amber-500 transition-colors" />
+              {value ? format(value, "PPP", { locale: es }) : "Seleccione fecha"}
+            </span>
+            <ChevronRight className="h-3 w-3 text-muted-foreground/50 rotate-90" />
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-auto p-0" align="start">
+          <Calendar
+            mode="single"
+            selected={value}
+            onSelect={onChange}
+            disabled={(date) => date > new Date()}
+            initialFocus
+            startMonth={new Date(1980, 0)}
+            endMonth={new Date()}
+            components={{
+              Dropdown: ({ options, classNames, components: _c, ...props }) => (
+                <select {...props} className="bg-popover text-popover-foreground text-sm rounded px-1 py-0.5">
+                  {options?.map((opt) => (
+                    <option key={opt.value} value={opt.value} disabled={opt.disabled}>
+                      {opt.label}
+                    </option>
+                  ))}
+                </select>
+              ),
+            }}
+          />
+        </PopoverContent>
+      </Popover>
+    </div>
+  );
+}
+
+/* ── Field label ── */
+function FieldLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <span className="text-[10px] font-semibold tracking-[0.18em] uppercase text-muted-foreground block mb-1">
+      {children}
+    </span>
+  );
+}
+
+/* ── Main form ── */
 export function CreateObligatoryReportForm({
   onClose,
   isEditing,
@@ -117,10 +236,16 @@ export function CreateObligatoryReportForm({
   const { createObligatoryReport } = useCreateObligatoryReport();
   const { updateObligatoryReport } = useUpdateObligatoryReport();
 
-  // const { data: aircrafts, isLoading: isLoadingAircrafts } = useGetAircraftAcronyms(selectedCompany?.slug);
-
-  const { data: nextNumberData, isPending: isLoadingNextNumber } =
+  const { data: nextNumberData, isLoading: isLoadingNextNumber, isError: isErrorNextNumber } =
     useGetNextReportNumber(selectedCompany?.slug || null);
+
+  const { data: stations, isLoading: isLoadingStations } = useGetSmsStations(selectedCompany?.slug);
+  const { data: findingLocations, isLoading: isLoadingLocations } = useGetFindingLocations(selectedCompany?.slug);
+  const { data: smsAreas, isLoading: isLoadingAreas } = useGetSmsAreas(selectedCompany?.slug);
+
+  const [openCreateStation, setOpenCreateStation] = useState(false);
+  const [openCreateLocation, setOpenCreateLocation] = useState(false);
+  const [openCreateArea, setOpenCreateArea] = useState(false);
 
   const form = useForm<FormSchemaType>({
     resolver: zodResolver(FormSchema),
@@ -128,34 +253,30 @@ export function CreateObligatoryReportForm({
       report_number: initialData?.report_number ?? "",
       reference_number: initialData?.reference_number ?? "",
       description: initialData?.description ?? "",
-      incident_location: initialData?.incident_location ?? "",
-      station: initialData?.station ?? "",
+      sms_finding_location_id: (initialData as any)?.sms_finding_location_id || undefined,
+      sms_station_id: (initialData as any)?.sms_station_id || undefined,
       incident_location_other: initialData?.incident_location_other ?? "",
       danger_type: initialData?.danger_type ?? "",
       reporter_name: initialData?.reporter_name ?? "",
       reporter_email: initialData?.reporter_email ?? "",
       reporter_phone: initialData?.reporter_phone ?? "",
-      reporter_area: initialData?.reporter_area ?? "",
+      sms_area_id: (initialData as any)?.sms_area_id || undefined,
       reporter_position: initialData?.reporter_position ?? "",
       aircraft_id: initialData?.aircraft_id?.toString() ?? "",
       pilot_id: initialData?.pilot_id?.toString() ?? "",
       copilot_id: initialData?.copilot_id?.toString() ?? "",
-      report_date: initialData?.report_date
-        ? new Date(initialData.report_date)
-        : new Date(),
-      incident_date: initialData?.incident_date
-        ? new Date(initialData.incident_date)
-        : new Date(),
+      report_date: initialData?.report_date ? new Date(initialData.report_date) : new Date(),
+      incident_date: initialData?.incident_date ? new Date(initialData.incident_date) : new Date(),
     },
   });
 
   useEffect(() => {
     if (initialData && isEditing) {
       if (initialData.report_number) {
-        form.setValue("report_number", initialData.report_number);
+        form.setValue("report_number", initialData.report_number, { shouldDirty: false });
       }
     } else if (!isEditing && nextNumberData?.next_number) {
-      form.setValue("report_number", String(nextNumberData.next_number));
+      form.setValue("report_number", String(nextNumberData.next_number), { shouldDirty: false });
     }
   }, [initialData, isEditing, nextNumberData, form]);
 
@@ -184,9 +305,7 @@ export function CreateObligatoryReportForm({
           },
         });
         if (shouldEnableField) {
-          router.push(
-            `/${selectedCompany?.slug}/sms/reportes/reportes_obligatorios/${response.obligatory_report_id}`,
-          );
+          router.push(`/${selectedCompany?.slug}/sms/reportes/reportes_obligatorios/${response.obligatory_report_id}`);
         } else {
           router.push(`/${selectedCompany?.slug}/dashboard`);
         }
@@ -197,280 +316,254 @@ export function CreateObligatoryReportForm({
     onClose();
   };
 
-  return (
-    <Form {...form}>
-      <form
-        onSubmit={form.handleSubmit(onSubmit)}
-        className="flex w-full flex-col gap-4 p-1"
-      >
-          <FormLabel className="text-lg text-center m-2">
-            Reporte Obligatorio de Suceso
-          </FormLabel>
+  const isPending = createObligatoryReport.isPending || updateObligatoryReport.isPending;
+  const reportCode = form.watch("report_number");
+  const selectedFindingLocationId = form.watch("sms_finding_location_id");
+  const selectedFindingLocation = findingLocations?.find(l => l.id === selectedFindingLocationId);
+  const isOtherLocation = selectedFindingLocation?.name?.toUpperCase() === 'OTRO';
 
-          {/* ── Identificación ── */}
-          <div className="rounded-lg border bg-muted/30 p-4 space-y-3">
-            <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
-              Identificación
-            </p>
-            <div className="grid grid-cols-2 gap-3">
-              {shouldEnableField && (
-                <FormField
-                  control={form.control}
-                  name="report_number"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Código del Reporte</FormLabel>
-                      <FormControl>
-                        <div className="relative flex items-center text-muted-foreground cursor-not-allowed select-none">
-                          <span className="absolute left-2 select-none pointer-events-none">
-                            ROS-
-                          </span>
-                          <Input
-                            {...field}
-                            placeholder={isLoadingNextNumber ? "Cargando..." : ""}
-                            readOnly
-                            tabIndex={-1}
-                            className="bg-muted pl-12 font-bold pointer-events-none select-none"
-                          />
-                          {isLoadingNextNumber && (
-                            <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                              <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-                            </div>
-                          )}
-                        </div>
-                      </FormControl>
-                      <FormMessage className="text-xs" />
-                    </FormItem>
-                  )}
-                />
-              )}
+  return (
+    <>
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-0 w-full">
+
+        {/* ── Header strip ── */}
+        <div className="rounded-lg border border-amber-500/20 bg-amber-500/5 mb-3 overflow-hidden">
+          <div className="flex items-center justify-between px-4 py-2.5">
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
+                <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-amber-700 dark:text-amber-400">
+                  {isEditing ? "Modo edición" : "Nuevo reporte"}
+                </span>
+              </div>
+              <Separator orientation="vertical" className="h-3.5 bg-amber-500/20" />
+              <span className="text-[10px] tracking-wide text-amber-700/70 dark:text-amber-400/70 uppercase font-medium">
+                Reporte Obligatorio de Suceso
+              </span>
+            </div>
+            {(reportCode || isLoadingNextNumber) && (
+              <div className="flex items-center gap-1.5 bg-amber-500/10 border border-amber-500/30 rounded px-2.5 py-1">
+                <span className="text-[10px] font-semibold text-amber-600/70 dark:text-amber-400/70 tracking-widest">ROS</span>
+                <span className="text-[10px] text-amber-500/50">—</span>
+                {isLoadingNextNumber ? (
+                  <Loader2 className="h-3 w-3 animate-spin text-amber-500" />
+                ) : (
+                  <span className="font-mono text-[13px] font-bold text-amber-600 dark:text-amber-400">{reportCode}</span>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* ── 01 Identificación ── */}
+        <Section num="01" icon={FileText} title="Identificación">
+          <div className="grid grid-cols-2 gap-3">
+            {shouldEnableField && (
               <FormField
                 control={form.control}
-                name="reference_number"
+                name="report_number"
                 render={({ field }) => (
-                  <FormItem className={cn(!shouldEnableField && "col-span-2")}>
-                    <FormLabel>Número de Referencia</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Referencia" {...field} />
-                    </FormControl>
+                  <FormItem>
+                    <FieldLabel>Código del Reporte</FieldLabel>
+                    <div className="flex items-center h-9 border border-border rounded-md overflow-hidden focus-within:ring-1 focus-within:ring-amber-500/40 focus-within:border-amber-500/50">
+                      <span className="px-2.5 border-r border-border text-[11px] font-bold text-amber-500 bg-amber-500/10 h-full flex items-center tracking-wider shrink-0">
+                        ROS
+                      </span>
+                      {isLoadingNextNumber ? (
+                        <span className="px-2.5 flex-1 flex items-center">
+                          <Loader2 className="h-3.5 w-3.5 animate-spin text-amber-500" />
+                        </span>
+                      ) : (
+                        <input
+                          {...field}
+                          placeholder="Ingrese el código"
+                          className="px-2.5 font-mono text-sm font-semibold flex-1 h-full bg-muted/20 outline-none text-foreground placeholder:text-muted-foreground/50 placeholder:font-normal"
+                          onChange={(e) => field.onChange(e.target.value.toUpperCase())}
+                        />
+                      )}
+                    </div>
                     <FormMessage className="text-xs" />
                   </FormItem>
                 )}
               />
-              <FormField
-                control={form.control}
-                name="station"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Estación</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Seleccionar estación" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="PZO">Puerto Ordaz</SelectItem>
-                        <SelectItem value="MIQ">MIQ</SelectItem>
-                        <SelectItem value="PMV">PMV</SelectItem>
-                        <SelectItem value="MAR">MAR</SelectItem>
-                        <SelectItem value="VIG">VIG</SelectItem>
-                        <SelectItem value="BNS">BNS</SelectItem>
-                        <SelectItem value="STD">STD</SelectItem>
-                        <SelectItem value="STB">STB</SelectItem>
-                        <SelectItem value="MUN">MUN</SelectItem>
-                        <SelectItem value="SVSA">SVSA</SelectItem>
-                        <SelectItem value="MADRID">MADRID</SelectItem>
-                        <SelectItem value="CHILE">CHILE</SelectItem>
-                        <SelectItem value="HAVANA">HAVANA</SelectItem>
-                        <SelectItem value="SVZ">SVZ</SelectItem>
-                        <SelectItem value="CANAIMA">CANAIMA</SelectItem>
-                        <SelectItem value="MDPC">MDPC</SelectItem>
-                        <SelectItem value="LIMA">LIMA</SelectItem>
-                        <SelectItem value="PTY">PTY</SelectItem>
-                        <SelectItem value="SKBO">SKBO</SelectItem>
-                        <SelectItem value="N/A">NO APLICA</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
+            )}
+            <FormField
+              control={form.control}
+              name="reference_number"
+              render={({ field }) => (
+                <FormItem className={cn(!shouldEnableField && "col-span-2")}>
+                  <FormLabel className="text-[10px] font-semibold tracking-[0.18em] uppercase text-muted-foreground">
+                    N° de Referencia
+                  </FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="Referencia"
+                      className="h-9 text-sm border-border focus-visible:ring-amber-500/30 focus-visible:border-amber-500/50"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage className="text-xs" />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="sms_station_id"
+              render={({ field }) => (
+                <FormItem className="col-span-2">
+                  <div className="flex items-center justify-between">
+                    <FormLabel className="text-[10px] font-semibold tracking-[0.18em] uppercase text-muted-foreground">
+                      Estación
+                    </FormLabel>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="h-6 gap-1 px-2 text-xs text-amber-600 hover:text-amber-700 hover:bg-amber-50"
+                      onClick={() => setOpenCreateStation(true)}
+                    >
+                      <Plus className="h-3 w-3" />
+                      Nueva
+                    </Button>
+                  </div>
+                  <Select
+                    onValueChange={(val) => field.onChange(Number(val))}
+                    value={field.value?.toString()}
+                    disabled={isLoadingStations}
+                  >
+                    <FormControl>
+                      <SelectTrigger className="h-9 text-sm border-border focus:ring-amber-500/30">
+                        <SelectValue placeholder={isLoadingStations ? "Cargando..." : "Seleccionar estación"} />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {stations?.map((s) => (
+                        <SelectItem key={s.id} value={s.id.toString()}>{s.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
           </div>
+        </Section>
 
-          {/* ── Fechas ── */}
-          <div className="rounded-lg border bg-muted/30 p-4 space-y-3">
-            <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
-              Fechas
-            </p>
-            <div className="grid grid-cols-2 gap-3">
-              <FormField
-                control={form.control}
-                name="incident_date"
-                render={({ field }) => (
-                  <FormItem className="flex flex-col">
-                    <FormLabel>Fecha del Incidente</FormLabel>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <FormControl>
-                          <Button
-                            variant="outline"
-                            className={cn(
-                              "w-full pl-3 text-left font-normal",
-                              !field.value && "text-muted-foreground",
-                            )}
-                          >
-                            {field.value
-                              ? format(field.value, "PPP", { locale: es })
-                              : <span>Seleccione una fecha</span>}
-                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                          </Button>
-                        </FormControl>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar
-                          mode="single"
-                          selected={field.value}
-                          onSelect={field.onChange}
-                          disabled={(date) => date > new Date()}
-                          initialFocus
-                          fromYear={1980}
-                          toYear={new Date().getFullYear()}
-                          captionLayout="dropdown-buttons"
-                          components={{
-                            Dropdown: (props) => (
-                              <select {...props} className="bg-popover text-popover-foreground">
-                                {props.children}
-                              </select>
-                            ),
-                          }}
-                        />
-                      </PopoverContent>
-                    </Popover>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="report_date"
-                render={({ field }) => (
-                  <FormItem className="flex flex-col">
-                    <FormLabel>Fecha del Reporte</FormLabel>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <FormControl>
-                          <Button
-                            variant="outline"
-                            className={cn(
-                              "w-full pl-3 text-left font-normal",
-                              !field.value && "text-muted-foreground",
-                            )}
-                          >
-                            {field.value
-                              ? format(field.value, "PPP", { locale: es })
-                              : <span>Seleccione una fecha</span>}
-                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                          </Button>
-                        </FormControl>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar
-                          mode="single"
-                          selected={field.value}
-                          onSelect={field.onChange}
-                          disabled={(date) => date > new Date()}
-                          initialFocus
-                          fromYear={1980}
-                          toYear={new Date().getFullYear()}
-                          captionLayout="dropdown-buttons"
-                          components={{
-                            Dropdown: (props) => (
-                              <select {...props} className="bg-popover text-popover-foreground">
-                                {props.children}
-                              </select>
-                            ),
-                          }}
-                        />
-                      </PopoverContent>
-                    </Popover>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
+        {/* ── 02 Fechas ── */}
+        <Section num="02" icon={CalendarIcon} title="Fechas del Evento">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <FormField
+              control={form.control}
+              name="incident_date"
+              render={({ field }) => (
+                <FormItem className="flex flex-col gap-0">
+                  <DateField label="Fecha del Incidente" value={field.value} onChange={field.onChange} />
+                  <FormMessage className="text-xs mt-1" />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="report_date"
+              render={({ field }) => (
+                <FormItem className="flex flex-col gap-0">
+                  <DateField label="Fecha del Reporte" value={field.value} onChange={field.onChange} />
+                  <FormMessage className="text-xs mt-1" />
+                </FormItem>
+              )}
+            />
           </div>
+        </Section>
 
-          {/* ── Ubicación ── */}
-          <div className="rounded-lg border bg-muted/30 p-4 space-y-3">
-            <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
-              Ubicación del Incidente
-            </p>
-            <div className="grid grid-cols-2 gap-3">
-              <FormField
-                control={form.control}
-                name="incident_location"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Lugar del Incidente</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Seleccionar" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="HANGAR">HANGAR</SelectItem>
-                        <SelectItem value="PLATAFORMA">PLATAFORMA</SelectItem>
-                        <SelectItem value="AREA_ADMON">AREA ADMON</SelectItem>
-                        <SelectItem value="AERONAVE">AERONAVE</SelectItem>
-                        <SelectItem value="AEROPUERTO">AEROPUERTO</SelectItem>
-                        <SelectItem value="N/A">NO APLICA</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
+        {/* ── 03 Ubicación ── */}
+        <Section num="03" icon={MapPin} title="Ubicación del Incidente">
+          <div className="grid grid-cols-2 gap-3">
+            <FormField
+              control={form.control}
+              name="sms_finding_location_id"
+              render={({ field }) => (
+                <FormItem>
+                  <div className="flex items-center justify-between">
+                    <FormLabel className="text-[10px] font-semibold tracking-[0.18em] uppercase text-muted-foreground">
+                      Lugar
+                    </FormLabel>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="h-6 gap-1 px-2 text-xs text-amber-600 hover:text-amber-700 hover:bg-amber-50"
+                      onClick={() => setOpenCreateLocation(true)}
+                    >
+                      <Plus className="h-3 w-3" />
+                      Nuevo
+                    </Button>
+                  </div>
+                  <Select
+                    onValueChange={(val) => field.onChange(Number(val))}
+                    value={field.value?.toString()}
+                    disabled={isLoadingLocations}
+                  >
+                    <FormControl>
+                      <SelectTrigger className="h-9 text-sm border-border focus:ring-amber-500/30">
+                        <SelectValue placeholder={isLoadingLocations ? "Cargando..." : "Seleccionar"} />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {findingLocations?.map((loc) => (
+                        <SelectItem key={loc.id} value={loc.id.toString()}>{loc.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            {isOtherLocation && (
               <FormField
                 control={form.control}
                 name="incident_location_other"
                 render={({ field }) => (
-                  <FormItem className="col-span-2">
-                    <FormLabel>Otro Lugar del Incidente</FormLabel>
+                  <FormItem>
+                    <FormLabel className="text-[10px] font-semibold tracking-[0.18em] uppercase text-muted-foreground">
+                      Especificación
+                    </FormLabel>
                     <FormControl>
-                      <Input placeholder="Especificar otro lugar" {...field} />
+                      <Input
+                        placeholder="Otro lugar..."
+                        className="h-9 text-sm border-border focus-visible:ring-amber-500/30 focus-visible:border-amber-500/50"
+                        {...field}
+                      />
                     </FormControl>
                     <FormMessage className="text-xs" />
                   </FormItem>
                 )}
               />
-            </div>
+            )}
           </div>
+        </Section>
 
-          {/* ── Clasificación y Descripción ── */}
-          <div className="rounded-lg border bg-muted/30 p-4 space-y-3">
-            <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
-              Clasificación y Descripción
-            </p>
+        {/* ── 04 Clasificación y Descripción ── */}
+        <Section num="04" icon={AlertTriangle} title="Clasificación y Descripción">
+          <div className="flex flex-col gap-3">
             <FormField
               control={form.control}
               name="danger_type"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Tipo de Peligro</FormLabel>
+                  <FormLabel className="text-[10px] font-semibold tracking-[0.18em] uppercase text-muted-foreground">
+                    Tipo de Peligro
+                  </FormLabel>
                   <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Seleccionar" />
+                      <SelectTrigger className="h-9 text-sm border-border focus:ring-amber-500/30">
+                        <SelectValue placeholder="Seleccionar tipo" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
                       <SelectItem value="HUMANO">HUMANO</SelectItem>
                       <SelectItem value="ORGANIZACIONAL">ORGANIZACIONAL</SelectItem>
-                      <SelectItem value="TECNICOS">TECNICOS</SelectItem>
+                      <SelectItem value="TECNICOS">TÉCNICOS</SelectItem>
                       <SelectItem value="AMBIENTALES">AMBIENTALES</SelectItem>
                     </SelectContent>
                   </Select>
@@ -483,12 +576,14 @@ export function CreateObligatoryReportForm({
               name="description"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Descripción del Suceso</FormLabel>
+                  <FormLabel className="text-[10px] font-semibold tracking-[0.18em] uppercase text-muted-foreground">
+                    Descripción del Suceso
+                  </FormLabel>
                   <FormControl>
                     <Textarea
-                      placeholder="Descripción del suceso"
+                      placeholder="Describa el suceso con el mayor detalle posible..."
+                      className="min-h-[90px] text-sm resize-none border-border focus-visible:ring-amber-500/30 focus-visible:border-amber-500/50"
                       {...field}
-                      className="min-h-[80px]"
                     />
                   </FormControl>
                   <FormMessage className="text-xs" />
@@ -496,197 +591,142 @@ export function CreateObligatoryReportForm({
               )}
             />
           </div>
+        </Section>
 
-          {/* ── Datos del Reportero ── */}
-          <div className="rounded-lg border bg-muted/30 p-4 space-y-3">
-            <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
-              Datos del Reportero
-            </p>
-            <div className="grid grid-cols-2 gap-3">
-              <FormField
-                control={form.control}
-                name="reporter_name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Nombre</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Nombre" {...field} />
-                    </FormControl>
-                    <FormMessage className="text-xs" />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="reporter_email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Correo</FormLabel>
-                    <FormControl>
-                      <Input placeholder="correo@ejemplo.com" {...field} />
-                    </FormControl>
-                    <FormMessage className="text-xs" />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="reporter_phone"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Teléfono</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Teléfono" {...field} />
-                    </FormControl>
-                    <FormMessage className="text-xs" />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="reporter_area"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Area</FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      value={field.value}
+        {/* ── 05 Datos del Reportero ── */}
+        <Section num="05" icon={User} title="Datos del Reportero">
+          <div className="grid grid-cols-2 gap-3">
+            <FormField
+              control={form.control}
+              name="reporter_name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-[10px] font-semibold tracking-[0.18em] uppercase text-muted-foreground">Nombre</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="Nombre completo"
+                      className="h-9 text-sm border-border focus-visible:ring-amber-500/30 focus-visible:border-amber-500/50"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage className="text-xs" />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="reporter_email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-[10px] font-semibold tracking-[0.18em] uppercase text-muted-foreground">Correo</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="correo@ejemplo.com"
+                      className="h-9 text-sm border-border focus-visible:ring-amber-500/30 focus-visible:border-amber-500/50"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage className="text-xs" />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="reporter_phone"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-[10px] font-semibold tracking-[0.18em] uppercase text-muted-foreground">Teléfono</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="Teléfono"
+                      className="h-9 text-sm border-border focus-visible:ring-amber-500/30 focus-visible:border-amber-500/50"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage className="text-xs" />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="sms_area_id"
+              render={({ field }) => (
+                <FormItem>
+                  <div className="flex items-center justify-between">
+                    <FormLabel className="text-[10px] font-semibold tracking-[0.18em] uppercase text-muted-foreground">Área</FormLabel>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="h-6 gap-1 px-2 text-xs text-amber-600 hover:text-amber-700 hover:bg-amber-50"
+                      onClick={() => setOpenCreateArea(true)}
                     >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Seleccionar área" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="ANONIMO">ANONIMO</SelectItem>
-                        <SelectItem value="APTO">
-                          APTO
-                        </SelectItem>
-                        <SelectItem value="DISPATCH">
-                          DISPATCH
-                        </SelectItem>
-                        <SelectItem value="GSE">
-                          GSE
-                        </SelectItem>
-                        <SelectItem value="GTE. EST.">
-                          GTE. EST.
-                        </SelectItem>
-                        <SelectItem value="SUMINISTRO">
-                          SUMINISTRO
-                        </SelectItem>
-                        <SelectItem value="INAC">
-                          INAC
-                        </SelectItem>
-                        <SelectItem value="MTTO">
-                          MANTENIMIENTO
-                        </SelectItem>
-                        <SelectItem value="ING">
-                          INGENIERIA
-                        </SelectItem>
-                        <SelectItem value="INST. CAP">
-                          INST. CAP
-                        </SelectItem>
-                        <SelectItem value="N/A">
-                          NO APLICA
-                        </SelectItem>
-                        <SelectItem value="OMA">
-                          OMA
-                        </SelectItem>
-                        <SelectItem value="OPS">
-                          OPS
-                        </SelectItem>
-                        <SelectItem value="QMS">
-                          QMS
-                        </SelectItem>
-                        <SelectItem value="RR.HH">
-                          RECURSOS HUMANOS
-                        </SelectItem>
-                        <SelectItem value="SGC">
-                          SGC
-                        </SelectItem>
-                        <SelectItem value="SMS">
-                          SMS
-                        </SelectItem>
-                        <SelectItem value="TDC">
-                          TDC
-                        </SelectItem>
-                        <SelectItem value="TDM">
-                          TDM
-                        </SelectItem>
-                        <SelectItem value="TFC">
-                          TFC
-                        </SelectItem>
-                        <SelectItem value="CARG">
-                          CARG
-                        </SelectItem>
-                        <SelectItem value="QMS_AVSEC">
-                          QMS AVSEC
-                        </SelectItem>
-                        <SelectItem value="GTE_EQUIPAJE">
-                          GTE EQUIPAJE
-                        </SelectItem>
-                        <SelectItem value="TALLER_SUPERVIVENCIA">
-                          TALLER DE SUPERVIVENCIA
-                        </SelectItem>
-                        <SelectItem value="NDT">
-                          NDT
-                        </SelectItem>
-                        <SelectItem value="AUDITORIA_INTERNA">
-                          AUDITORIA INTERNA
-                        </SelectItem>
-                        <SelectItem value="AEROPUERTO">
-                          AEROPUERTO
-                      </SelectItem>
-
-                      <SelectItem value="SSL">
-                        SSL
-                      </SelectItem>
-                      <SelectItem value="TECNOLOGIA">
-                        TECNOLOGIA
-                      </SelectItem>
-                      <SelectItem value="INFRAESTRUCTURA">
-                        INFRAESTRUCTURA
-                      </SelectItem>
-
-
-                      <SelectItem value="AVSEC">AVSEC</SelectItem>
+                      <Plus className="h-3 w-3" />
+                      Nueva
+                    </Button>
+                  </div>
+                  <Select
+                    onValueChange={(val) => field.onChange(Number(val))}
+                    value={field.value?.toString()}
+                    disabled={isLoadingAreas}
+                  >
+                    <FormControl>
+                      <SelectTrigger className="h-9 text-sm border-border focus:ring-amber-500/30">
+                        <SelectValue placeholder={isLoadingAreas ? "Cargando..." : "Seleccionar área"} />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {smsAreas?.map((area) => (
+                        <SelectItem key={area.id} value={area.id.toString()}>{area.name}</SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                   <FormMessage />
                 </FormItem>
               )}
             />
-              <FormField
-                control={form.control}
-                name="reporter_position"
-                render={({ field }) => (
-                  <FormItem className="col-span-2">
-                    <FormLabel>Cargo</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Cargo" {...field} />
-                    </FormControl>
-                    <FormMessage className="text-xs" />
-                  </FormItem>
-                )}
-              />
-            </div>
+            <FormField
+              control={form.control}
+              name="reporter_position"
+              render={({ field }) => (
+                <FormItem className="col-span-2">
+                  <FormLabel className="text-[10px] font-semibold tracking-[0.18em] uppercase text-muted-foreground">Cargo</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="Cargo del reportero"
+                      className="h-9 text-sm border-border focus-visible:ring-amber-500/30 focus-visible:border-amber-500/50"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage className="text-xs" />
+                </FormItem>
+              )}
+            />
           </div>
+        </Section>
 
-          {/* ── Archivos Adjuntos ── */}
-          <div className="rounded-lg border bg-muted/30 p-4 space-y-3">
-            <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
-              Archivos Adjuntos
-            </p>
-            <div className="grid grid-cols-2 gap-3">
-              <FormField
-                control={form.control}
-                name="image"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Imagen del Reporte</FormLabel>
-                    <div className="flex flex-col gap-3">
-                      {(field.value instanceof File || initialData?.image) && (
-                        <div className="w-24 h-24 border rounded-md overflow-hidden">
+        {/* ── 06 Archivos Adjuntos ── */}
+        <Section num="06" icon={Paperclip} title="Archivos Adjuntos">
+          <div className="grid grid-cols-2 gap-3">
+
+            {/* Image upload */}
+            <FormField
+              control={form.control}
+              name="image"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-[10px] font-semibold tracking-[0.18em] uppercase text-muted-foreground">
+                    Imagen <span className="text-muted-foreground/50 normal-case tracking-normal">JPEG / PNG · 10MB</span>
+                  </FormLabel>
+                  <div className={cn(
+                    "relative rounded-md border border-dashed transition-colors",
+                    field.value instanceof File || initialData?.image
+                      ? "border-amber-500/40 bg-amber-500/5"
+                      : "border-border hover:border-amber-500/30 hover:bg-muted/30"
+                  )}>
+                    {(field.value instanceof File || initialData?.image) ? (
+                      <div className="flex items-center gap-2.5 p-2.5">
+                        <div className="w-10 h-10 rounded border border-border overflow-hidden flex-shrink-0 bg-muted">
                           {/* eslint-disable-next-line @next/next/no-img-element */}
                           <img
                             src={
@@ -700,78 +740,170 @@ export function CreateObligatoryReportForm({
                             className="w-full h-full object-contain"
                           />
                         </div>
-                      )}
-                      <FormControl>
-                        <Input
-                          type="file"
-                          accept="image/jpeg, image/png, image/jpg"
-                          onChange={(e) => {
-                            const file = e.target.files?.[0];
-                            if (file) field.onChange(file);
-                          }}
-                        />
-                      </FormControl>
-                    </div>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="document"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Documento PDF</FormLabel>
-                    <div className="flex flex-col gap-3">
-                      {field.value instanceof File ? (
-                        <div>
-                          <p className="text-xs text-muted-foreground">Archivo seleccionado:</p>
-                          <p className="font-semibold text-sm">{field.value.name}</p>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-1 mb-0.5">
+                            <CheckCircle2 className="w-3 h-3 text-amber-500" />
+                            <span className="text-[10px] font-semibold text-amber-600 dark:text-amber-400 uppercase tracking-wider">
+                              {field.value instanceof File ? "Imagen seleccionada" : "Imagen actual"}
+                            </span>
+                          </div>
+                          <p className="text-xs text-muted-foreground truncate">
+                            {field.value instanceof File ? field.value.name : "Imagen adjunta"}
+                          </p>
                         </div>
-                      ) : initialData?.document ? (
-                        <div>
-                          <p className="text-xs text-muted-foreground">Documento actual:</p>
+                      </div>
+                    ) : (
+                      <div className="flex flex-col items-center justify-center py-4 gap-1.5">
+                        <div className="w-7 h-7 rounded-full bg-muted flex items-center justify-center">
+                          <ImageIcon className="w-3.5 h-3.5 text-muted-foreground" />
+                        </div>
+                        <span className="text-[10px] text-muted-foreground">Seleccionar imagen</span>
+                      </div>
+                    )}
+                    <FormControl>
+                      <Input
+                        type="file"
+                        accept="image/jpeg,image/png,image/jpg"
+                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) field.onChange(file);
+                        }}
+                      />
+                    </FormControl>
+                  </div>
+                  <FormMessage className="text-xs" />
+                </FormItem>
+              )}
+            />
+
+            {/* Document upload */}
+            <FormField
+              control={form.control}
+              name="document"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-[10px] font-semibold tracking-[0.18em] uppercase text-muted-foreground">
+                    Documento <span className="text-muted-foreground/50 normal-case tracking-normal">PDF · 10MB</span>
+                  </FormLabel>
+                  <div className={cn(
+                    "relative rounded-md border border-dashed transition-colors",
+                    field.value instanceof File || initialData?.document
+                      ? "border-amber-500/40 bg-amber-500/5"
+                      : "border-border hover:border-amber-500/30 hover:bg-muted/30"
+                  )}>
+                    {field.value instanceof File ? (
+                      <div className="flex items-center gap-2.5 p-2.5">
+                        <div className="w-10 h-10 rounded border border-border flex-shrink-0 bg-red-500/10 flex items-center justify-center">
+                          <FileIcon className="w-4 h-4 text-red-500" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-1 mb-0.5">
+                            <CheckCircle2 className="w-3 h-3 text-amber-500" />
+                            <span className="text-[10px] font-semibold text-amber-600 dark:text-amber-400 uppercase tracking-wider">
+                              PDF seleccionado
+                            </span>
+                          </div>
+                          <p className="text-xs text-muted-foreground truncate">{field.value.name}</p>
+                        </div>
+                      </div>
+                    ) : initialData?.document ? (
+                      <div className="flex items-center gap-2.5 p-2.5">
+                        <div className="w-10 h-10 rounded border border-border flex-shrink-0 bg-red-500/10 flex items-center justify-center">
+                          <FileIcon className="w-4 h-4 text-red-500" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-1 mb-0.5">
+                            <CheckCircle2 className="w-3 h-3 text-amber-500" />
+                            <span className="text-[10px] font-semibold text-amber-600 dark:text-amber-400 uppercase tracking-wider">
+                              Documento actual
+                            </span>
+                          </div>
                           <a
                             href={initialData.document}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-sm font-medium text-blue-600 hover:underline"
+                            className="text-xs text-amber-600 hover:underline"
+                            onClick={(e) => e.stopPropagation()}
                           >
                             Ver documento
                           </a>
                         </div>
-                      ) : null}
-                      <FormControl>
-                        <Input
-                          type="file"
-                          accept="application/pdf"
-                          onChange={(e) => field.onChange(e.target.files?.[0])}
-                        />
-                      </FormControl>
-                    </div>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
+                      </div>
+                    ) : (
+                      <div className="flex flex-col items-center justify-center py-4 gap-1.5">
+                        <div className="w-7 h-7 rounded-full bg-muted flex items-center justify-center">
+                          <FileIcon className="w-3.5 h-3.5 text-muted-foreground" />
+                        </div>
+                        <span className="text-[10px] text-muted-foreground">Seleccionar PDF</span>
+                      </div>
+                    )}
+                    <FormControl>
+                      <Input
+                        type="file"
+                        accept="application/pdf"
+                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                        onChange={(e) => field.onChange(e.target.files?.[0])}
+                      />
+                    </FormControl>
+                  </div>
+                  <FormMessage className="text-xs" />
+                </FormItem>
+              )}
+            />
           </div>
+        </Section>
 
-          <div className="flex justify-between items-center gap-x-4">
-            <Separator className="flex-1" />
-            <p className="text-muted-foreground">SIGEAC</p>
-            <Separator className="flex-1" />
-          </div>
+        {/* ── Submit ── */}
+        <div className="mt-1 rounded-lg border border-amber-500/20 bg-amber-500/5 overflow-hidden">
           <Button
             type="submit"
-            disabled={createObligatoryReport.isPending || updateObligatoryReport.isPending}
+            disabled={isPending}
+            className="w-full h-11 rounded-none bg-amber-500 hover:bg-amber-400 text-amber-950 font-semibold tracking-[0.12em] uppercase text-[12px] border-0 transition-colors"
           >
-            {createObligatoryReport.isPending || updateObligatoryReport.isPending ? (
-              <Loader2 className="size-4 animate-spin" />
+            {isPending ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
             ) : (
-              "Enviar Reporte"
+              <span className="flex items-center gap-2">
+                <Send className="h-3.5 w-3.5" />
+                {isEditing ? "Actualizar Reporte" : "Enviar Reporte"}
+              </span>
             )}
           </Button>
+        </div>
+
       </form>
     </Form>
+
+    <Dialog open={openCreateStation} onOpenChange={setOpenCreateStation}>
+      <DialogContent className="max-w-sm">
+        <DialogHeader>
+          <DialogTitle>Nueva Estación</DialogTitle>
+          <DialogDescription>La estación quedará disponible en el selector.</DialogDescription>
+        </DialogHeader>
+        <CreateSmsStationForm onClose={() => setOpenCreateStation(false)} />
+      </DialogContent>
+    </Dialog>
+
+    <Dialog open={openCreateLocation} onOpenChange={setOpenCreateLocation}>
+      <DialogContent className="max-w-sm">
+        <DialogHeader>
+          <DialogTitle>Nuevo Lugar de Identificación</DialogTitle>
+          <DialogDescription>El lugar quedará disponible en el selector.</DialogDescription>
+        </DialogHeader>
+        <CreateFindingLocationForm onClose={() => setOpenCreateLocation(false)} />
+      </DialogContent>
+    </Dialog>
+
+    <Dialog open={openCreateArea} onOpenChange={setOpenCreateArea}>
+      <DialogContent className="max-w-sm">
+        <DialogHeader>
+          <DialogTitle>Nueva Área</DialogTitle>
+          <DialogDescription>El área quedará disponible en el selector.</DialogDescription>
+        </DialogHeader>
+        <CreateSmsAreaForm onClose={() => setOpenCreateArea(false)} />
+      </DialogContent>
+    </Dialog>
+    </>
   );
 }

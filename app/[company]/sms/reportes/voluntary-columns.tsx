@@ -50,9 +50,11 @@ export const columns: ColumnDef<VoluntaryReportResource>[] = [
       />
     ),
     cell: ({ row }) => {
-      return (
-        <p className="font-medium text-center">{row.original.finding_location || "N/A"}</p>
-      );
+      const location =
+        row.original.finding_location ||
+        row.original.sms_finding_location?.name ||
+        "N/A";
+      return <p className="font-medium text-center">{location}</p>;
     },
   },
  /* {

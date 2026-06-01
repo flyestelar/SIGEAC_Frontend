@@ -83,7 +83,7 @@ export function DataTable<TData, TValue>({
           </Button>
 
           {/* ReportModal llamado correctamente sin props excedentes */}
-          <ReportModal />
+          {/* <ReportModal /> */}
         </div>
 
         {/* Opciones de visualización de columnas a la derecha */}
