@@ -6,6 +6,9 @@ import Link from 'next/link';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 import { SidebarMenuButton } from '../ui/sidebar';
+import { motion } from 'motion/react';
+
+const AnimatedChevronDown = motion(ChevronDown);
 
 export function LeafItem({
   href,
@@ -14,6 +17,7 @@ export function LeafItem({
   active,
   collapsed,
   chevron,
+  open,
   ...rest
 }: {
   href?: string;
@@ -22,8 +26,13 @@ export function LeafItem({
   active: boolean;
   collapsed: boolean;
   chevron?: boolean;
+  open?: boolean;
 }) {
-  const buttonClassName = cn(collapsed ? 'mx-auto' : 'h-auto min-h-11 px-3 py-2.5');
+  const buttonClassName = cn(
+    'rounded-xl h-auto min-h-11 px-3 py-2.5',
+    active &&
+      'relative border border-sidebar-border/70 bg-sidebar-accent/60 pl-4 before:absolute before:left-1 before:top-2 before:bottom-2 before:w-1 before:rounded-full before:bg-sky-500',
+  );
 
   const iconClassname = cn('flex items-center justify-center');
   const content2 = (
@@ -33,12 +42,7 @@ export function LeafItem({
       </span>
 
       <span className="min-w-0 flex-1 max-w-[200px] truncate">{label}</span>
-      {chevron && (
-        <ChevronDown
-          size={18}
-          className="ml-auto transition-transform group-data-[state=open]/collapsible:rotate-180"
-        />
-      )}
+      {chevron && <AnimatedChevronDown size={18} className="ml-auto" animate={{ rotate: open ? '0deg' : '-90deg' }} />}
     </>
   );
 

@@ -50,10 +50,17 @@ export function CollapseMenuButton({
   const isCollapsed = useSidebarSectionsStore((state) => state.sections[storageKey] ?? isSubmenuActive);
   const setSectionOpen = useSidebarSectionsStore((state) => state.setSectionOpen);
 
-  const buttonClassName = cn(!isOpen && 'mx-auto');
+  const buttonClassName = cn('h-10', !isOpen && 'mx-auto');
 
   const button = (
-    <LeafItem active={active || isSubmenuActive} collapsed={!isOpen && !isMobile} chevron label={label} Icon={Icon} />
+    <LeafItem
+      active={active || isSubmenuActive}
+      collapsed={!isOpen && !isMobile}
+      chevron
+      label={label}
+      Icon={Icon}
+      open={isCollapsed}
+    />
   );
 
   const handleOpenChange = (open: boolean) => {
@@ -86,10 +93,10 @@ export function CollapseMenuButton({
                       initial={{ height: 0, opacity: 0 }}
                       animate={{ height: 'auto', opacity: 1 }}
                       exit={{ height: 0, opacity: 0 }}
-                      transition={{ duration: 0.18, ease: 'easeInOut' }}
+                      transition={{ duration: 0.18 }}
                       style={{ overflow: 'hidden' }}
                     >
-                      <SidebarMenuSub>
+                      <SidebarMenuSub className="gap-1 py-2">
                         {submenus.map(({ href, label, active: subMenuActive }, index) => {
                           return (
                             <SidebarMenuSubItem key={index}>
