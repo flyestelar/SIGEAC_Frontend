@@ -628,19 +628,6 @@ export function getMenuList(currentCompany: Company | null, userRoles: string[])
       ],
     },
     {
-      groupLabel: 'Mantenimiento',
-      moduleValue: 'maintenance',
-      menus: [
-        {
-          href: companyPath('/mantenimiento/ordenes_trabajo'),
-          label: 'Ordenes de Trabajo',
-          icon: SquarePen,
-          roles: ['SUPERUSER'],
-          submenus: [],
-        },
-      ],
-    },
-    {
       groupLabel: 'Ingenieria',
       moduleValue: 'engineering',
       menus: [
