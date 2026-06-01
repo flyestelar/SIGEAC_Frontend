@@ -12,8 +12,8 @@ import { cn } from '@/lib/utils';
 import { useCompanyStore } from '@/stores/CompanyStore';
 import { Company } from '@/types';
 import { useQueryClient } from '@tanstack/react-query';
-import { AnimatePresence, motion } from 'motion/react';
 import { ChevronDown, Loader2 } from 'lucide-react';
+import { AnimatePresence, motion } from 'motion/react';
 import { useCallback, useEffect } from 'react';
 
 const CompanySelect = () => {
@@ -60,20 +60,28 @@ const CompanySelect = () => {
   const stationType = selectedLocation ? selectedLocation.type : null;
 
   return (
-    <div className="hidden items-stretch overflow-hidden rounded-lg border bg-background md:flex">
+    <div
+      className={cn(
+        'hidden items-stretch overflow-hidden rounded-full md:flex',
+        'border border-border/50 bg-background/40 backdrop-blur-sm',
+        'shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]',
+      )}
+    >
       {/* Company */}
       <Select value={selectedCompany?.id.toString() ?? ''} onValueChange={handleCompanySelect}>
         <SelectTrigger
           aria-label="Seleccionar empresa"
           className={cn(
-            'group h-9 w-[210px] gap-2 rounded-none border-0 px-3 py-0 transition-colors',
-            'hover:bg-muted/40 focus:ring-0 focus:ring-offset-0',
+            'group h-8 w-[200px] gap-2 rounded-none border-0 bg-transparent px-3 py-0',
+            'transition-colors duration-150 ease-out',
+            'hover:bg-foreground/[0.04] focus:ring-0 focus:ring-offset-0',
+            'active:scale-[0.99]',
             '[&>svg]:hidden',
           )}
         >
           <span className="size-1.5 shrink-0 rounded-full bg-sky-500" />
           <div className="flex min-w-0 flex-1 flex-col items-start leading-tight">
-            <span className="text-[9px] font-semibold uppercase tracking-widest text-muted-foreground">
+            <span className="text-[9px] font-semibold uppercase tracking-[0.18em] text-muted-foreground/80">
               Empresa
             </span>
             <AnimatePresence mode="wait" initial={false}>
@@ -83,6 +91,7 @@ const CompanySelect = () => {
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
+                  transition={{ duration: 0.12, ease: [0.23, 1, 0.32, 1] }}
                   className="flex items-center gap-1 text-xs font-medium text-muted-foreground"
                 >
                   <Loader2 className="size-3 animate-spin" />
@@ -90,10 +99,10 @@ const CompanySelect = () => {
               ) : (
                 <motion.span
                   key={companyName ?? 'empty'}
-                  initial={{ opacity: 0, y: 2 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -2 }}
-                  transition={{ duration: 0.15 }}
+                  initial={{ opacity: 0, filter: 'blur(2px)' }}
+                  animate={{ opacity: 1, filter: 'blur(0px)' }}
+                  exit={{ opacity: 0, filter: 'blur(2px)' }}
+                  transition={{ duration: 0.16, ease: [0.23, 1, 0.32, 1] }}
                   className={cn(
                     'w-full truncate text-left text-xs font-semibold',
                     companyName ? 'text-foreground' : 'text-muted-foreground/70',
@@ -104,9 +113,15 @@ const CompanySelect = () => {
               )}
             </AnimatePresence>
           </div>
-          <ChevronDown className="size-3 shrink-0 text-muted-foreground/60 transition-transform group-data-[state=open]:rotate-180" />
+          <ChevronDown
+            className={cn(
+              'size-3 shrink-0 text-muted-foreground/60',
+              'transition-transform duration-200 ease-out',
+              'group-data-[state=open]:rotate-180',
+            )}
+          />
         </SelectTrigger>
-        <SelectContent align="start">
+        <SelectContent align="start" sideOffset={8}>
           {userLoading ? (
             <div className="flex items-center justify-center px-2 py-3">
               <Loader2 className="size-4 animate-spin text-muted-foreground" />
@@ -123,21 +138,23 @@ const CompanySelect = () => {
         </SelectContent>
       </Select>
 
-      <div className="w-px self-stretch bg-border" />
+      <div className="w-px self-stretch bg-border/60" />
 
       {/* Station */}
       <Select disabled={!selectedCompany} value={selectedStation || ''} onValueChange={handleStationSelect}>
         <SelectTrigger
           aria-label="Seleccionar estación"
           className={cn(
-            'group h-9 w-[180px] gap-2 rounded-none border-0 px-3 py-0 transition-colors',
-            'hover:bg-muted/40 focus:ring-0 focus:ring-offset-0 disabled:opacity-50',
+            'group h-8 w-[170px] gap-2 rounded-none border-0 bg-transparent px-3 py-0',
+            'transition-colors duration-150 ease-out',
+            'hover:bg-foreground/[0.04] focus:ring-0 focus:ring-offset-0 disabled:opacity-50',
+            'active:scale-[0.99]',
             '[&>svg]:hidden',
           )}
         >
           <span className="size-1.5 shrink-0 rounded-full bg-indigo-500" />
           <div className="flex min-w-0 flex-1 flex-col items-start leading-tight">
-            <span className="text-[9px] font-semibold uppercase tracking-widest text-muted-foreground">
+            <span className="text-[9px] font-semibold uppercase tracking-[0.18em] text-muted-foreground/80">
               Estación
             </span>
             <AnimatePresence mode="wait" initial={false}>
@@ -147,6 +164,7 @@ const CompanySelect = () => {
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
+                  transition={{ duration: 0.12, ease: [0.23, 1, 0.32, 1] }}
                   className="flex items-center gap-1 text-xs text-muted-foreground"
                 >
                   <Loader2 className="size-3 animate-spin" />
@@ -154,10 +172,10 @@ const CompanySelect = () => {
               ) : stationLabel ? (
                 <motion.span
                   key={stationLabel}
-                  initial={{ opacity: 0, y: 2 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -2 }}
-                  transition={{ duration: 0.15 }}
+                  initial={{ opacity: 0, filter: 'blur(2px)' }}
+                  animate={{ opacity: 1, filter: 'blur(0px)' }}
+                  exit={{ opacity: 0, filter: 'blur(2px)' }}
+                  transition={{ duration: 0.16, ease: [0.23, 1, 0.32, 1] }}
                   className="flex w-full min-w-0 items-baseline gap-1.5"
                 >
                   <span className="shrink-0 font-mono text-xs font-semibold tracking-wider text-foreground">
@@ -175,6 +193,7 @@ const CompanySelect = () => {
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
+                  transition={{ duration: 0.12, ease: [0.23, 1, 0.32, 1] }}
                   className="text-xs font-medium text-muted-foreground/70"
                 >
                   {selectedCompany ? 'Seleccionar' : '—'}
@@ -182,9 +201,15 @@ const CompanySelect = () => {
               )}
             </AnimatePresence>
           </div>
-          <ChevronDown className="size-3 shrink-0 text-muted-foreground/60 transition-transform group-data-[state=open]:rotate-180" />
+          <ChevronDown
+            className={cn(
+              'size-3 shrink-0 text-muted-foreground/60',
+              'transition-transform duration-200 ease-out',
+              'group-data-[state=open]:rotate-180',
+            )}
+          />
         </SelectTrigger>
-        <SelectContent align="start">
+        <SelectContent align="start" sideOffset={8}>
           {locationsLoading ? (
             <div className="flex items-center justify-center px-2 py-3">
               <Loader2 className="size-4 animate-spin text-muted-foreground" />

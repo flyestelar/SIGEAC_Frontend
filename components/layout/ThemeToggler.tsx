@@ -20,13 +20,13 @@ export function ThemeToggler() {
       <Tooltip delayDuration={100}>
         <TooltipTrigger asChild>
           <Button
-            className="rounded-full w-8 h-8 bg-background"
+            className="relative h-8 w-8 rounded-full border-border/50 bg-background/40 backdrop-blur-sm transition-transform duration-150 ease-out hover:bg-foreground/[0.04] active:scale-[0.97]"
             variant="outline"
             size="icon"
             onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
           >
-            <SunIcon className="w-[1.2rem] h-[1.2rem] rotate-90 scale-0 transition-transform ease-in-out duration-500 dark:rotate-0 dark:scale-100" />
-            <MoonIcon className="absolute w-[1.2rem] h-[1.2rem] rotate-0 scale-1000 transition-transform ease-in-out duration-500 dark:-rotate-90 dark:scale-0" />
+            <SunIcon className="h-[1.1rem] w-[1.1rem] rotate-90 scale-0 transition-all duration-200 ease-out dark:rotate-0 dark:scale-100" />
+            <MoonIcon className="absolute h-[1.1rem] w-[1.1rem] rotate-0 scale-100 transition-all duration-200 ease-out dark:-rotate-90 dark:scale-0" />
             <span className="sr-only">Switch Theme</span>
           </Button>
         </TooltipTrigger>
