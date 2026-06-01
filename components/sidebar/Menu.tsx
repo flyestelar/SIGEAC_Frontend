@@ -1,19 +1,39 @@
 'use client';
 
-import { Ellipsis } from 'lucide-react';
+import { ChevronRight, Ellipsis } from 'lucide-react';
+import { AnimatePresence, motion } from 'motion/react';
 import { usePathname } from 'next/navigation';
 import { useMemo } from 'react';
 
 import { CollapseMenuButton } from '@/components/sidebar/CollapseMenuButton';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useAuth } from '@/contexts/AuthContext';
+import { cn } from '@/lib/utils';
 import { getMenuList } from '@/lib/menu-list-2';
+import { useSidebarSectionsStore } from '@/stores/SidebarSectionsStore';
 import { useCompanyStore } from '@/stores/CompanyStore';
-import { SidebarGroup, SidebarGroupLabel, SidebarMenu, SidebarMenuItem, useSidebar } from '../ui/sidebar';
+import {
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarMenu,
+  SidebarMenuItem,
+  useSidebar,
+} from '../ui/sidebar';
 import { LeafItem } from './LeafItem';
 
-function GroupHeader({ label, collapsed }: { label?: string; collapsed: boolean }) {
+type MenuGroupProps = {
+  groupLabel?: string;
+  menus: ReturnType<typeof getMenuList>[number]['menus'];
+  collapsed: boolean;
+  isOpen: boolean | undefined;
+  isMobile: boolean;
+  pathname: string;
+};
+
+function GroupHeader({ label, collapsed, open }: { label?: string; collapsed: boolean; open?: boolean }) {
   if (!label) return <div className="h-3" />;
 
   if (collapsed) {
@@ -34,7 +54,135 @@ function GroupHeader({ label, collapsed }: { label?: string; collapsed: boolean 
     );
   }
 
-  return <SidebarGroupLabel className="uppercase text-muted-foreground truncate">{label}</SidebarGroupLabel>;
+  return (
+    <div className="flex items-center gap-2 px-3">
+      <SidebarGroupLabel className="uppercase text-muted-foreground truncate">{label}</SidebarGroupLabel>
+      <div className="h-px flex-1 bg-border" />
+      <ChevronRight className={cn('ml-auto h-4 w-4 text-muted-foreground transition-transform', open && 'rotate-90')} />
+    </div>
+  );
+}
+
+function MenuGroup({ groupLabel, menus, collapsed, isOpen, isMobile, pathname }: MenuGroupProps) {
+  const setSectionOpen = useSidebarSectionsStore((state) => state.setSectionOpen);
+  const groupKey = groupLabel ?? `group-${menus[0]?.href ?? 'unknown'}`;
+  const groupStorageKey = `group:${groupKey}`;
+  const isSidebarCollapsed = collapsed && isOpen !== undefined && !isMobile;
+  const hasActiveItem = menus.some(({ href, submenus }) => {
+    if (submenus.length > 0) {
+      return (!!href && pathname.startsWith(href)) || submenus.some((submenu) => pathname === submenu.href);
+    }
+
+    return pathname === href;
+  });
+  const isGroupOpen = useSidebarSectionsStore((state) => state.sections[groupStorageKey] ?? hasActiveItem);
+  const isGroupExpanded = isSidebarCollapsed || isGroupOpen;
+
+  const handleOpenChange = (open: boolean) => {
+    setSectionOpen(groupStorageKey, open);
+  };
+
+  return (
+    <Collapsible open={isGroupExpanded} onOpenChange={handleOpenChange}>
+      <SidebarGroup className="w-full" key={groupKey}>
+        {groupLabel ? (
+          <CollapsibleTrigger asChild disabled={isSidebarCollapsed}>
+            <button className="w-full text-left" type="button">
+              <GroupHeader label={groupLabel} collapsed={isSidebarCollapsed} open={isGroupExpanded} />
+            </button>
+          </CollapsibleTrigger>
+        ) : (
+          <GroupHeader collapsed={isSidebarCollapsed} />
+        )}
+        {isSidebarCollapsed ? (
+          <CollapsibleContent forceMount>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {menus.map(({ href, label, icon: Icon, submenus }) => {
+                  const hasSubmenus = submenus.length > 0;
+                  const isActive = !!href && (hasSubmenus ? pathname.startsWith(href) : pathname === href);
+                  const isSubmenuActive = submenus.some((submenu) => pathname === submenu.href);
+                  return submenus.length === 0 ? (
+                    <SidebarMenuItem key={`${label}-${href}`}>
+                      <LeafItem
+                        key={`${label}-${href}`}
+                        href={href}
+                        label={label}
+                        Icon={Icon}
+                        active={isActive}
+                        collapsed={isSidebarCollapsed}
+                      />
+                    </SidebarMenuItem>
+                  ) : (
+                    <CollapseMenuButton
+                      key={`${label}-${href}`}
+                      icon={Icon}
+                      label={label}
+                      active={isActive}
+                      submenus={submenus.map((s) => ({ ...s, active: pathname === s.href }))}
+                      isOpen={isOpen}
+                      isSubmenuActive={isSubmenuActive}
+                      isMobile={isMobile}
+                      storageKey={`submenu:${groupKey}:${href ?? label}`}
+                    />
+                  );
+                })}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </CollapsibleContent>
+        ) : (
+          <AnimatePresence initial={false}>
+            {isGroupExpanded ? (
+              <CollapsibleContent forceMount asChild>
+                <motion.div
+                  key="group-content"
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: 'auto', opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.2, ease: 'easeInOut' }}
+                  style={{ overflow: 'hidden' }}
+                >
+                  <SidebarGroupContent>
+                    <SidebarMenu>
+                      {menus.map(({ href, label, icon: Icon, submenus }) => {
+                        const hasSubmenus = submenus.length > 0;
+                        const isActive = !!href && (hasSubmenus ? pathname.startsWith(href) : pathname === href);
+                        const isSubmenuActive = submenus.some((submenu) => pathname === submenu.href);
+                        return submenus.length === 0 ? (
+                          <SidebarMenuItem key={`${label}-${href}`}>
+                            <LeafItem
+                              key={`${label}-${href}`}
+                              href={href}
+                              label={label}
+                              Icon={Icon}
+                              active={isActive}
+                              collapsed={isSidebarCollapsed}
+                            />
+                          </SidebarMenuItem>
+                        ) : (
+                          <CollapseMenuButton
+                            key={`${label}-${href}`}
+                            icon={Icon}
+                            label={label}
+                            active={isActive}
+                            submenus={submenus.map((s) => ({ ...s, active: pathname === s.href }))}
+                            isOpen={isOpen}
+                            isSubmenuActive={isSubmenuActive}
+                            isMobile={isMobile}
+                            storageKey={`submenu:${groupKey}:${href ?? label}`}
+                          />
+                        );
+                      })}
+                    </SidebarMenu>
+                  </SidebarGroupContent>
+                </motion.div>
+              </CollapsibleContent>
+            ) : null}
+          </AnimatePresence>
+        )}
+      </SidebarGroup>
+    </Collapsible>
+  );
 }
 
 export function Menu() {
@@ -61,42 +209,16 @@ export function Menu() {
         {useMemo(
           () =>
             menuList.map(({ groupLabel, menus }) => {
-              const groupKey = groupLabel ?? `group-${menus[0]?.href ?? 'unknown'}`;
-
               return (
-                <SidebarGroup className="w-full" key={groupKey}>
-                  <GroupHeader label={groupLabel} collapsed={collapsed && isOpen !== undefined && !isMobile} />
-                  <SidebarMenu>
-                    {menus.map(({ href, label, icon: Icon, submenus }) => {
-                      const hasSubmenus = submenus.length > 0;
-                      const isActive = !!href && (hasSubmenus ? pathname.startsWith(href) : pathname === href);
-                      const isSubmenuActive = submenus.some((submenu) => pathname === submenu.href);
-                      return submenus.length === 0 ? (
-                        <SidebarMenuItem key={`${label}-${href}`}>
-                          <LeafItem
-                            key={`${label}-${href}`}
-                            href={href}
-                            label={label}
-                            Icon={Icon}
-                            active={isActive}
-                            collapsed={collapsed && isOpen !== undefined && !isMobile}
-                          />
-                        </SidebarMenuItem>
-                      ) : (
-                        <CollapseMenuButton
-                          key={`${label}-${href}`}
-                          icon={Icon}
-                          label={label}
-                          active={isActive}
-                          submenus={submenus.map((s) => ({ ...s, active: pathname === s.href }))}
-                          isOpen={isOpen}
-                          isSubmenuActive={isSubmenuActive}
-                          isMobile={isMobile}
-                        />
-                      );
-                    })}
-                  </SidebarMenu>
-                </SidebarGroup>
+                <MenuGroup
+                  key={groupLabel ?? `group-${menus[0]?.href ?? 'unknown'}`}
+                  groupLabel={groupLabel}
+                  menus={menus}
+                  collapsed={collapsed}
+                  isOpen={isOpen}
+                  isMobile={isMobile}
+                  pathname={pathname}
+                />
               );
             }),
           [collapsed, isMobile, isOpen, menuList, pathname],

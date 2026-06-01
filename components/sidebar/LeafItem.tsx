@@ -23,9 +23,9 @@ export function LeafItem({
   collapsed: boolean;
   chevron?: boolean;
 }) {
-  const buttonClassName = cn(collapsed && 'mx-auto');
+  const buttonClassName = cn(collapsed ? 'mx-auto' : 'h-auto min-h-11 px-3 py-2.5');
 
-  const iconClassname = cn('flex items-center justify-center', !collapsed && ' p-1 rounded-md bg-muted-foreground/10');
+  const iconClassname = cn('flex items-center justify-center');
   const content2 = (
     <>
       <span className={iconClassname}>
