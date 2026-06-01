@@ -109,7 +109,7 @@ const CompanySelect = () => {
           type="button"
           aria-label="Seleccionar empresa y estación"
           className={cn(
-            'hidden h-9 w-[390px] items-center gap-3 overflow-hidden rounded-lg border bg-background px-3 text-left transition-colors md:flex',
+            'h-9 w-full sm:w-[390px] items-center gap-3 overflow-hidden rounded-lg border bg-background px-3 text-left transition-colors flex',
             'hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
           )}
         >

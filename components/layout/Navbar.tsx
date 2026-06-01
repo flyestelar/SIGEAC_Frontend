@@ -5,12 +5,14 @@ import { cn } from '@/lib/utils';
 import CompanySelect from '../selects/CompanySelect';
 import { SidebarToggle } from '../sidebar/SidebarToggle';
 import { ThemeToggler } from './ThemeToggler';
+import { useSidebar } from '../ui/sidebar';
 
 interface NavbarProps {
   title: string;
 }
 
 export function Navbar({ title }: NavbarProps) {
+  const sidebar = useSidebar();
   return (
     <header className="sticky top-0 z-30 px-3 pt-2 sm:px-4">
       <div
@@ -34,7 +36,7 @@ export function Navbar({ title }: NavbarProps) {
           </div>
         </div>
 
-        <CompanySelect />
+        {!sidebar.isMobile && <CompanySelect />}
 
         <span className="ml-1 hidden h-5 w-px bg-border/60 md:block" />
 

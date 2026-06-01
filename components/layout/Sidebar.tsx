@@ -5,9 +5,11 @@ import { cn } from '@/lib/utils';
 import { useCompanyStore } from '@/stores/CompanyStore';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Sidebar, SidebarContent, SidebarHeader } from '../ui/sidebar';
+import { Sidebar, SidebarContent, SidebarHeader, useSidebar } from '../ui/sidebar';
+import CompanySelect from '../selects/CompanySelect';
 
 export function AppSidebar() {
+  const sidebar = useSidebar();
   const { selectedCompany, selectedStation } = useCompanyStore();
   return (
     <Sidebar collapsible="icon">
@@ -18,6 +20,7 @@ export function AppSidebar() {
         >
           <Image src={'/images/logo.png'} width={150} height={150} alt="Logo" />
         </Link>
+        {sidebar.isMobile && <CompanySelect />}
       </SidebarHeader>
       <SidebarContent className="relative">
         {selectedCompany && selectedStation ? (
