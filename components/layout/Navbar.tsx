@@ -11,14 +11,23 @@ interface NavbarProps {
 
 export function Navbar({ title }: NavbarProps) {
   return (
-    <header className="sticky top-0 z-10 w-full bg-background/95 shadow backdrop-blur supports-[backdrop-filter]:bg-background/60 dark:shadow-secondary">
-      <div className="mx-4 sm:mx-8 flex h-14 items-center justify-center gap-3">
+    <header className="sticky top-0 z-10 w-full border-b border-border/60 bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <div className="mx-4 flex h-14 items-center gap-4 sm:mx-8">
         <SidebarToggle />
-        <div className="mr-auto flex items-center space-x-4 lg:space-x-0">
-          <h1 className="font-bold">{title}</h1>
+
+        <div className="mr-auto flex min-w-0 items-center gap-3">
+          <span className="hidden h-4 w-px bg-border md:block" />
+          <div className="flex min-w-0 flex-col leading-none">
+            <span className="hidden text-[10px] font-semibold uppercase tracking-widest text-muted-foreground md:block">
+              SIGEAC
+            </span>
+            <h1 className="truncate text-sm font-semibold tracking-tight">{title}</h1>
+          </div>
         </div>
+
         <CompanySelect />
-        <div className="ml-auto flex items-center space-x-2 justify-end">
+
+        <div className="ml-auto flex items-center gap-2">
           <ThemeToggler />
           <UserNav />
         </div>

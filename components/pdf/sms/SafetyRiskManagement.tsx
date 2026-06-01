@@ -1364,7 +1364,7 @@ export const FirstPage = ({
         }}
       >
         <Text style={[styles.cellText3, styles.boldTitle]}>
-          {identification.mitigation_plan?.responsible === "SMS" ? "X" : ""}
+          {identification.mitigation_plan?.area === "SMS" ? "X" : ""}
         </Text>
       </View>
 
@@ -1386,7 +1386,7 @@ export const FirstPage = ({
         }}
       >
         <Text style={[styles.cellText3, styles.boldTitle]}>
-          {identification.mitigation_plan?.responsible === "OPERACIONES"
+          {identification.mitigation_plan?.area === "OPERACIONES"
             ? "X"
             : ""}
         </Text>
@@ -1412,7 +1412,7 @@ export const FirstPage = ({
         }}
       >
         <Text style={[styles.cellText3, styles.boldTitle]}>
-          {identification.mitigation_plan?.responsible ===
+          {identification.mitigation_plan?.area ===
           "MATENIMIENTO"
             ? "X"
             : ""}
@@ -1438,7 +1438,7 @@ export const FirstPage = ({
         }}
       >
         <Text style={[styles.cellText3, styles.boldTitle]}>
-          {identification.mitigation_plan?.responsible === "ADMINISTRACION_RRHH"
+          {identification.mitigation_plan?.area === "ADMINISTRACION_RRHH"
             ? "X"
             : ""}
         </Text>
@@ -1468,7 +1468,7 @@ export const FirstPage = ({
         }}
       >
         <Text style={[styles.cellText3, styles.boldTitle]}>
-          {identification.mitigation_plan?.responsible === "CONTROL_CALIDAD" ? "X" : ""}
+          {identification.mitigation_plan?.area === "CONTROL_CALIDAD" ? "X" : ""}
         </Text>
       </View>
 
@@ -1491,7 +1491,7 @@ export const FirstPage = ({
         }}
       >
         <Text style={[styles.cellText3, styles.boldTitle]}>
-          {identification.mitigation_plan?.responsible === "AVSEC" ? "X" : ""}
+          {identification.mitigation_plan?.area === "AVSEC" ? "X" : ""}
         </Text>
       </View>
 
@@ -1515,7 +1515,7 @@ export const FirstPage = ({
         }}
       >
         <Text style={[styles.cellText3, styles.boldTitle]}>
-          {identification.mitigation_plan?.responsible === "IT" ? "X" : ""}
+          {identification.mitigation_plan?.area === "IT" ? "X" : ""}
         </Text>
       </View>
     </View>

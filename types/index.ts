@@ -5,6 +5,7 @@ import {
   HardTimeCategoryResource,
   HardTimeIntervalResource,
 } from '@api/types';
+import { MitigationPlanResource } from '@api/types.gen';
 
 export type Accountant = {
   id: number;
@@ -1020,7 +1021,7 @@ export type MitigationTable = {
   information_source_id: number;
   information_source: InformationSource;
   analysis: Analysis;
-  mitigation_plan: MitigationPlan | null;
+  mitigation_plan: MitigationPlanResource | null;
   obligatory_report: ObligatoryReport;
   voluntary_report: VoluntaryReport;
 };

@@ -141,7 +141,7 @@ export default function CreateSMSActivityForm({
                 : mt.obligatory_report?.report_number
                     ? `RO-${mt.obligatory_report.report_number}`
                     : "Sin reporte";
-            return { reportLabel, measures: mt.mitigation_plan!.measures };
+            return { reportLabel, measures: mt.mitigation_plan!.measures ?? [] };
         });
 
     const { createSMSActivity } = useCreateSMSActivity();

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -11,11 +11,11 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { useCompanyStore } from "@/stores/CompanyStore";
-import { MitigationMeasure } from "@/types";
+import { MitigationMeasureResource } from "@api/types.gen";
 import Link from "next/link";
 
 interface MeasuresCellProps {
-  measures: MitigationMeasure[];
+  measures: MitigationMeasureResource[];
   planId?: string | number;
 }
 

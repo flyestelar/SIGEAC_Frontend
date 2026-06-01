@@ -3,7 +3,23 @@ import {
   useDeleteMitigationPlan,
   useDownloadCloseReportPdf,
   useOpenReport,
+  useUpdateMitigationPlan,
 } from "@/actions/sms/planes_de_mitigation/actions";
+import { useGetSmsAreas } from "@/hooks/sms/useGetSmsAreas";
+import { Input } from "@/components/ui/input";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
 import CreateAnalysisForm from "@/components/forms/sms/CreateAnalysisForm";
 import CreateMitigationMeasureForm from "@/components/forms/sms/CreateMitigationMeasureForm";
 import CreateMitigationPlanForm from "@/components/forms/sms/CreateMitigationPlanForm";
@@ -23,10 +39,12 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { getResult } from "@/lib/utils";
+import { cn, getResult } from "@/lib/utils";
 import { useCompanyStore } from "@/stores/CompanyStore";
 import { MitigationTable } from "@/types";
 import {
+  Check,
+  ChevronsUpDown,
   ClipboardList,
   ClipboardPenLine,
   FilePenLine,
@@ -38,6 +56,7 @@ import {
   Pencil,
   Plus,
   Trash2,
+  UserPen,
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useState } from "react";
@@ -59,9 +78,16 @@ const MitigationTableDropdownActions = ({
   const [openEditAnalyses, setOpenEditAnalyses] = useState(false);
   const [openCreateAnalysis, setOpenCreateAnalysis] = useState(false);
   const [closeDate, setCloseDate] = useState<string>("");
+  const [openUpdateResponsible, setOpenUpdateResponsible] = useState(false);
+  const [openAreaCombobox, setOpenAreaCombobox] = useState(false);
+  const [responsibleArea, setResponsibleArea] = useState(mitigationTable.mitigation_plan?.area ?? "");
+  const [responsibleName, setResponsibleName] = useState(mitigationTable.mitigation_plan?.responsible_name ?? "");
+  const [responsibleLastName, setResponsibleLastName] = useState(mitigationTable.mitigation_plan?.responsible_last_name ?? "");
   const { closeReportByMitigationId } = useCloseReport();
   const { openReportByMitigationId } = useOpenReport();
   const { downloadCloseReportPdf } = useDownloadCloseReportPdf();
+  const { updateMitigationPlan } = useUpdateMitigationPlan();
+  const { data: areas, isLoading: isLoadingAreas } = useGetSmsAreas(selectedCompany?.slug);
   const { theme } = useTheme();
 
   const handleDelete = async (id: number | string) => {
@@ -122,8 +148,8 @@ const MitigationTableDropdownActions = ({
   const canCreateAnalysis = () => {
     return Boolean(
       mitigationTable.mitigation_plan?.id &&
-        mitigationTable.mitigation_plan?.analysis === null &&
-        mitigationTable.mitigation_plan.measures.length > 0
+        mitigationTable.mitigation_plan?.analysis == null &&
+        (mitigationTable.mitigation_plan.measures?.length ?? 0) > 0
     );
   };
 
@@ -137,7 +163,7 @@ const MitigationTableDropdownActions = ({
     const result = mitigationTable.mitigation_plan?.analysis?.result;
     return Boolean(
       mitigationTable.mitigation_plan?.id &&
-        mitigationTable.mitigation_plan.analysis !== null &&
+        mitigationTable.mitigation_plan.analysis != null &&
         result &&
         (getResult(result) === "ACEPTABLE" ||
           getResult(result) === "TOLERABLE") &&
@@ -246,6 +272,22 @@ const MitigationTableDropdownActions = ({
               <DropdownMenuItem onClick={() => setCloseReport(true)}>
                 <LockKeyhole className="size-5" />
                 <p className="pl-2">Cerrar Reporte</p>
+              </DropdownMenuItem>
+            )}
+
+            {/* TEMPORAL: Actualizar responsable de registros existentes */}
+            {mitigationTable.mitigation_plan?.id && (
+              <DropdownMenuItem
+                onClick={() => {
+                  setResponsibleArea(mitigationTable.mitigation_plan?.area ?? "");
+                  setResponsibleName(mitigationTable.mitigation_plan?.responsible_name ?? "");
+                  setResponsibleLastName(mitigationTable.mitigation_plan?.responsible_last_name ?? "");
+                  setOpenUpdateResponsible(true);
+                }}
+                className="text-amber-600 focus:text-amber-600"
+              >
+                <UserPen className="size-5" />
+                <p className="pl-2">Actualizar Responsable</p>
               </DropdownMenuItem>
             )}
           </DropdownMenuContent>
@@ -406,7 +448,7 @@ const MitigationTableDropdownActions = ({
           mitigationTable.mitigation_plan?.id
             ? handleCloseReport(
                 mitigationTable.mitigation_plan.id,
-                mitigationTable.mitigation_plan.analysis.result
+                mitigationTable.mitigation_plan.analysis?.result ?? ""
               )
             : console.log("El id de mitigation_plan es undefined")
         }
@@ -446,7 +488,7 @@ const MitigationTableDropdownActions = ({
                   mitigationTable.mitigation_plan?.id
                     ? handleOpenReport(
                         mitigationTable.mitigation_plan.id,
-                        mitigationTable.mitigation_plan.analysis.result
+                        mitigationTable.mitigation_plan.analysis?.result ?? ""
                       )
                     : console.log("El id de mitigation_plan es undefined")
                 }
@@ -465,6 +507,111 @@ const MitigationTableDropdownActions = ({
             </DialogFooter>
           </DialogContent>
         </Dialog>
+      </Dialog>
+
+      {/* TEMPORAL: Dialog para actualizar área y responsable */}
+      <Dialog open={openUpdateResponsible} onOpenChange={setOpenUpdateResponsible}>
+        <DialogContent className="w-[calc(100vw-1rem)] sm:max-w-md rounded-2xl p-4 sm:p-6">
+          <DialogHeader>
+            <DialogTitle className="text-center">Actualizar Responsable</DialogTitle>
+            <DialogDescription className="text-center pt-1 text-amber-600 text-xs font-semibold uppercase tracking-widest">
+              Acción temporal de migración
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="flex flex-col gap-3 py-2">
+            <div className="flex flex-col gap-1">
+              <label className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">Área</label>
+              <Popover open={openAreaCombobox} onOpenChange={setOpenAreaCombobox}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    role="combobox"
+                    disabled={isLoadingAreas}
+                    className={cn("h-9 w-full justify-between text-sm font-normal", !responsibleArea && "text-muted-foreground")}
+                  >
+                    {responsibleArea || (isLoadingAreas ? "Cargando..." : "Seleccionar o escribir área")}
+                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+                  <Command>
+                    <CommandInput
+                      placeholder="Buscar o escribir área..."
+                      onValueChange={(search) => setResponsibleArea(search)}
+                    />
+                    <CommandList>
+                      <CommandEmpty
+                        className="py-2 px-3 text-sm cursor-pointer hover:bg-accent"
+                        onClick={() => setOpenAreaCombobox(false)}
+                      >
+                        Usar &ldquo;{responsibleArea}&rdquo;
+                      </CommandEmpty>
+                      <CommandGroup>
+                        {areas?.map((area) => (
+                          <CommandItem
+                            key={area.id}
+                            value={area.name}
+                            onSelect={(val) => {
+                              setResponsibleArea(val);
+                              setOpenAreaCombobox(false);
+                            }}
+                          >
+                            <Check className={cn("mr-2 h-4 w-4", responsibleArea === area.name ? "opacity-100" : "opacity-0")} />
+                            {area.name}
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2">
+              <div className="flex flex-col gap-1">
+                <label className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">Nombre</label>
+                <Input
+                  value={responsibleName}
+                  onChange={(e) => setResponsibleName(e.target.value)}
+                  placeholder="Nombre"
+                  className="h-9 text-sm"
+                />
+              </div>
+              <div className="flex flex-col gap-1">
+                <label className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">Apellido</label>
+                <Input
+                  value={responsibleLastName}
+                  onChange={(e) => setResponsibleLastName(e.target.value)}
+                  placeholder="Apellido"
+                  className="h-9 text-sm"
+                />
+              </div>
+            </div>
+          </div>
+
+          <DialogFooter className="flex flex-col gap-2 sm:flex-row-reverse">
+            <Button
+              disabled={updateMitigationPlan.isPending || !responsibleArea}
+              onClick={async () => {
+                if (!mitigationTable.mitigation_plan?.id) return;
+                await updateMitigationPlan.mutateAsync({
+                  company: selectedCompany!.slug,
+                  id: mitigationTable.mitigation_plan.id.toString(),
+                  data: {
+                    area: responsibleArea,
+                    responsible_name: responsibleName || null,
+                    responsible_last_name: responsibleLastName || null,
+                  },
+                });
+                setOpenUpdateResponsible(false);
+              }}
+            >
+              {updateMitigationPlan.isPending ? <Loader2 className="size-4 animate-spin" /> : "Guardar"}
+            </Button>
+            <Button variant="outline" onClick={() => setOpenUpdateResponsible(false)}>Cancelar</Button>
+          </DialogFooter>
+        </DialogContent>
       </Dialog>
     </>
   );
