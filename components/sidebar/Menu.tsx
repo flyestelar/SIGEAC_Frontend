@@ -56,9 +56,9 @@ function GroupHeader({ label, collapsed, open }: { label?: string; collapsed: bo
 
   return (
     <div className="flex items-center gap-2 px-3">
-      <SidebarGroupLabel className="uppercase text-muted-foreground truncate">{label}</SidebarGroupLabel>
+      <SidebarGroupLabel className="text-[10px] uppercase text-muted-foreground truncate">{label}</SidebarGroupLabel>
       <div className="h-px flex-1 bg-border" />
-      <ChevronRight className={cn('ml-auto h-4 w-4 text-muted-foreground transition-transform', open && 'rotate-90')} />
+      <ChevronRight className={cn('ml-auto size-3 text-muted-foreground transition-transform', open && 'rotate-90')} />
     </div>
   );
 }
