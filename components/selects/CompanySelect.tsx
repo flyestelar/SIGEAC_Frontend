@@ -110,7 +110,7 @@ const CompanySelect = () => {
           aria-label="Seleccionar empresa y estación"
           className={cn(
             'hidden h-9 w-[390px] items-center gap-3 overflow-hidden rounded-lg border bg-background px-3 text-left transition-colors md:flex',
-            'hover:bg-muted/40 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2',
+            'hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
           )}
         >
           <div className="flex min-w-0 flex-1 items-center gap-3">
