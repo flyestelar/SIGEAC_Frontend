@@ -549,6 +549,13 @@ export function getMenuList(currentCompany: Company | null, userRoles: string[])
           submenus: [],
         },
         {
+          href: companyPath('/planificacion/alertas'),
+          label: 'Alertas de Vencimiento',
+          icon: CalendarClock,
+          roles: ['ANALISTA_PLANIFICACION', 'JEFE_PLANIFICACION', 'SUPERUSER'],
+          submenus: [],
+        },
+        {
           href: companyPath('/planificacion/hard_time'),
           label: 'Ctrl. de Hard Time',
           icon: Hourglass,

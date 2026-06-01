@@ -257,7 +257,16 @@ export type AirworthinessDirectiveSummaryResource = {
 /**
  * Analysis
  */
-export type Analysis = Array<string>;
+export type Analysis = {
+  id: number;
+  severity: string;
+  probability: string;
+  result: string;
+  danger_identification_id: number | null;
+  mitigation_plan_id: number | null;
+  registered_by: string;
+  updated_by: string | null;
+};
 
 /**
  * AnalysisResource
@@ -1236,6 +1245,65 @@ export type PilotResource = {
   registered_by: string;
   updated_by: string | null;
   employee?: EmployeeResource;
+};
+
+/**
+ * PlanificationAlertAircraftResource
+ */
+export type PlanificationAlertAircraftResource = {
+  id: number;
+  acronym: unknown;
+  model: unknown;
+  serial: unknown;
+};
+
+/**
+ * PlanificationAlertResource
+ */
+export type PlanificationAlertResource = {
+  status: string;
+  item_type: string;
+  item_identifier: string;
+  description: unknown;
+  aircraft: PlanificationAlertAircraftResource;
+  governing_metric: string;
+  governing_date: unknown;
+  remaining_value: number | null;
+  remaining_unit: unknown;
+  projected_date: unknown;
+  source: PlanificationAlertSourceResource;
+};
+
+/**
+ * PlanificationAlertSourceResource
+ */
+export type PlanificationAlertSourceResource = {
+  maintenance_control_id: number | null;
+  last_execution_id: number | null;
+  hard_time_interval_id: number | null;
+  hard_time_installation_id: number | null;
+  aircraft_part_id: number | null;
+  directive_id: number | null;
+  applicability_id: number | null;
+  compliance_control_id: number | null;
+};
+
+/**
+ * PlanificationAlertsIndexResource
+ */
+export type PlanificationAlertsIndexResource = {
+  alerts: Array<PlanificationAlertResource>;
+  summary: PlanificationAlertsSummaryResource;
+};
+
+/**
+ * PlanificationAlertsSummaryResource
+ */
+export type PlanificationAlertsSummaryResource = {
+  OK: number;
+  WARNING: number;
+  OVERDUE: number;
+  total: number;
 };
 
 /**
@@ -5048,6 +5116,40 @@ export type AnalysisShowAnalysisWithPlanResponses = {
 export type AnalysisShowAnalysisWithPlanResponse =
   AnalysisShowAnalysisWithPlanResponses[keyof AnalysisShowAnalysisWithPlanResponses];
 
+export type AnalysisGeneratePdfData = {
+  body?: never;
+  path: {
+    company: string;
+    id: number;
+  };
+  query?: never;
+  url: '/{company}/sms/analysis/{id}/pdf';
+};
+
+export type AnalysisGeneratePdfErrors = {
+  /**
+   * Unauthenticated
+   */
+  401: {
+    /**
+     * Error overview.
+     */
+    message: string;
+  };
+};
+
+export type AnalysisGeneratePdfError = AnalysisGeneratePdfErrors[keyof AnalysisGeneratePdfErrors];
+
+export type AnalysisGeneratePdfResponses = {
+  200:
+    | string
+    | {
+        [key: string]: unknown;
+      };
+};
+
+export type AnalysisGeneratePdfResponse = AnalysisGeneratePdfResponses[keyof AnalysisGeneratePdfResponses];
+
 export type AnalysisCloseReportData = {
   body?: never;
   path: {
@@ -5094,6 +5196,50 @@ export type AnalysisCloseReportResponses = {
 };
 
 export type AnalysisCloseReportResponse = AnalysisCloseReportResponses[keyof AnalysisCloseReportResponses];
+
+export type AnalysisGenerateClosePdfData = {
+  body?: never;
+  path: {
+    _company: string;
+    mitigation_id: number;
+  };
+  query?: never;
+  url: '/{_company}/sms/close-report/{mitigation_id}/pdf';
+};
+
+export type AnalysisGenerateClosePdfErrors = {
+  /**
+   * Unauthenticated
+   */
+  401: {
+    /**
+     * Error overview.
+     */
+    message: string;
+  };
+  /**
+   * Not found
+   */
+  404: {
+    /**
+     * Error overview.
+     */
+    message: string;
+  };
+};
+
+export type AnalysisGenerateClosePdfError = AnalysisGenerateClosePdfErrors[keyof AnalysisGenerateClosePdfErrors];
+
+export type AnalysisGenerateClosePdfResponses = {
+  200:
+    | string
+    | {
+        [key: string]: unknown;
+      };
+};
+
+export type AnalysisGenerateClosePdfResponse =
+  AnalysisGenerateClosePdfResponses[keyof AnalysisGenerateClosePdfResponses];
 
 export type AnalysisOpenReportData = {
   body?: never;
@@ -7343,7 +7489,7 @@ export type CashMovementNewAircraftExpensesResponses = {
 export type CashMovementNewAircraftExpensesResponse =
   CashMovementNewAircraftExpensesResponses[keyof CashMovementNewAircraftExpensesResponses];
 
-export type CertificateServeFileData = {
+export type SmsCertificatesFileData = {
   body?: never;
   path: {
     company: string;
@@ -7353,21 +7499,19 @@ export type CertificateServeFileData = {
   url: '/{company}/sms/certificates/serve/{filePath}';
 };
 
-export type CertificateServeFileErrors = {
+export type SmsCertificatesFileErrors = {
   404: {
     error: 'Archivo no encontrado';
-    debug_path: Array<unknown> | string;
-    full_server_path: string;
   };
 };
 
-export type CertificateServeFileError = CertificateServeFileErrors[keyof CertificateServeFileErrors];
+export type SmsCertificatesFileError = SmsCertificatesFileErrors[keyof SmsCertificatesFileErrors];
 
-export type CertificateServeFileResponses = {
+export type SmsCertificatesFileResponses = {
   200: Blob | File;
 };
 
-export type CertificateServeFileResponse = CertificateServeFileResponses[keyof CertificateServeFileResponses];
+export type SmsCertificatesFileResponse = SmsCertificatesFileResponses[keyof SmsCertificatesFileResponses];
 
 export type CertificateIndexData = {
   body?: never;
@@ -9315,6 +9459,41 @@ export type DangerIdentificationIndexResponses = {
 export type DangerIdentificationIndexResponse =
   DangerIdentificationIndexResponses[keyof DangerIdentificationIndexResponses];
 
+export type DangerIdentificationGetIdentificationWithAllByIdData = {
+  body?: never;
+  path: {
+    _company: string;
+    id: number;
+  };
+  query?: never;
+  url: '/{_company}/sms/danger-identifications/with-all/{id}';
+};
+
+export type DangerIdentificationGetIdentificationWithAllByIdErrors = {
+  /**
+   * Unauthenticated
+   */
+  401: {
+    /**
+     * Error overview.
+     */
+    message: string;
+  };
+  404: {
+    message: 'Identificación de peligro no encontrada';
+  };
+};
+
+export type DangerIdentificationGetIdentificationWithAllByIdError =
+  DangerIdentificationGetIdentificationWithAllByIdErrors[keyof DangerIdentificationGetIdentificationWithAllByIdErrors];
+
+export type DangerIdentificationGetIdentificationWithAllByIdResponses = {
+  200: Array<unknown>;
+};
+
+export type DangerIdentificationGetIdentificationWithAllByIdResponse =
+  DangerIdentificationGetIdentificationWithAllByIdResponses[keyof DangerIdentificationGetIdentificationWithAllByIdResponses];
+
 export type DangerIdentificationDestroyData = {
   body?: never;
   path: {
@@ -9433,6 +9612,51 @@ export type DangerIdentificationUpdateResponses = {
 export type DangerIdentificationUpdateResponse =
   DangerIdentificationUpdateResponses[keyof DangerIdentificationUpdateResponses];
 
+export type DangerIdentificationGeneratePdfData = {
+  body?: never;
+  path: {
+    company: string;
+    id: number;
+  };
+  query?: never;
+  url: '/{company}/sms/danger-identifications/{id}/pdf';
+};
+
+export type DangerIdentificationGeneratePdfErrors = {
+  /**
+   * Unauthenticated
+   */
+  401: {
+    /**
+     * Error overview.
+     */
+    message: string;
+  };
+  /**
+   * Not found
+   */
+  404: {
+    /**
+     * Error overview.
+     */
+    message: string;
+  };
+};
+
+export type DangerIdentificationGeneratePdfError =
+  DangerIdentificationGeneratePdfErrors[keyof DangerIdentificationGeneratePdfErrors];
+
+export type DangerIdentificationGeneratePdfResponses = {
+  200:
+    | string
+    | {
+        [key: string]: unknown;
+      };
+};
+
+export type DangerIdentificationGeneratePdfResponse =
+  DangerIdentificationGeneratePdfResponses[keyof DangerIdentificationGeneratePdfResponses];
+
 export type DangerIdentificationStoreData = {
   body: DangerIdentificationRequest;
   path: {
@@ -9494,41 +9718,6 @@ export type DangerIdentificationStoreResponses = {
 
 export type DangerIdentificationStoreResponse =
   DangerIdentificationStoreResponses[keyof DangerIdentificationStoreResponses];
-
-export type DangerIdentificationGetIdentificationWithAllByIdData = {
-  body?: never;
-  path: {
-    _company: string;
-    id: number;
-  };
-  query?: never;
-  url: '/{_company}/sms/danger-identifications/with-all/{id}';
-};
-
-export type DangerIdentificationGetIdentificationWithAllByIdErrors = {
-  /**
-   * Unauthenticated
-   */
-  401: {
-    /**
-     * Error overview.
-     */
-    message: string;
-  };
-  404: {
-    message: 'Identificación de peligro no encontrada';
-  };
-};
-
-export type DangerIdentificationGetIdentificationWithAllByIdError =
-  DangerIdentificationGetIdentificationWithAllByIdErrors[keyof DangerIdentificationGetIdentificationWithAllByIdErrors];
-
-export type DangerIdentificationGetIdentificationWithAllByIdResponses = {
-  200: Array<unknown>;
-};
-
-export type DangerIdentificationGetIdentificationWithAllByIdResponse =
-  DangerIdentificationGetIdentificationWithAllByIdResponses[keyof DangerIdentificationGetIdentificationWithAllByIdResponses];
 
 export type DangerIdentificationGetDangerIdentificationsCountedByInformationSourceNameData = {
   body?: never;
@@ -14052,6 +14241,48 @@ export type MitigationPlanUpdateResponses = {
 
 export type MitigationPlanUpdateResponse = MitigationPlanUpdateResponses[keyof MitigationPlanUpdateResponses];
 
+export type MitigationPlanGeneratePdfData = {
+  body?: never;
+  path: {
+    company: string;
+    id: number;
+  };
+  query?: never;
+  url: '/{company}/sms/mitigation-plans/{id}/pdf';
+};
+
+export type MitigationPlanGeneratePdfErrors = {
+  /**
+   * Unauthenticated
+   */
+  401: {
+    /**
+     * Error overview.
+     */
+    message: string;
+  };
+  /**
+   * Not found
+   */
+  404: {
+    /**
+     * Error overview.
+     */
+    message: string;
+  };
+};
+
+export type MitigationPlanGeneratePdfError = MitigationPlanGeneratePdfErrors[keyof MitigationPlanGeneratePdfErrors];
+
+export type MitigationPlanGeneratePdfResponses = {
+  200: {
+    [key: string]: unknown;
+  };
+};
+
+export type MitigationPlanGeneratePdfResponse =
+  MitigationPlanGeneratePdfResponses[keyof MitigationPlanGeneratePdfResponses];
+
 export type ModulesIndexData = {
   body?: never;
   path?: never;
@@ -15376,6 +15607,56 @@ export type PilotsUpdateResponses = {
 };
 
 export type PilotsUpdateResponse = PilotsUpdateResponses[keyof PilotsUpdateResponses];
+
+export type PlanificationAlertsIndexData = {
+  body?: never;
+  path?: never;
+  query?: {
+    aircraft_id?: number;
+    item_type?: 'maintenance_control' | 'hard_time' | 'directive';
+    status?: MaintenanceAlertStatus;
+  };
+  url: '/planification-alerts';
+};
+
+export type PlanificationAlertsIndexErrors = {
+  /**
+   * Unauthenticated
+   */
+  401: {
+    /**
+     * Error overview.
+     */
+    message: string;
+  };
+  /**
+   * Validation error
+   */
+  422: {
+    /**
+     * Errors overview.
+     */
+    message: string;
+    /**
+     * A detailed description of each field that failed validation.
+     */
+    errors: {
+      [key: string]: Array<string>;
+    };
+  };
+};
+
+export type PlanificationAlertsIndexError = PlanificationAlertsIndexErrors[keyof PlanificationAlertsIndexErrors];
+
+export type PlanificationAlertsIndexResponses = {
+  /**
+   * `PlanificationAlertsIndexResource`
+   */
+  200: PlanificationAlertsIndexResource;
+};
+
+export type PlanificationAlertsIndexResponse =
+  PlanificationAlertsIndexResponses[keyof PlanificationAlertsIndexResponses];
 
 export type PlanificationEventIndexData = {
   body?: never;

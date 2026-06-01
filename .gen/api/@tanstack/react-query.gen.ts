@@ -71,6 +71,8 @@ import {
   airworthinessDirectivesStore,
   airworthinessDirectivesUpdate,
   analysisCloseReport,
+  analysisGenerateClosePdf,
+  analysisGeneratePdf,
   analysisGetPostRiskCountByDateRange,
   analysisGetRiskCountByDateRange,
   analysisGetTotalPostRiskCountByDateRange,
@@ -147,7 +149,6 @@ import {
   certificateGetEmployees,
   certificateIndex,
   certificateIndex2,
-  certificateServeFile,
   certificateShow,
   certificateStore,
   certificateStore2,
@@ -196,6 +197,7 @@ import {
   creditsStore,
   creditsUpdate,
   dangerIdentificationDestroy,
+  dangerIdentificationGeneratePdf,
   dangerIdentificationGetDangerIdentificationsCountedByInformationSourceName,
   dangerIdentificationGetDangerIdentificationsCountedByInformationSourceType,
   dangerIdentificationGetDangerIdentificationsCountedByType,
@@ -319,6 +321,7 @@ import {
   mitigationMeasureStore,
   mitigationMeasureUpdate,
   mitigationPlanDestroy,
+  mitigationPlanGeneratePdf,
   mitigationPlanStore,
   mitigationPlanUpdate,
   modulesCompanyModule,
@@ -357,6 +360,7 @@ import {
   pilotsShow,
   pilotsStore,
   pilotsUpdate,
+  planificationAlertsIndex,
   planificationEventDestroy,
   planificationEventIndex,
   planificationEventShow,
@@ -474,6 +478,7 @@ import {
   smsAreaIndex,
   smsAreaStore,
   smsAreaUpdate,
+  smsCertificatesFile,
   smsFindingLocationDestroy,
   smsFindingLocationIndex,
   smsFindingLocationStore,
@@ -747,6 +752,12 @@ import type {
   AnalysisCloseReportData,
   AnalysisCloseReportError,
   AnalysisCloseReportResponse,
+  AnalysisGenerateClosePdfData,
+  AnalysisGenerateClosePdfError,
+  AnalysisGenerateClosePdfResponse,
+  AnalysisGeneratePdfData,
+  AnalysisGeneratePdfError,
+  AnalysisGeneratePdfResponse,
   AnalysisGetPostRiskCountByDateRangeData,
   AnalysisGetPostRiskCountByDateRangeError,
   AnalysisGetPostRiskCountByDateRangeResponse,
@@ -957,9 +968,6 @@ import type {
   CertificateIndexData,
   CertificateIndexError,
   CertificateIndexResponse,
-  CertificateServeFileData,
-  CertificateServeFileError,
-  CertificateServeFileResponse,
   CertificateShowData,
   CertificateShowError,
   CertificateStore2Data,
@@ -1102,6 +1110,9 @@ import type {
   DangerIdentificationDestroyData,
   DangerIdentificationDestroyError,
   DangerIdentificationDestroyResponse,
+  DangerIdentificationGeneratePdfData,
+  DangerIdentificationGeneratePdfError,
+  DangerIdentificationGeneratePdfResponse,
   DangerIdentificationGetDangerIdentificationsCountedByInformationSourceNameData,
   DangerIdentificationGetDangerIdentificationsCountedByInformationSourceNameError,
   DangerIdentificationGetDangerIdentificationsCountedByInformationSourceNameResponse,
@@ -1464,6 +1475,9 @@ import type {
   MitigationPlanDestroyData,
   MitigationPlanDestroyError,
   MitigationPlanDestroyResponse,
+  MitigationPlanGeneratePdfData,
+  MitigationPlanGeneratePdfError,
+  MitigationPlanGeneratePdfResponse,
   MitigationPlanStoreData,
   MitigationPlanStoreError,
   MitigationPlanStoreResponse,
@@ -1574,6 +1588,9 @@ import type {
   PilotsUpdateData,
   PilotsUpdateError,
   PilotsUpdateResponse,
+  PlanificationAlertsIndexData,
+  PlanificationAlertsIndexError,
+  PlanificationAlertsIndexResponse,
   PlanificationEventDestroyData,
   PlanificationEventDestroyError,
   PlanificationEventIndexData,
@@ -1916,6 +1933,9 @@ import type {
   SmsAreaUpdateData,
   SmsAreaUpdateError,
   SmsAreaUpdateResponse,
+  SmsCertificatesFileData,
+  SmsCertificatesFileError,
+  SmsCertificatesFileResponse,
   SmsFindingLocationDestroyData,
   SmsFindingLocationDestroyError,
   SmsFindingLocationDestroyResponse,
@@ -4099,6 +4119,28 @@ export const analysisShowAnalysisWithPlanOptions = (options: Options<AnalysisSho
     queryKey: analysisShowAnalysisWithPlanQueryKey(options),
   });
 
+export const analysisGeneratePdfQueryKey = (options: Options<AnalysisGeneratePdfData>) =>
+  createQueryKey('analysisGeneratePdf', options);
+
+export const analysisGeneratePdfOptions = (options: Options<AnalysisGeneratePdfData>) =>
+  queryOptions<
+    AnalysisGeneratePdfResponse,
+    AxiosError<AnalysisGeneratePdfError>,
+    AnalysisGeneratePdfResponse,
+    ReturnType<typeof analysisGeneratePdfQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await analysisGeneratePdf({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: analysisGeneratePdfQueryKey(options),
+  });
+
 export const analysisCloseReportMutation = (
   options?: Partial<Options<AnalysisCloseReportData>>,
 ): UseMutationOptions<
@@ -4122,6 +4164,28 @@ export const analysisCloseReportMutation = (
   };
   return mutationOptions;
 };
+
+export const analysisGenerateClosePdfQueryKey = (options: Options<AnalysisGenerateClosePdfData>) =>
+  createQueryKey('analysisGenerateClosePdf', options);
+
+export const analysisGenerateClosePdfOptions = (options: Options<AnalysisGenerateClosePdfData>) =>
+  queryOptions<
+    AnalysisGenerateClosePdfResponse,
+    AxiosError<AnalysisGenerateClosePdfError>,
+    AnalysisGenerateClosePdfResponse,
+    ReturnType<typeof analysisGenerateClosePdfQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await analysisGenerateClosePdf({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: analysisGenerateClosePdfQueryKey(options),
+  });
 
 export const analysisOpenReportMutation = (
   options?: Partial<Options<AnalysisOpenReportData>>,
@@ -5791,18 +5855,18 @@ export const cashMovementNewAircraftExpensesMutation = (
   return mutationOptions;
 };
 
-export const certificateServeFileQueryKey = (options: Options<CertificateServeFileData>) =>
-  createQueryKey('certificateServeFile', options);
+export const smsCertificatesFileQueryKey = (options: Options<SmsCertificatesFileData>) =>
+  createQueryKey('smsCertificatesFile', options);
 
-export const certificateServeFileOptions = (options: Options<CertificateServeFileData>) =>
+export const smsCertificatesFileOptions = (options: Options<SmsCertificatesFileData>) =>
   queryOptions<
-    CertificateServeFileResponse,
-    AxiosError<CertificateServeFileError>,
-    CertificateServeFileResponse,
-    ReturnType<typeof certificateServeFileQueryKey>
+    SmsCertificatesFileResponse,
+    AxiosError<SmsCertificatesFileError>,
+    SmsCertificatesFileResponse,
+    ReturnType<typeof smsCertificatesFileQueryKey>
   >({
     queryFn: async ({ queryKey, signal }) => {
-      const { data } = await certificateServeFile({
+      const { data } = await smsCertificatesFile({
         ...options,
         ...queryKey[0],
         signal,
@@ -5810,7 +5874,7 @@ export const certificateServeFileOptions = (options: Options<CertificateServeFil
       });
       return data;
     },
-    queryKey: certificateServeFileQueryKey(options),
+    queryKey: smsCertificatesFileQueryKey(options),
   });
 
 export const certificateIndexQueryKey = (options: Options<CertificateIndexData>) =>
@@ -7119,6 +7183,31 @@ export const dangerIdentificationIndexOptions = (options: Options<DangerIdentifi
     queryKey: dangerIdentificationIndexQueryKey(options),
   });
 
+export const dangerIdentificationGetIdentificationWithAllByIdQueryKey = (
+  options: Options<DangerIdentificationGetIdentificationWithAllByIdData>,
+) => createQueryKey('dangerIdentificationGetIdentificationWithAllById', options);
+
+export const dangerIdentificationGetIdentificationWithAllByIdOptions = (
+  options: Options<DangerIdentificationGetIdentificationWithAllByIdData>,
+) =>
+  queryOptions<
+    DangerIdentificationGetIdentificationWithAllByIdResponse,
+    AxiosError<DangerIdentificationGetIdentificationWithAllByIdError>,
+    DangerIdentificationGetIdentificationWithAllByIdResponse,
+    ReturnType<typeof dangerIdentificationGetIdentificationWithAllByIdQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await dangerIdentificationGetIdentificationWithAllById({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: dangerIdentificationGetIdentificationWithAllByIdQueryKey(options),
+  });
+
 export const dangerIdentificationDestroyMutation = (
   options?: Partial<Options<DangerIdentificationDestroyData>>,
 ): UseMutationOptions<
@@ -7189,6 +7278,28 @@ export const dangerIdentificationUpdateMutation = (
   return mutationOptions;
 };
 
+export const dangerIdentificationGeneratePdfQueryKey = (options: Options<DangerIdentificationGeneratePdfData>) =>
+  createQueryKey('dangerIdentificationGeneratePdf', options);
+
+export const dangerIdentificationGeneratePdfOptions = (options: Options<DangerIdentificationGeneratePdfData>) =>
+  queryOptions<
+    DangerIdentificationGeneratePdfResponse,
+    AxiosError<DangerIdentificationGeneratePdfError>,
+    DangerIdentificationGeneratePdfResponse,
+    ReturnType<typeof dangerIdentificationGeneratePdfQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await dangerIdentificationGeneratePdf({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: dangerIdentificationGeneratePdfQueryKey(options),
+  });
+
 export const dangerIdentificationStoreMutation = (
   options?: Partial<Options<DangerIdentificationStoreData>>,
 ): UseMutationOptions<
@@ -7212,31 +7323,6 @@ export const dangerIdentificationStoreMutation = (
   };
   return mutationOptions;
 };
-
-export const dangerIdentificationGetIdentificationWithAllByIdQueryKey = (
-  options: Options<DangerIdentificationGetIdentificationWithAllByIdData>,
-) => createQueryKey('dangerIdentificationGetIdentificationWithAllById', options);
-
-export const dangerIdentificationGetIdentificationWithAllByIdOptions = (
-  options: Options<DangerIdentificationGetIdentificationWithAllByIdData>,
-) =>
-  queryOptions<
-    DangerIdentificationGetIdentificationWithAllByIdResponse,
-    AxiosError<DangerIdentificationGetIdentificationWithAllByIdError>,
-    DangerIdentificationGetIdentificationWithAllByIdResponse,
-    ReturnType<typeof dangerIdentificationGetIdentificationWithAllByIdQueryKey>
-  >({
-    queryFn: async ({ queryKey, signal }) => {
-      const { data } = await dangerIdentificationGetIdentificationWithAllById({
-        ...options,
-        ...queryKey[0],
-        signal,
-        throwOnError: true,
-      });
-      return data;
-    },
-    queryKey: dangerIdentificationGetIdentificationWithAllByIdQueryKey(options),
-  });
 
 export const dangerIdentificationGetDangerIdentificationsCountedByInformationSourceNameQueryKey = (
   options: Options<DangerIdentificationGetDangerIdentificationsCountedByInformationSourceNameData>,
@@ -10235,6 +10321,28 @@ export const mitigationPlanUpdateMutation = (
   return mutationOptions;
 };
 
+export const mitigationPlanGeneratePdfQueryKey = (options: Options<MitigationPlanGeneratePdfData>) =>
+  createQueryKey('mitigationPlanGeneratePdf', options);
+
+export const mitigationPlanGeneratePdfOptions = (options: Options<MitigationPlanGeneratePdfData>) =>
+  queryOptions<
+    MitigationPlanGeneratePdfResponse,
+    AxiosError<MitigationPlanGeneratePdfError>,
+    MitigationPlanGeneratePdfResponse,
+    ReturnType<typeof mitigationPlanGeneratePdfQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await mitigationPlanGeneratePdf({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: mitigationPlanGeneratePdfQueryKey(options),
+  });
+
 export const modulesIndexQueryKey = (options?: Options<ModulesIndexData>) => createQueryKey('modulesIndex', options);
 
 export const modulesIndexOptions = (options?: Options<ModulesIndexData>) =>
@@ -11063,6 +11171,28 @@ export const pilotsUpdateMutation = (
   };
   return mutationOptions;
 };
+
+export const planificationAlertsIndexQueryKey = (options?: Options<PlanificationAlertsIndexData>) =>
+  createQueryKey('planificationAlertsIndex', options);
+
+export const planificationAlertsIndexOptions = (options?: Options<PlanificationAlertsIndexData>) =>
+  queryOptions<
+    PlanificationAlertsIndexResponse,
+    AxiosError<PlanificationAlertsIndexError>,
+    PlanificationAlertsIndexResponse,
+    ReturnType<typeof planificationAlertsIndexQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await planificationAlertsIndex({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: planificationAlertsIndexQueryKey(options),
+  });
 
 export const planificationEventIndexQueryKey = (options: Options<PlanificationEventIndexData>) =>
   createQueryKey('planificationEventIndex', options);

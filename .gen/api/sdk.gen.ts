@@ -183,6 +183,12 @@ import type {
   AnalysisCloseReportData,
   AnalysisCloseReportErrors,
   AnalysisCloseReportResponses,
+  AnalysisGenerateClosePdfData,
+  AnalysisGenerateClosePdfErrors,
+  AnalysisGenerateClosePdfResponses,
+  AnalysisGeneratePdfData,
+  AnalysisGeneratePdfErrors,
+  AnalysisGeneratePdfResponses,
   AnalysisGetPostRiskCountByDateRangeData,
   AnalysisGetPostRiskCountByDateRangeErrors,
   AnalysisGetPostRiskCountByDateRangeResponses,
@@ -410,9 +416,6 @@ import type {
   CertificateIndexData,
   CertificateIndexErrors,
   CertificateIndexResponses,
-  CertificateServeFileData,
-  CertificateServeFileErrors,
-  CertificateServeFileResponses,
   CertificateShowData,
   CertificateShowErrors,
   CertificateShowResponses,
@@ -557,6 +560,9 @@ import type {
   DangerIdentificationDestroyData,
   DangerIdentificationDestroyErrors,
   DangerIdentificationDestroyResponses,
+  DangerIdentificationGeneratePdfData,
+  DangerIdentificationGeneratePdfErrors,
+  DangerIdentificationGeneratePdfResponses,
   DangerIdentificationGetDangerIdentificationsCountedByInformationSourceNameData,
   DangerIdentificationGetDangerIdentificationsCountedByInformationSourceNameErrors,
   DangerIdentificationGetDangerIdentificationsCountedByInformationSourceNameResponses,
@@ -926,6 +932,9 @@ import type {
   MitigationPlanDestroyData,
   MitigationPlanDestroyErrors,
   MitigationPlanDestroyResponses,
+  MitigationPlanGeneratePdfData,
+  MitigationPlanGeneratePdfErrors,
+  MitigationPlanGeneratePdfResponses,
   MitigationPlanStoreData,
   MitigationPlanStoreErrors,
   MitigationPlanStoreResponses,
@@ -1037,6 +1046,9 @@ import type {
   PilotsUpdateData,
   PilotsUpdateErrors,
   PilotsUpdateResponses,
+  PlanificationAlertsIndexData,
+  PlanificationAlertsIndexErrors,
+  PlanificationAlertsIndexResponses,
   PlanificationEventDestroyData,
   PlanificationEventDestroyErrors,
   PlanificationEventDestroyResponses,
@@ -1386,6 +1398,9 @@ import type {
   SmsAreaUpdateData,
   SmsAreaUpdateErrors,
   SmsAreaUpdateResponses,
+  SmsCertificatesFileData,
+  SmsCertificatesFileErrors,
+  SmsCertificatesFileResponses,
   SmsFindingLocationDestroyData,
   SmsFindingLocationDestroyErrors,
   SmsFindingLocationDestroyResponses,
@@ -2730,6 +2745,16 @@ export const analysisShowAnalysisWithPlan = <ThrowOnError extends boolean = fals
     ...options,
   });
 
+export const analysisGeneratePdf = <ThrowOnError extends boolean = false>(
+  options: Options<AnalysisGeneratePdfData, ThrowOnError>,
+) =>
+  (options.client ?? client).get<AnalysisGeneratePdfResponses, AnalysisGeneratePdfErrors, ThrowOnError>({
+    responseType: 'blob',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/{company}/sms/analysis/{id}/pdf',
+    ...options,
+  });
+
 export const analysisCloseReport = <ThrowOnError extends boolean = false>(
   options: Options<AnalysisCloseReportData, ThrowOnError>,
 ) =>
@@ -2737,6 +2762,16 @@ export const analysisCloseReport = <ThrowOnError extends boolean = false>(
     responseType: 'json',
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/{company}/sms/close-report/{mitigation_id}',
+    ...options,
+  });
+
+export const analysisGenerateClosePdf = <ThrowOnError extends boolean = false>(
+  options: Options<AnalysisGenerateClosePdfData, ThrowOnError>,
+) =>
+  (options.client ?? client).get<AnalysisGenerateClosePdfResponses, AnalysisGenerateClosePdfErrors, ThrowOnError>({
+    responseType: 'blob',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/{_company}/sms/close-report/{mitigation_id}/pdf',
     ...options,
   });
 
@@ -3657,10 +3692,10 @@ export const cashMovementNewAircraftExpenses = <ThrowOnError extends boolean = f
     ...options,
   });
 
-export const certificateServeFile = <ThrowOnError extends boolean = false>(
-  options: Options<CertificateServeFileData, ThrowOnError>,
+export const smsCertificatesFile = <ThrowOnError extends boolean = false>(
+  options: Options<SmsCertificatesFileData, ThrowOnError>,
 ) =>
-  (options.client ?? client).get<CertificateServeFileResponses, CertificateServeFileErrors, ThrowOnError>({
+  (options.client ?? client).get<SmsCertificatesFileResponses, SmsCertificatesFileErrors, ThrowOnError>({
     responseType: 'blob',
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/{company}/sms/certificates/serve/{filePath}',
@@ -4373,6 +4408,20 @@ export const dangerIdentificationIndex = <ThrowOnError extends boolean = false>(
     ...options,
   });
 
+export const dangerIdentificationGetIdentificationWithAllById = <ThrowOnError extends boolean = false>(
+  options: Options<DangerIdentificationGetIdentificationWithAllByIdData, ThrowOnError>,
+) =>
+  (options.client ?? client).get<
+    DangerIdentificationGetIdentificationWithAllByIdResponses,
+    DangerIdentificationGetIdentificationWithAllByIdErrors,
+    ThrowOnError
+  >({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/{_company}/sms/danger-identifications/with-all/{id}',
+    ...options,
+  });
+
 export const dangerIdentificationDestroy = <ThrowOnError extends boolean = false>(
   options: Options<DangerIdentificationDestroyData, ThrowOnError>,
 ) =>
@@ -4413,6 +4462,20 @@ export const dangerIdentificationUpdate = <ThrowOnError extends boolean = false>
     },
   );
 
+export const dangerIdentificationGeneratePdf = <ThrowOnError extends boolean = false>(
+  options: Options<DangerIdentificationGeneratePdfData, ThrowOnError>,
+) =>
+  (options.client ?? client).get<
+    DangerIdentificationGeneratePdfResponses,
+    DangerIdentificationGeneratePdfErrors,
+    ThrowOnError
+  >({
+    responseType: 'blob',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/{company}/sms/danger-identifications/{id}/pdf',
+    ...options,
+  });
+
 export const dangerIdentificationStore = <ThrowOnError extends boolean = false>(
   options: Options<DangerIdentificationStoreData, ThrowOnError>,
 ) =>
@@ -4425,20 +4488,6 @@ export const dangerIdentificationStore = <ThrowOnError extends boolean = false>(
       'Content-Type': 'application/json',
       ...options.headers,
     },
-  });
-
-export const dangerIdentificationGetIdentificationWithAllById = <ThrowOnError extends boolean = false>(
-  options: Options<DangerIdentificationGetIdentificationWithAllByIdData, ThrowOnError>,
-) =>
-  (options.client ?? client).get<
-    DangerIdentificationGetIdentificationWithAllByIdResponses,
-    DangerIdentificationGetIdentificationWithAllByIdErrors,
-    ThrowOnError
-  >({
-    responseType: 'json',
-    security: [{ scheme: 'bearer', type: 'http' }],
-    url: '/{_company}/sms/danger-identifications/with-all/{id}',
-    ...options,
   });
 
 export const dangerIdentificationGetDangerIdentificationsCountedByInformationSourceName = <
@@ -6094,6 +6143,16 @@ export const mitigationPlanUpdate = <ThrowOnError extends boolean = false>(
     },
   });
 
+export const mitigationPlanGeneratePdf = <ThrowOnError extends boolean = false>(
+  options: Options<MitigationPlanGeneratePdfData, ThrowOnError>,
+) =>
+  (options.client ?? client).get<MitigationPlanGeneratePdfResponses, MitigationPlanGeneratePdfErrors, ThrowOnError>({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/{company}/sms/mitigation-plans/{id}/pdf',
+    ...options,
+  });
+
 export const modulesIndex = <ThrowOnError extends boolean = false>(options?: Options<ModulesIndexData, ThrowOnError>) =>
   (options?.client ?? client).get<ModulesIndexResponses, ModulesIndexErrors, ThrowOnError>({
     responseType: 'json',
@@ -6527,6 +6586,16 @@ export const pilotsUpdate = <ThrowOnError extends boolean = false>(options: Opti
       'Content-Type': 'application/json',
       ...options.headers,
     },
+  });
+
+export const planificationAlertsIndex = <ThrowOnError extends boolean = false>(
+  options?: Options<PlanificationAlertsIndexData, ThrowOnError>,
+) =>
+  (options?.client ?? client).get<PlanificationAlertsIndexResponses, PlanificationAlertsIndexErrors, ThrowOnError>({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/planification-alerts',
+    ...options,
   });
 
 /**

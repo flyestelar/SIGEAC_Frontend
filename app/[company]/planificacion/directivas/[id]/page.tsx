@@ -34,16 +34,7 @@ import { formatDate } from '@/lib/helpers/format';
 import { useDebouncedInput } from '@/lib/useDebounce';
 import { cn } from '@/lib/utils';
 import { useCompanyStore } from '@/stores/CompanyStore';
-import {
-  AlertCircle,
-  ArrowLeft,
-  CheckCheck,
-  Pencil,
-  Plus,
-  RotateCcw,
-  Search,
-  Trash2,
-} from 'lucide-react';
+import { AlertCircle, ArrowLeft, CheckCheck, Pencil, Plus, RotateCcw, Search, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useMemo, useState } from 'react';
@@ -65,20 +56,6 @@ const getComplianceStatusBadgeClass = (status: string) => {
 
   if (normalized.includes('closed') || normalized.includes('cerr')) {
     return 'border-emerald-500/30 bg-emerald-500/10 text-emerald-700';
-  }
-
-  return 'border-slate-500/30 bg-slate-500/10 text-slate-700';
-};
-
-const getUrgencyBadgeClass = (urgency: string) => {
-  const normalized = urgency.toLowerCase();
-
-  if (normalized.includes('critical') || normalized.includes('aog') || normalized.includes('alta')) {
-    return 'border-red-500/30 bg-red-500/10 text-red-700';
-  }
-
-  if (normalized.includes('medium') || normalized.includes('media')) {
-    return 'border-amber-500/30 bg-amber-500/10 text-amber-700';
   }
 
   return 'border-slate-500/30 bg-slate-500/10 text-slate-700';
@@ -340,7 +317,11 @@ export default function AirworthinessDirectiveDetailPage() {
             <div className="flex flex-col gap-3 xl:flex-row xl:items-start xl:justify-between">
               <div className="min-w-0 space-y-2">
                 <Link href={`/${selectedCompany?.slug}/planificacion/directivas`} className="inline-flex">
-                  <Button variant="ghost" size="sm" className="-ml-2 gap-1.5 px-2 text-xs text-muted-foreground hover:bg-transparent">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="-ml-2 gap-1.5 px-2 text-xs text-muted-foreground hover:bg-transparent"
+                  >
                     <ArrowLeft className="h-3.5 w-3.5" />
                     Volver
                   </Button>
@@ -348,7 +329,10 @@ export default function AirworthinessDirectiveDetailPage() {
 
                 <div className="flex flex-wrap items-center gap-2">
                   <h1 className="text-2xl font-semibold tracking-[0.08em]">{directive.ad_number}</h1>
-                  <Badge variant="outline" className="border-slate-500/30 bg-slate-500/10 text-slate-700 dark:text-slate-300 text-[10px] px-2 py-0 leading-4">
+                  <Badge
+                    variant="outline"
+                    className="border-slate-500/30 bg-slate-500/10 text-slate-700 dark:text-slate-300 text-[10px] px-2 py-0 leading-4"
+                  >
                     {directive.authority}
                   </Badge>
                   <Badge
@@ -395,8 +379,12 @@ export default function AirworthinessDirectiveDetailPage() {
             </div>
 
             <div className="flex flex-wrap items-center gap-x-5 gap-y-1 border-t pt-3 text-xs text-muted-foreground">
-              <span>Emisión: <strong className="text-foreground">{formatDate(directive.issue_date)}</strong></span>
-              <span>Vigencia: <strong className="text-foreground">{formatDate(directive.effective_date)}</strong></span>
+              <span>
+                Emisión: <strong className="text-foreground">{formatDate(directive.issue_date)}</strong>
+              </span>
+              <span>
+                Vigencia: <strong className="text-foreground">{formatDate(directive.effective_date)}</strong>
+              </span>
             </div>
           </div>
 
@@ -454,11 +442,7 @@ export default function AirworthinessDirectiveDetailPage() {
                 <TabSummaryPill label="Evaluadas" value={summary?.total_aircraft_evaluated ?? 0} />
                 <TabSummaryPill label="Aplicables" value={summary?.total_applicable_aircraft ?? 0} tone="success" />
                 {!!summary?.pending_configuration_count && (
-                  <TabSummaryPill
-                    label="Pend. config."
-                    value={summary?.pending_configuration_count}
-                    tone="warning"
-                  />
+                  <TabSummaryPill label="Pend. config." value={summary?.pending_configuration_count} tone="warning" />
                 )}
               </div>
               <Button size="sm" onClick={openCreateApplicability}>
@@ -516,7 +500,12 @@ export default function AirworthinessDirectiveDetailPage() {
                       </span>
                     </div>
                     <div className="flex items-center gap-1 shrink-0">
-                      <Button variant="ghost" size="icon" className="size-7" onClick={() => openEditApplicability(item)}>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="size-7"
+                        onClick={() => openEditApplicability(item)}
+                      >
                         <Pencil className="h-3.5 w-3.5" />
                         <span className="sr-only">Editar</span>
                       </Button>
@@ -555,178 +544,174 @@ export default function AirworthinessDirectiveDetailPage() {
             </AlertDialog>
           </TabsContent>
 
-          <TabsContent value="control" className="space-y-4">
+          <TabsContent value="control" className="space-y-3">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div className="flex flex-wrap items-center gap-2">
+                <TabSummaryPill label="Abiertos" value={summary?.total_open_controls ?? 0} tone="warning" />
+                <TabSummaryPill label="Cerrados" value={summary?.total_closed_controls ?? 0} tone="success" />
+                <TabSummaryPill label="Vencidas" value={summary?.overdue_count ?? 0} tone="danger" />
+              </div>
+              <Button size="sm" onClick={() => openControlDialog()}>
+                <Plus className="mr-2 h-4 w-4" />
+                Nuevo control
+              </Button>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2 rounded-lg border bg-muted/20 px-3 py-2">
+              <Search className="h-4 w-4 shrink-0 text-muted-foreground" />
+              <Input
+                value={controlSearchInput}
+                onChange={(event) => {
+                  setControlSearchInput(event.target.value);
+                  setControlPage(1);
+                }}
+                placeholder="Buscar por descripción, estado o urgencia"
+                className="h-8 min-w-0 flex-1 border-0 bg-transparent px-0 text-sm shadow-none placeholder:text-muted-foreground/60 focus-visible:ring-0"
+              />
+              <Select
+                value={controlSort}
+                onValueChange={(value) => {
+                  setControlSort(value as 'newest' | 'oldest');
+                  setControlPage(1);
+                }}
+              >
+                <SelectTrigger className="h-8 w-auto gap-1 border-0 bg-background px-2.5 text-xs font-medium shadow-none">
+                  <SelectValue placeholder="Ordenar" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="oldest">Vence primero</SelectItem>
+                  <SelectItem value="newest">Vence después</SelectItem>
+                </SelectContent>
+              </Select>
+              {hasControlFilters ? (
+                <Button variant="ghost" size="icon" className="size-7 shrink-0" onClick={resetControlFilters}>
+                  <RotateCcw className="h-3.5 w-3.5" />
+                  <span className="sr-only">Limpiar filtros</span>
+                </Button>
+              ) : null}
+            </div>
+
             {isControlsLoading ? (
               <LoadingPage />
+            ) : controls.length === 0 ? (
+              <EmptyTab
+                title="Sin controles"
+                description="Esta directiva todavía no tiene controles de cumplimiento registrados."
+              />
             ) : (
-              <>
-                <SectionCard>
-                  <div className="space-y-4">
-                    <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
-                      <div>
-                        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
-                          Controles de cumplimiento
-                        </p>
-                        <p className="mt-1 text-sm text-muted-foreground">
-                          Controles activos y recurrentes con foco en vencimiento, recurrencia y estado.
-                        </p>
-                      </div>
-                      <div className="flex flex-wrap gap-2">
-                        <TabSummaryPill label="Abiertos" value={summary?.total_open_controls ?? 0} tone="warning" />
-                        <TabSummaryPill label="Cerrados" value={summary?.total_closed_controls ?? 0} tone="success" />
-                        <TabSummaryPill label="Vencidas" value={summary?.overdue_count ?? 0} tone="danger" />
-                      </div>
-                    </div>
-
-                    <div className="grid gap-3 rounded-3xl border border-border/70 bg-muted/20 p-3 lg:grid-cols-[minmax(0,1.2fr)_220px_auto]">
-                      <div className="relative">
-                        <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                        <Input
-                          value={controlSearchInput}
-                          onChange={(event) => {
-                            setControlSearchInput(event.target.value);
-                            setControlPage(1);
-                          }}
-                          placeholder="Buscar por descripción, estado o urgencia"
-                          className="border-background bg-background pl-10"
-                        />
-                      </div>
-
-                      <Select
-                        value={controlSort}
-                        onValueChange={(value) => {
-                          setControlSort(value as 'newest' | 'oldest');
-                          setControlPage(1);
-                        }}
-                      >
-                        <SelectTrigger className="border-background bg-background">
-                          <SelectValue placeholder="Ordenar por" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="oldest">Vence primero</SelectItem>
-                          <SelectItem value="newest">Vence después</SelectItem>
-                        </SelectContent>
-                      </Select>
-
-                      <div className="flex flex-wrap justify-end gap-2">
-                        {hasControlFilters ? (
-                          <Button
-                            type="button"
+              <div className="space-y-1.5">
+                {controls.map((control) => (
+                  <div
+                    key={control.id}
+                    className="rounded-lg border bg-background px-4 py-2.5 transition-colors hover:bg-muted/20"
+                  >
+                    <div className="flex items-start gap-4">
+                      <div className="min-w-0 flex-1 space-y-1.5">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <p className="text-sm font-semibold">
+                            {control.description || (
+                              <span className="italic text-muted-foreground">Sin descripción</span>
+                            )}
+                          </p>
+                          <Badge
                             variant="outline"
-                            size="sm"
-                            className="gap-2"
-                            onClick={resetControlFilters}
+                            className={cn(
+                              'text-[10px] px-2 py-0 leading-4',
+                              getComplianceStatusBadgeClass(control.compliance_status),
+                            )}
                           >
-                            <RotateCcw className="h-4 w-4" />
-                            Limpiar filtros
-                          </Button>
-                        ) : null}
-                        <Button size="sm" onClick={() => openControlDialog()}>
-                          <Plus className="mr-2 h-4 w-4" />
-                          Nuevo control
+                            {control.compliance_status}
+                          </Badge>
+                        </div>
+                        <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs text-muted-foreground">
+                          <span>
+                            Vence:{' '}
+                            <strong className="text-foreground">{formatDate(control.calendar_due_date ?? null)}</strong>
+                          </span>
+                          <span className="text-border/50">|</span>
+                          <span>
+                            FH: <strong className="text-foreground">{control.flight_hours_due ?? '—'}</strong>
+                          </span>
+                          <span className="text-border/50">|</span>
+                          <span>
+                            FC: <strong className="text-foreground">{control.cycles_due ?? '—'}</strong>
+                          </span>
+                          {(control.recurrence_interval_days ||
+                            control.recurrence_interval_hours ||
+                            control.recurrence_interval_cycles) && (
+                            <>
+                              <span className="text-border/50">|</span>
+                              <span className="text-muted-foreground/60">Rec:</span>
+                              {control.recurrence_interval_days && (
+                                <span>
+                                  <strong className="text-foreground">{control.recurrence_interval_days}</strong>d
+                                </span>
+                              )}
+                              {control.recurrence_interval_hours && (
+                                <span>
+                                  <strong className="text-foreground">{control.recurrence_interval_hours}</strong>h
+                                </span>
+                              )}
+                              {control.recurrence_interval_cycles && (
+                                <span>
+                                  <strong className="text-foreground">{control.recurrence_interval_cycles}</strong>fc
+                                </span>
+                              )}
+                            </>
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-1 shrink-0 pt-0.5">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="size-7"
+                          onClick={() => openControlDialog(control)}
+                        >
+                          <Pencil className="h-3.5 w-3.5" />
+                          <span className="sr-only">Editar</span>
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="size-7"
+                          onClick={() => openExecutionDialog(control)}
+                          disabled={applicableAircraft.length === 0}
+                        >
+                          <CheckCheck className="h-3.5 w-3.5" />
+                          <span className="sr-only">Registrar cumplimiento</span>
                         </Button>
                       </div>
                     </div>
                   </div>
-                </SectionCard>
+                ))}
+              </div>
+            )}
 
-                {controls.length === 0 ? (
-                  <EmptyTab
-                    title="Sin controles"
-                    description="Esta directiva todavía no tiene controles de cumplimiento registrados."
-                  />
-                ) : (
-                  <div className="space-y-3">
-                    {controls.map((control) => (
-                      <SectionCard key={control.id} className="transition-colors hover:bg-muted/20">
-                        <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
-                          <div className="min-w-0 flex-1 space-y-4">
-                            <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-                              <div className="min-w-0">
-                                <p className="text-base font-semibold">
-                                  {control.description || (
-                                    <span className="text-muted-foreground">Sin descripción</span>
-                                  )}
-                                </p>
-                                <p className="mt-1 text-sm text-muted-foreground">
-                                  Control #{control.id} con seguimiento por calendario, horas y ciclos.
-                                </p>
-                              </div>
-                              <div className="flex flex-wrap gap-2">
-                                <Badge
-                                  variant="outline"
-                                  className={getComplianceStatusBadgeClass(control.compliance_status)}
-                                >
-                                  {control.compliance_status}
-                                </Badge>
-                                {control.urgency ? (
-                                  <Badge variant="outline" className={getUrgencyBadgeClass(control.urgency)}>
-                                    {control.urgency}
-                                  </Badge>
-                                ) : (
-                                  <Badge
-                                    variant="outline"
-                                    className="border-slate-500/30 bg-slate-500/10 text-slate-700"
-                                  >
-                                    Sin urgencia
-                                  </Badge>
-                                )}
-                              </div>
-                            </div>
+            <div className="flex items-center justify-end gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setControlPage((current) => Math.max(1, current - 1))}
+                disabled={controlPage === 1 || isControlsLoading}
+              >
+                Anterior
+              </Button>
+              <span className="text-sm text-muted-foreground">Página {controlPage}</span>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setControlPage((current) => current + 1)}
+                disabled={controls.length < complianceListPerPage || isControlsLoading}
+              >
+                Siguiente
+              </Button>
+            </div>
 
-                            <div className="grid gap-3 md:grid-cols-3 xl:grid-cols-6">
-                              <InlineMetric label="Vence" value={formatDate(control.calendar_due_date ?? null)} />
-                              <InlineMetric label="FH" value={control.flight_hours_due ?? '—'} />
-                              <InlineMetric label="FC" value={control.cycles_due ?? '—'} />
-                              <InlineMetric label="Rec. días" value={control.recurrence_interval_days ?? '—'} />
-                              <InlineMetric label="Rec. horas" value={control.recurrence_interval_hours ?? '—'} />
-                              <InlineMetric label="Rec. ciclos" value={control.recurrence_interval_cycles ?? '—'} />
-                            </div>
-                          </div>
-
-                          <div className="flex items-center justify-end gap-1 xl:pl-4">
-                            <Button variant="ghost" size="icon" onClick={() => openControlDialog(control)}>
-                              <Pencil className="h-4 w-4" />
-                              <span className="sr-only">Editar control</span>
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => openExecutionDialog(control)}
-                              disabled={applicableAircraft.length === 0}
-                            >
-                              <CheckCheck className="h-4 w-4" />
-                              <span className="sr-only">Registrar cumplimiento</span>
-                            </Button>
-                          </div>
-                        </div>
-                      </SectionCard>
-                    ))}
-                  </div>
-                )}
-
-                <div className="flex items-center justify-end gap-2">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setControlPage((current) => Math.max(1, current - 1))}
-                    disabled={controlPage === 1 || isControlsLoading}
-                  >
-                    Anterior
-                  </Button>
-                  <span className="text-sm text-muted-foreground">Página {controlPage}</span>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setControlPage((current) => current + 1)}
-                    disabled={controls.length < complianceListPerPage || isControlsLoading}
-                  >
-                    Siguiente
-                  </Button>
-                </div>
-
+            {isControlsLoading ? null : (
+              <>
                 <CreateAirworthinessDirectiveComplianceControlDialog
                   directiveId={directiveId}
                   control={controlToEdit}
