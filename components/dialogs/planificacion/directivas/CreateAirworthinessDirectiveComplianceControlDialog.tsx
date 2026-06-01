@@ -2,14 +2,10 @@
 
 import CreateAirworthinessDirectiveComplianceControlForm from '@/components/forms/mantenimiento/planificacion/directivas/CreateAirworthinessDirectiveComplianceControlForm';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import type {
-  AirworthinessDirectiveApplicabilityResource,
-  AirworthinessDirectiveComplianceControlResource,
-} from '@api/types';
+import type { AirworthinessDirectiveComplianceControlResource } from '@api/types';
 
 interface CreateAirworthinessDirectiveComplianceControlDialogProps {
   directiveId: number;
-  applicability: AirworthinessDirectiveApplicabilityResource;
   control?: AirworthinessDirectiveComplianceControlResource;
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -17,7 +13,6 @@ interface CreateAirworthinessDirectiveComplianceControlDialogProps {
 
 export default function CreateAirworthinessDirectiveComplianceControlDialog({
   directiveId,
-  applicability,
   control,
   open,
   onOpenChange,
@@ -31,14 +26,13 @@ export default function CreateAirworthinessDirectiveComplianceControlDialog({
           <DialogTitle>{isEditing ? 'Editar control de cumplimiento' : 'Nuevo control de cumplimiento'}</DialogTitle>
           <DialogDescription>
             {isEditing
-              ? 'Ajusta vencimientos y recurrencias del control activo para esta aeronave.'
-              : 'Configura los vencimientos iniciales y la recurrencia del control para esta aeronave aplicable.'}
+              ? 'Ajusta descripción, vencimientos y recurrencias del control activo.'
+              : 'Configura la descripción, vencimientos iniciales y la recurrencia del control para esta directiva.'}
           </DialogDescription>
         </DialogHeader>
 
         <CreateAirworthinessDirectiveComplianceControlForm
           directiveId={directiveId}
-          applicability={applicability}
           control={control}
           onSuccess={() => onOpenChange(false)}
         />

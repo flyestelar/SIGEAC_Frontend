@@ -8,6 +8,7 @@ import {
   PolarAngleAxis,
   RadialBar,
   RadialBarChart,
+  ReferenceDot,
   ReferenceLine,
   XAxis,
   YAxis,
@@ -46,8 +47,10 @@ type DueMarker = {
   label: string;
   date: Date;
   days: number;
+  interval: number;
   color: string;
   percentage: number;
+  averagePerDay: number;
 };
 
 type ReferenceMetricLine = {
@@ -63,6 +66,7 @@ type DaysRemainingDatum = {
   maxValue: number;
   percentage: number;
   color: string;
+  averagePerDay: number;
 };
 
 const chartConfig = {
@@ -88,6 +92,8 @@ const METRIC_ICONS = {
   fh: Clock,
   fc: RefreshCw,
 } as const;
+
+const TODAY_MARKER_COLOR = 'hsl(217, 91%, 60%)';
 
 function getMetricColor(key: 'fh' | 'fc') {
   return key === 'fh' ? 'hsl(var(--primary))' : 'hsl(120, 65%, 35%)';
@@ -155,8 +161,10 @@ function getDueMarkers(metrics: ProjectionChartProps['metrics']): DueMarker[] {
         label: metric.unit,
         date: addDays(new Date(), days),
         days,
+        interval: metric.interval,
         color: getMetricColor(metric.key),
         percentage: Math.min(Math.max(rawPercentage, 0), 100),
+        averagePerDay: metric.averagePerDay,
       },
     ];
   });
@@ -252,6 +260,7 @@ function buildDueMarkersData(dueMarkers: DueMarker[]): DaysRemainingDatum[] {
     maxValue,
     percentage: marker.days === 0 ? 100 : (Math.max(marker.days, 1) / maxValue) * 100,
     color: marker.color,
+    averagePerDay: marker.averagePerDay,
   }));
 }
 
@@ -261,24 +270,18 @@ function DaysRemainingChart({ data }: { data: DaysRemainingDatum[] }) {
   return (
     <div className="grid gap-3 border-t border-border/40 px-5 py-4 md:grid-cols-2">
       {data.map((item) => (
-        <div key={item.key} className="rounded-lg border border-border/50 bg-muted/10 p-4">
-          <div className="flex items-start justify-between gap-3">
-            <div>
-              <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
-                Dias restantes
-              </p>
-              <p className="mt-1 text-sm font-semibold text-foreground">{item.label}</p>
-            </div>
-            <Badge
-              variant="outline"
-              className="font-mono text-[11px]"
-              style={{ borderColor: `${item.color}40`, color: item.color }}
-            >
-              {item.value}d
-            </Badge>
+        <div
+          key={item.key}
+          className="rounded-lg border border-border/50 bg-muted/10 p-4 flex flex-row gap-3 justify-between"
+        >
+          <div>
+            <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground whitespace-nowrap">
+              Dias restantes
+            </p>
+            <p className="mt-1 text-sm font-semibold text-foreground">{item.label}</p>
           </div>
 
-          <div className="mt-4 flex items-center gap-4">
+          <div className="flex items-center gap-4 grow">
             <div className="h-[112px] w-[112px] shrink-0">
               <ChartContainer config={chartConfig} className="h-full w-full">
                 <RadialBarChart
@@ -302,6 +305,9 @@ function DaysRemainingChart({ data }: { data: DaysRemainingDatum[] }) {
                 <div className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: item.color }} />
                 <span>{Math.round(item.percentage)}% del horizonte maximo</span>
               </div>
+              <p className="text-[11px] text-muted-foreground">
+                Promedio diario {item.averagePerDay.toFixed(1)} {item.label}/día
+              </p>
             </div>
           </div>
         </div>
@@ -351,6 +357,7 @@ export function ProjectionChart({ metrics }: ProjectionChartProps) {
   const hasFh = activeMetrics.some((metric) => metric.key === 'fh');
   const hasFc = activeMetrics.some((metric) => metric.key === 'fc');
   const dualAxis = hasFh && hasFc;
+  const todayReferenceAxisId = hasFh ? 'fh' : 'fc';
 
   const axisNumberFormatter = new Intl.NumberFormat(undefined, {
     notation: 'compact',
@@ -411,7 +418,7 @@ export function ProjectionChart({ metrics }: ProjectionChartProps) {
               <XAxis
                 type="number"
                 dataKey="day"
-                domain={[0, projectionDays]}
+                domain={[-2, projectionDays]}
                 axisLine={false}
                 tickLine={false}
                 tick={{ fontSize: 11 }}
@@ -486,6 +493,21 @@ export function ProjectionChart({ metrics }: ProjectionChartProps) {
                 }
               />
 
+              <ReferenceLine
+                x={0}
+                yAxisId={todayReferenceAxisId}
+                stroke={TODAY_MARKER_COLOR}
+                strokeDasharray="4 4"
+                strokeOpacity={0.9}
+                label={{
+                  value: 'Hoy',
+                  position: 'insideTopRight',
+                  fontSize: 10,
+                  fill: TODAY_MARKER_COLOR,
+                  fontWeight: 700,
+                }}
+              />
+
               {referenceLines.map((line) => (
                 <ReferenceLine
                   key={line.key}
@@ -520,6 +542,20 @@ export function ProjectionChart({ metrics }: ProjectionChartProps) {
                     fill: marker.color,
                     fontWeight: 700,
                   }}
+                />
+              ))}
+
+              {dueMarkers.map((marker) => (
+                <ReferenceDot
+                  key={`intersection-${marker.key}`}
+                  yAxisId={marker.key}
+                  x={marker.days}
+                  y={marker.interval}
+                  r={5}
+                  fill={marker.color}
+                  stroke="#ffffff"
+                  strokeWidth={2}
+                  ifOverflow="extendDomain"
                 />
               ))}
 
@@ -574,6 +610,10 @@ export function ProjectionChart({ metrics }: ProjectionChartProps) {
           <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
             <div className="h-0 w-4 border-t-2 border-dashed border-red-500/60" />
             <span>Limite de intervalo</span>
+          </div>
+          <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
+            <div className="h-3 w-0 border-l-2 border-dashed" style={{ borderColor: TODAY_MARKER_COLOR }} />
+            <span>Hoy</span>
           </div>
         </div>
 

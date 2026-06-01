@@ -302,7 +302,7 @@ export function CompleteWorkOrderDialog({ open, workOrder, orderNumber, onOpenCh
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="max-w-5xl max-h-[95vh] flex-col no-scrollbar">
+        <DialogContent className="max-w-5xl max-h-[95vh] flex flex-col no-scrollbar">
           <DialogHeader>
             <DialogTitle>Completar orden de trabajo</DialogTitle>
             <DialogDescription>

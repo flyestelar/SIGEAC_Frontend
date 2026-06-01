@@ -4,8 +4,9 @@ import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 import { WorkOrderItemResource, WorkOrderItemTaskResource } from '@api/types';
-import { Check, Layers, Settings2 } from 'lucide-react';
+import { Check, Layers, Settings2, Wrench } from 'lucide-react';
 import { CompleteTaskDialog } from '@/components/dialogs/mantenimiento/ordenes_trabajo/CompleteTaskDialog';
+import { NonRoutineTaskFormDialog } from '@/components/misc/NonRoutineTaskFormDialog';
 import { useState } from 'react';
 import { formatDate } from './WorkOrderHelpers';
 
@@ -30,11 +31,20 @@ const TASK_STATUS_CONFIG: Record<string, { label: string; className: string }> =
 
 const fallbackStatus = { label: 'Sin estado', className: 'border-border bg-muted/20 text-muted-foreground' };
 
-export function ControlAccordionItem({ item, orderNumber }: { item: WorkOrderItemResource; orderNumber: string }) {
+export function ControlAccordionItem({
+  item,
+  orderNumber,
+  filteredTasks,
+}: {
+  item: WorkOrderItemResource;
+  orderNumber: string;
+  filteredTasks?: WorkOrderItemTaskResource[];
+}) {
   const control = item.maintenance_control;
-  const tasks = item.tasks ?? [];
+  const tasks = filteredTasks ?? item.tasks ?? [];
   const [dialogOpen, setDialogOpen] = useState(false);
   const [activeTask, setActiveTask] = useState<WorkOrderItemTaskResource | null>(null);
+  const [nrtTaskId, setNrtTaskId] = useState<number | null>(null);
 
   const openCompleteDialog = (task: WorkOrderItemTaskResource) => {
     setActiveTask(task);
@@ -47,7 +57,7 @@ export function ControlAccordionItem({ item, orderNumber }: { item: WorkOrderIte
   };
 
   return (
-    <AccordionItem value={`control-${item.id}`} className="border-none">
+    <AccordionItem value={`control-${item.id}`}>
       <AccordionTrigger className="px-5 py-3 hover:no-underline hover:bg-muted/10 [&[data-state=open]]:bg-muted/10">
         <div className="flex flex-1 items-center gap-3 text-left">
           <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded border bg-muted/30">
@@ -75,6 +85,7 @@ export function ControlAccordionItem({ item, orderNumber }: { item: WorkOrderIte
             {tasks.map((task, idx) => {
               const taskStatusRaw = (task.review_by ? 'COMPLETADO' : 'PENDIENTE').toUpperCase();
               const taskStatusCfg = TASK_STATUS_CONFIG[taskStatusRaw] ?? fallbackStatus;
+              const hasPendingNrt = (task.non_routine_tasks ?? []).some((nrt) => nrt.status !== 'CLOSED');
 
               return (
                 <div
@@ -109,6 +120,29 @@ export function ControlAccordionItem({ item, orderNumber }: { item: WorkOrderIte
                   )}
 
                   <div className="flex shrink-0 items-center gap-1">
+                    <TooltipProvider>
+                      <Tooltip delayDuration={100}>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-6 w-6 text-muted-foreground hover:text-foreground relative"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setNrtTaskId(task.id);
+                            }}
+                          >
+                            <Wrench className="size-3" />
+                            {(task.non_routine_tasks?.length ?? 0) > 0 && (
+                              <span className="absolute -right-0.5 -top-0.5 flex h-3.5 min-w-[14px] items-center justify-center rounded-full bg-amber-500 px-1 text-[8px] font-semibold text-white leading-none">
+                                {task.non_routine_tasks?.length}
+                              </span>
+                            )}
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent side="top">Tareas no rutinarias</TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
                     {!task.review_by ? (
                       <TooltipProvider>
                         <Tooltip delayDuration={100}>
@@ -117,6 +151,7 @@ export function ControlAccordionItem({ item, orderNumber }: { item: WorkOrderIte
                               variant="ghost"
                               size="icon"
                               className="h-6 w-6 text-muted-foreground hover:text-foreground"
+                              disabled={hasPendingNrt}
                               onClick={(e) => {
                                 e.stopPropagation();
                                 openCompleteDialog(task);
@@ -125,7 +160,9 @@ export function ControlAccordionItem({ item, orderNumber }: { item: WorkOrderIte
                               <Check className="size-3" />
                             </Button>
                           </TooltipTrigger>
-                          <TooltipContent side="top">Completar task</TooltipContent>
+                          <TooltipContent side="top">
+                            {hasPendingNrt ? 'Complete las tareas no rutinarias primero' : 'Completar task'}
+                          </TooltipContent>
                         </Tooltip>
                       </TooltipProvider>
                     ) : null}
@@ -152,6 +189,13 @@ export function ControlAccordionItem({ item, orderNumber }: { item: WorkOrderIte
         task={activeTask}
         orderNumber={orderNumber}
         onOpenChange={(open) => (open ? setDialogOpen(true) : closeDialog())}
+      />
+
+      <NonRoutineTaskFormDialog
+        workOrderItemTaskId={nrtTaskId ?? 0}
+        isOpen={nrtTaskId !== null}
+        onOpenChange={(open) => { if (!open) setNrtTaskId(null); }}
+        orderNumber={orderNumber}
       />
     </AccordionItem>
   );

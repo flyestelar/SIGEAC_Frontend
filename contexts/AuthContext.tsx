@@ -77,9 +77,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const loginMutation = useMutation({
     mutationFn: async (credentials: LoginData['body']) => {
-      const { data } = await login({ body: credentials });
+      const { data } = await login({ body: credentials, throwOnError: true });
 
-      const token = data?.token;
+      const token = data.token;
       if (!token) throw new Error('No se recibió token de autenticación');
 
       await createCookie('auth_token', token);

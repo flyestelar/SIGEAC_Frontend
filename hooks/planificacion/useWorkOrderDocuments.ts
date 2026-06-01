@@ -9,7 +9,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 export type DocumentType = 'work_order' | 'tally_sheet';
 
-type DocState = {
+export type WorkOrderDocState = {
   statusData: DocumentGenerationMetadataResource | null;
   isGenerating: boolean;
   isCompleted: boolean;
@@ -112,7 +112,7 @@ export function useWorkOrderDocuments(orderNumber: string) {
     }
   };
 
-  const workOrder: DocState = {
+  const workOrder: WorkOrderDocState = {
     statusData: workOrderStatusData,
     isNotGenerated: workOrderStatusData?.status === 'not_generated',
     isGenerating: workOrderStatusData?.status === 'queued' || workOrderStatusData?.status === 'in_progress',
@@ -121,7 +121,7 @@ export function useWorkOrderDocuments(orderNumber: string) {
     statusError: workOrderStatusError,
   };
 
-  const tallySheet: DocState = {
+  const tallySheet: WorkOrderDocState = {
     statusData: tallySheetStatusData,
     isNotGenerated: tallySheetStatusData?.status === 'not_generated',
     isGenerating: tallySheetStatusData?.status === 'queued' || tallySheetStatusData?.status === 'in_progress',
@@ -139,5 +139,3 @@ export function useWorkOrderDocuments(orderNumber: string) {
     mutations: { workOrderQueue, tallySheetQueue },
   } as const;
 }
-
-export default useWorkOrderDocuments;

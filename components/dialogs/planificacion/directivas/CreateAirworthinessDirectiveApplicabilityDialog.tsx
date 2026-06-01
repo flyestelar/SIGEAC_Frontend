@@ -1,6 +1,7 @@
 'use client';
 
 import CreateAirworthinessDirectiveApplicabilityForm from '@/components/forms/mantenimiento/planificacion/directivas/CreateAirworthinessDirectiveApplicabilityForm';
+import EditAirworthinessDirectiveApplicabilityForm from '@/components/forms/mantenimiento/planificacion/directivas/EditAirworthinessDirectiveApplicabilityForm';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import type { AirworthinessDirectiveApplicabilityResource } from '@api/types';
 
@@ -27,16 +28,24 @@ export default function CreateAirworthinessDirectiveApplicabilityDialog({
           <DialogDescription>
             {isEditing
               ? 'Ajusta la aeronave, aplicabilidad, motivo y AMOC de este registro.'
-              : 'Registra si la directiva aplica o no a una aeronave específica, con motivo y AMOC cuando corresponda.'}
+              : 'Registra si la directiva aplica o no a una o varias aeronaves, con motivo y AMOC cuando corresponda.'}
           </DialogDescription>
         </DialogHeader>
 
-        <CreateAirworthinessDirectiveApplicabilityForm
-          directiveId={directiveId}
-          existingAircraftIds={existingAircraftIds}
-          applicability={applicability}
-          onSuccess={() => onOpenChange(false)}
-        />
+        {isEditing && applicability ? (
+          <EditAirworthinessDirectiveApplicabilityForm
+            directiveId={directiveId}
+            existingAircraftIds={existingAircraftIds}
+            applicability={applicability}
+            onSuccess={() => onOpenChange(false)}
+          />
+        ) : (
+          <CreateAirworthinessDirectiveApplicabilityForm
+            directiveId={directiveId}
+            existingAircraftIds={existingAircraftIds}
+            onSuccess={() => onOpenChange(false)}
+          />
+        )}
       </DialogContent>
     </Dialog>
   );

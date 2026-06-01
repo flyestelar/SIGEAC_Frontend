@@ -143,15 +143,6 @@ export function HardTimeDashboard() {
             </div>
 
             <div className="flex flex-wrap items-center gap-2">
-              <Button
-                variant="outline"
-                className="gap-2"
-                onClick={() => setIsImportDialogOpen(true)}
-                disabled={!selectedAircraftId}
-              >
-                <Upload className="size-4" />
-                Importar INAC
-              </Button>
               <Button asChild variant="outline" className="gap-2">
                 <Link href={`/${selectedCompany?.slug}/planificacion/hard_time/trazabilidad`}>
                   <SearchCheck className="size-4" />

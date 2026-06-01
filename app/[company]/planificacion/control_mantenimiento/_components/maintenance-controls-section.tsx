@@ -1,12 +1,9 @@
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { maintenanceControlsIndexOptions } from '@api/queries';
 import { AircraftResource } from '@api/types';
 import { useQuery } from '@tanstack/react-query';
-import { useMemo } from 'react';
+import { memo, useMemo } from 'react';
 import { ControlGrid } from './control-grid';
-import { EstimationsPanel } from './estimations-panel';
-import { ExecutionsTable } from './executions-table';
-import { TasksTable } from './tasks-table';
+import { MaintenanceControlDetail } from './maintenance-control-detail';
 
 interface MaintenanceControlsSectionProps {
   selectedControlId: number | null;
@@ -15,7 +12,7 @@ interface MaintenanceControlsSectionProps {
   selectedAircraftId: number | null;
 }
 
-export function MaintenanceControlsSection({
+function MaintenanceControlsSection({
   selectedControlId,
   onSelectControl,
   selectedAircraft,
@@ -47,39 +44,26 @@ export function MaintenanceControlsSection({
         <ControlGrid.Skeleton />
       ) : (
         <>
-          <ControlGrid
-            controls={controlsForAircraft}
-            selectedControlId={selectedControlId}
-            onSelectControl={onSelectControl}
-            averages={selectedAircraft?.last_average_metric ?? null}
-          />
-
-          {selectedControl && selectedAircraft && (
-            <Tabs defaultValue="tasks" className="w-full">
-              <div className="flex justify-center">
-                <TabsList className="mx-auto">
-                  <TabsTrigger value="tasks">Tasks</TabsTrigger>
-                  <TabsTrigger value="estimaciones">Graficas</TabsTrigger>
-                  <TabsTrigger value="ejecuciones">Últimos Cumplimientos</TabsTrigger>
-                </TabsList>
-              </div>
-              <TabsContent value="tasks">
-                <TasksTable tasks={selectedControl.task_cards} controlName={selectedControl.title} />
-              </TabsContent>
-              <TabsContent value="estimaciones">
-                <EstimationsPanel control={selectedControl} aircraft={selectedAircraft} />
-              </TabsContent>
-              <TabsContent value="ejecuciones">
-                <ExecutionsTable
-                  controlId={selectedControl.id}
-                  controlName={selectedControl.title}
-                  selectedAircraftId={selectedAircraftId}
-                />
-              </TabsContent>
-            </Tabs>
+          {selectedControl ? (
+            selectedAircraft && (
+              <MaintenanceControlDetail
+                control={selectedControl}
+                aircraft={selectedAircraft}
+                selectedAircraftId={selectedAircraftId}
+                onBack={() => onSelectControl(null)}
+              />
+            )
+          ) : (
+            <ControlGrid
+              controls={controlsForAircraft}
+              onSelectControl={onSelectControl}
+              averages={selectedAircraft?.last_average_metric ?? null}
+            />
           )}
         </>
       )}
     </div>
   );
 }
+
+export default memo(MaintenanceControlsSection);

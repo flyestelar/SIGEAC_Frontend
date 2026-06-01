@@ -3,84 +3,30 @@
 import { CompleteTasksBulkDialog } from '@/components/dialogs/mantenimiento/ordenes_trabajo/CompleteTasksBulkDialog';
 import { CompleteWorkOrderDialog } from '@/components/dialogs/mantenimiento/ordenes_trabajo/CompleteWorkOrderDialog';
 import { ContentLayout } from '@/components/layout/ContentLayout';
-import { DocumentDownloadButton } from '@/components/misc/DocumentDownloadButton';
 import LoadingPage from '@/components/misc/LoadingPage';
-import { Accordion } from '@/components/ui/accordion';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
-import useWorkOrderDocuments from '@/hooks/planificacion/useWorkOrderDocuments';
 import { cn } from '@/lib/utils';
-import { useCompanyStore } from '@/stores/CompanyStore';
 import { workOrdersShowOptions } from '@api/queries';
-import { WorkOrderResource } from '@api/types';
 import { useQuery } from '@tanstack/react-query';
-import {
-  AlertCircle,
-  ArrowLeft,
-  CalendarDays,
-  Check,
-  CheckCircle2,
-  ClipboardList,
-  Layers,
-  MessageSquareText,
-  Plane,
-  RotateCcw,
-  Settings2,
-  ShieldCheck,
-} from 'lucide-react';
-import Link from 'next/link';
+import { AlertCircle, CalendarDays, CheckCircle2, MessageSquareText, Plane, ShieldCheck } from 'lucide-react';
 import { useParams } from 'next/navigation';
 import { useState } from 'react';
 import { AircraftSection } from './_components/AircraftSection';
-import { ControlAccordionItem } from './_components/ControlAccordionItem';
 import { SummaryField } from './_components/SummaryField';
-import { WorkOrderComponentItemsSection } from './_components/WorkOrderComponentItemsSection';
-import { WorkOrderDirectiveItemsSection } from './_components/WorkOrderDirectiveItemsSection';
-import { formatDate, timestampEqualSecondsPrecision } from './_components/WorkOrderHelpers';
-
-/* ─── Constants ─── */
-
-const STATUS_CONFIG: Record<string, { label: string; className: string }> = {
-  APROBADO: {
-    label: 'Aprobado',
-    className: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400',
-  },
-  ABIERTO: {
-    label: 'Abierto',
-    className: 'border-sky-500/30 bg-sky-500/10 text-sky-600 dark:text-sky-400',
-  },
-  CERRADO: {
-    label: 'Cerrado',
-    className: 'border-border bg-muted/20 text-muted-foreground',
-  },
-  PENDIENTE: {
-    label: 'Pendiente',
-    className: 'border-amber-500/30 bg-amber-500/10 text-amber-600 dark:text-amber-400',
-  },
-  RECHAZADO: {
-    label: 'Rechazado',
-    className: 'border-red-500/30 bg-red-500/10 text-red-600 dark:text-red-400',
-  },
-};
-
-const fallbackStatus = { label: 'Sin estado', className: 'border-border bg-muted/20 text-muted-foreground' };
+import { WorkOrderHeader } from './_components/WorkOrderHeader';
+import { formatDate } from './_components/WorkOrderHelpers';
+import { getStatusConfig } from './_components/constants';
+import { WorkOrderTabs } from './_components/WorkOrderTabs';
 
 /* ─── Page ─── */
 
 const WorkOrderPage = () => {
   const { order_number } = useParams<{ order_number: string }>();
-  const { selectedCompany } = useCompanyStore();
   const [completeOrderOpen, setCompleteOrderOpen] = useState(false);
   const [bulkCompleteOpen, setBulkCompleteOpen] = useState(false);
-  const { workOrder, tallySheet, queueDocument, mutations } = useWorkOrderDocuments(order_number);
-
-  const workOrderIsCompleted = workOrder.isCompleted;
-  const workOrderIsFailed = workOrder.isFailed;
-
-  const tallySheetIsCompleted = tallySheet.isCompleted;
-  const tallySheetIsFailed = tallySheet.isFailed;
 
   const {
     data: response,
@@ -90,19 +36,11 @@ const WorkOrderPage = () => {
     ...workOrdersShowOptions({ path: { orderNumber: order_number } }),
   });
 
-  const wo: WorkOrderResource | undefined = response?.data;
+  const wo = response?.data;
   const statusRaw = wo?.status?.toUpperCase() ?? '';
-  const statusCfg = STATUS_CONFIG[statusRaw] ?? fallbackStatus;
+  const statusCfg = getStatusConfig(statusRaw);
   const aircraft = wo?.aircraft;
-  const items = wo?.items ?? [];
-  const componentItems = wo?.component_items ?? [];
-  const directiveItems = wo?.directive_items ?? [];
   const aircraftLocationLabel = aircraft?.location?.address ?? aircraft?.location?.cod_iata ?? '—';
-  const totalTasks = items.reduce((sum, item) => sum + (item.tasks?.length ?? 0), 0);
-  const pendingTasksCount = items.reduce(
-    (sum, item) => sum + (item.tasks ?? []).filter((task) => !task.review_by).length,
-    0,
-  );
 
   if (isLoading) return <LoadingPage />;
 
@@ -117,152 +55,11 @@ const WorkOrderPage = () => {
     );
   }
 
-  const workOrderStale = Boolean(
-    workOrder.statusData?.work_order_updated_at && workOrder.statusData.work_order_updated_at !== wo?.updated_at,
-  );
-  const tallySheetStale = Boolean(
-    tallySheet.statusData?.work_order_updated_at && tallySheet.statusData.work_order_updated_at !== wo?.updated_at,
-  );
   return (
     <ContentLayout title="Orden de Trabajo">
       <div className="max-w-7xl space-y-6">
         {/* Header */}
-        <div className="flex items-center justify-between gap-4 flex-wrap">
-          <div className="flex items-center gap-4">
-            <Link href={`/${selectedCompany?.slug}/planificacion/ordenes_trabajo`}>
-              <Button variant="ghost" size="icon" className="h-8 w-8">
-                <ArrowLeft className="size-4" />
-              </Button>
-            </Link>
-            <div className="flex items-center gap-3">
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg border bg-muted/30">
-                <ClipboardList className="size-4 text-muted-foreground" />
-              </div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <h1 className="font-mono text-lg font-semibold tracking-wide">{wo.order_number}</h1>
-                  <Badge variant="outline" className={cn('text-[11px]', statusCfg.className)}>
-                    {statusCfg.label}
-                  </Badge>
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  {wo.tally_number ? `Tally: ${wo.tally_number}` : 'Orden de Trabajo'}
-                </p>
-              </div>
-            </div>
-          </div>
-          <div className="flex flex-wrap items-center gap-2">
-            <Button
-              variant="default"
-              size="sm"
-              className="flex-1 h-8 gap-1.5 text-xs"
-              onClick={() => setCompleteOrderOpen(true)}
-              disabled={statusRaw === 'CERRADO'}
-            >
-              <CheckCircle2 className="size-3.5" />
-              {statusRaw === 'CERRADO' ? 'Orden completada' : 'Completar orden'}
-            </Button>
-            <DocumentDownloadButton
-              type="work_order"
-              orderNumber={order_number}
-              isCompleted={workOrderIsCompleted}
-              isFailed={workOrderIsFailed}
-              isPending={mutations.workOrderQueue.status === 'pending'}
-              onQueue={() => queueDocument('work_order')}
-              disabled={mutations.workOrderQueue.status === 'pending'}
-              stale={workOrderStale}
-            />
-            <DocumentDownloadButton
-              type="tally_sheet"
-              orderNumber={order_number}
-              isCompleted={tallySheetIsCompleted}
-              isFailed={tallySheetIsFailed}
-              isPending={mutations.tallySheetQueue.status === 'pending'}
-              onQueue={() => queueDocument('tally_sheet')}
-              disabled={mutations.tallySheetQueue.status === 'pending'}
-              stale={tallySheetStale}
-            />
-          </div>
-        </div>
-
-        {(!workOrder.isNotGenerated || !tallySheet.isNotGenerated) && (
-          <div className="space-y-3">
-            {[
-              {
-                label: 'Orden de Trabajo',
-                type: 'work_order' as const,
-                ...workOrder,
-              },
-              {
-                label: 'Tally Sheet',
-                type: 'tally_sheet' as const,
-                ...tallySheet,
-              },
-            ].map((doc) => {
-              if (doc.isNotGenerated) return null;
-
-              const { statusData } = doc;
-              const isStale = Boolean(
-                statusData?.work_order_updated_at &&
-                  wo.updated_at &&
-                  !timestampEqualSecondsPrecision(statusData.work_order_updated_at, wo.updated_at),
-              );
-              console.log('isStale', doc.type, isStale, {
-                statusDataUpdatedAt: statusData?.work_order_updated_at,
-                woUpdatedAt: wo.updated_at,
-              });
-              return (
-                <div
-                  key={doc.label}
-                  className={cn(
-                    'flex items-center gap-3 rounded-lg border px-4 py-3 text-sm transition-colors',
-                    doc.isGenerating && 'border-sky-500/30 bg-sky-500/5 text-sky-600 dark:text-sky-400',
-                    doc.isCompleted &&
-                      !isStale &&
-                      'border-emerald-500/30 bg-emerald-500/5 text-emerald-600 dark:text-emerald-400',
-                    doc.isCompleted &&
-                      isStale &&
-                      'border-amber-500/30 bg-amber-500/10 text-amber-600 dark:text-amber-400',
-                    doc.isFailed && 'border-red-500/30 bg-red-500/5 text-red-600 dark:text-red-400',
-                  )}
-                >
-                  {doc.isGenerating && <RotateCcw className="size-4 animate-spin" />}
-                  {doc.isCompleted && <CheckCircle2 className="size-4" />}
-                  {doc.isFailed && <AlertCircle className="size-4" />}
-                  <div className="flex flex-1 flex-col gap-0.5">
-                    <span className="font-medium">{doc.label}</span>
-                    <span>
-                      {doc.isGenerating
-                        ? 'Generando documento PDF...'
-                        : doc.isCompleted
-                          ? isStale
-                            ? 'Documento PDF listo (desactualizado)'
-                            : 'Documento PDF listo para descargar'
-                          : doc.isFailed
-                            ? 'Error al generar el documento PDF'
-                            : 'Preparando generación...'}
-                    </span>
-                    {doc.statusError ? (
-                      <span className="text-xs font-medium text-red-600 dark:text-red-400">{doc.statusError}</span>
-                    ) : null}
-                  </div>
-                  {(doc.isCompleted || doc.isFailed) && (
-                    <DocumentDownloadButton
-                      type={doc.type}
-                      orderNumber={order_number}
-                      isCompleted={doc.isCompleted}
-                      isFailed={doc.isFailed}
-                      isPending={false}
-                      onQueue={() => queueDocument(doc.type)}
-                      disabled={false}
-                      stale={isStale}
-                    />
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        )}
+        <WorkOrderHeader order_number={order_number} wo={wo} onCompleteWorkOrder={() => setCompleteOrderOpen(true)} />
 
         {/* Two-column layout */}
         <div className="grid gap-6 lg:grid-cols-12">
@@ -298,60 +95,11 @@ const WorkOrderPage = () => {
               )}
             </section>
 
-            {/* Controls & Task Cards — Accordion in ScrollArea */}
-            <section className="overflow-hidden rounded-lg border bg-background">
-              <div className="flex items-center justify-between border-b px-5 py-3">
-                <div>
-                  <span className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
-                    Controles de Mantenimiento
-                  </span>
-                  <p className="mt-0.5 text-xs text-muted-foreground">
-                    {items.length} control{items.length !== 1 ? 'es' : ''} · {totalTasks} task card
-                    {totalTasks !== 1 ? 's' : ''}
-                  </p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    className="h-7 gap-1.5 text-[11px]"
-                    onClick={() => setBulkCompleteOpen(true)}
-                    disabled={pendingTasksCount === 0}
-                  >
-                    <Check className="size-3" />
-                    Completar por lote
-                  </Button>
-                  <Badge variant="outline" className="gap-1 text-[11px] tabular-nums">
-                    <Settings2 className="size-2.5" />
-                    {items.length}
-                  </Badge>
-                  <Badge variant="outline" className="gap-1 text-[11px] tabular-nums">
-                    <Layers className="size-2.5" />
-                    {totalTasks}
-                  </Badge>
-                </div>
-              </div>
-
-              {items.length === 0 ? (
-                <div className="flex flex-col items-center justify-center gap-1.5 py-12 text-muted-foreground">
-                  <Settings2 className="size-7 opacity-20" />
-                  <p className="text-sm">No hay controles asociados a esta orden.</p>
-                </div>
-              ) : (
-                <div className="max-h-[680px] overflow-y-auto">
-                  <Accordion type="multiple" className="divide-y">
-                    {items.map((item) => (
-                      <ControlAccordionItem key={item.id} item={item} orderNumber={order_number} />
-                    ))}
-                  </Accordion>
-                </div>
-              )}
-            </section>
-
-            <WorkOrderComponentItemsSection items={componentItems} />
-
-            <WorkOrderDirectiveItemsSection items={directiveItems} />
+            <WorkOrderTabs
+              workOrder={wo}
+              orderNumber={order_number}
+              onBulkComplete={() => setBulkCompleteOpen(true)}
+            />
           </div>
 
           {/* Sidebar */}
@@ -428,7 +176,7 @@ const WorkOrderPage = () => {
       />
       <CompleteTasksBulkDialog
         open={bulkCompleteOpen}
-        items={items}
+        items={wo.items ?? []}
         orderNumber={order_number}
         onOpenChange={setBulkCompleteOpen}
       />

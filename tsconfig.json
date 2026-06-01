@@ -32,6 +32,9 @@
       "@api/queries": [
         "./.gen/api/@tanstack/react-query.gen.ts"
       ],
+      "@api/sdk": [
+        "./.gen/api/sdk.gen.ts"
+      ],
       "@api/*": [
         "./.gen/api/*"
       ],

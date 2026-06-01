@@ -3,12 +3,12 @@
 
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
+import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group';
+import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { AircraftResource } from '@api/types';
 import { Clock, Plane, RotateCcw, Search } from 'lucide-react';
-import { useState } from 'react';
+import { memo, useState } from 'react';
 import { cn } from '../_data/utils';
-import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 
 interface AircraftSelectorProps {
   aircraft: AircraftResource[];
@@ -16,7 +16,11 @@ interface AircraftSelectorProps {
   onSelectAircraft: (id: number) => void;
 }
 
-export function AircraftSelector({ aircraft, selectedAircraftId, onSelectAircraft }: AircraftSelectorProps) {
+export const AircraftSelector = memo(function AircraftSelector({
+  aircraft,
+  selectedAircraftId,
+  onSelectAircraft,
+}: AircraftSelectorProps) {
   const [search, setSearch] = useState('');
 
   const filtered = aircraft.filter((ac) => {
@@ -35,19 +39,22 @@ export function AircraftSelector({ aircraft, selectedAircraftId, onSelectAircraf
         <CardTitle className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
           <Plane className="h-4 w-4 text-primary" />
           Flota
+          <InputGroup className="h-7 g-muted/40 border-border/60">
+            <InputGroupAddon align="inline-start">
+              <Search />
+            </InputGroupAddon>
+            <InputGroupInput
+              className="h-full focus-visible:outline-none border-none py-1"
+              placeholder="Buscar aeronave..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              style={{ boxShadow: 'none' }}
+            />
+          </InputGroup>
           <Badge variant="secondary" className="ml-auto font-mono text-xs">
             {aircraft.length}
           </Badge>
         </CardTitle>
-        <div className="relative mt-2">
-          <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
-          <Input
-            placeholder="Buscar aeronave..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="h-8 pl-8 text-xs bg-muted/40 border-border/60"
-          />
-        </div>
       </CardHeader>
       <CardContent className="p-1.5 pt-0">
         <ScrollArea>
@@ -55,14 +62,7 @@ export function AircraftSelector({ aircraft, selectedAircraftId, onSelectAircraf
             {filtered.map((ac) => {
               const isSelected = selectedAircraftId === ac.id;
 
-              return (
-                <AircraftItem
-                  key={ac.id}
-                  aircraft={ac}
-                  isSelected={isSelected}
-                  onSelect={() => onSelectAircraft(ac.id)}
-                />
-              );
+              return <AircraftItem key={ac.id} aircraft={ac} isSelected={isSelected} onSelect={onSelectAircraft} />;
             })}
             {filtered.length === 0 && (
               <div className="flex min-h-[180px] w-full flex-col items-center justify-center gap-1.5 rounded-lg border border-dashed border-border/60 text-center">
@@ -76,20 +76,20 @@ export function AircraftSelector({ aircraft, selectedAircraftId, onSelectAircraf
       </CardContent>
     </Card>
   );
-}
+});
 
-function AircraftItem({
+const AircraftItem = memo(function AircraftItem({
   aircraft,
   isSelected,
   onSelect,
 }: {
   aircraft: AircraftResource;
   isSelected: boolean;
-  onSelect: () => void;
+  onSelect: (id: number) => void;
 }) {
   return (
     <button
-      onClick={onSelect}
+      onClick={() => onSelect(aircraft.id)}
       className={cn(
         'group flex h-16 w-88 shrink-0 overflow-hidden rounded-lg border text-left transition-all',
         isSelected
@@ -152,4 +152,4 @@ function AircraftItem({
       </div>
     </button>
   );
-}
+});

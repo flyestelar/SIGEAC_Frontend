@@ -183,6 +183,12 @@ import type {
   AnalysisCloseReportData,
   AnalysisCloseReportErrors,
   AnalysisCloseReportResponses,
+  AnalysisGenerateClosePdfData,
+  AnalysisGenerateClosePdfErrors,
+  AnalysisGenerateClosePdfResponses,
+  AnalysisGeneratePdfData,
+  AnalysisGeneratePdfErrors,
+  AnalysisGeneratePdfResponses,
   AnalysisGetPostRiskCountByDateRangeData,
   AnalysisGetPostRiskCountByDateRangeErrors,
   AnalysisGetPostRiskCountByDateRangeResponses,
@@ -410,9 +416,6 @@ import type {
   CertificateIndexData,
   CertificateIndexErrors,
   CertificateIndexResponses,
-  CertificateServeFileData,
-  CertificateServeFileErrors,
-  CertificateServeFileResponses,
   CertificateShowData,
   CertificateShowErrors,
   CertificateShowResponses,
@@ -557,6 +560,9 @@ import type {
   DangerIdentificationDestroyData,
   DangerIdentificationDestroyErrors,
   DangerIdentificationDestroyResponses,
+  DangerIdentificationGeneratePdfData,
+  DangerIdentificationGeneratePdfErrors,
+  DangerIdentificationGeneratePdfResponses,
   DangerIdentificationGetDangerIdentificationsCountedByInformationSourceNameData,
   DangerIdentificationGetDangerIdentificationsCountedByInformationSourceNameErrors,
   DangerIdentificationGetDangerIdentificationsCountedByInformationSourceNameResponses,
@@ -926,6 +932,9 @@ import type {
   MitigationPlanDestroyData,
   MitigationPlanDestroyErrors,
   MitigationPlanDestroyResponses,
+  MitigationPlanGeneratePdfData,
+  MitigationPlanGeneratePdfErrors,
+  MitigationPlanGeneratePdfResponses,
   MitigationPlanStoreData,
   MitigationPlanStoreErrors,
   MitigationPlanStoreResponses,
@@ -947,6 +956,24 @@ import type {
   ModulesUpdateData,
   ModulesUpdateErrors,
   ModulesUpdateResponses,
+  NonRoutineTasksDestroyData,
+  NonRoutineTasksDestroyErrors,
+  NonRoutineTasksDestroyResponses,
+  NonRoutineTasksIndexData,
+  NonRoutineTasksIndexErrors,
+  NonRoutineTasksIndexResponses,
+  NonRoutineTasksShowData,
+  NonRoutineTasksShowErrors,
+  NonRoutineTasksShowResponses,
+  NonRoutineTasksStoreData,
+  NonRoutineTasksStoreErrors,
+  NonRoutineTasksStoreResponses,
+  NonRoutineTasksUpdateData,
+  NonRoutineTasksUpdateErrors,
+  NonRoutineTasksUpdateResponses,
+  NonRoutineTaskUpdateStatusData,
+  NonRoutineTaskUpdateStatusErrors,
+  NonRoutineTaskUpdateStatusResponses,
   ObligatoryReportAcceptObligatoryReportData,
   ObligatoryReportAcceptObligatoryReportErrors,
   ObligatoryReportAcceptObligatoryReportResponses,
@@ -1019,6 +1046,9 @@ import type {
   PilotsUpdateData,
   PilotsUpdateErrors,
   PilotsUpdateResponses,
+  PlanificationAlertsIndexData,
+  PlanificationAlertsIndexErrors,
+  PlanificationAlertsIndexResponses,
   PlanificationEventDestroyData,
   PlanificationEventDestroyErrors,
   PlanificationEventDestroyResponses,
@@ -1361,7 +1391,6 @@ import type {
   SmsAreaDestroyErrors,
   SmsAreaDestroyResponses,
   SmsAreaIndexData,
-  SmsAreaIndexErrors,
   SmsAreaIndexResponses,
   SmsAreaStoreData,
   SmsAreaStoreErrors,
@@ -1369,11 +1398,13 @@ import type {
   SmsAreaUpdateData,
   SmsAreaUpdateErrors,
   SmsAreaUpdateResponses,
+  SmsCertificatesFileData,
+  SmsCertificatesFileErrors,
+  SmsCertificatesFileResponses,
   SmsFindingLocationDestroyData,
   SmsFindingLocationDestroyErrors,
   SmsFindingLocationDestroyResponses,
   SmsFindingLocationIndexData,
-  SmsFindingLocationIndexErrors,
   SmsFindingLocationIndexResponses,
   SmsFindingLocationStoreData,
   SmsFindingLocationStoreErrors,
@@ -1397,7 +1428,6 @@ import type {
   SmsStationDestroyErrors,
   SmsStationDestroyResponses,
   SmsStationIndexData,
-  SmsStationIndexErrors,
   SmsStationIndexResponses,
   SmsStationStoreData,
   SmsStationStoreErrors,
@@ -2475,20 +2505,6 @@ export const airworthinessDirectiveApplicabilitiesUpdate = <ThrowOnError extends
     },
   });
 
-export const airworthinessDirectiveComplianceControlsDestroy = <ThrowOnError extends boolean = false>(
-  options: Options<AirworthinessDirectiveComplianceControlsDestroyData, ThrowOnError>,
-) =>
-  (options.client ?? client).delete<
-    AirworthinessDirectiveComplianceControlsDestroyResponses,
-    AirworthinessDirectiveComplianceControlsDestroyErrors,
-    ThrowOnError
-  >({
-    responseType: 'json',
-    security: [{ scheme: 'bearer', type: 'http' }],
-    url: '/airworthiness-directives/{directiveId}/applicabilities/{applicabilityId}/compliance-control',
-    ...options,
-  });
-
 export const airworthinessDirectiveComplianceControlsStore = <ThrowOnError extends boolean = false>(
   options: Options<AirworthinessDirectiveComplianceControlsStoreData, ThrowOnError>,
 ) =>
@@ -2499,12 +2515,26 @@ export const airworthinessDirectiveComplianceControlsStore = <ThrowOnError exten
   >({
     responseType: 'json',
     security: [{ scheme: 'bearer', type: 'http' }],
-    url: '/airworthiness-directives/{directiveId}/applicabilities/{applicabilityId}/compliance-control',
+    url: '/airworthiness-directives/{directiveId}/compliance-controls',
     ...options,
     headers: {
       'Content-Type': 'application/json',
       ...options.headers,
     },
+  });
+
+export const airworthinessDirectiveComplianceControlsDestroy = <ThrowOnError extends boolean = false>(
+  options: Options<AirworthinessDirectiveComplianceControlsDestroyData, ThrowOnError>,
+) =>
+  (options.client ?? client).delete<
+    AirworthinessDirectiveComplianceControlsDestroyResponses,
+    AirworthinessDirectiveComplianceControlsDestroyErrors,
+    ThrowOnError
+  >({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/airworthiness-directives/{directiveId}/compliance-controls/{controlId}',
+    ...options,
   });
 
 export const airworthinessDirectiveComplianceControlsUpdate = <ThrowOnError extends boolean = false>(
@@ -2517,7 +2547,7 @@ export const airworthinessDirectiveComplianceControlsUpdate = <ThrowOnError exte
   >({
     responseType: 'json',
     security: [{ scheme: 'bearer', type: 'http' }],
-    url: '/airworthiness-directives/{directiveId}/applicabilities/{applicabilityId}/compliance-control',
+    url: '/airworthiness-directives/{directiveId}/compliance-controls/{controlId}',
     ...options,
     headers: {
       'Content-Type': 'application/json',
@@ -2535,7 +2565,7 @@ export const airworthinessDirectiveComplianceControlsStoreExecution = <ThrowOnEr
   >({
     responseType: 'json',
     security: [{ scheme: 'bearer', type: 'http' }],
-    url: '/airworthiness-directives/{directiveId}/applicabilities/{applicabilityId}/compliance-records',
+    url: '/airworthiness-directives/{directiveId}/compliance-controls/{controlId}/records',
     ...options,
     headers: {
       'Content-Type': 'application/json',
@@ -2715,6 +2745,16 @@ export const analysisShowAnalysisWithPlan = <ThrowOnError extends boolean = fals
     ...options,
   });
 
+export const analysisGeneratePdf = <ThrowOnError extends boolean = false>(
+  options: Options<AnalysisGeneratePdfData, ThrowOnError>,
+) =>
+  (options.client ?? client).get<AnalysisGeneratePdfResponses, AnalysisGeneratePdfErrors, ThrowOnError>({
+    responseType: 'blob',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/{company}/sms/analysis/{id}/pdf',
+    ...options,
+  });
+
 export const analysisCloseReport = <ThrowOnError extends boolean = false>(
   options: Options<AnalysisCloseReportData, ThrowOnError>,
 ) =>
@@ -2722,6 +2762,16 @@ export const analysisCloseReport = <ThrowOnError extends boolean = false>(
     responseType: 'json',
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/{company}/sms/close-report/{mitigation_id}',
+    ...options,
+  });
+
+export const analysisGenerateClosePdf = <ThrowOnError extends boolean = false>(
+  options: Options<AnalysisGenerateClosePdfData, ThrowOnError>,
+) =>
+  (options.client ?? client).get<AnalysisGenerateClosePdfResponses, AnalysisGenerateClosePdfErrors, ThrowOnError>({
+    responseType: 'blob',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/{_company}/sms/close-report/{mitigation_id}/pdf',
     ...options,
   });
 
@@ -3642,10 +3692,10 @@ export const cashMovementNewAircraftExpenses = <ThrowOnError extends boolean = f
     ...options,
   });
 
-export const certificateServeFile = <ThrowOnError extends boolean = false>(
-  options: Options<CertificateServeFileData, ThrowOnError>,
+export const smsCertificatesFile = <ThrowOnError extends boolean = false>(
+  options: Options<SmsCertificatesFileData, ThrowOnError>,
 ) =>
-  (options.client ?? client).get<CertificateServeFileResponses, CertificateServeFileErrors, ThrowOnError>({
+  (options.client ?? client).get<SmsCertificatesFileResponses, SmsCertificatesFileErrors, ThrowOnError>({
     responseType: 'blob',
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/{company}/sms/certificates/serve/{filePath}',
@@ -4358,6 +4408,20 @@ export const dangerIdentificationIndex = <ThrowOnError extends boolean = false>(
     ...options,
   });
 
+export const dangerIdentificationGetIdentificationWithAllById = <ThrowOnError extends boolean = false>(
+  options: Options<DangerIdentificationGetIdentificationWithAllByIdData, ThrowOnError>,
+) =>
+  (options.client ?? client).get<
+    DangerIdentificationGetIdentificationWithAllByIdResponses,
+    DangerIdentificationGetIdentificationWithAllByIdErrors,
+    ThrowOnError
+  >({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/{_company}/sms/danger-identifications/with-all/{id}',
+    ...options,
+  });
+
 export const dangerIdentificationDestroy = <ThrowOnError extends boolean = false>(
   options: Options<DangerIdentificationDestroyData, ThrowOnError>,
 ) =>
@@ -4398,6 +4462,20 @@ export const dangerIdentificationUpdate = <ThrowOnError extends boolean = false>
     },
   );
 
+export const dangerIdentificationGeneratePdf = <ThrowOnError extends boolean = false>(
+  options: Options<DangerIdentificationGeneratePdfData, ThrowOnError>,
+) =>
+  (options.client ?? client).get<
+    DangerIdentificationGeneratePdfResponses,
+    DangerIdentificationGeneratePdfErrors,
+    ThrowOnError
+  >({
+    responseType: 'blob',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/{company}/sms/danger-identifications/{id}/pdf',
+    ...options,
+  });
+
 export const dangerIdentificationStore = <ThrowOnError extends boolean = false>(
   options: Options<DangerIdentificationStoreData, ThrowOnError>,
 ) =>
@@ -4410,20 +4488,6 @@ export const dangerIdentificationStore = <ThrowOnError extends boolean = false>(
       'Content-Type': 'application/json',
       ...options.headers,
     },
-  });
-
-export const dangerIdentificationGetIdentificationWithAllById = <ThrowOnError extends boolean = false>(
-  options: Options<DangerIdentificationGetIdentificationWithAllByIdData, ThrowOnError>,
-) =>
-  (options.client ?? client).get<
-    DangerIdentificationGetIdentificationWithAllByIdResponses,
-    DangerIdentificationGetIdentificationWithAllByIdErrors,
-    ThrowOnError
-  >({
-    responseType: 'json',
-    security: [{ scheme: 'bearer', type: 'http' }],
-    url: '/{_company}/sms/danger-identifications/with-all/{id}',
-    ...options,
   });
 
 export const dangerIdentificationGetDangerIdentificationsCountedByInformationSourceName = <
@@ -6079,6 +6143,16 @@ export const mitigationPlanUpdate = <ThrowOnError extends boolean = false>(
     },
   });
 
+export const mitigationPlanGeneratePdf = <ThrowOnError extends boolean = false>(
+  options: Options<MitigationPlanGeneratePdfData, ThrowOnError>,
+) =>
+  (options.client ?? client).get<MitigationPlanGeneratePdfResponses, MitigationPlanGeneratePdfErrors, ThrowOnError>({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/{company}/sms/mitigation-plans/{id}/pdf',
+    ...options,
+  });
+
 export const modulesIndex = <ThrowOnError extends boolean = false>(options?: Options<ModulesIndexData, ThrowOnError>) =>
   (options?.client ?? client).get<ModulesIndexResponses, ModulesIndexErrors, ThrowOnError>({
     responseType: 'json',
@@ -6123,6 +6197,80 @@ export const modulesCompanyModule = <ThrowOnError extends boolean = false>(
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/company-modules',
     ...options,
+  });
+
+export const nonRoutineTaskUpdateStatus = <ThrowOnError extends boolean = false>(
+  options: Options<NonRoutineTaskUpdateStatusData, ThrowOnError>,
+) =>
+  (options.client ?? client).patch<NonRoutineTaskUpdateStatusResponses, NonRoutineTaskUpdateStatusErrors, ThrowOnError>(
+    {
+      responseType: 'json',
+      security: [{ scheme: 'bearer', type: 'http' }],
+      url: '/non-routine-tasks/{id}/status',
+      ...options,
+      headers: {
+        'Content-Type': 'application/json',
+        ...options.headers,
+      },
+    },
+  );
+
+export const nonRoutineTasksIndex = <ThrowOnError extends boolean = false>(
+  options: Options<NonRoutineTasksIndexData, ThrowOnError>,
+) =>
+  (options.client ?? client).get<NonRoutineTasksIndexResponses, NonRoutineTasksIndexErrors, ThrowOnError>({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/non-routine-tasks',
+    ...options,
+  });
+
+export const nonRoutineTasksStore = <ThrowOnError extends boolean = false>(
+  options: Options<NonRoutineTasksStoreData, ThrowOnError>,
+) =>
+  (options.client ?? client).post<NonRoutineTasksStoreResponses, NonRoutineTasksStoreErrors, ThrowOnError>({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/non-routine-tasks',
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    },
+  });
+
+export const nonRoutineTasksDestroy = <ThrowOnError extends boolean = false>(
+  options: Options<NonRoutineTasksDestroyData, ThrowOnError>,
+) =>
+  (options.client ?? client).delete<NonRoutineTasksDestroyResponses, NonRoutineTasksDestroyErrors, ThrowOnError>({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/non-routine-tasks/{id}',
+    ...options,
+  });
+
+export const nonRoutineTasksShow = <ThrowOnError extends boolean = false>(
+  options: Options<NonRoutineTasksShowData, ThrowOnError>,
+) =>
+  (options.client ?? client).get<NonRoutineTasksShowResponses, NonRoutineTasksShowErrors, ThrowOnError>({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/non-routine-tasks/{id}',
+    ...options,
+  });
+
+export const nonRoutineTasksUpdate = <ThrowOnError extends boolean = false>(
+  options: Options<NonRoutineTasksUpdateData, ThrowOnError>,
+) =>
+  (options.client ?? client).put<NonRoutineTasksUpdateResponses, NonRoutineTasksUpdateErrors, ThrowOnError>({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/non-routine-tasks/{id}',
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    },
   });
 
 /**
@@ -6438,6 +6586,16 @@ export const pilotsUpdate = <ThrowOnError extends boolean = false>(options: Opti
       'Content-Type': 'application/json',
       ...options.headers,
     },
+  });
+
+export const planificationAlertsIndex = <ThrowOnError extends boolean = false>(
+  options?: Options<PlanificationAlertsIndexData, ThrowOnError>,
+) =>
+  (options?.client ?? client).get<PlanificationAlertsIndexResponses, PlanificationAlertsIndexErrors, ThrowOnError>({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/planification-alerts',
+    ...options,
   });
 
 /**
@@ -8082,7 +8240,7 @@ export const safetyBulletinDeleteDocument = <ThrowOnError extends boolean = fals
   });
 
 export const smsAreaIndex = <ThrowOnError extends boolean = false>(options: Options<SmsAreaIndexData, ThrowOnError>) =>
-  (options.client ?? client).get<SmsAreaIndexResponses, SmsAreaIndexErrors, ThrowOnError>({
+  (options.client ?? client).get<SmsAreaIndexResponses, unknown, ThrowOnError>({
     responseType: 'json',
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/{company}/sms/areas',
@@ -8128,7 +8286,7 @@ export const smsAreaUpdate = <ThrowOnError extends boolean = false>(
 export const smsFindingLocationIndex = <ThrowOnError extends boolean = false>(
   options: Options<SmsFindingLocationIndexData, ThrowOnError>,
 ) =>
-  (options.client ?? client).get<SmsFindingLocationIndexResponses, SmsFindingLocationIndexErrors, ThrowOnError>({
+  (options.client ?? client).get<SmsFindingLocationIndexResponses, unknown, ThrowOnError>({
     responseType: 'json',
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/{company}/sms/finding-locations',
@@ -8176,7 +8334,7 @@ export const smsFindingLocationUpdate = <ThrowOnError extends boolean = false>(
 export const smsStationIndex = <ThrowOnError extends boolean = false>(
   options: Options<SmsStationIndexData, ThrowOnError>,
 ) =>
-  (options.client ?? client).get<SmsStationIndexResponses, SmsStationIndexErrors, ThrowOnError>({
+  (options.client ?? client).get<SmsStationIndexResponses, unknown, ThrowOnError>({
     responseType: 'json',
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/{company}/sms/stations',
@@ -9214,29 +9372,26 @@ export const workOrdersShow = <ThrowOnError extends boolean = false>(
 
 /**
  * Store a newly created resource in storage
- *
- * ⚠️ Cannot generate request documentation: include(D:\ESTELAR\SIGEAC_Backend\vendor\composer/../../app/Models/Planification/WorkOrderTask.php): Failed to open stream: No such file or directory
  */
 export const workOrderTaskEventStore = <ThrowOnError extends boolean = false>(
-  options?: Options<WorkOrderTaskEventStoreData, ThrowOnError>,
+  options: Options<WorkOrderTaskEventStoreData, ThrowOnError>,
 ) =>
-  (options?.client ?? client).post<WorkOrderTaskEventStoreResponses, WorkOrderTaskEventStoreErrors, ThrowOnError>({
+  (options.client ?? client).post<WorkOrderTaskEventStoreResponses, WorkOrderTaskEventStoreErrors, ThrowOnError>({
+    responseType: 'json',
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/{company}/{work_order_task}/store-work-order-task-event',
     ...options,
   });
 
-/**
- * ⚠️ Cannot generate request documentation: include(D:\ESTELAR\SIGEAC_Backend\vendor\composer/../../app/Models/Planification/WorkOrderTask.php): Failed to open stream: No such file or directory
- */
 export const workOrderTaskEventShowEventsByWorkOrderTask = <ThrowOnError extends boolean = false>(
-  options?: Options<WorkOrderTaskEventShowEventsByWorkOrderTaskData, ThrowOnError>,
+  options: Options<WorkOrderTaskEventShowEventsByWorkOrderTaskData, ThrowOnError>,
 ) =>
-  (options?.client ?? client).get<
+  (options.client ?? client).get<
     WorkOrderTaskEventShowEventsByWorkOrderTaskResponses,
     WorkOrderTaskEventShowEventsByWorkOrderTaskErrors,
     ThrowOnError
   >({
+    responseType: 'json',
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/{company}/{work_order_task}/show-events-by-work-order-task',
     ...options,

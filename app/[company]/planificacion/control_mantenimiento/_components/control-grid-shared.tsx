@@ -3,11 +3,24 @@
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { AircraftAverageMetric, MaintenanceControlResource } from '@api/types';
-import { AlertTriangle, Calendar, ClipboardPenLine, Clock, RefreshCw, ShieldCheck, TriangleAlert, Wrench } from 'lucide-react';
+import {
+  AlertTriangle,
+  Calendar,
+  ClipboardPenLine,
+  Clock,
+  LucideIcon,
+  RefreshCw,
+  ShieldCheck,
+  TriangleAlert,
+  Wrench,
+} from 'lucide-react';
 import { addDays } from 'date-fns';
 import { TooltipPortal } from '@radix-ui/react-tooltip';
 import Link from 'next/link';
 import { useCompanyStore } from '@/stores/CompanyStore';
+import { cva } from 'class-variance-authority';
+import { cn } from '@/lib/utils';
+import { minBy } from 'es-toolkit';
 
 export type AlertLevel = 'OVERDUE' | 'WARNING' | 'OK';
 export type MetricType = 'FH' | 'FC' | 'DAYS';
@@ -25,12 +38,6 @@ export type ComputedControl = {
   control: MaintenanceControlResource;
   metrics: ComputedMetric[];
   status: AlertLevel;
-};
-
-const ALERT_LABELS: Record<AlertLevel, string> = {
-  OVERDUE: 'Vencido',
-  WARNING: 'Próximo',
-  OK: 'En tiempo',
 };
 
 export const METRIC_LABELS: Record<MetricType, string> = {
@@ -65,16 +72,33 @@ const SINCE_LAST_KEYS: Record<MetricType, 'fh' | 'fc' | 'days'> = {
 
 const ALL_METRIC_TYPES: MetricType[] = ['FH', 'FC', 'DAYS'];
 
+const levelBadgeVariants = cva('text-white text-[10px] font-medium tracking-wide inline-flex items-center gap-1', {
+  variants: {
+    status: {
+      OVERDUE: 'bg-red-500 hover:bg-red-600',
+      WARNING: 'bg-amber-500 hover:bg-amber-600',
+      OK: 'bg-emerald-500 hover:bg-emerald-600',
+    } satisfies Record<AlertLevel, string>,
+    size: {
+      small: 'h-5 px-1.5 text-[10px]',
+      medium: 'h-6 px-2 text-[11px]',
+    },
+  },
+});
+
 export const LEVEL_CONFIG: Record<
   AlertLevel,
   {
-    icon: typeof TriangleAlert;
+    icon: LucideIcon;
     cardBorder: string;
     cardBg: string;
     iconBg: string;
     iconText: string;
     progressIndicator: string;
-    badgeClass: string;
+    label: string;
+
+    accentText: string;
+    accentBorder: string;
   }
 > = {
   OVERDUE: {
@@ -84,7 +108,9 @@ export const LEVEL_CONFIG: Record<
     iconBg: 'bg-red-500/10 border border-red-500/20',
     iconText: 'text-red-600 dark:text-red-400',
     progressIndicator: 'bg-red-500',
-    badgeClass: 'bg-destructive/10 text-destructive border-destructive/20',
+    label: 'Vencido',
+    accentText: 'text-red-600 dark:text-red-400',
+    accentBorder: 'border-red-500',
   },
   WARNING: {
     icon: AlertTriangle,
@@ -93,7 +119,9 @@ export const LEVEL_CONFIG: Record<
     iconBg: 'bg-amber-500/10 border border-amber-500/20',
     iconText: 'text-amber-600 dark:text-amber-400',
     progressIndicator: 'bg-amber-500',
-    badgeClass: 'bg-amber-500/10 text-amber-600 border-amber-500/20 dark:text-amber-400',
+    label: 'Próximo',
+    accentText: 'text-amber-600 dark:text-amber-400',
+    accentBorder: 'border-amber-500',
   },
   OK: {
     icon: ShieldCheck,
@@ -102,24 +130,25 @@ export const LEVEL_CONFIG: Record<
     iconBg: 'bg-emerald-500/10 border border-emerald-500/20',
     iconText: 'text-emerald-600 dark:text-emerald-400',
     progressIndicator: 'bg-emerald-500',
-    badgeClass: 'bg-emerald-500/10 text-emerald-700 border-emerald-500/20 dark:text-emerald-400',
+    label: 'En tiempo',
+    accentText: 'text-emerald-600 dark:text-emerald-400',
+    accentBorder: 'border-emerald-500',
   },
 };
 
 export const LEVEL_PRIORITY: Record<AlertLevel, number> = { OVERDUE: 0, WARNING: 1, OK: 2 };
 
 export function EnCursoBadge({ workOrderLabel }: { workOrderLabel?: string }) {
-  const { selectedCompany } = useCompanyStore()
+  const { selectedCompany } = useCompanyStore();
   const badge = (
-    <Link className='z-100' href={`/${selectedCompany?.slug}/planificacion/ordenes_trabajo/${workOrderLabel}`} onClick={(e) => e.stopPropagation()}>
-      <Badge
-        variant="outline"
-        className="whitespace-nowrap h-5 border-sky-500/30 bg-sky-500/10 px-1.5 text-[10px] text-sky-600 dark:text-sky-400"
-      >
-        <Wrench className="mr-0.5 h-2.5 w-2.5" />
-        En curso
-      </Badge>
-    </Link >
+    <Link
+      href={`/${selectedCompany?.slug}/planificacion/ordenes_trabajo/${workOrderLabel}`}
+      onClick={(e) => e.stopPropagation()}
+      className="font-medium rounded-full inline-flex items-center gap-0.5 whitespace-nowrap h-5 bg-sky-500/20 px-1.5 text-[10px] text-sky-600 dark:text-sky-400"
+    >
+      <Wrench className="h-2.5 w-2.5" />
+      En curso
+    </Link>
   );
 
   if (!workOrderLabel) {
@@ -129,25 +158,24 @@ export function EnCursoBadge({ workOrderLabel }: { workOrderLabel?: string }) {
   return (
     <TooltipProvider>
       <Tooltip delayDuration={80}>
-        <TooltipTrigger asChild>
-          <div>{badge}</div>
-        </TooltipTrigger>
+        <TooltipTrigger asChild>{badge}</TooltipTrigger>
         <TooltipPortal>
-          <TooltipContent side="top" className='text-muted-foreground flex gap-2 items-center'>
-            <ClipboardPenLine className='size-4' /> <strong>{workOrderLabel}</strong>
+          <TooltipContent side="top" className="text-muted-foreground flex gap-2 items-center">
+            <ClipboardPenLine className="size-4" /> <strong>{workOrderLabel}</strong>
           </TooltipContent>
         </TooltipPortal>
       </Tooltip>
-    </TooltipProvider >
+    </TooltipProvider>
   );
 }
 
 export function AlertBadge({ status, size = 'small' }: { status: AlertLevel; size?: 'small' | 'medium' }) {
   const cfg = LEVEL_CONFIG[status];
-  const sizeClasses = size === 'small' ? 'h-5 px-1.5 text-[10px]' : 'h-6 px-2 text-[11px]';
+  const Icon = cfg.icon;
   return (
-    <Badge variant="outline" className={`whitespace-nowrap ${sizeClasses} ${cfg.badgeClass}`}>
-      {ALERT_LABELS[status]}
+    <Badge className={cn(levelBadgeVariants({ size, status }))}>
+      <Icon className="h-3 w-3" />
+      {cfg.label}
     </Badge>
   );
 }
@@ -175,11 +203,7 @@ export function computeMetrics(control: MaintenanceControlResource): ComputedMet
 }
 
 export function worstStatus(metrics: ComputedMetric[]): AlertLevel {
-  if (metrics.length === 0) return 'OK';
-  return metrics.reduce<AlertLevel>(
-    (worst, metric) => (LEVEL_PRIORITY[metric.status] < LEVEL_PRIORITY[worst] ? metric.status : worst),
-    'OK',
-  );
+  return minBy(metrics, (m) => LEVEL_PRIORITY[m.status])?.status ?? 'OK';
 }
 
 export type MetricEstimation = { date: Date; days: number; avg?: number } | null;

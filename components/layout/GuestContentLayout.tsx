@@ -1,6 +1,5 @@
 
 import { GuestNavbar } from "./GuestNavbar";
-import { Sidebar } from "./Sidebar";
 
 interface ContentLayoutProps {
   title: string;

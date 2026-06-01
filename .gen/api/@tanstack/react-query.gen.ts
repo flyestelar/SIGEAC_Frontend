@@ -71,6 +71,8 @@ import {
   airworthinessDirectivesStore,
   airworthinessDirectivesUpdate,
   analysisCloseReport,
+  analysisGenerateClosePdf,
+  analysisGeneratePdf,
   analysisGetPostRiskCountByDateRange,
   analysisGetRiskCountByDateRange,
   analysisGetTotalPostRiskCountByDateRange,
@@ -147,7 +149,6 @@ import {
   certificateGetEmployees,
   certificateIndex,
   certificateIndex2,
-  certificateServeFile,
   certificateShow,
   certificateStore,
   certificateStore2,
@@ -196,6 +197,7 @@ import {
   creditsStore,
   creditsUpdate,
   dangerIdentificationDestroy,
+  dangerIdentificationGeneratePdf,
   dangerIdentificationGetDangerIdentificationsCountedByInformationSourceName,
   dangerIdentificationGetDangerIdentificationsCountedByInformationSourceType,
   dangerIdentificationGetDangerIdentificationsCountedByType,
@@ -319,6 +321,7 @@ import {
   mitigationMeasureStore,
   mitigationMeasureUpdate,
   mitigationPlanDestroy,
+  mitigationPlanGeneratePdf,
   mitigationPlanStore,
   mitigationPlanUpdate,
   modulesCompanyModule,
@@ -326,6 +329,12 @@ import {
   modulesIndex,
   modulesStore,
   modulesUpdate,
+  nonRoutineTasksDestroy,
+  nonRoutineTasksIndex,
+  nonRoutineTasksShow,
+  nonRoutineTasksStore,
+  nonRoutineTasksUpdate,
+  nonRoutineTaskUpdateStatus,
   obligatoryReportAcceptObligatoryReport,
   obligatoryReportDestroy,
   obligatoryReportGeneratePdfReport,
@@ -351,6 +360,7 @@ import {
   pilotsShow,
   pilotsStore,
   pilotsUpdate,
+  planificationAlertsIndex,
   planificationEventDestroy,
   planificationEventIndex,
   planificationEventShow,
@@ -468,6 +478,7 @@ import {
   smsAreaIndex,
   smsAreaStore,
   smsAreaUpdate,
+  smsCertificatesFile,
   smsFindingLocationDestroy,
   smsFindingLocationIndex,
   smsFindingLocationStore,
@@ -741,6 +752,12 @@ import type {
   AnalysisCloseReportData,
   AnalysisCloseReportError,
   AnalysisCloseReportResponse,
+  AnalysisGenerateClosePdfData,
+  AnalysisGenerateClosePdfError,
+  AnalysisGenerateClosePdfResponse,
+  AnalysisGeneratePdfData,
+  AnalysisGeneratePdfError,
+  AnalysisGeneratePdfResponse,
   AnalysisGetPostRiskCountByDateRangeData,
   AnalysisGetPostRiskCountByDateRangeError,
   AnalysisGetPostRiskCountByDateRangeResponse,
@@ -951,9 +968,6 @@ import type {
   CertificateIndexData,
   CertificateIndexError,
   CertificateIndexResponse,
-  CertificateServeFileData,
-  CertificateServeFileError,
-  CertificateServeFileResponse,
   CertificateShowData,
   CertificateShowError,
   CertificateStore2Data,
@@ -1096,6 +1110,9 @@ import type {
   DangerIdentificationDestroyData,
   DangerIdentificationDestroyError,
   DangerIdentificationDestroyResponse,
+  DangerIdentificationGeneratePdfData,
+  DangerIdentificationGeneratePdfError,
+  DangerIdentificationGeneratePdfResponse,
   DangerIdentificationGetDangerIdentificationsCountedByInformationSourceNameData,
   DangerIdentificationGetDangerIdentificationsCountedByInformationSourceNameError,
   DangerIdentificationGetDangerIdentificationsCountedByInformationSourceNameResponse,
@@ -1458,6 +1475,9 @@ import type {
   MitigationPlanDestroyData,
   MitigationPlanDestroyError,
   MitigationPlanDestroyResponse,
+  MitigationPlanGeneratePdfData,
+  MitigationPlanGeneratePdfError,
+  MitigationPlanGeneratePdfResponse,
   MitigationPlanStoreData,
   MitigationPlanStoreError,
   MitigationPlanStoreResponse,
@@ -1479,6 +1499,24 @@ import type {
   ModulesUpdateData,
   ModulesUpdateError,
   ModulesUpdateResponse,
+  NonRoutineTasksDestroyData,
+  NonRoutineTasksDestroyError,
+  NonRoutineTasksDestroyResponse,
+  NonRoutineTasksIndexData,
+  NonRoutineTasksIndexError,
+  NonRoutineTasksIndexResponse,
+  NonRoutineTasksShowData,
+  NonRoutineTasksShowError,
+  NonRoutineTasksShowResponse,
+  NonRoutineTasksStoreData,
+  NonRoutineTasksStoreError,
+  NonRoutineTasksStoreResponse,
+  NonRoutineTasksUpdateData,
+  NonRoutineTasksUpdateError,
+  NonRoutineTasksUpdateResponse,
+  NonRoutineTaskUpdateStatusData,
+  NonRoutineTaskUpdateStatusError,
+  NonRoutineTaskUpdateStatusResponse,
   ObligatoryReportAcceptObligatoryReportData,
   ObligatoryReportAcceptObligatoryReportError,
   ObligatoryReportAcceptObligatoryReportResponse,
@@ -1550,6 +1588,9 @@ import type {
   PilotsUpdateData,
   PilotsUpdateError,
   PilotsUpdateResponse,
+  PlanificationAlertsIndexData,
+  PlanificationAlertsIndexError,
+  PlanificationAlertsIndexResponse,
   PlanificationEventDestroyData,
   PlanificationEventDestroyError,
   PlanificationEventIndexData,
@@ -1885,7 +1926,6 @@ import type {
   SmsAreaDestroyError,
   SmsAreaDestroyResponse,
   SmsAreaIndexData,
-  SmsAreaIndexError,
   SmsAreaIndexResponse,
   SmsAreaStoreData,
   SmsAreaStoreError,
@@ -1893,11 +1933,13 @@ import type {
   SmsAreaUpdateData,
   SmsAreaUpdateError,
   SmsAreaUpdateResponse,
+  SmsCertificatesFileData,
+  SmsCertificatesFileError,
+  SmsCertificatesFileResponse,
   SmsFindingLocationDestroyData,
   SmsFindingLocationDestroyError,
   SmsFindingLocationDestroyResponse,
   SmsFindingLocationIndexData,
-  SmsFindingLocationIndexError,
   SmsFindingLocationIndexResponse,
   SmsFindingLocationStoreData,
   SmsFindingLocationStoreError,
@@ -1921,7 +1963,6 @@ import type {
   SmsStationDestroyError,
   SmsStationDestroyResponse,
   SmsStationIndexData,
-  SmsStationIndexError,
   SmsStationIndexResponse,
   SmsStationStoreData,
   SmsStationStoreError,
@@ -2160,8 +2201,10 @@ import type {
   WorkOrdersStoreResponse,
   WorkOrderTaskEventShowEventsByWorkOrderTaskData,
   WorkOrderTaskEventShowEventsByWorkOrderTaskError,
+  WorkOrderTaskEventShowEventsByWorkOrderTaskResponse,
   WorkOrderTaskEventStoreData,
   WorkOrderTaskEventStoreError,
+  WorkOrderTaskEventStoreResponse,
   WorkshopsDestroyData,
   WorkshopsDestroyError,
   WorkshopsDestroyResponse,
@@ -3557,30 +3600,6 @@ export const airworthinessDirectiveApplicabilitiesUpdateMutation = (
   return mutationOptions;
 };
 
-export const airworthinessDirectiveComplianceControlsDestroyMutation = (
-  options?: Partial<Options<AirworthinessDirectiveComplianceControlsDestroyData>>,
-): UseMutationOptions<
-  AirworthinessDirectiveComplianceControlsDestroyResponse,
-  AxiosError<AirworthinessDirectiveComplianceControlsDestroyError>,
-  Options<AirworthinessDirectiveComplianceControlsDestroyData>
-> => {
-  const mutationOptions: UseMutationOptions<
-    AirworthinessDirectiveComplianceControlsDestroyResponse,
-    AxiosError<AirworthinessDirectiveComplianceControlsDestroyError>,
-    Options<AirworthinessDirectiveComplianceControlsDestroyData>
-  > = {
-    mutationFn: async (fnOptions) => {
-      const { data } = await airworthinessDirectiveComplianceControlsDestroy({
-        ...options,
-        ...fnOptions,
-        throwOnError: true,
-      });
-      return data;
-    },
-  };
-  return mutationOptions;
-};
-
 export const airworthinessDirectiveComplianceControlsStoreMutation = (
   options?: Partial<Options<AirworthinessDirectiveComplianceControlsStoreData>>,
 ): UseMutationOptions<
@@ -3595,6 +3614,30 @@ export const airworthinessDirectiveComplianceControlsStoreMutation = (
   > = {
     mutationFn: async (fnOptions) => {
       const { data } = await airworthinessDirectiveComplianceControlsStore({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+export const airworthinessDirectiveComplianceControlsDestroyMutation = (
+  options?: Partial<Options<AirworthinessDirectiveComplianceControlsDestroyData>>,
+): UseMutationOptions<
+  AirworthinessDirectiveComplianceControlsDestroyResponse,
+  AxiosError<AirworthinessDirectiveComplianceControlsDestroyError>,
+  Options<AirworthinessDirectiveComplianceControlsDestroyData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    AirworthinessDirectiveComplianceControlsDestroyResponse,
+    AxiosError<AirworthinessDirectiveComplianceControlsDestroyError>,
+    Options<AirworthinessDirectiveComplianceControlsDestroyData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await airworthinessDirectiveComplianceControlsDestroy({
         ...options,
         ...fnOptions,
         throwOnError: true,
@@ -4076,6 +4119,28 @@ export const analysisShowAnalysisWithPlanOptions = (options: Options<AnalysisSho
     queryKey: analysisShowAnalysisWithPlanQueryKey(options),
   });
 
+export const analysisGeneratePdfQueryKey = (options: Options<AnalysisGeneratePdfData>) =>
+  createQueryKey('analysisGeneratePdf', options);
+
+export const analysisGeneratePdfOptions = (options: Options<AnalysisGeneratePdfData>) =>
+  queryOptions<
+    AnalysisGeneratePdfResponse,
+    AxiosError<AnalysisGeneratePdfError>,
+    AnalysisGeneratePdfResponse,
+    ReturnType<typeof analysisGeneratePdfQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await analysisGeneratePdf({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: analysisGeneratePdfQueryKey(options),
+  });
+
 export const analysisCloseReportMutation = (
   options?: Partial<Options<AnalysisCloseReportData>>,
 ): UseMutationOptions<
@@ -4099,6 +4164,28 @@ export const analysisCloseReportMutation = (
   };
   return mutationOptions;
 };
+
+export const analysisGenerateClosePdfQueryKey = (options: Options<AnalysisGenerateClosePdfData>) =>
+  createQueryKey('analysisGenerateClosePdf', options);
+
+export const analysisGenerateClosePdfOptions = (options: Options<AnalysisGenerateClosePdfData>) =>
+  queryOptions<
+    AnalysisGenerateClosePdfResponse,
+    AxiosError<AnalysisGenerateClosePdfError>,
+    AnalysisGenerateClosePdfResponse,
+    ReturnType<typeof analysisGenerateClosePdfQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await analysisGenerateClosePdf({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: analysisGenerateClosePdfQueryKey(options),
+  });
 
 export const analysisOpenReportMutation = (
   options?: Partial<Options<AnalysisOpenReportData>>,
@@ -5768,18 +5855,18 @@ export const cashMovementNewAircraftExpensesMutation = (
   return mutationOptions;
 };
 
-export const certificateServeFileQueryKey = (options: Options<CertificateServeFileData>) =>
-  createQueryKey('certificateServeFile', options);
+export const smsCertificatesFileQueryKey = (options: Options<SmsCertificatesFileData>) =>
+  createQueryKey('smsCertificatesFile', options);
 
-export const certificateServeFileOptions = (options: Options<CertificateServeFileData>) =>
+export const smsCertificatesFileOptions = (options: Options<SmsCertificatesFileData>) =>
   queryOptions<
-    CertificateServeFileResponse,
-    AxiosError<CertificateServeFileError>,
-    CertificateServeFileResponse,
-    ReturnType<typeof certificateServeFileQueryKey>
+    SmsCertificatesFileResponse,
+    AxiosError<SmsCertificatesFileError>,
+    SmsCertificatesFileResponse,
+    ReturnType<typeof smsCertificatesFileQueryKey>
   >({
     queryFn: async ({ queryKey, signal }) => {
-      const { data } = await certificateServeFile({
+      const { data } = await smsCertificatesFile({
         ...options,
         ...queryKey[0],
         signal,
@@ -5787,7 +5874,7 @@ export const certificateServeFileOptions = (options: Options<CertificateServeFil
       });
       return data;
     },
-    queryKey: certificateServeFileQueryKey(options),
+    queryKey: smsCertificatesFileQueryKey(options),
   });
 
 export const certificateIndexQueryKey = (options: Options<CertificateIndexData>) =>
@@ -7096,6 +7183,31 @@ export const dangerIdentificationIndexOptions = (options: Options<DangerIdentifi
     queryKey: dangerIdentificationIndexQueryKey(options),
   });
 
+export const dangerIdentificationGetIdentificationWithAllByIdQueryKey = (
+  options: Options<DangerIdentificationGetIdentificationWithAllByIdData>,
+) => createQueryKey('dangerIdentificationGetIdentificationWithAllById', options);
+
+export const dangerIdentificationGetIdentificationWithAllByIdOptions = (
+  options: Options<DangerIdentificationGetIdentificationWithAllByIdData>,
+) =>
+  queryOptions<
+    DangerIdentificationGetIdentificationWithAllByIdResponse,
+    AxiosError<DangerIdentificationGetIdentificationWithAllByIdError>,
+    DangerIdentificationGetIdentificationWithAllByIdResponse,
+    ReturnType<typeof dangerIdentificationGetIdentificationWithAllByIdQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await dangerIdentificationGetIdentificationWithAllById({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: dangerIdentificationGetIdentificationWithAllByIdQueryKey(options),
+  });
+
 export const dangerIdentificationDestroyMutation = (
   options?: Partial<Options<DangerIdentificationDestroyData>>,
 ): UseMutationOptions<
@@ -7166,6 +7278,28 @@ export const dangerIdentificationUpdateMutation = (
   return mutationOptions;
 };
 
+export const dangerIdentificationGeneratePdfQueryKey = (options: Options<DangerIdentificationGeneratePdfData>) =>
+  createQueryKey('dangerIdentificationGeneratePdf', options);
+
+export const dangerIdentificationGeneratePdfOptions = (options: Options<DangerIdentificationGeneratePdfData>) =>
+  queryOptions<
+    DangerIdentificationGeneratePdfResponse,
+    AxiosError<DangerIdentificationGeneratePdfError>,
+    DangerIdentificationGeneratePdfResponse,
+    ReturnType<typeof dangerIdentificationGeneratePdfQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await dangerIdentificationGeneratePdf({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: dangerIdentificationGeneratePdfQueryKey(options),
+  });
+
 export const dangerIdentificationStoreMutation = (
   options?: Partial<Options<DangerIdentificationStoreData>>,
 ): UseMutationOptions<
@@ -7189,31 +7323,6 @@ export const dangerIdentificationStoreMutation = (
   };
   return mutationOptions;
 };
-
-export const dangerIdentificationGetIdentificationWithAllByIdQueryKey = (
-  options: Options<DangerIdentificationGetIdentificationWithAllByIdData>,
-) => createQueryKey('dangerIdentificationGetIdentificationWithAllById', options);
-
-export const dangerIdentificationGetIdentificationWithAllByIdOptions = (
-  options: Options<DangerIdentificationGetIdentificationWithAllByIdData>,
-) =>
-  queryOptions<
-    DangerIdentificationGetIdentificationWithAllByIdResponse,
-    AxiosError<DangerIdentificationGetIdentificationWithAllByIdError>,
-    DangerIdentificationGetIdentificationWithAllByIdResponse,
-    ReturnType<typeof dangerIdentificationGetIdentificationWithAllByIdQueryKey>
-  >({
-    queryFn: async ({ queryKey, signal }) => {
-      const { data } = await dangerIdentificationGetIdentificationWithAllById({
-        ...options,
-        ...queryKey[0],
-        signal,
-        throwOnError: true,
-      });
-      return data;
-    },
-    queryKey: dangerIdentificationGetIdentificationWithAllByIdQueryKey(options),
-  });
 
 export const dangerIdentificationGetDangerIdentificationsCountedByInformationSourceNameQueryKey = (
   options: Options<DangerIdentificationGetDangerIdentificationsCountedByInformationSourceNameData>,
@@ -10212,6 +10321,28 @@ export const mitigationPlanUpdateMutation = (
   return mutationOptions;
 };
 
+export const mitigationPlanGeneratePdfQueryKey = (options: Options<MitigationPlanGeneratePdfData>) =>
+  createQueryKey('mitigationPlanGeneratePdf', options);
+
+export const mitigationPlanGeneratePdfOptions = (options: Options<MitigationPlanGeneratePdfData>) =>
+  queryOptions<
+    MitigationPlanGeneratePdfResponse,
+    AxiosError<MitigationPlanGeneratePdfError>,
+    MitigationPlanGeneratePdfResponse,
+    ReturnType<typeof mitigationPlanGeneratePdfQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await mitigationPlanGeneratePdf({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: mitigationPlanGeneratePdfQueryKey(options),
+  });
+
 export const modulesIndexQueryKey = (options?: Options<ModulesIndexData>) => createQueryKey('modulesIndex', options);
 
 export const modulesIndexOptions = (options?: Options<ModulesIndexData>) =>
@@ -10307,6 +10438,146 @@ export const modulesCompanyModuleMutation = (
   > = {
     mutationFn: async (fnOptions) => {
       const { data } = await modulesCompanyModule({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+export const nonRoutineTaskUpdateStatusMutation = (
+  options?: Partial<Options<NonRoutineTaskUpdateStatusData>>,
+): UseMutationOptions<
+  NonRoutineTaskUpdateStatusResponse,
+  AxiosError<NonRoutineTaskUpdateStatusError>,
+  Options<NonRoutineTaskUpdateStatusData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    NonRoutineTaskUpdateStatusResponse,
+    AxiosError<NonRoutineTaskUpdateStatusError>,
+    Options<NonRoutineTaskUpdateStatusData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await nonRoutineTaskUpdateStatus({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+export const nonRoutineTasksIndexQueryKey = (options: Options<NonRoutineTasksIndexData>) =>
+  createQueryKey('nonRoutineTasksIndex', options);
+
+export const nonRoutineTasksIndexOptions = (options: Options<NonRoutineTasksIndexData>) =>
+  queryOptions<
+    NonRoutineTasksIndexResponse,
+    AxiosError<NonRoutineTasksIndexError>,
+    NonRoutineTasksIndexResponse,
+    ReturnType<typeof nonRoutineTasksIndexQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await nonRoutineTasksIndex({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: nonRoutineTasksIndexQueryKey(options),
+  });
+
+export const nonRoutineTasksStoreMutation = (
+  options?: Partial<Options<NonRoutineTasksStoreData>>,
+): UseMutationOptions<
+  NonRoutineTasksStoreResponse,
+  AxiosError<NonRoutineTasksStoreError>,
+  Options<NonRoutineTasksStoreData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    NonRoutineTasksStoreResponse,
+    AxiosError<NonRoutineTasksStoreError>,
+    Options<NonRoutineTasksStoreData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await nonRoutineTasksStore({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+export const nonRoutineTasksDestroyMutation = (
+  options?: Partial<Options<NonRoutineTasksDestroyData>>,
+): UseMutationOptions<
+  NonRoutineTasksDestroyResponse,
+  AxiosError<NonRoutineTasksDestroyError>,
+  Options<NonRoutineTasksDestroyData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    NonRoutineTasksDestroyResponse,
+    AxiosError<NonRoutineTasksDestroyError>,
+    Options<NonRoutineTasksDestroyData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await nonRoutineTasksDestroy({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+export const nonRoutineTasksShowQueryKey = (options: Options<NonRoutineTasksShowData>) =>
+  createQueryKey('nonRoutineTasksShow', options);
+
+export const nonRoutineTasksShowOptions = (options: Options<NonRoutineTasksShowData>) =>
+  queryOptions<
+    NonRoutineTasksShowResponse,
+    AxiosError<NonRoutineTasksShowError>,
+    NonRoutineTasksShowResponse,
+    ReturnType<typeof nonRoutineTasksShowQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await nonRoutineTasksShow({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: nonRoutineTasksShowQueryKey(options),
+  });
+
+export const nonRoutineTasksUpdateMutation = (
+  options?: Partial<Options<NonRoutineTasksUpdateData>>,
+): UseMutationOptions<
+  NonRoutineTasksUpdateResponse,
+  AxiosError<NonRoutineTasksUpdateError>,
+  Options<NonRoutineTasksUpdateData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    NonRoutineTasksUpdateResponse,
+    AxiosError<NonRoutineTasksUpdateError>,
+    Options<NonRoutineTasksUpdateData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await nonRoutineTasksUpdate({
         ...options,
         ...fnOptions,
         throwOnError: true,
@@ -10900,6 +11171,28 @@ export const pilotsUpdateMutation = (
   };
   return mutationOptions;
 };
+
+export const planificationAlertsIndexQueryKey = (options?: Options<PlanificationAlertsIndexData>) =>
+  createQueryKey('planificationAlertsIndex', options);
+
+export const planificationAlertsIndexOptions = (options?: Options<PlanificationAlertsIndexData>) =>
+  queryOptions<
+    PlanificationAlertsIndexResponse,
+    AxiosError<PlanificationAlertsIndexError>,
+    PlanificationAlertsIndexResponse,
+    ReturnType<typeof planificationAlertsIndexQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await planificationAlertsIndex({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: planificationAlertsIndexQueryKey(options),
+  });
 
 export const planificationEventIndexQueryKey = (options: Options<PlanificationEventIndexData>) =>
   createQueryKey('planificationEventIndex', options);
@@ -13697,7 +13990,7 @@ export const smsAreaIndexQueryKey = (options: Options<SmsAreaIndexData>) => crea
 export const smsAreaIndexOptions = (options: Options<SmsAreaIndexData>) =>
   queryOptions<
     SmsAreaIndexResponse,
-    AxiosError<SmsAreaIndexError>,
+    AxiosError<DefaultError>,
     SmsAreaIndexResponse,
     ReturnType<typeof smsAreaIndexQueryKey>
   >({
@@ -13779,7 +14072,7 @@ export const smsFindingLocationIndexQueryKey = (options: Options<SmsFindingLocat
 export const smsFindingLocationIndexOptions = (options: Options<SmsFindingLocationIndexData>) =>
   queryOptions<
     SmsFindingLocationIndexResponse,
-    AxiosError<SmsFindingLocationIndexError>,
+    AxiosError<DefaultError>,
     SmsFindingLocationIndexResponse,
     ReturnType<typeof smsFindingLocationIndexQueryKey>
   >({
@@ -13873,7 +14166,7 @@ export const smsStationIndexQueryKey = (options: Options<SmsStationIndexData>) =
 export const smsStationIndexOptions = (options: Options<SmsStationIndexData>) =>
   queryOptions<
     SmsStationIndexResponse,
-    AxiosError<SmsStationIndexError>,
+    AxiosError<DefaultError>,
     SmsStationIndexResponse,
     ReturnType<typeof smsStationIndexQueryKey>
   >({
@@ -15819,14 +16112,16 @@ export const workOrdersShowOptions = (options: Options<WorkOrdersShowData>) =>
 
 /**
  * Store a newly created resource in storage
- *
- * ⚠️ Cannot generate request documentation: include(D:\ESTELAR\SIGEAC_Backend\vendor\composer/../../app/Models/Planification/WorkOrderTask.php): Failed to open stream: No such file or directory
  */
 export const workOrderTaskEventStoreMutation = (
   options?: Partial<Options<WorkOrderTaskEventStoreData>>,
-): UseMutationOptions<unknown, AxiosError<WorkOrderTaskEventStoreError>, Options<WorkOrderTaskEventStoreData>> => {
+): UseMutationOptions<
+  WorkOrderTaskEventStoreResponse,
+  AxiosError<WorkOrderTaskEventStoreError>,
+  Options<WorkOrderTaskEventStoreData>
+> => {
   const mutationOptions: UseMutationOptions<
-    unknown,
+    WorkOrderTaskEventStoreResponse,
     AxiosError<WorkOrderTaskEventStoreError>,
     Options<WorkOrderTaskEventStoreData>
   > = {
@@ -15843,19 +16138,16 @@ export const workOrderTaskEventStoreMutation = (
 };
 
 export const workOrderTaskEventShowEventsByWorkOrderTaskQueryKey = (
-  options?: Options<WorkOrderTaskEventShowEventsByWorkOrderTaskData>,
+  options: Options<WorkOrderTaskEventShowEventsByWorkOrderTaskData>,
 ) => createQueryKey('workOrderTaskEventShowEventsByWorkOrderTask', options);
 
-/**
- * ⚠️ Cannot generate request documentation: include(D:\ESTELAR\SIGEAC_Backend\vendor\composer/../../app/Models/Planification/WorkOrderTask.php): Failed to open stream: No such file or directory
- */
 export const workOrderTaskEventShowEventsByWorkOrderTaskOptions = (
-  options?: Options<WorkOrderTaskEventShowEventsByWorkOrderTaskData>,
+  options: Options<WorkOrderTaskEventShowEventsByWorkOrderTaskData>,
 ) =>
   queryOptions<
-    unknown,
+    WorkOrderTaskEventShowEventsByWorkOrderTaskResponse,
     AxiosError<WorkOrderTaskEventShowEventsByWorkOrderTaskError>,
-    unknown,
+    WorkOrderTaskEventShowEventsByWorkOrderTaskResponse,
     ReturnType<typeof workOrderTaskEventShowEventsByWorkOrderTaskQueryKey>
   >({
     queryFn: async ({ queryKey, signal }) => {

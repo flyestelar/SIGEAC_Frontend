@@ -8,6 +8,7 @@ import { z } from 'zod';
 
 import { FormDatePickerField } from '@/components/forms/FormDatePickerField';
 import { FormNumericField } from '@/components/forms/FormNumericField';
+import { FormTextField } from '@/components/forms/FormTextField';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -25,13 +26,11 @@ import {
   useDeleteAirworthinessDirectiveComplianceControl,
   useUpdateAirworthinessDirectiveComplianceControl,
 } from '@/hooks/planificacion/directivas/queries';
-import type {
-  AirworthinessDirectiveApplicabilityResource,
-  AirworthinessDirectiveComplianceControlResource,
-} from '@api/types';
+import type { AirworthinessDirectiveComplianceControlResource } from '@api/types';
 
 const complianceControlSchema = z
   .object({
+    description: z.string().trim().optional(),
     calendar_due_date: z.string().optional(),
     flight_hours_due: z.number().min(0, 'Debe ser mayor o igual a 0').nullable().optional(),
     cycles_due: z.number().min(0, 'Debe ser mayor o igual a 0').nullable().optional(),
@@ -55,14 +54,12 @@ const complianceControlSchema = z
         message: 'Debes configurar al menos un vencimiento o una recurrencia.',
         path: ['calendar_due_date'],
       });
-    }
-  });
+    }  });
 
 type ComplianceControlFormValues = z.infer<typeof complianceControlSchema>;
 
 interface CreateAirworthinessDirectiveComplianceControlFormProps {
   directiveId: number;
-  applicability: AirworthinessDirectiveApplicabilityResource;
   control?: AirworthinessDirectiveComplianceControlResource;
   onSuccess: () => void;
 }
@@ -70,6 +67,7 @@ interface CreateAirworthinessDirectiveComplianceControlFormProps {
 const getDefaultValues = (
   control?: AirworthinessDirectiveComplianceControlResource,
 ): ComplianceControlFormValues => ({
+  description: control?.description ?? '',
   calendar_due_date: control?.calendar_due_date ?? '',
   flight_hours_due: control?.flight_hours_due ?? null,
   cycles_due: control?.cycles_due ?? null,
@@ -80,7 +78,6 @@ const getDefaultValues = (
 
 export default function CreateAirworthinessDirectiveComplianceControlForm({
   directiveId,
-  applicability,
   control,
   onSuccess,
 }: CreateAirworthinessDirectiveComplianceControlFormProps) {
@@ -101,6 +98,7 @@ export default function CreateAirworthinessDirectiveComplianceControlForm({
 
   const onSubmit = async (values: ComplianceControlFormValues) => {
     const payload = {
+      description: values.description || null,
       calendar_due_date: values.calendar_due_date || null,
       flight_hours_due: values.flight_hours_due ?? null,
       cycles_due: values.cycles_due ?? null,
@@ -113,7 +111,7 @@ export default function CreateAirworthinessDirectiveComplianceControlForm({
       await updateControl.mutateAsync({
         path: {
           directiveId,
-          applicabilityId: applicability.id,
+          controlId: Number(control!.id),
         },
         body: payload,
       });
@@ -121,7 +119,6 @@ export default function CreateAirworthinessDirectiveComplianceControlForm({
       await createControl.mutateAsync({
         path: {
           directiveId,
-          applicabilityId: applicability.id,
         },
         body: payload,
       });
@@ -134,7 +131,7 @@ export default function CreateAirworthinessDirectiveComplianceControlForm({
     await deleteControl.mutateAsync({
       path: {
         directiveId,
-        applicabilityId: applicability.id,
+        controlId: Number(control!.id),
       },
     });
 
@@ -147,12 +144,12 @@ export default function CreateAirworthinessDirectiveComplianceControlForm({
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
-        <div className="rounded-2xl border bg-muted/30 p-4">
-          <p className="text-sm font-medium">{applicability.aircraft?.acronym ?? `#${applicability.aircraft_id}`}</p>
-          <p className="text-xs text-muted-foreground">
-            {applicability.aircraft?.aircraft_type?.full_name ?? applicability.aircraft?.model ?? 'Sin modelo'}
-          </p>
-        </div>
+        <FormTextField
+          control={form.control}
+          name="description"
+          label="Descripción"
+          inputProps={{ placeholder: 'Inspección inicial de fisuras en longerón...' }}
+        />
 
         <div className="grid gap-4 md:grid-cols-3">
           <FormDatePickerField
