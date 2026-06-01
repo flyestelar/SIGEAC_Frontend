@@ -1,8 +1,8 @@
 'use client';
 
-import { createContext, useContext, useLayoutEffect, useState } from 'react';
+import { createContext, useContext, useState } from 'react';
 import { useStore } from 'zustand';
-import { createJSONStorage, persist } from 'zustand/middleware';
+import { persist } from 'zustand/middleware';
 import { createStore, type StoreApi } from 'zustand/vanilla';
 
 export const SIDEBAR_SECTIONS_STORAGE_KEY = 'sidebar_sections_state';
@@ -12,7 +12,10 @@ export type SidebarSectionsState = Record<string, boolean>;
 export const EMPTY_SIDEBAR_SECTIONS_STATE: SidebarSectionsState = {};
 
 type SidebarSectionsStoreState = {
+  isOpen: boolean;
   sections: SidebarSectionsState;
+  toggleSidebarOpen: () => void;
+  setSidebarOpen: (isOpen: boolean) => void;
   setSectionOpen: (key: string, isOpen: boolean) => void;
 };
 
@@ -41,8 +44,15 @@ export function useSidebarSectionsStore<T>(selector: (state: SidebarSectionsStor
 function createSidebarSectionsStore() {
   return createStore<SidebarSectionsStoreState>()(
     persist(
-      (set) => ({
+      (set, get) => ({
+        isOpen: true,
         sections: EMPTY_SIDEBAR_SECTIONS_STATE,
+        toggleSidebarOpen: () => {
+          set({ isOpen: !get().isOpen });
+        },
+        setSidebarOpen: (isOpen: boolean) => {
+          set({ isOpen });
+        },
         setSectionOpen: (key, isOpen) => {
           set((state) => ({
             sections: {
@@ -54,6 +64,10 @@ function createSidebarSectionsStore() {
       }),
       {
         name: SIDEBAR_SECTIONS_STORAGE_KEY,
+        partialize: (state) => ({
+          isOpen: state.isOpen,
+          sections: state.sections,
+        }),
       },
     ),
   );

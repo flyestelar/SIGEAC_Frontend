@@ -1,22 +1,20 @@
 'use client';
 
 import { cn } from '@/lib/utils';
-import { useStore } from '@/hooks/helpers/use-store';
-import { useSidebarToggle } from '@/hooks/helpers/use-sidebar-toggle';
+import { useSidebarSectionsStore } from '@/stores/SidebarSectionsStore';
 import { AppSidebar } from './Sidebar';
 import Footer from './Footer';
 import { SidebarProvider } from '../ui/sidebar';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
-  const sidebar = useStore(useSidebarToggle, (state) => state);
-
-  if (!sidebar) return null;
+  const isOpen = useSidebarSectionsStore((state) => state.isOpen);
+  const setSidebarOpen = useSidebarSectionsStore((state) => state.setSidebarOpen);
 
   return (
     <SidebarProvider
       className="isolate"
-      open={sidebar.isOpen}
-      onOpenChange={sidebar.setIsOpen}
+      open={isOpen}
+      onOpenChange={setSidebarOpen}
       // style={
       //   {
       //     '--sidebar-width': '18rem',
