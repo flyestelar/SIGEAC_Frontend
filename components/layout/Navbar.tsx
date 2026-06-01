@@ -17,7 +17,7 @@ export function Navbar({ title }: NavbarProps) {
     <header className="sticky top-0 z-30 px-3 pt-2 sm:px-4">
       <div
         className={cn(
-          'relative mx-auto flex h-12 items-center gap-3 rounded-2xl px-3 sm:px-4',
+          'relative mx-auto flex h-12 items-center gap-3 rounded-2xl px-3 sm:pr-4 sm:pl-2',
           'border border-border/50',
           'bg-background/70 backdrop-blur-xl supports-[backdrop-filter]:bg-background/55',
           'before:pointer-events-none before:absolute before:inset-0 before:rounded-2xl',
