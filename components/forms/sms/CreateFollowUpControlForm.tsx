@@ -32,6 +32,7 @@ import { Separator } from "@/components/ui/separator";
 import { useParams } from "next/navigation";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
+import { ExternalLink } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -85,7 +86,6 @@ export default function CreateFollowUpControlForm({ onClose, id }: FormProps) {
     medida_id: string;
   }>();
   const { selectedCompany } = useCompanyStore();
-
   const { createFollowUpControl } = useCreateFollowUpControl();
   const { data: activities } = useGetActivitiesByMeasure({
     company: selectedCompany?.slug,
@@ -137,9 +137,21 @@ export default function CreateFollowUpControlForm({ onClose, id }: FormProps) {
           name="sms_activity_id"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
-                Actividad SMS Vinculada (opcional)
-              </FormLabel>
+              <div className="flex items-center justify-between">
+                <FormLabel className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+                  Actividad SMS Vinculada (opcional)
+                </FormLabel>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="h-6 gap-1 px-2 text-xs text-primary hover:bg-primary/10"
+                  onClick={() => window.open(`/${selectedCompany?.slug}/sms/promocion/actividades/nueva_actividad?measure_id=${id}`, "_blank")}
+                >
+                  <ExternalLink className="h-3 w-3" />
+                  Nueva actividad
+                </Button>
+              </div>
               <Select
                 onValueChange={(val) => field.onChange(val === "none" ? null : Number(val))}
                 value={field.value != null ? String(field.value) : "none"}
