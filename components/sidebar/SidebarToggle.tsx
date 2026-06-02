@@ -13,7 +13,7 @@ export function SidebarToggle() {
     <Button
       onClick={() => sidebar.toggleSidebar()}
       className={cn(
-        'h-9 w-9 rounded-xl border-border/60 bg-background/80 text-foreground/80 shadow-none transition-all duration-200',
+        'shrink-0 h-9 w-9 rounded-xl border-border/60 bg-background/80 text-foreground/80 shadow-none transition-all duration-200',
         'hover:border-border hover:bg-muted/70 hover:text-foreground',
         'focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:ring-offset-0',
       )}

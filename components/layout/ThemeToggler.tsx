@@ -30,7 +30,14 @@ export function ThemeToggler() {
             <span className="sr-only">Switch Theme</span>
           </Button>
         </TooltipTrigger>
-        <TooltipContent side="bottom">Switch Theme</TooltipContent>
+        <TooltipContent side="bottom">
+          <div className="flex items-center gap-2">
+            <span>Switch Theme</span>
+            <kbd className="pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground/70">
+              <span className="text-[11px]">⌘</span>⇧T
+            </kbd>
+          </div>
+        </TooltipContent>
       </Tooltip>
     </TooltipProvider>
   );
