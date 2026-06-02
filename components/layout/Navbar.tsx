@@ -1,13 +1,13 @@
 'use client';
 
 import { UserNav } from '@/components/layout/UserNav';
+import { NavGroup } from '@/lib/menu-list';
 import { cn } from '@/lib/utils';
 import CompanySelect from '../selects/CompanySelect';
 import { SidebarToggle } from '../sidebar/SidebarToggle';
-import { ThemeToggler } from './ThemeToggler';
 import { useSidebar } from '../ui/sidebar';
 import { BreadcrumbNav } from './BreadcrumbNav';
-import { NavGroup } from '@/lib/menu-list-2';
+import { ThemeToggler } from './ThemeToggler';
 
 interface NavbarProps {
   menuList: NavGroup[];
