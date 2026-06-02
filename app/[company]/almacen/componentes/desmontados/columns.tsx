@@ -36,8 +36,8 @@ export const columns: ColumnDef<ArticleListItemResource>[] = [
     header: ({ column }) => <DataTableColumnHeader column={column} title="PN / SN" />,
     cell: ({ row }) => (
       <div className="flex flex-col">
-        <span className="font-mono text-sm font-medium">{row.original.part_number ?? '—'}</span>
-        <span className="font-mono text-xs text-muted-foreground">SN {row.original.serial ?? '—'}</span>
+        <span className="font-mono text-sm font-medium text-foreground">{row.original.part_number ?? '—'}</span>
+        <span className="font-mono text-[11px] text-muted-foreground">SN {row.original.serial ?? '—'}</span>
       </div>
     ),
   },
@@ -48,8 +48,8 @@ export const columns: ColumnDef<ArticleListItemResource>[] = [
       const batch = row.original.batch;
       const batchLabel = typeof batch === 'string' ? batch : (batch?.name ?? null);
       return (
-        <div className="flex max-w-[260px] flex-col">
-          <span className="truncate text-sm font-medium">{batchLabel ?? '—'}</span>
+        <div className="flex max-w-[280px] flex-col">
+          <span className="truncate text-sm font-medium text-foreground">{batchLabel ?? '—'}</span>
           {row.original.description && (
             <span className="truncate text-xs text-muted-foreground">{row.original.description}</span>
           )}
@@ -66,7 +66,7 @@ export const columns: ColumnDef<ArticleListItemResource>[] = [
       return (
         <span
           className={cn(
-            'inline-flex items-center rounded-md border px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wider',
+            'inline-flex items-center rounded-md border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider',
             conditionPalette(name),
           )}
         >
@@ -77,31 +77,16 @@ export const columns: ColumnDef<ArticleListItemResource>[] = [
   },
   {
     id: 'aircraft',
-    header: ({ column }) => <DataTableColumnHeader column={column} title="Aeronave" />,
+    header: ({ column }) => <DataTableColumnHeader column={column} title="Aeronave / Slot" />,
     cell: ({ row }) => {
       const instalation = row.original.aircraft_part?.last_installation;
       const aircraft = instalation?.aircraft_slot?.aircraft;
+      const slot = instalation?.aircraft_slot?.position;
       if (!aircraft) return <span className="text-xs text-muted-foreground">—</span>;
       return (
         <div className="flex flex-col">
-          <span className="font-mono text-sm font-medium">{aircraft.acronym ?? '—'}</span>
-          <span className="text-xs text-muted-foreground">{aircraft.model ?? ''}</span>
-        </div>
-      );
-    },
-  },
-  {
-    id: 'slot',
-    header: ({ column }) => <DataTableColumnHeader column={column} title="Slot / Parte" />,
-    cell: ({ row }) => {
-      const part = row.original.aircraft_part;
-      if (!part) return <span className="text-xs text-muted-foreground">—</span>;
-      return (
-        <div className="flex flex-col">
-          <span className="text-sm font-medium">{part.part_name}</span>
-          {part.parent_part?.part_name && (
-            <span className="text-xs text-muted-foreground">↳ {part.parent_part.part_name}</span>
-          )}
+          <span className="font-mono text-sm font-medium text-foreground">{aircraft.acronym ?? '—'}</span>
+          {slot && <span className="font-mono text-[11px] text-muted-foreground">{slot}</span>}
         </div>
       );
     },
@@ -114,16 +99,16 @@ export const columns: ColumnDef<ArticleListItemResource>[] = [
       if (!inst) return <span className="text-xs text-muted-foreground">—</span>;
       return (
         <div className="flex items-center gap-1.5 text-xs text-foreground/80">
-          <span>{fmtDate(inst.installed_at)}</span>
-          <ArrowRight className="h-3 w-3 text-muted-foreground" />
-          <span>{fmtDate(inst.removed_at)}</span>
+          <span className="font-mono tabular-nums">{fmtDate(inst.installed_at)}</span>
+          <ArrowRight className="size-3 shrink-0 text-muted-foreground" />
+          <span className="font-mono tabular-nums">{fmtDate(inst.removed_at)}</span>
         </div>
       );
     },
   },
   {
     id: 'usage',
-    header: ({ column }) => <DataTableColumnHeader column={column} title="FH / FC en uso" />,
+    header: ({ column }) => <DataTableColumnHeader column={column} title="FH / FC" />,
     cell: ({ row }) => {
       const inst = row.original.aircraft_part?.last_installation;
       if (!inst) return <span className="text-xs text-muted-foreground">—</span>;
@@ -140,9 +125,9 @@ export const columns: ColumnDef<ArticleListItemResource>[] = [
       const cLabel = fmtNumber(dCycles, 0) ?? fmtNumber(inst.component_cycles_at_install, 0) ?? '—';
 
       return (
-        <div className="flex flex-col font-mono text-xs">
-          <span className="font-medium">{hLabel} h</span>
-          <span className="text-muted-foreground">{cLabel} ciclos</span>
+        <div className="flex items-center gap-3 font-mono text-xs tabular-nums">
+          <span className="font-medium text-foreground">{hLabel} h</span>
+          <span className="text-muted-foreground">{cLabel} c</span>
         </div>
       );
     },

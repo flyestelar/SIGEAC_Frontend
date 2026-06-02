@@ -36,6 +36,7 @@ interface HardTimeDetailViewProps {
   aircraftFlightCycles?: number | null;
   onBack: () => void;
   onInstall?: () => void;
+  onInstallRequest?: () => void;
   onUninstall?: () => void;
   onCreateInterval?: () => void;
   onRegisterCompliance?: () => void;
@@ -120,6 +121,7 @@ export function HardTimeDetailView({
   aircraftFlightCycles,
   onBack,
   onInstall,
+  onInstallRequest,
   onUninstall,
   onCreateInterval,
   onRegisterCompliance,
@@ -308,27 +310,51 @@ export function HardTimeDetailView({
                     </TooltipProvider>
                   )}
 
-                  <Button
-                    variant="ghost"
-                    className="h-11 justify-start gap-3 rounded-md border border-transparent px-3 hover:border-border/60 hover:bg-background"
-                    onClick={installation ? onUninstall : onInstall}
-                  >
-                    <span className="flex h-7 w-7 items-center justify-center rounded-md border border-border/60 bg-background">
-                      {installation ? (
+                  {!installation ? (
+                    <>
+                      <Button
+                        variant="ghost"
+                        className="h-11 justify-start gap-3 rounded-md border border-transparent px-3 hover:border-border/60 hover:bg-background"
+                        onClick={onInstall}
+                      >
+                        <span className="flex h-7 w-7 items-center justify-center rounded-md border border-border/60 bg-background">
+                          <PackagePlus className="size-4 text-muted-foreground" />
+                        </span>
+                        <span className="flex flex-col items-start leading-none">
+                          <span className="text-sm font-medium text-foreground">Montar componente</span>
+                          <span className="text-[11px] text-muted-foreground">Entrada manual</span>
+                        </span>
+                      </Button>
+
+                      <Button
+                        variant="ghost"
+                        className="h-11 justify-start gap-3 rounded-md border border-transparent px-3 hover:border-border/60 hover:bg-background"
+                        onClick={onInstallRequest}
+                      >
+                        <span className="flex h-7 w-7 items-center justify-center rounded-md border border-border/60 bg-background">
+                          <PackagePlus className="size-4 text-muted-foreground" />
+                        </span>
+                        <span className="flex flex-col items-start leading-none">
+                          <span className="text-sm font-medium text-foreground">Solicitar desde almacén</span>
+                          <span className="text-[11px] text-muted-foreground">Requiere aprobación</span>
+                        </span>
+                      </Button>
+                    </>
+                  ) : (
+                    <Button
+                      variant="ghost"
+                      className="h-11 justify-start gap-3 rounded-md border border-transparent px-3 hover:border-border/60 hover:bg-background"
+                      onClick={onUninstall}
+                    >
+                      <span className="flex h-7 w-7 items-center justify-center rounded-md border border-border/60 bg-background">
                         <PackageMinus className="size-4 text-muted-foreground" />
-                      ) : (
-                        <PackagePlus className="size-4 text-muted-foreground" />
-                      )}
-                    </span>
-                    <span className="flex flex-col items-start leading-none">
-                      <span className="text-sm font-medium text-foreground">
-                        {installation ? 'Desmontar componente' : 'Montar componente'}
                       </span>
-                      <span className="text-[11px] text-muted-foreground">
-                        {installation ? 'Retirar instalación actual' : 'Asignar parte a posición'}
+                      <span className="flex flex-col items-start leading-none">
+                        <span className="text-sm font-medium text-foreground">Desmontar componente</span>
+                        <span className="text-[11px] text-muted-foreground">Retirar instalación actual</span>
                       </span>
-                    </span>
-                  </Button>
+                    </Button>
+                  )}
 
                   <Button
                     variant="ghost"

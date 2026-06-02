@@ -27,6 +27,7 @@ import { IntervalDialog } from './hard-time-dashboard/interval-dialog';
 import { ComplianceDialog } from './hard-time-dashboard/compliance-dialog';
 import { HardTimeImportDialog } from './hard-time-import-dialog';
 import { InstallComponentDialog } from './install-component-dialog';
+import { InstallRequestDialog } from './install-request-dialog';
 import { AircraftComponentSlotResource, HardTimeIntervalResource } from '@api/types';
 
 export function HardTimeDashboard() {
@@ -37,6 +38,7 @@ export function HardTimeDashboard() {
   const [createComponentDefaultCategory, setCreateComponentDefaultCategory] = useState<string | null>(null);
   const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
   const [installingComponent, setInstallingComponent] = useState<AircraftComponentSlotResource | null>(null);
+  const [installingRequestComponent, setInstallingRequestComponent] = useState<AircraftComponentSlotResource | null>(null);
   const [uninstallingComponent, setUninstallingComponent] = useState<AircraftComponentSlotResource | null>(null);
   const [isIntervalDialogOpen, setIsIntervalDialogOpen] = useState(false);
   const [editingInterval, setEditingInterval] = useState<HardTimeIntervalResource | null>(null);
@@ -101,6 +103,10 @@ export function HardTimeDashboard() {
 
   const openInstall = (component: AircraftComponentSlotResource) => {
     setInstallingComponent(component);
+  };
+
+  const openInstallRequest = (component: AircraftComponentSlotResource) => {
+    setInstallingRequestComponent(component);
   };
 
   const openUninstall = (component: AircraftComponentSlotResource) => {
@@ -201,6 +207,7 @@ export function HardTimeDashboard() {
                   aircraftFlightCycles={selectedAircraft?.flight_cycles ?? null}
                   onBack={() => setSelectedComponent(null)}
                   onInstall={() => openInstall(selectedComponent)}
+                  onInstallRequest={() => openInstallRequest(selectedComponent)}
                   onUninstall={() => openUninstall(selectedComponent)}
                   onCreateInterval={() => openCreateInterval(selectedComponent)}
                   onRegisterCompliance={() => setIsComplianceDialogOpen(true)}
@@ -214,6 +221,7 @@ export function HardTimeDashboard() {
                   aircraftFlightCycles={selectedAircraft?.flight_cycles ?? null}
                   onSelectComponent={handleSelectComponent}
                   onInstallComponent={openInstall}
+                  onInstallRequestComponent={openInstallRequest}
                   onUninstallComponent={openUninstall}
                   onCreateIntervalForComponent={openCreateInterval}
                   onCreateComponentInAta={(code) => openCreateComponent(code)}
@@ -252,6 +260,20 @@ export function HardTimeDashboard() {
         defaultPartNumber={installingComponentPartNumber}
         slotLabel={installingComponent?.position}
         componentLabel={installingComponent?.batch?.name ?? installingComponent?.description ?? undefined}
+      />
+
+      <InstallRequestDialog
+        open={installingRequestComponent !== null}
+        onOpenChange={(open) => {
+          if (!open) setInstallingRequestComponent(null);
+        }}
+        componentId={installingRequestComponent?.id ?? null}
+        aircraft={selectedAircraft}
+        defaultPartNumber={installingComponentPartNumber}
+        slotLabel={installingRequestComponent?.position}
+        componentLabel={
+          installingRequestComponent?.batch?.name ?? installingRequestComponent?.description ?? undefined
+        }
       />
 
       <UninstallComponentDialog

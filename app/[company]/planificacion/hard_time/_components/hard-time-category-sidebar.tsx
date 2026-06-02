@@ -16,6 +16,7 @@ interface HardTimeCategorySidebarProps {
   aircraftFlightCycles?: number | null;
   onSelectComponent: (component: AircraftComponentSlotResource) => void;
   onInstallComponent: (component: AircraftComponentSlotResource) => void;
+  onInstallRequestComponent: (component: AircraftComponentSlotResource) => void;
   onUninstallComponent: (component: AircraftComponentSlotResource) => void;
   onCreateIntervalForComponent: (component: AircraftComponentSlotResource) => void;
   onCreateComponentInAta: (categoryCode: string) => void;
@@ -61,6 +62,7 @@ export function HardTimeCategorySidebar({
   aircraftFlightCycles,
   onSelectComponent,
   onInstallComponent,
+  onInstallRequestComponent,
   onUninstallComponent,
   onCreateIntervalForComponent,
   onCreateComponentInAta,
@@ -323,6 +325,7 @@ export function HardTimeCategorySidebar({
                     aircraftFlightHours={aircraftFlightHours}
                     aircraftFlightCycles={aircraftFlightCycles}
                     onInstall={() => onInstallComponent(component)}
+                    onInstallRequest={() => onInstallRequestComponent(component)}
                     onUninstall={() => onUninstallComponent(component)}
                     onCreateInterval={() => onCreateIntervalForComponent(component)}
                   />

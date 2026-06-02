@@ -4,19 +4,20 @@ import {
   aircraftComponentSlotShowQueryKey,
   aircraftComponentSlotStoreMutation,
   hardTimeInstallationInstallMutation,
+  hardTimeInstallationRequestApproveMutation,
+  hardTimeInstallationRequestRejectMutation,
+  hardTimeInstallationRequestStoreMutation,
   hardTimeIntervalStoreMutation,
   hardTimeIntervalToggleMutation,
 } from '@api/queries';
 import {
   aircraftComponentSlotStore,
   hardTimeComplianceStore,
-  hardTimeInstallationInstall,
   hardTimeInstallationUninstall,
   hardTimeIntervalStore,
   hardTimeIntervalUpdate,
 } from '@api/sdk.gen';
 import {
-  InstallComponentRequest,
   StoreComplianceRequest,
   StoreIntervalRequest,
   UninstallComponentRequest,
@@ -221,6 +222,65 @@ export const useImportHardTimeStructure = (aircraftId: number | null) => {
     onError: () =>
       toast.error('No se pudo completar la importación', {
         description: 'Se importan sólo posiciones e intervalos. El histórico de cumplimiento sigue fuera de esta fase.',
+      }),
+  });
+};
+
+// ── Install request hooks ────────────────────────────────────────────────────
+
+export const useCreateInstallRequest = (slotId: number, aircraftId: number | null) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    ...hardTimeInstallationRequestStoreMutation({ path: { id: slotId } }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: aircraftComponentSlotIndexQueryKey({ query: { aircraft_id: aircraftId! } }),
+      });
+      queryClient.invalidateQueries({ queryKey: aircraftComponentSlotShowQueryKey({ path: { id: slotId } }) });
+      queryClient.invalidateQueries({ queryKey: ['hard-time-installation-requests'] });
+      toast.success('Solicitud de instalación creada', {
+        description: 'Almacén debe aprobar la solicitud para consumir inventario.',
+      });
+    },
+    onError: (error: any) =>
+      toast.error('No se pudo crear la solicitud', {
+        description: error.response?.data?.message ?? 'Verifica que el artículo esté disponible.',
+      }),
+  });
+};
+
+export const useApproveInstallRequest = (requestId: number, aircraftId: number | null) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    ...hardTimeInstallationRequestApproveMutation({ path: { id: requestId } }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: aircraftComponentSlotIndexQueryKey({ query: { aircraft_id: aircraftId! } }),
+      });
+      queryClient.invalidateQueries({ queryKey: ['hard-time-installation-requests'] });
+      toast.success('Instalación aprobada', { description: 'El componente fue instalado y el inventario consumido.' });
+    },
+    onError: (error: any) =>
+      toast.error('No se pudo aprobar la solicitud', {
+        description: error.response?.data?.message ?? 'El artículo puede no estar disponible.',
+      }),
+  });
+};
+
+export const useRejectInstallRequest = (requestId: number, aircraftId: number | null) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    ...hardTimeInstallationRequestRejectMutation({ path: { id: requestId } }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: aircraftComponentSlotIndexQueryKey({ query: { aircraft_id: aircraftId! } }),
+      });
+      queryClient.invalidateQueries({ queryKey: ['hard-time-installation-requests'] });
+      toast.success('Solicitud rechazada', { description: 'El slot fue liberado sin consumir inventario.' });
+    },
+    onError: (error: any) =>
+      toast.error('No se pudo rechazar la solicitud', {
+        description: error.response?.data?.message ?? 'Solo se pueden rechazar solicitudes pendientes.',
       }),
   });
 };

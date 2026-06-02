@@ -525,11 +525,20 @@ export function getMenuList(currentCompany: Company | null, userRoles: string[])
           submenus: [],
         },
         {
-          href: companyPath('/almacen/desmontados'),
-          label: 'Comp. Desmontados',
+          href: companyPath('/almacen/componentes/desmontados'),
+          label: 'Componentes',
           icon: SquareArrowDown,
           roles: ['ANALISTA_ALMACEN', 'JEFE_ALMACEN', 'SUPERUSER'],
-          submenus: [],
+          submenus: [
+            {
+              href: companyPath('/almacen/componentes/desmontados'),
+              label: 'Desmontados',
+            },
+            {
+              href: companyPath('/almacen/componentes/solicitudes'),
+              label: 'Solicitudes de Instalación',
+            },
+          ],
         },
         {
           href: companyPath('/almacen/despachados'),

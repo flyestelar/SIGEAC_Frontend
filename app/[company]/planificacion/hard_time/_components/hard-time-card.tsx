@@ -39,6 +39,7 @@ interface HardTimeCardProps {
   aircraftFlightHours?: number | null;
   aircraftFlightCycles?: number | null;
   onInstall?: () => void;
+  onInstallRequest?: () => void;
   onUninstall?: () => void;
   onCreateInterval?: () => void;
 }
@@ -51,6 +52,7 @@ export function HardTimeCard({
   aircraftFlightHours,
   aircraftFlightCycles,
   onInstall,
+  onInstallRequest,
   onUninstall,
   onCreateInterval,
 }: HardTimeCardProps) {
@@ -183,7 +185,19 @@ export function HardTimeCard({
                 }}
               >
                 <PackagePlus className="h-3.5 w-3.5" />
-                Montar
+                Manual
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                className="h-7 gap-1 border-sky-500/30 px-2.5 text-[11px] text-sky-700 hover:bg-sky-500/10 dark:text-sky-300"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onInstallRequest?.();
+                }}
+              >
+                <PackagePlus className="h-3.5 w-3.5" />
+                Almacén
               </Button>
             </div>
           </div>
