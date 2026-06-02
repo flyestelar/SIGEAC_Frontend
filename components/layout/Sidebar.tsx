@@ -7,8 +7,9 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Sidebar, SidebarContent, SidebarHeader, useSidebar } from '../ui/sidebar';
 import CompanySelect from '../selects/CompanySelect';
+import { NavGroup } from '@/lib/menu-list-2';
 
-export function AppSidebar() {
+export function AppSidebar({ menuList }: { menuList: NavGroup[] }) {
   const sidebar = useSidebar();
   const { selectedCompany, selectedStation } = useCompanyStore();
   return (
@@ -24,7 +25,7 @@ export function AppSidebar() {
       </SidebarHeader>
       <SidebarContent className="relative">
         {selectedCompany && selectedStation ? (
-          <Menu />
+          <Menu menuList={menuList} />
         ) : (
           <p className="text-sm text-muted-foreground text-center mt-10">
             Por favor, seleccione una <strong>Empresa</strong> y una <strong>Estacion</strong>.

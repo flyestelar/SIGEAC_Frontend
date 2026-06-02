@@ -43,7 +43,7 @@ type Submenu = {
   href: string;
   label: string;
   roles?: string[];
-  moduleValue?: string;
+  moduleValue?: string; 
 };
 
 type Menu = {
@@ -55,7 +55,7 @@ type Menu = {
   submenus: Submenu[];
 };
 
-type Group = {
+export type NavGroup = {
   groupLabel: string;
   moduleValue?: string;
   menus: Menu[];
@@ -63,7 +63,7 @@ type Group = {
 
 const SUPERUSER_ROLES = ['SUPERUSER'];
 
-export function getMenuList(currentCompany: Company | null, userRoles: string[]): Group[] {
+export function getMenuList(currentCompany: Company | null, userRoles: string[]): NavGroup[] {
   const date = format(new Date(), 'yyyy-MM-dd');
 
   const companySlug = currentCompany?.slug;
@@ -91,7 +91,7 @@ export function getMenuList(currentCompany: Company | null, userRoles: string[])
     return currentCompany.modules.some((m) => m.value === moduleValue);
   };
 
-  const fullMenu: Group[] = [
+  const fullMenu: NavGroup[] = [
     {
       groupLabel: '',
       menus: [

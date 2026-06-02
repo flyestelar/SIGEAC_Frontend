@@ -6,12 +6,14 @@ import CompanySelect from '../selects/CompanySelect';
 import { SidebarToggle } from '../sidebar/SidebarToggle';
 import { ThemeToggler } from './ThemeToggler';
 import { useSidebar } from '../ui/sidebar';
+import { BreadcrumbNav } from './BreadcrumbNav';
+import { NavGroup } from '@/lib/menu-list-2';
 
 interface NavbarProps {
-  title: string;
+  menuList: NavGroup[];
 }
 
-export function Navbar({ title }: NavbarProps) {
+export function Navbar({ menuList }: NavbarProps) {
   const sidebar = useSidebar();
   return (
     <header className="sticky top-0 z-30 px-3 pt-2 sm:px-4">
@@ -28,12 +30,7 @@ export function Navbar({ title }: NavbarProps) {
 
         <div className="mr-auto flex min-w-0 items-center gap-3">
           <span className="hidden h-4 w-px bg-border/60 md:block" />
-          <div className="flex min-w-0 flex-col leading-none">
-            <span className="hidden text-[9px] font-semibold uppercase tracking-[0.2em] text-muted-foreground/80 md:block">
-              SIGEAC
-            </span>
-            <h1 className="truncate text-sm font-semibold tracking-tight">{title}</h1>
-          </div>
+          <BreadcrumbNav menuList={menuList} />
         </div>
 
         {!sidebar.isMobile && <CompanySelect />}
