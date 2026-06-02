@@ -5,24 +5,13 @@ import { useQuery } from '@tanstack/react-query';
 import { Loader2, PackageX, Search } from 'lucide-react';
 
 import { ContentLayout } from '@/components/layout/ContentLayout';
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from '@/components/ui/breadcrumb';
 import { Input } from '@/components/ui/input';
-import { useCompanySlug, useCompanyStore } from '@/stores/CompanyStore';
 import { articleListOptions } from '@api/queries';
 
 import { columns } from './columns';
 import { DataTable } from './data-table';
 
 const DismountedPage = () => {
-  const selectedCompanySlug = useCompanySlug();
-
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(20);
@@ -48,22 +37,8 @@ const DismountedPage = () => {
   const meta = data?.meta;
 
   return (
-    <ContentLayout title="Componentes Desmontados">
+    <ContentLayout>
       <div className="mx-auto flex w-full max-w-[1680px] flex-col gap-6">
-        <Breadcrumb>
-          <BreadcrumbList>
-            <BreadcrumbItem>
-              <BreadcrumbLink href={`/${selectedCompanySlug}/dashboard`}>Inicio</BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator />
-            <BreadcrumbItem>Almacén</BreadcrumbItem>
-            <BreadcrumbSeparator />
-            <BreadcrumbItem>
-              <BreadcrumbPage>Desmontados</BreadcrumbPage>
-            </BreadcrumbItem>
-          </BreadcrumbList>
-        </Breadcrumb>
-
         <div className="rounded-lg border bg-background">
           <div className="flex flex-col gap-4 p-5 md:flex-row md:items-start md:justify-between">
             <div className="flex items-start gap-3">
