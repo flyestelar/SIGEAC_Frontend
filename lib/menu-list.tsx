@@ -1,20 +1,20 @@
 'use client';
 
+import { Company } from '@/types';
 import { format } from 'date-fns';
 import {
-  Activity,
   AreaChartIcon,
   Award,
   Blocks,
-  BookCheck,
   BookUser,
   Building2,
-  Cat,
+  CalendarClock,
+  ClipboardCheck,
   ClipboardCopy,
   ClipboardList,
   ClipboardPen,
   CreditCardIcon,
-  Drill,
+  FileBadge,
   Globe,
   HandCoins,
   Landmark,
@@ -23,1036 +23,741 @@ import {
   PackageOpen,
   PackagePlus,
   PackageSearch,
-  Plane,
   PlaneIcon,
   Receipt,
-  ScrollText,
   Settings,
   ShieldAlert,
+  ShieldCheck,
+  SquareArrowDown,
   SquarePen,
   User2,
-  UserRoundCog,
-  Wrench,
+  UserRoundCog
 } from 'lucide-react';
+import { PlanificationMenuGroup } from './menu-list/planification';
 
 type Submenu = {
   href: string;
   label: string;
-  active: boolean;
   roles?: string[];
+  moduleValue?: string;
 };
 
 type Menu = {
   href: string;
   label: string;
-  active: boolean;
   icon: LucideIcon;
   roles: string[];
+  moduleValue?: string;
   submenus: Submenu[];
 };
 
-type Group = {
+export type NavGroup = {
   groupLabel: string;
+  moduleValue?: string;
   menus: Menu[];
 };
 
-export type CompanyMenu = string;
+export type NavGroupMake = (ctx: { companyPath: (path: string) => string }) => NavGroup;
 
-export function getMenuList(pathname: string, company: CompanyMenu, userRoles: string[]): Group[] {
+const SUPERUSER_ROLES = ['SUPERUSER'];
+
+export function getMenuList(currentCompany: Company | null, userRoles: string[]): NavGroup[] {
   const date = format(new Date(), 'yyyy-MM-dd');
-  function hasAccess(menuItem: Menu | Submenu): boolean {
-    if (!menuItem.roles || menuItem.roles.length === 0) {
-      return true;
+
+  const companySlug = currentCompany?.slug;
+  const companyPath = (path: string): string => {
+    if (!companySlug) return '';
+    return `/${companySlug}${path}`;
+  };
+
+  // Verificar acceso por rol
+  const hasRoleAccess = (menuItem: { roles?: string[] }): boolean => {
+    return (
+      !menuItem.roles ||
+      menuItem.roles.length === 0 ||
+      menuItem.roles.some((role) => userRoles.includes(role)) ||
+      userRoles.some((role) => SUPERUSER_ROLES.includes(role)) // Acceso para SUPERUSER
+    );
+  };
+
+  // Verificar si el módulo está activo para la compañía
+  const isModuleActive = (moduleValue?: string): boolean => {
+    // Si no requiere módulo específico o no hay compañía seleccionada, está activo
+    if (!moduleValue) return true;
+    if (!currentCompany) return false;
+    // Verificar si la compañía tiene este módulo
+    return currentCompany.modules.some((m) => m.value === moduleValue);
+  };
+
+  const ctx = { companyPath };
+
+  const fullMenu: NavGroup[] = [
+    {
+      groupLabel: '',
+      menus: [
+        {
+          href: companyPath('/dashboard'),
+          label: 'Dashboard',
+          icon: LayoutGrid,
+          roles: [],
+          submenus: [],
+        },
+      ],
+    },
+    {
+      groupLabel: 'General',
+      moduleValue: '',
+      menus: [
+        {
+          href: companyPath('/general/cursos'),
+          label: 'Cursos',
+          roles: [
+            'JEFE_ADMINISTRACION',
+            'SUPERUSER',
+            'JEFE_ALMACEN',
+            'JEFE_COMPRAS',
+            'JEFE_SMS',
+            'JEFE_DESARROLLO',
+            'JEFE_CONTADURIA',
+            'JEFE_RRHH',
+            'JEFE_OPERACIONES',
+            'JEFE_MANTENIMIENTO',
+            'JEFE_PLANIFICACION',
+          ],
+          icon: FileBadge,
+          submenus: [
+            {
+              href: companyPath('/general/cursos'),
+              label: 'Lista de Cursos',
+            },
+            {
+              href: companyPath('/general/cursos/estadisticas'),
+              label: 'Estadisticas',
+            },
+          ],
+        },
+        {
+          href: companyPath('/general/reporte'),
+          label: 'SMS',
+          icon: ShieldCheck,
+          roles: [],
+          submenus: [
+            // {
+            //     href: companyPath('/general/reporte/voluntario'),
+            //     label: "Reporte Voluntario",
+            //     roles: [],
+            // },
+            // {
+            //     href: companyPath('/general/reporte/obligatorio'),
+            //     label: "Reporte Obligatorio",
+            //     roles: [],
+            // },
+            {
+              href: companyPath('/general/reporte/codigos_qr'),
+              label: 'Codigos QR',
+              roles: [],
+            },
+          ],
+        },
+        {
+          href: companyPath('/general/inventario'),
+          label: 'Consultar Inventario',
+          icon: PackageSearch,
+          roles: [],
+          submenus: [],
+        },
+      ],
+    },
+    {
+      groupLabel: 'Desarrollo',
+      moduleValue: 'development',
+      menus: [
+        {
+          href: companyPath('/desarrollo'),
+          label: 'Actividades',
+          icon: SquarePen,
+          roles: ['ANALISTA_DESARROLLO', 'JEFE_DESARROLLO', 'SUPERUSER'],
+          submenus: [
+            {
+              href: companyPath(`/desarrollo/actividades_diarias/registro/${date}`),
+              label: 'Registro de Actividades',
+            },
+            {
+              href: companyPath('/desarrollo/actividades_diarias'),
+              label: 'Gestion de Actividades',
+            },
+          ],
+        },
+      ],
+    },
+    {
+      groupLabel: 'Administración',
+      moduleValue: 'administration',
+      menus: [
+        {
+          href: companyPath('/administracion/creditos'),
+          label: 'Créditos',
+          icon: CreditCardIcon,
+          roles: [
+            'SUPERUSER',
+            'ANALISTA_ADMINISTRACION',
+            'JEFE_ADMINISTRACION',
+            'JEFE_CONTADURIA',
+            'RRHH_ADMINISTRACION',
+          ],
+          submenus: [
+            {
+              href: companyPath('/administracion/creditos/credito_arrendamiento'),
+              label: 'Arrendamiento',
+            },
+            {
+              href: companyPath('/administracion/creditos/cuentas_por_pagar'),
+              label: 'Cuentas por Pagar',
+            },
+            {
+              href: companyPath('/administracion/creditos/credito_vuelo'),
+              label: 'Vuelos',
+            },
+          ],
+        },
+        {
+          href: companyPath('/administracion/gestion_cajas'),
+          label: 'Finanzas',
+          icon: Landmark,
+          roles: [
+            'SUPERUSER',
+            'ANALISTA_ADMINISTRACION',
+            'JEFE_ADMINISTRACION',
+            'JEFE_CONTADURIA',
+            'RRHH_ADMINISTRACION',
+          ],
+          submenus: [
+            {
+              href: companyPath('/administracion/gestion_cajas/categorias'),
+              label: 'Categorías',
+            },
+            {
+              href: companyPath('/administracion/gestion_cajas/cajas'),
+              label: 'Cajas',
+            },
+            {
+              href: companyPath('/administracion/gestion_cajas/cuentas'),
+              label: 'Cuentas',
+            },
+            {
+              href: companyPath('/administracion/gestion_cajas/movimientos'),
+              label: 'Movimientos',
+            },
+          ],
+        },
+        {
+          href: companyPath('/administracion/gestion_general'),
+          label: 'General',
+          icon: BookUser,
+          roles: [
+            'SUPERUSER',
+            'ANALISTA_ADMINISTRACION',
+            'JEFE_ADMINISTRACION',
+            'JEFE_CONTADURIA',
+            'RRHH_ADMINISTRACION',
+          ],
+          submenus: [
+            {
+              href: companyPath('/administracion/gestion_general/clientes'),
+              label: 'Clientes',
+            },
+            {
+              href: companyPath('/administracion/gestion_general/proveedor'),
+              label: 'Proveedor',
+            },
+          ],
+        },
+        {
+          href: companyPath('/administracion/operaciones'),
+          label: 'Operaciones',
+          icon: PackageOpen,
+          roles: ['SUPERUSER', 'ANALISTA_ADMINISTRACION', 'JEFE_ADMINISTRACION'],
+          submenus: [
+            {
+              href: `/${companySlug}/administracion/operaciones/arrendamiento`,
+              label: 'Arrendamiento',
+            },
+          ],
+        },
+        {
+          href: companyPath('/administracion/gestion_vuelos'),
+          label: 'Vuelos',
+          icon: PlaneIcon,
+          roles: ['SUPERUSER', 'ANALISTA_ADMINISTRACION', 'JEFE_ADMINISTRACION', 'RRHH_ADMINISTRACION'],
+          submenus: [
+            {
+              href: companyPath('/administracion/gestion_vuelos/aviones'),
+              label: 'Aeronaves',
+              roles: ['SUPERUSER', 'ANALISTA_ADMINISTRACION', 'JEFE_ADMINISTRACION', 'RRHH_ADMINISTRACION'],
+            },
+            {
+              href: companyPath('/administracion/gestion_vuelos/rutas'),
+              label: 'Rutas',
+              roles: ['SUPERUSER', 'ANALISTA_ADMINISTRACION', 'JEFE_ADMINISTRACION'], // RRHH no puede ver Rutas
+            },
+            {
+              href: companyPath('/administracion/gestion_vuelos/vuelos'),
+              label: 'Vuelos',
+              roles: ['SUPERUSER', 'ANALISTA_ADMINISTRACION', 'JEFE_ADMINISTRACION'], // RRHH no puede ver Vuelos
+            },
+          ],
+        },
+      ],
+    },
+    {
+      groupLabel: 'SMS',
+      moduleValue: 'sms',
+      menus: [
+        {
+          href: companyPath('/sms/reportes'),
+          label: 'Reportes',
+          icon: ClipboardPen,
+          roles: ['ANALISTA_SMS', 'JEFE_SMS', 'SUPERUSER'],
+          submenus: [],
+        },
+        {
+          href: companyPath('/sms/gestion_reportes'),
+          label: 'Gestion de Reportes',
+          icon: ShieldAlert,
+          roles: ['ANALISTA_SMS', 'JEFE_SMS', 'SUPERUSER'],
+          submenus: [
+            {
+              href: companyPath('/sms/gestion_reportes/peligros_identificados'),
+              label: 'Peligros Identificados',
+              roles: ['ANALISTA_SMS', 'JEFE_SMS', 'SUPERUSER'],
+            },
+            {
+              href: companyPath('/sms/gestion_reportes/planes_de_mitigacion'),
+              label: 'Planes de Mitigacion',
+              roles: ['ANALISTA_SMS', 'JEFE_SMS', 'SUPERUSER'],
+            },
+          ],
+        },
+        {
+          href: companyPath('/sms/estadisticas'),
+          label: 'Estadisticas',
+          icon: AreaChartIcon,
+          roles: ['ANALISTA_SMS', 'JEFE_SMS', 'SUPERUSER'],
+          submenus: [
+            {
+              href: companyPath('/sms/estadisticas/general'),
+              label: 'General',
+              roles: ['ANALISTA_SMS', 'JEFE_SMS', 'SUPERUSER'],
+            },
+            {
+              href: companyPath('/sms/estadisticas/reportes_voluntarios'),
+              label: 'Reportes Voluntarios',
+              roles: ['ANALISTA_SMS', 'JEFE_SMS', 'SUPERUSER'],
+            },
+            {
+              href: companyPath('/sms/estadisticas/reportes_obligatorios'),
+              label: 'Reportes Obligatorios',
+              roles: ['ANALISTA_SMS', 'JEFE_SMS', 'SUPERUSER'],
+            },
+            {
+              href: companyPath('/sms/estadisticas/indicadores_riesgo'),
+              label: 'Indicadores de Riesgo',
+              roles: ['ANALISTA_SMS', 'JEFE_SMS', 'SUPERUSER'],
+            },
+            {
+              href: companyPath('/sms/estadisticas/actividades'),
+              label: 'Actividades',
+              roles: ['ANALISTA_SMS', 'JEFE_SMS', 'SUPERUSER'],
+            },
+          ],
+        },
+
+        // {
+        //   href: `/${currentCompany?.slug}/sms/certificados`,
+        //   label: "Certificados",
+        //   icon: Award,
+        //   roles: ["SUPERUSER", "JEFE_SMS", "ANALISTA_SMS"],
+        //   submenus: [],
+        // },
+
+        {
+          href: companyPath('/sms/promocion'),
+          label: 'Promoción',
+          icon: CalendarClock,
+          roles: ['SUPERUSER', 'JEFE_SMS', 'ANALISTA_SMS'],
+          submenus: [
+            {
+              href: companyPath('/sms/promocion/actividades/calendario'),
+              label: 'Calendario Actividades',
+              roles: ['SUPERUSER', 'JEFE_SMS', 'ANALISTA_SMS'],
+            },
+            {
+              href: companyPath('/sms/promocion/actividades'),
+              label: 'Actividades',
+              roles: ['SUPERUSER', 'JEFE_SMS', 'ANALISTA_SMS'],
+            },
+            {
+              href: companyPath('/sms/promocion/capacitacion_personal'),
+              label: 'Capacitación',
+              roles: ['SUPERUSER', 'JEFE_SMS', 'ANALISTA_SMS'],
+            },
+            // {
+            //   href: `/${currentCompany?.slug}/sms/promocion/boletines`,
+            //   label: "Boletines",
+            //   roles: ["SUPERUSER", "JEFE_SMS", "ANALISTA_SMS"],
+            // },
+          ],
+        },
+        {
+          href: companyPath('/sms/gestion_encuestas'),
+          label: 'Gestión de Encuestas',
+          icon: ClipboardCheck,
+          roles: ['SUPERUSER', 'JEFE_SMS', 'ANALISTA_SMS'],
+          submenus: [
+            {
+              href: companyPath('/sms/gestion_encuestas/crear'),
+              label: 'Crear',
+              roles: ['SUPERUSER', 'JEFE_SMS', 'ANALISTA_SMS'],
+            },
+            {
+              href: companyPath('/sms/gestion_encuestas/encuestas'),
+              label: 'Lista',
+              roles: ['SUPERUSER', 'JEFE_SMS', 'ANALISTA_SMS'],
+            },
+          ],
+        },
+        {
+          href: companyPath('/sms/ajustes'),
+          label: 'Ajustes SMS',
+          icon: Settings,
+          roles: ['SUPERUSER', 'JEFE_SMS', 'ANALISTA_SMS'],
+          submenus: [
+            {
+              href: companyPath('/sms/ajustes/encuesta'),
+              label: 'Encuesta',
+              roles: ['SUPERUSER', 'JEFE_SMS', 'ANALISTA_SMS'],
+            },
+            {
+              href: companyPath('/sms/ajustes/boletin'),
+              label: 'Boletines',
+              roles: ['SUPERUSER', 'JEFE_SMS', 'ANALISTA_SMS'],
+            },
+          ],
+        },
+      ],
+    },
+    {
+      groupLabel: 'Compras',
+      moduleValue: 'purchases',
+      menus: [
+        {
+          href: companyPath('/compras/solicitudes_material_faltante'),
+          label: 'Sol. de Material Faltante',
+          icon: ClipboardList,
+          roles: ['ANALISTA_COMPRAS', 'JEFE_COMPRAS', 'SUPERUSER'],
+          submenus: [],
+        },
+        {
+          href: companyPath('/compras/cotizaciones'),
+          label: 'Cotizaciones',
+          icon: HandCoins,
+          roles: ['ANALISTA_COMPRAS', 'JEFE_COMPRAS', 'SUPERUSER'],
+          submenus: [],
+        },
+        {
+          href: companyPath('/compras/ordenes_compra'),
+          label: 'Ordenes de Compra',
+          icon: Receipt,
+          roles: ['ANALISTA_COMPRAS', 'JEFE_COMPRAS', 'SUPERUSER', 'JEFE_ADMINISTRACION'],
+          submenus: [],
+        },
+      ],
+    },
+    {
+      groupLabel: 'Carga Administrativa',
+      moduleValue: 'warehouse',
+      menus: [
+        {
+          href: companyPath('/almacen/ingreso'),
+          label: 'Control de Ingreso',
+          icon: PackagePlus,
+          roles: ['ANALISTA_ALMACEN', 'ANALISTA_COMPRAS', 'SUPERUSER', 'JEFE_ALMACEN'],
+          submenus: [
+            {
+              href: companyPath('/almacen/ingreso/registrar_ingreso'),
+              label: 'Ingreso de Matarial',
+            },
+            // {
+            //   href: companyPath('/almacen/ingreso/en_transito'),
+            //   label: "Materiales en Tránsito",
+            // },
+            // {
+            //   href: companyPath('/almacen/ingreso/en_recepcion'),
+            //   label: "Materiales en Recepción",
+            // },
+          ],
+        },
+        {
+          href: companyPath('/gestion_costos'),
+          label: 'Gestión de Costos',
+          icon: Receipt,
+          roles: ['ANALISTA_COMPRAS', 'SUPERUSER', 'JEFE_COMPRAS'],
+          submenus: [],
+        },
+      ],
+    },
+    {
+      groupLabel: 'Almacen',
+      moduleValue: 'warehouse',
+      menus: [
+        {
+          href: companyPath('/almacen/inventario'),
+          label: 'Inventario',
+          icon: PackageSearch,
+          roles: ['ANALISTA_ALMACEN', 'JEFE_ALMACEN', 'SUPERUSER'],
+          submenus: [],
+        },
+        {
+          href: companyPath('/almacen/salidas'),
+          label: 'Salidas',
+          icon: ClipboardCopy,
+          roles: ['ANALISTA_ALMACEN', 'JEFE_ALMACEN', 'SUPERUSER'],
+          submenus: [],
+        },
+        {
+          href: companyPath('/almacen/componentes/desmontados'),
+          label: 'Componentes',
+          icon: SquareArrowDown,
+          roles: ['ANALISTA_ALMACEN', 'JEFE_ALMACEN', 'SUPERUSER'],
+          submenus: [
+            {
+              href: companyPath('/almacen/componentes/desmontados'),
+              label: 'Desmontados',
+            },
+            {
+              href: companyPath('/almacen/componentes/solicitudes'),
+              label: 'Solicitudes de Instalación',
+            },
+          ],
+        },
+        {
+          href: companyPath('/almacen/despachados'),
+          label: 'Materiales Despachados',
+          icon: PackageOpen,
+          roles: ['ANALISTA_ALMACEN', 'JEFE_ALMACEN', 'SUPERUSER'],
+          submenus: [],
+        },
+        {
+          href: companyPath('/almacen/material_faltante'),
+          label: 'Sol. de Material Falt.',
+          roles: ['ANALISTA_ALMACEN', 'JEFE_ALMACEN', 'SUPERUSER'],
+          icon: PackagePlus,
+          submenus: [],
+        },
+        {
+          href: companyPath('/almacen/gestion_cantidades'),
+          label: 'Gestión de Cantidades',
+          icon: ClipboardPen,
+          roles: ['ANALISTA_ALMACEN', 'JEFE_ALMACEN', 'SUPERUSER'],
+          submenus: [],
+        },
+      ],
+    },
+    PlanificationMenuGroup(ctx),
+    {
+      groupLabel: 'Ingenieria',
+      moduleValue: 'engineering',
+      menus: [
+        {
+          href: companyPath('/ingenieria/certificados'),
+          label: 'Certificados',
+          icon: Award,
+          roles: ['SUPERUSER'],
+          submenus: [],
+        },
+        {
+          href: companyPath('/ingenieria/requisiciones/nueva_requisicion'),
+          label: 'Solicitudes de Compras',
+          icon: ClipboardList,
+          roles: ['SUPERUSER'],
+          submenus: [],
+        },
+      ],
+    },
+    {
+      groupLabel: 'Ajustes',
+      menus: [
+        {
+          href: '/ajustes/globales',
+          label: 'Globales',
+          icon: Globe,
+          roles: ['ANALISTA_ALMACEN', 'JEFE_ALMACEN', 'SUPERUSER', 'JEFE_SMS', 'ANALISTA_SMS'],
+          submenus: [
+            {
+              href: '/ajustes/globales/unidades',
+              label: 'Unidades',
+              roles: ['ANALISTA_ALMACEN', 'JEFE_ALMACEN', 'SUPERUSER'],
+            },
+            {
+              href: '/ajustes/globales/fabricantes',
+              label: 'Fabricantes',
+              roles: ['ANALISTA_ALMACEN', 'JEFE_ALMACEN', 'SUPERUSER'],
+            },
+            {
+              href: '/ajustes/globales/proveedores',
+              label: 'Proveedores',
+              roles: ['ANALISTA_ALMACEN', 'JEFE_ALMACEN', 'SUPERUSER'],
+            },
+            {
+              href: '/ajustes/globales/terceros',
+              label: 'Terceros',
+              roles: ['ANALISTA_ALMACEN', 'JEFE_ALMACEN', 'SUPERUSER'],
+            },
+            {
+              href: '/ajustes/globales/clientes',
+              label: 'Clientes',
+              roles: ['ANALISTA_ALMACEN', 'JEFE_ALMACEN', 'SUPERUSER'],
+            },
+            {
+              href: '/ajustes/globales/condiciones',
+              label: 'Condiciones',
+              roles: ['ANALISTA_ALMACEN', 'JEFE_ALMACEN', 'SUPERUSER'],
+            },
+            {
+              href: '/ajustes/globales/fuentes_informacion',
+              label: 'Fuentes de Informacion',
+              roles: ['JEFE_SMS', 'ANALISTA_SMS', 'SUPERUSER'],
+            },
+            {
+              href: '/ajustes/globales/sms',
+              label: 'Globales SMS',
+              roles: ['SUPERUSER', 'JEFE_SMS', 'ANALISTA_SMS'],
+            },
+          ],
+        },
+        {
+          href: '/ajustes/bancos_cuentas',
+          label: 'Bancos',
+          icon: Landmark,
+          roles: ['SUPERUSER', 'ANALISTA_ADMINISTRACION', 'JEFE_ADMINISTRACION'],
+          submenus: [
+            {
+              href: '/ajustes/bancos_cuentas/bancos',
+              label: 'Bancos',
+            },
+            {
+              href: '/ajustes/bancos_cuentas/cuentas',
+              label: 'Cuentas',
+            },
+            {
+              href: '/ajustes/bancos_cuentas/tarjetas',
+              label: 'Tarjetas',
+            },
+          ],
+        },
+        {
+          href: '/ajustes/cuenta',
+          label: 'Cuenta',
+          icon: UserRoundCog,
+          roles: [],
+          submenus: [],
+        },
+      ],
+    },
+    {
+      groupLabel: 'Sistema',
+      menus: [
+        {
+          href: '/sistema/modulos',
+          label: 'Módulos',
+          icon: Blocks,
+          roles: ['ADMIN', 'SUPERUSER'],
+          submenus: [],
+        },
+        {
+          href: '/sistema/usuarios_permisos',
+          label: 'Usuarios Y Permisos',
+          icon: User2,
+          roles: ['ADMIN', 'SUPERUSER'],
+          submenus: [
+            {
+              href: '/sistema/usuarios_permisos/usuarios',
+              label: 'Administrar Usuarios',
+            },
+            {
+              href: '/sistema/usuarios_permisos/roles',
+              label: 'Administrar Roles',
+            },
+            // {
+            //   href: '/sistema/usuarios_permisos/permisos',
+            //   label: 'Administrar Permisos',
+            // },
+          ],
+        },
+        {
+          href: '/sistema/empresas/',
+          label: 'Empresas',
+          icon: Building2,
+          roles: ['ADMIN', 'SUPERUSER'],
+          submenus: [
+            {
+              href: '/sistema/empresas/empresas',
+              label: 'Administrar Empresas',
+            },
+            {
+              href: '/sistema/empresas/almacenes',
+              label: 'Administrar Almacenes',
+            },
+            {
+              href: '/sistema/empresas/talleres',
+              label: 'Administrar Talleres',
+            },
+            {
+              href: '/sistema/empresas/ubicaciones',
+              label: 'Administrar Ubicaciones',
+            },
+            {
+              href: '/sistema/empresas/empleados',
+              label: 'Administrar Empleados',
+            },
+            {
+              href: '/sistema/empresas/cargos',
+              label: 'Administrar Cargos',
+            },
+            {
+              href: '/sistema/empresas/departamentos',
+              label: 'Administrar Departamentos',
+            },
+          ],
+        },
+      ],
+    },
+  ];
+
+  const filteredMenu = fullMenu.filter((group) => {
+    if (group.groupLabel === 'General' && userRoles.some((r) => ['JEFE_ALMACEN', 'ANALISTA_ALMACEN'].includes(r))) {
+      return false;
     }
-    return menuItem.roles.some((role) => userRoles.includes(role));
-  }
+    return true;
+  });
+
+  // 4. Filtrar el menú completo
   return (
-    company === 'Transmandu'
-      ? [
-          {
-            groupLabel: '',
-            menus: [
-              {
-                href: '/transmandu/dashboard',
-                label: 'Dashboard',
-                active: pathname.includes('/transmandu/dashboard'),
-                icon: LayoutGrid,
-                roles: [],
-                submenus: [],
-              },
-            ],
-          },
-          {
-            groupLabel: 'Desarrollo',
-            menus: [
-              {
-                href: '/transmandu/desarrollo',
-                label: 'Actividades',
-                active: pathname.includes('/transmandu/desarrollo'),
-                icon: SquarePen,
-                roles: ['ANALISTA_DESARROLLO', 'JEFE_DESARROLLO', 'SUPERUSER'],
-                submenus: [
-                  {
-                    href: `/transmandu/desarrollo/actividades_diarias/registro/${date}/`,
-                    label: 'Registro de Actividades',
-                    active: pathname === `/transmandu/desarrollo/actividades_diarias/registro/`,
-                  },
-                  {
-                    href: '/transmandu/desarrollo/actividades_diarias',
-                    label: 'Gestion de Actividades',
-                    active: pathname === `/transmandu/desarrollo/actividades_diarias/`,
-                  },
-                ],
-              },
-            ],
-          },
-          {
-            groupLabel: 'Administración',
-            menus: [
-              {
-                href: '/transmandu/administracion/creditos',
-                label: 'Créditos',
-                active: pathname.includes('/transmandu/administracion/creditos'),
-                icon: CreditCardIcon,
-                roles: [
-                  'SUPERUSER',
-                  'ANALISTA_ADMINISTRACION',
-                  'JEFE_ADMINISTRACION',
-                  'JEFE_CONTADURIA',
-                  'RRHH_ADMINISTRACION',
-                ],
-                submenus: [
-                  {
-                    href: '/transmandu/administracion/creditos/credito_arrendamiento',
-                    label: 'Arrendamiento',
-                    active: pathname === '/transmandu/administracion/creditos/credito_arrendamiento',
-                  },
-                  {
-                    href: '/transmandu/administracion/creditos/cuentas_por_pagar',
-                    label: 'Cuentas por Pagar',
-                    active: pathname === '/transmandu/administracion/creditos/cuentas_por_pagar',
-                  },
-                  //  {
-                  //    href: "/transmandu/administracion/creditos/credito_venta",
-                  //    label: "Ventas",
-                  //    active:
-                  //      pathname ===
-                  //      "/transmandu/administracion/creditos/credito_venta",
-                  //  },
-                  {
-                    href: '/transmandu/administracion/creditos/credito_vuelo',
-                    label: 'Vuelos',
-                    active: pathname === '/transmandu/administracion/creditos/credito_vuelo',
-                  },
-                ],
-              },
-              {
-                href: '/transmandu/administracion/gestion_cajas',
-                label: 'Finanzas',
-                active: pathname.includes('/transmandu/administracion/gestion_cajas'),
-                icon: Landmark,
-                roles: [
-                  'SUPERUSER',
-                  'ANALISTA_ADMINISTRACION',
-                  'JEFE_ADMINISTRACION',
-                  'JEFE_CONTADURIA',
-                  'RRHH_ADMINISTRACION',
-                ],
-                submenus: [
-                  {
-                    href: '/transmandu/administracion/gestion_cajas/categorias',
-                    label: 'Categorías',
-                    active: pathname === '/transmandu/administracion/gestion_cajas/categorias',
-                  },
-                  {
-                    href: '/transmandu/administracion/gestion_cajas/cajas',
-                    label: 'Cajas',
-                    active: pathname === '/transmandu/administracion/gestion_cajas/cajas',
-                  },
-                  {
-                    href: '/transmandu/administracion/gestion_cajas/cuentas',
-                    label: 'Cuentas',
-                    active: pathname === '/transmandu/administracion/gestion_cajas/cuentas',
-                  },
-                  {
-                    href: '/transmandu/administracion/gestion_cajas/movimientos',
-                    label: 'Movimientos',
-                    active: pathname === '/transmandu/administracion/gestion_cajas/movimientos',
-                  },
-                ],
-              },
-              {
-                href: '/transmandu/administracion/gestion_general',
-                label: 'General',
-                active: pathname.includes('/transmandu/administracion/gestion_general'),
-                icon: BookUser,
-                roles: [
-                  'SUPERUSER',
-                  'ANALISTA_ADMINISTRACION',
-                  'JEFE_ADMINISTRACION',
-                  'JEFE_CONTADURIA',
-                  'RRHH_ADMINISTRACION',
-                ],
-                submenus: [
-                  {
-                    href: '/transmandu/administracion/gestion_general/clientes',
-                    label: 'Clientes',
-                    active: pathname === '/transmandu/administracion/gestion_general/clientes',
-                  },
-                  //  {
-                  //    href: "/transmandu/administracion/gestion_general/empresa",
-                  //    label: "Gestionar Empresa",
-                  //    active:
-                  //      pathname ===
-                  //      "/transmandu/administracion/gestion_general/empresa",
-                  //  },
-                  {
-                    href: '/transmandu/administracion/gestion_general/proveedor',
-                    label: 'Proveedor',
-                    active: pathname === '/transmandu/administracion/gestion_general/proveedor',
-                  },
-                ],
-              },
-              {
-                href: '/transmandu/administracion/operaciones',
-                label: 'Operaciones',
-                active: pathname.includes('/transmandu/administracion/operaciones'),
-                icon: PackageOpen,
-                roles: ['SUPERUSER', 'ANALISTA_ADMINISTRACION', 'JEFE_ADMINISTRACION'],
-                submenus: [
-                  {
-                    href: '/transmandu/administracion/operaciones/arrendamiento',
-                    label: 'Arrendamiento',
-                    active: pathname === '/transmandu/administracion/operaciones/arrendamiento',
-                  },
-                ],
-              },
-              {
-                href: '/transmandu/administracion/gestion_vuelos',
-                label: 'Vuelos',
-                active: pathname.includes('/transmandu/administracion/gestion_vuelos'),
-                icon: PlaneIcon,
-                roles: [
-                  'SUPERUSER',
-                  'ANALISTA_ADMINISTRACION',
-                  'JEFE_ADMINISTRACION',
-                  'RRHH_ADMINISTRACION', // RRHH ve el menú principal, pero no todos los submenús
-                ],
-                submenus: [
-                  {
-                    href: '/transmandu/administracion/gestion_vuelos/aviones',
-                    label: 'Aeronaves',
-                    active: pathname === '/transmandu/administracion/gestion_vuelos/aviones',
-                    roles: ['SUPERUSER', 'ANALISTA_ADMINISTRACION', 'JEFE_ADMINISTRACION', 'RRHH_ADMINISTRACION'], // RRHH puede ver Aeronaves
-                  },
-                  {
-                    href: '/transmandu/administracion/gestion_vuelos/rutas',
-                    label: 'Rutas',
-                    active: pathname === '/transmandu/administracion/gestion_vuelos/rutas',
-                    roles: ['SUPERUSER', 'ANALISTA_ADMINISTRACION', 'JEFE_ADMINISTRACION'], // RRHH no puede ver Rutas
-                  },
-                  {
-                    href: '/transmandu/administracion/gestion_vuelos/vuelos',
-                    label: 'Vuelos',
-                    active: pathname === '/transmandu/administracion/gestion_vuelos/vuelos',
-                    roles: ['SUPERUSER', 'ANALISTA_ADMINISTRACION', 'JEFE_ADMINISTRACION'], // RRHH no puede ver Vuelos
-                  },
-                ],
-              },
-            ],
-          },
-          {
-            groupLabel: 'SMS',
-            menus: [
-              {
-                href: '/transmandu/sms',
-                label: 'Reportes',
-                active: pathname.includes('/transmandu/sms/reportes'),
-                icon: ClipboardPen,
-                roles: ['ANALISTA_SMS', 'JEFE_SMS', 'SUPERUSER'],
-                submenus: [
-                  {
-                    href: '/transmandu/sms/reportes/reportes_voluntarios',
-                    label: 'Reportes Voluntarios',
-                    roles: ['ANALISTA_SMS', 'JEFE_SMS', 'SUPERUSER'],
-                    active: pathname === '/transmandu/sms/reportes/reportes_voluntarios',
-                  },
-                  {
-                    href: '/transmandu/sms/reportes/reportes_obligatorios',
-                    label: 'Reportes Obligatorios',
-                    roles: ['ANALISTA_SMS', 'JEFE_SMS', 'SUPERUSER'],
-                    active: pathname === '/transmandu/sms/reportes/reportes_obligatorios',
-                  },
-                ],
-              },
-              {
-                href: '/transmandu/sms',
-                label: 'Gestion de Reportes',
-                active: pathname.includes('/transmandu/sms/gestion_reportes'),
-                icon: ShieldAlert,
-                roles: ['ANALISTA_SMS', 'JEFE_SMS', 'SUPERUSER'],
-                submenus: [
-                  {
-                    href: '/transmandu/sms/gestion_reportes/peligros_identificados',
-                    label: 'Peligros Identificados',
-                    roles: ['ANALISTA_SMS', 'JEFE_SMS', 'SUPERUSER'],
-                    active: pathname === '/transmandu/sms/gestion_reportes/peligros_identificados',
-                  },
-                  {
-                    href: '/transmandu/sms/gestion_reportes/planes_de_mitigacion',
-                    label: 'Planes de Mitigacion',
-                    roles: ['ANALISTA_SMS', 'JEFE_SMS', 'SUPERUSER'],
-                    active: pathname === '/transmandu/sms/gestion_reportes/planes_de_mitigacion',
-                  },
-                ],
-              },
-              {
-                href: '/transmandu/sms',
-                label: 'Estadisticas',
-                icon: AreaChartIcon,
-                active: pathname.includes('/transmandu/sms/estadisticas'),
-                roles: ['ANALISTA_SMS', 'JEFE_SMS', 'SUPERUSER'],
-                submenus: [
-                  {
-                    href: '/transmandu/sms/estadisticas/general',
-                    label: 'General',
-                    roles: ['ANALISTA_SMS', 'JEFE_SMS', 'SUPERUSER'],
-                    active: pathname === '/transmandu/sms/estadisticas/general',
-                  },
-
-                  {
-                    href: '/transmandu/sms/estadisticas/reportes_voluntarios',
-                    label: 'Reportes Voluntarios',
-                    roles: ['ANALISTA_SMS', 'JEFE_SMS', 'SUPERUSER'],
-                    active: pathname === '/transmandu/sms/estadisticas/reportes_voluntarios',
-                  },
-                  {
-                    href: '/transmandu/sms/estadisticas/reportes_obligatorios',
-                    label: 'Reportes Obligatorios',
-                    roles: ['ANALISTA_SMS', 'JEFE_SMS', 'SUPERUSER'],
-                    active: pathname === '/transmandu/sms/estadisticas/reportes_obligatorios',
-                  },
-                  {
-                    href: '/transmandu/sms/estadisticas/indicadores_riesgo',
-                    label: 'Indicadores de Riesgo',
-                    roles: ['ANALISTA_SMS', 'JEFE_SMS', 'SUPERUSER'],
-                    active: pathname === '/transmandu/sms/estadisticas/indicadores_riesgo',
-                  },
-                ],
-              },
-              {
-                href: '/transmandu/sms',
-                label: 'Planificacion',
-                active: pathname.includes('/transmandu/sms/planificacion'),
-                icon: Activity,
-                roles: ['SUPERUSER'],
-                submenus: [
-                  {
-                    href: '/transmandu/sms/planificacion/actividades',
-                    label: 'Actividades',
-                    roles: ['SUPERUSER'],
-                    active: pathname === '/transmandu/planificacion/actividades',
-                  },
-                  {
-                    href: '/transmandu/sms/planificacion/capacitacion_personal',
-                    label: 'Capacitacion SMS',
-                    roles: ['SUPERUSER'],
-                    active: pathname === '/transmandu/planificacion/capacitacion_personal',
-                  },
-                ],
-              },
-              {
-                href: '/transmandu/sms',
-                label: 'Reportes',
-                active: pathname.includes('/transmandu/sms'),
-                icon: ClipboardPen,
-                roles: [],
-                submenus: [
-                  {
-                    href: '/transmandu/sms/reportes/reportes_voluntarios/nuevo_reporte',
-                    label: 'Reportes Voluntarios',
-                    roles: [],
-                    active: pathname === '/transmandu/sms/reportes/reportes_voluntarios/nuevo_reporte',
-                  },
-                  {
-                    href: '/transmandu/sms/reportes/reportes_obligatorios/nuevo_reporte',
-                    label: 'Reportes Obligatorios',
-                    roles: [],
-                    active: pathname === '/transmandu/sms/reportes/reportes_obligatorios/nuevo_reporte',
-                  },
-                ],
-              },
-            ],
-          },
-          {
-            groupLabel: 'General',
-            menus: [
-              {
-                href: '/transmandu/general/cursos',
-                label: 'Cursos',
-                active: pathname.includes('/transmandu/general/cursos'),
-                icon: Cat,
-                roles: ['SUPERUSER'],
-                submenus: [],
-              },
-            ],
-          },
-          {
-            groupLabel: 'Compras',
-            menus: [
-              {
-                href: '/transmandu/compras/requisiciones',
-                label: 'Requisiciones',
-                active: pathname.includes('/transmandu/compras/requisiciones'),
-                icon: ClipboardList,
-                roles: ['ANALISTA_COMPRAS', 'JEFE_COMPRAS', 'SUPERUSER'],
-                submenus: [],
-              },
-              {
-                href: '/transmandu/compras/cotizaciones',
-                label: 'Cotizaciones',
-                active: pathname.includes('/transmandu/compras/cotizaciones'),
-                icon: HandCoins,
-                roles: ['ANALISTA_COMPRAS', 'JEFE_COMPRAS', 'SUPERUSER'],
-                submenus: [],
-              },
-              {
-                href: '/transmandu/compras/ordenes_compra',
-                label: 'Ordenes de Compra',
-                active: pathname.includes('/transmandu/compras/ordenes_compra'),
-                icon: Receipt,
-                roles: ['ANALISTA_COMPRAS', 'JEFE_COMPRAS', 'SUPERUSER'],
-                submenus: [],
-              },
-            ],
-          },
-          {
-            groupLabel: 'Sistema',
-            menus: [
-              {
-                href: '/sistema/usuarios_permisos',
-                label: 'Usuarios Y Permisos',
-                active: pathname.includes('/sistema/usuarios_permisos'),
-                icon: User2,
-                roles: ['ADMIN', 'SUPERUSER'],
-                submenus: [
-                  {
-                    href: '/sistema/usuarios_permisos/usuarios',
-                    label: 'Administrar Usuarios',
-                    active: pathname === '/sistema/usuarios_permisos/usuarios',
-                  },
-                  {
-                    href: '/sistema/usuarios_permisos/roles',
-                    label: 'Administrar Roles',
-                    active: pathname === '/sistema/usuarios_permisos/roles',
-                  },
-                  {
-                    href: '/sistema/usuarios_permisos/permisos',
-                    label: 'Administrar Permisos',
-                    active: pathname === '/sistema/usuarios_permisos/permisos',
-                  },
-                ],
-              },
-              {
-                href: '/sistema/empresas/empleados',
-                label: 'Empleados',
-                active: pathname.includes('/sistema/empresas/empleados'),
-                icon: User2,
-                roles: ['ADMIN', 'SUPERUSER'],
-                submenus: [
-                  {
-                    href: '/sistema/empresas/empleados',
-                    label: 'Administrar Empleados',
-                    active: pathname === '/sistema/empresas/empleados',
-                  },
-                  {
-                    href: '/sistema/empresas/cargos',
-                    label: 'Administrar Cargos',
-                    active: pathname === '/sistema/empresas/cargos',
-                  },
-                  {
-                    href: '/sistema/empresas/departamentos',
-                    label: 'Administrar Departamentos',
-                    active: pathname === '/sistema/empresas/departamentos',
-                  },
-                  {
-                    href: '/sistema/empresas/departamentos',
-                    label: 'Administrar Almacenes',
-                    active: pathname === '/sistema/empresas/almacenes',
-                  },
-                ],
-              },
-            ],
-          },
-          {
-            groupLabel: 'Ajustes',
-            menus: [
-              {
-                href: '/ajustes/empresas',
-                label: 'Globales',
-                active: pathname.includes('/ajustes/globales'),
-                icon: Globe,
-                roles: ['SUPERUSER'],
-                submenus: [
-                  {
-                    href: '/ajustes/bancos_cuentas/bancos',
-                    label: 'Bancos',
-                    active: pathname === '/ajustes/bancos_cuentas/bancos',
-                  },
-                  {
-                    href: '/ajustes/bancos_cuentas/cuentas',
-                    label: 'Cuentas',
-                    active: pathname === '/ajustes/bancos_cuentas/cuentas',
-                  },
-                  {
-                    href: '/ajustes/bancos_cuentas/tarjetas',
-                    label: 'Tarjetas',
-                    active: pathname === '/ajustes/bancos_cuentas/tarjetas',
-                  },
-                  {
-                    href: '/ajustes/unidades',
-                    label: 'Unidades',
-                    active: pathname === '/ajustes/unidades',
-                  },
-                  {
-                    href: '/ajustes/fabricantes',
-                    label: 'Fabricantes',
-                    active: pathname === '/ajustes/fabricantes',
-                  },
-                  {
-                    href: '/ajustes/proveedores',
-                    label: 'Proveedores',
-                    active: pathname === '/ajustes/proveedores',
-                  },
-                  {
-                    href: '/ajustes/condiciones',
-                    label: 'Condiciones',
-                    active: pathname === '/ajustes/condiciones',
-                  },
-                  {
-                    href: '/ajustes/globales/fuentes_informacion',
-                    label: 'Fuentes de Información',
-                    active: pathname === '/ajustes/globales/fuentes_informacion',
-                  },
-                ],
-              },
-              {
-                href: '/ajustes/cuentas_bancos',
-                label: 'Cuentas y Bancos',
-                active: pathname.includes('/ajustes'),
-                icon: UserRoundCog,
-                roles: [
-                  'ANALISTA_ADMINISTRACION',
-                  'JEFE_ADMINISTRACION',
-                  'JEFE_CONTADURIA',
-                  'RRHH_ADMINISTRACION',
-                  'ANALISTA_COMPRAS',
-                  'JEFE_COMPRAS',
-                  'SUPERUSER',
-                ],
-                submenus: [],
-              },
-              {
-                href: '/estelar/cuenta',
-                label: 'Cuenta',
-                active: pathname.includes('/cuenta'),
-                icon: Settings,
-                roles: [],
-                submenus: [],
-              },
-            ],
-          },
-          {
-            groupLabel: 'Settings',
-            menus: [
-              {
-                href: '/cuenta',
-                label: 'Cuenta',
-                active: pathname.includes('/cuenta'),
-                icon: Settings,
-                roles: [],
-                submenus: [],
-              },
-            ],
-          },
-          {
-            groupLabel: 'Desarrollo',
-            menus: [
-              {
-                href: '/transmandu/desarrollo',
-                label: 'Actividades',
-                active: pathname.includes('/transmandu/desarrollo'),
-                icon: SquarePen,
-                roles: ['ANALISTA_DESARROLLO', 'JEFE_DESARROLLO', 'SUPERUSER'],
-                submenus: [
-                  {
-                    href: `/transmandu/desarrollo/actividades_diarias/registro/${date}/`,
-                    label: 'Registro de Actividades',
-                    active: pathname === `/transmandu/desarrollo/actividades_diarias/registro/`,
-                  },
-                  {
-                    href: '/transmandu/desarrollo/actividades_diarias',
-                    label: 'Gestion de Actividades',
-                    active: pathname === `/transmandu/desarrollo/actividades_diarias/`,
-                  },
-                ],
-              },
-            ],
-          },
-        ]
-      : [
-          {
-            groupLabel: '',
-            menus: [
-              {
-                href: '/estelar/dashboard',
-                label: 'Dashboard / Hangar74',
-                active: pathname.includes('/estelar/dashboard'),
-                icon: LayoutGrid,
-                roles: [],
-                submenus: [],
-              },
-            ],
-          },
-          {
-            groupLabel: 'General',
-            menus: [
-              {
-                href: '/estelar/general/inventario',
-                label: 'Inventario',
-                active: pathname.includes('/estelar/general/inventario'),
-                icon: PackageSearch,
-                roles: [],
-                submenus: [],
-              },
-              {
-                href: '/estelar/general/requisiciones',
-                label: 'Solicitudes de Compra',
-                active: pathname.includes('/estelar/general/requisiciones'),
-                icon: ScrollText,
-                roles: [],
-                submenus: [],
-              },
-            ],
-          },
-          {
-            groupLabel: 'Carga Administrativa',
-            menus: [
-              {
-                href: '',
-                label: 'Control de Ingreso',
-                active: pathname.includes('/estelar/almacen/inventario/ingreso'),
-                icon: PackagePlus,
-                roles: ['ANALISTA_ALMACEN', 'ANALISTA_COMPRAS', 'SUPERUSER', 'JEFE_ALMACEN'],
-                submenus: [
-                  {
-                    href: '/estelar/almacen/ingreso/registrar_ingreso',
-                    label: 'Ingreso de Articulo',
-                    active: pathname === '/estelar/almacen/ingreso/registrar_ingreso',
-                  },
-                  // {
-                  //   href: "/estelar/almacen/ingreso/en_transito",
-                  //   label: "Materialesen Tránsito",
-                  //   active: pathname === "/estelar/almacen/ingreso/en_transito"
-                  // },
-                  // {
-                  //   href: "/estelar/almacen/ingreso/en_recepcion",
-                  //   label: "Materialesen Recepción",
-                  //   active: pathname === "/estelar/almacen/ingreso/en_recepcion"
-                  // },
-                ],
-              },
-            ],
-          },
-          {
-            groupLabel: 'Almacen',
-            menus: [
-              {
-                href: '',
-                label: 'Solicitudes',
-                active: pathname.includes('/estelar/almacen/solicitudes'),
-                icon: ClipboardCopy,
-                roles: ['ANALISTA_ALMACEN', 'JEFE_ALMACEN', 'SUPERUSER'],
-                submenus: [
-                  {
-                    href: '/estelar/almacen/solicitudes/pendiente',
-                    label: 'Pendiente',
-                    active: pathname === '/estelar/almacen/solicitudes/pendiente',
-                  },
-                  {
-                    href: '/estelar/almacen/solicitudes/salida',
-                    label: 'Salida',
-                    active: pathname === '/estelar/almacen/solicitudes/salida',
-                  },
-                ],
-              },
-              {
-                href: '/estelar/almacen/inventario',
-                label: 'Inventario',
-                active: pathname.includes('/estelar/almacen/inventario'),
-                icon: PackageOpen,
-                roles: ['ANALISTA_ALMACEN', 'JEFE_ALMACEN', 'SUPERUSER'],
-                submenus: [
-                  {
-                    href: '/estelar/almacen/inventario/gestion',
-                    label: 'Gestión',
-                    active:
-                      pathname === '/estelar/almacen/inventario/gestion' ||
-                      pathname === '/estelar/almacen/inventario/gestion/crear',
-                  },
-                  {
-                    href: '/estelar/almacen/inventario/entregado',
-                    label: 'Entregado',
-                    active: pathname === '/estelar/almacen/inventario/entregado',
-                  },
-                ],
-              },
-              {
-                href: '/estelar/almacen/caja_herramientas',
-                label: 'Cajas de Herramientas',
-                roles: ['ANALISTA_ALMACEN', 'JEFE_ALMACEN', 'SUPERUSER'],
-                active: pathname.includes('/estelar/almacen/caja_herramientas'),
-                icon: Wrench,
-                submenus: [],
-              },
-            ],
-          },
-          {
-            groupLabel: 'Compras',
-            menus: [
-              {
-                href: '/estelar/compras/cotizaciones',
-                label: 'Cotizaciones',
-                active: pathname.includes('/estelar/compras/cotizaciones'),
-                icon: HandCoins,
-                roles: ['ANALISTA_COMPRAS', 'JEFE_COMPRAS', 'SUPERUSER'],
-                submenus: [],
-              },
-              {
-                href: '/estelar/compras/ordenes_compra',
-                label: 'Ordenes de Compra',
-                active: pathname.includes('/estelar/compras/ordenes_compra'),
-                icon: Receipt,
-                roles: ['ANALISTA_COMPRAS', 'JEFE_COMPRAS', 'SUPERUSER'],
-                submenus: [],
-              },
-              // {
-              //   href: "/estelar/compras/reportes",
-              //   label: "Reporte de Compras",
-              //   active: pathname.includes("/estelar/compras/reportes"),
-              //   icon: NotebookPen,
-              //   roles: ["ANALISTA_COMPRAS", "JEFE_COMPRAS", "SUPERUSER"],
-              //   submenus: [
-              //     {
-              //       href: "/estelar/compras/reportes/general",
-              //       label: "Reporte General",
-              //       active: pathname === "/estelar/compras/reportes/general"
-              //     },
-              //     {
-              //       href: "/estelar/compras/reportes/aeronave",
-              //       label: "Reporte de Aeronave",
-              //       active: pathname === "/estelar/compras/reportes/aeronave"
-              //     },
-              //     {
-              //       href: "/estelar/compras/reportes/proveedor",
-              //       label: "Reporte de Proveedor",
-              //       active: pathname === "/estelar/compras/reportes/proveedor"
-              //     },
-              //   ]
-              // },
-            ],
-          },
-          {
-            groupLabel: 'Planificación',
-            menus: [
-              {
-                href: '/estelar/planificacion/ordenes_trabajo',
-                label: 'Ordenes de Trabajo',
-                active: pathname.includes('/estelar/planificacion/ordenes_trabajo'),
-                icon: SquarePen,
-                roles: ['ANALISTA_ADMINISTRACION', 'JEFE_PLANIFICACION', 'SUPERUSER'],
-                submenus: [
-                  {
-                    href: '/estelar/planificacion/ordenes_trabajo/',
-                    label: 'Gestionar Ordenes',
-                    active: pathname === '/estelar/planificacion/ordenes_trabajo',
-                  },
-                ],
-              },
-              {
-                href: '/estelar/planificacion/aeronaves',
-                label: 'Aeronaves',
-                active: pathname.includes('/estelar/planificacion/reportes'),
-                icon: Plane,
-                roles: ['ANALISTA_PLANIFICACION', 'JEFE_PLANIFICACION', 'SUPERUSER'],
-                submenus: [
-                  {
-                    href: '/estelar/planificacion/aeronaves',
-                    label: 'Gestión de Aeronaves',
-                    active: pathname === '/estelar/planificacion/aeronaves',
-                  },
-                  {
-                    href: '/estelar/planificacion/aeronaves/partes',
-                    label: 'Gestión de Partes',
-                    active: pathname === '/estelar/planificacion/aeronaves/partes',
-                  },
-                ],
-              },
-              {
-                href: '/estelar/planificacion/aeronaves',
-                label: 'Control de Vuelos',
-                active: pathname.includes('/estelar/planificacion/control_vuelos'),
-                icon: BookCheck,
-                roles: ['ANALISTA_PLANIFICACION', 'JEFE_PLANIFICACION', 'SUPERUSER'],
-                submenus: [
-                  {
-                    href: '/estelar/planificacion/control_vuelos/vuelos',
-                    label: 'Vuelos',
-                    active: pathname === '/estelar/planificacion/control_vuelos/vuelos',
-                  },
-                  {
-                    href: '/estelar/planificacion/control_vuelos/reportes',
-                    label: 'Reportes',
-                    active: pathname === '/estelar/planificacion/control_vuelos/reportes',
-                  },
-                ],
-              },
-            ],
-          },
-          {
-            groupLabel: 'Mantenimiento',
-            menus: [
-              {
-                href: '/estelar/mantenimiento/servicios',
-                label: 'Servicios',
-                active: pathname.includes('/estelar/mantenimiento/servicios'),
-                icon: Drill,
-                roles: ['ANALISTA_PLANIFICACION', 'JEFE_PLANIFICACION', 'SUPERUSER'],
-                submenus: [],
-              },
-            ],
-          },
-          {
-            groupLabel: 'Ingenieria',
-            menus: [
-              {
-                href: '/estelar/ingenieria/certificados',
-                label: 'Certificados',
-                active: pathname.includes('/estelar/ingenieria/certificados'),
-                icon: Award,
-                roles: ['SUPERUSER'],
-                submenus: [],
-              },
-              {
-                href: '/estelar/general/requisiciones/nueva_requisicion',
-                label: 'Requisiciones',
-                active: pathname.includes('/estelar/general/requisiciones/nueva_requisicion'),
-                icon: ScrollText,
-                roles: ['SUPERUSER'],
-                submenus: [],
-              },
-            ],
-          },
-          {
-            groupLabel: 'Sistema',
-            menus: [
-              {
-                href: '/sistema/usuarios_permisos',
-                label: 'Usuarios Y Permisos',
-                active: pathname.includes('/sistema/usuarios_permisos'),
-                icon: User2,
-                roles: ['ADMIN', 'SUPERUSER'],
-                submenus: [
-                  {
-                    href: '/sistema/usuarios_permisos/usuarios',
-                    label: 'Administrar Usuarios',
-                    active: pathname === '/sistema/usuarios_permisos/usuarios',
-                  },
-                  {
-                    href: '/sistema/usuarios_permisos/roles',
-                    label: 'Administrar Roles',
-                    active: pathname === '/sistema/usuarios_permisos/roles',
-                  },
-                  {
-                    href: '/sistema/usuarios_permisos/permisos',
-                    label: 'Administrar Permisos',
-                    active: pathname === '/sistema/usuarios_permisos/permisos',
-                  },
-                ],
-              },
-              {
-                href: '/sistema/empresas/empleados',
-                label: 'Empleados',
-                active: pathname.includes('/sistema/empresas/empleados'),
-                icon: User2,
-                roles: ['ADMIN', 'SUPERUSER'],
-                submenus: [
-                  {
-                    href: '/sistema/empresas/empleados',
-                    label: 'Administrar Empleados',
-                    active: pathname === '/sistema/empresas/empleados',
-                  },
-                  {
-                    href: '/sistema/empresas/cargos',
-                    label: 'Administrar Cargos',
-                    active: pathname === '/sistema/empresas/cargos',
-                  },
-                  {
-                    href: '/sistema/empresas/departamentos',
-                    label: 'Administrar Departamentos',
-                    active: pathname === '/sistema/empresas/departamentos',
-                  },
-                  {
-                    href: '/sistema/empresas/departamentos',
-                    label: 'Administrar Almacenes',
-                    active: pathname === '/sistema/empresas/almacenes',
-                  },
-                ],
-              },
-            ],
-          },
-          {
-            groupLabel: 'Ajustes',
-            menus: [
-              {
-                href: '/ajustes/empresas',
-                label: 'Globales',
-                active: pathname.includes('/ajustes/globales'),
-                icon: Globe,
-                roles: ['ANALISTA_ALMACEN', 'JEFE_ALMACEN', 'SUPERUSER'],
-                submenus: [
-                  {
-                    href: '/ajustes/globales/unidades',
-                    label: 'Unidades',
-                    active: pathname === '/ajustes/globales/unidades',
-                  },
-                  {
-                    href: '/ajustes/globales/fabricantes',
-                    label: 'Fabricantes',
-                    active: pathname === '/administracion/globales/fabricantes',
-                  },
-                  {
-                    href: '/ajustes/globales/proveedores',
-                    label: 'Proveedores',
-                    active: pathname === '/administracion/globales/proveedores',
-                  },
-                  {
-                    href: '/ajustes/globales/clientes',
-                    label: 'Clientes',
-                    active: pathname === '/ajustes/globales/clientes',
-                  },
-                  {
-                    href: '/ajustes/globales/condiciones',
-                    label: 'Condiciones',
-                    active: pathname === '/ajustes/globales/condiciones',
-                  },
-                ],
-              },
-              {
-                href: '/ajustes/bancos_cuentas',
-                label: 'Bancos',
-                active: pathname.includes('/bancos_cuentas'),
-                icon: Landmark,
-                roles: ['SUPERUSER'],
-                submenus: [
-                  {
-                    href: '/ajustes/bancos_cuentas/bancos',
-                    label: 'Bancos',
-                    active: pathname === '/ajustes/bancos_cuentas/bancos',
-                  },
-                  {
-                    href: '/ajustes/bancos_cuentas/cuentas',
-                    label: 'Cuentas',
-                    active: pathname === '/ajustes/bancos_cuentas/cuentas',
-                  },
-                  {
-                    href: '/ajustes/bancos_cuentas/tarjetas',
-                    label: 'Tarjetas',
-                    active: pathname === '/ajustes/bancos_cuentas/tarjetas',
-                  },
-                ],
-              },
-              {
-                href: '/ajustes/cuenta',
-                label: 'Cuenta',
-                active: pathname.includes('/ajustes/cuenta'),
-                icon: UserRoundCog,
-                roles: [],
-                submenus: [],
-              },
-            ],
-          },
-          {
-            groupLabel: 'Sistema',
-            menus: [
-              {
-                href: '/sistema/usuarios_permisos',
-                label: 'Usuarios Y Permisos',
-                active: pathname.includes('/sistema/usuarios_permisos'),
-                icon: User2,
-                roles: ['ADMIN', 'SUPERUSER'],
-                submenus: [
-                  {
-                    href: '/sistema/usuarios_permisos/usuarios',
-                    label: 'Administrar Usuarios',
-                    active: pathname === '/sistema/usuarios_permisos/usuarios',
-                  },
-                  {
-                    href: '/sistema/usuarios_permisos/roles',
-                    label: 'Administrar Roles',
-                    active: pathname === '/sistema/usuarios_permisos/roles',
-                  },
-                  {
-                    href: '/sistema/usuarios_permisos/permisos',
-                    label: 'Administrar Permisos',
-                    active: pathname === '/sistema/usuarios_permisos/permisos',
-                  },
-                ],
-              },
-              {
-                href: '/sistema/empresas/empleados',
-                label: 'Empleados',
-                active: pathname.includes('/sistema/empresas/empleados'),
-                icon: User2,
-                roles: ['ADMIN', 'SUPERUSER'],
-                submenus: [
-                  {
-                    href: '/sistema/empresas/empleados',
-                    label: 'Administrar Empleados',
-                    active: pathname === '/sistema/empresas/empleados',
-                  },
-                  {
-                    href: '/sistema/empresas/cargos',
-                    label: 'Administrar Cargos',
-                    active: pathname === '/sistema/empresas/cargos',
-                  },
-                  {
-                    href: '/sistema/empresas/departamentos',
-                    label: 'Administrar Departamentos',
-                    active: pathname === '/sistema/empresas/departamentos',
-                  },
-                  {
-                    href: '/sistema/empresas/departamentos',
-                    label: 'Administrar Almacenes',
-                    active: pathname === '/sistema/empresas/almacenes',
-                  },
-                ],
-              },
-            ],
-          },
-        ]
-  )
-    .map((group) => {
-      // Filter menus within each group
-      const filteredMenus = group.menus
-        .filter((menu) => hasAccess(menu))
-        .map((menu) => {
-          // Filter submenus within each menu
-          const filteredSubmenus = menu.submenus.filter((submenu) => hasAccess(submenu));
-          return { ...menu, submenus: filteredSubmenus };
-        });
-
-      return { ...group, menus: filteredMenus };
-    })
-    .filter((group) => group.menus.length > 0);
+    filteredMenu
+      // Filtrar grupos por módulo activo
+      .filter((group) => isModuleActive(group.moduleValue))
+      // Filtrar menús y submenús
+      .map((group) => ({
+        ...group,
+        menus: group.menus
+          .filter((menu) => isModuleActive(menu.moduleValue) && hasRoleAccess(menu))
+          .map((menu) => ({
+            ...menu,
+            submenus: menu.submenus.filter((sub) => isModuleActive(sub.moduleValue) && hasRoleAccess(sub)),
+          }))
+          .filter((menu) => menu.href || menu.submenus.length > 0),
+      }))
+      // Eliminar grupos vacíos
+      .filter((group) => group.menus.length > 0)
+  );
 }

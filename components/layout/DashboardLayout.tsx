@@ -7,7 +7,7 @@ import Footer from './Footer';
 import { AppSidebar } from './Sidebar';
 import { useMemo } from 'react';
 import { useCompanyStore } from '@/stores/CompanyStore';
-import { getMenuList } from '@/lib/menu-list-2';
+import { getMenuList } from '@/lib/menu-list';
 import { useAuth } from '@/contexts/AuthContext';
 import { Navbar } from './Navbar';
 

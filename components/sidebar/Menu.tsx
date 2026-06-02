@@ -5,7 +5,7 @@ import { memo } from 'react';
 
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { TooltipProvider } from '@/components/ui/tooltip';
-import { NavGroup } from '@/lib/menu-list-2';
+import { NavGroup } from '@/lib/menu-list';
 import { useSidebar } from '../ui/sidebar';
 import MenuGroup from './MenuGroup';
 

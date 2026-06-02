@@ -3,7 +3,7 @@
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { Fragment, useMemo } from 'react';
-import { NavGroup } from '@/lib/menu-list-2';
+import { NavGroup } from '@/lib/menu-list';
 import {
   Breadcrumb,
   BreadcrumbItem,
