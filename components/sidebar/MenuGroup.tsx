@@ -65,7 +65,7 @@ function MenuGroup({ groupLabel, menus, collapsed, isOpen, isMobile, pathname }:
     return pathname === href;
   });
   const isGroupOpen = useSidebarSectionsStore((state) => state.sections[groupStorageKey] ?? hasActiveItem);
-  const isGroupExpanded = isSidebarCollapsed || isGroupOpen;
+  const isGroupExpanded = isSidebarCollapsed || isGroupOpen || !groupLabel;
 
   const handleOpenChange = (open: boolean) => {
     setSectionOpen(groupStorageKey, open);
@@ -80,9 +80,7 @@ function MenuGroup({ groupLabel, menus, collapsed, isOpen, isMobile, pathname }:
               <GroupHeader label={groupLabel} collapsed={isSidebarCollapsed} open={isGroupExpanded} />
             </button>
           </CollapsibleTrigger>
-        ) : (
-          <GroupHeader collapsed={isSidebarCollapsed} />
-        )}
+        ) : null}
         {isSidebarCollapsed ? (
           <CollapsibleContent forceMount>
             <SidebarGroupContent>

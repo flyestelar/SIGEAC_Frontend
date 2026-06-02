@@ -14,7 +14,7 @@ export function AppSidebar({ menuList }: { menuList: NavGroup[] }) {
   const { selectedCompany, selectedStation } = useCompanyStore();
   return (
     <Sidebar collapsible="icon">
-      <SidebarHeader className="pt-10 pb-6">
+      <SidebarHeader className="pt-10 pb-6 gap-4">
         <Link
           href={`/${selectedCompany?.slug}/dashboard`}
           className={cn('transition-transform ease-in-out duration-300 flex items-center justify-center gap-2 px-1')}

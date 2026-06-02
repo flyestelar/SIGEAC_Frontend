@@ -109,12 +109,12 @@ const CompanySelect = () => {
           type="button"
           aria-label="Seleccionar empresa y estación"
           className={cn(
-            'h-9 w-full sm:w-[390px] items-center gap-3 overflow-hidden rounded-lg border bg-background px-3 text-left transition-colors flex',
+            'py-2 sm:h-9 w-full sm:w-[390px] items-center gap-3 overflow-hidden rounded-lg border bg-background px-3 text-left transition-colors flex',
             'hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
           )}
         >
           <div className="flex min-w-0 flex-1 items-center gap-3">
-            <span className="size-1.5 shrink-0 rounded-full bg-sky-500" />
+            <span className="size-2 shrink-0 rounded-full bg-sky-500" />
             <div className="flex min-w-0 flex-1 flex-col leading-tight">
               <AnimatePresence mode="wait" initial={false}>
                 {userLoading ? (
@@ -135,7 +135,7 @@ const CompanySelect = () => {
                     exit={{ opacity: 0, y: -2 }}
                     transition={{ duration: 0.15 }}
                     className={cn(
-                      'flex min-w-0 items-baseline gap-1.5 text-xs font-semibold',
+                      'flex-wrap flex min-w-0 items-baseline gap-1.5 gap-y-0 text-xs font-semibold',
                       selectedCompany ? 'text-foreground' : 'text-muted-foreground/70',
                     )}
                   >
@@ -145,7 +145,7 @@ const CompanySelect = () => {
                         <span className="text-muted-foreground/60">/</span>
                         <span className="shrink-0 tracking-wider">{stationLabel}</span>
                         {stationType ? (
-                          <span className="truncate text-[10px] uppercase tracking-wider text-muted-foreground">
+                          <span className="truncate font-normal text-[10px] tracking-wider text-muted-foreground">
                             {stationType}
                           </span>
                         ) : null}
@@ -182,7 +182,7 @@ const CompanySelect = () => {
               </span>
             )}
             <div className="min-w-0 flex-1">
-              <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+              <p className="text-xs font-semibold tracking-widest text-muted-foreground">
                 {step === 'company' ? 'Seleccionar empresa' : 'Seleccionar estación'}
               </p>
               <p className="truncate text-sm font-medium">
@@ -254,7 +254,7 @@ const CompanySelect = () => {
                             <span className="shrink-0 text-sm font-semibold tracking-wider">
                               {location.cod_iata}
                             </span>
-                            <span className="truncate text-[10px] uppercase tracking-wider text-muted-foreground">
+                            <span className="truncate text-[10px] tracking-wider text-muted-foreground">
                               {location.type}
                             </span>
                             {isSelected ? <Check className="ml-auto size-4 text-primary" /> : null}
