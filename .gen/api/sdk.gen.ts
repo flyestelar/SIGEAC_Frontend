@@ -794,6 +794,21 @@ import type {
   HardTimeInstallationInstallData,
   HardTimeInstallationInstallErrors,
   HardTimeInstallationInstallResponses,
+  HardTimeInstallationRequestApproveData,
+  HardTimeInstallationRequestApproveErrors,
+  HardTimeInstallationRequestApproveResponses,
+  HardTimeInstallationRequestIndexData,
+  HardTimeInstallationRequestIndexErrors,
+  HardTimeInstallationRequestIndexResponses,
+  HardTimeInstallationRequestRejectData,
+  HardTimeInstallationRequestRejectErrors,
+  HardTimeInstallationRequestRejectResponses,
+  HardTimeInstallationRequestShowData,
+  HardTimeInstallationRequestShowErrors,
+  HardTimeInstallationRequestShowResponses,
+  HardTimeInstallationRequestStoreData,
+  HardTimeInstallationRequestStoreErrors,
+  HardTimeInstallationRequestStoreResponses,
   HardTimeInstallationUninstallData,
   HardTimeInstallationUninstallErrors,
   HardTimeInstallationUninstallResponses,
@@ -5461,7 +5476,9 @@ export const hardTimeComponentInstallations = <ThrowOnError extends boolean = fa
   });
 
 /**
- * Mount a component into a controlled position
+ * Mount a component into a controlled position.
+ * Manual entry only — the component is already physically installed.
+ * For warehouse-sourced installations, use HardTimeInstallationRequestController
  */
 export const hardTimeInstallationInstall = <ThrowOnError extends boolean = false>(
   options: Options<HardTimeInstallationInstallData, ThrowOnError>,
@@ -5519,6 +5536,108 @@ export const hardTimeInstallationHistoryByAircraft = <ThrowOnError extends boole
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/aircrafts/{aircraftId}/hard-time-installations',
     ...options,
+  });
+
+/**
+ * List installation requests.
+ * GET /install-requests
+ */
+export const hardTimeInstallationRequestIndex = <ThrowOnError extends boolean = false>(
+  options?: Options<HardTimeInstallationRequestIndexData, ThrowOnError>,
+) =>
+  (options?.client ?? client).get<
+    HardTimeInstallationRequestIndexResponses,
+    HardTimeInstallationRequestIndexErrors,
+    ThrowOnError
+  >({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/install-requests',
+    ...options,
+  });
+
+/**
+ * Show a single installation request.
+ * GET /install-requests/{id}
+ */
+export const hardTimeInstallationRequestShow = <ThrowOnError extends boolean = false>(
+  options: Options<HardTimeInstallationRequestShowData, ThrowOnError>,
+) =>
+  (options.client ?? client).get<
+    HardTimeInstallationRequestShowResponses,
+    HardTimeInstallationRequestShowErrors,
+    ThrowOnError
+  >({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/install-requests/{id}',
+    ...options,
+  });
+
+/**
+ * Create an installation request from planificación.
+ * POST /aircraft-component-slots/{id}/install-request
+ */
+export const hardTimeInstallationRequestStore = <ThrowOnError extends boolean = false>(
+  options: Options<HardTimeInstallationRequestStoreData, ThrowOnError>,
+) =>
+  (options.client ?? client).post<
+    HardTimeInstallationRequestStoreResponses,
+    HardTimeInstallationRequestStoreErrors,
+    ThrowOnError
+  >({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/aircraft-component-slots/{id}/install-request',
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    },
+  });
+
+/**
+ * Approve and execute the installation.
+ * POST /install-requests/{id}/approve
+ */
+export const hardTimeInstallationRequestApprove = <ThrowOnError extends boolean = false>(
+  options: Options<HardTimeInstallationRequestApproveData, ThrowOnError>,
+) =>
+  (options.client ?? client).post<
+    HardTimeInstallationRequestApproveResponses,
+    HardTimeInstallationRequestApproveErrors,
+    ThrowOnError
+  >({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/install-requests/{id}/approve',
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    },
+  });
+
+/**
+ * Reject an installation request.
+ * POST /install-requests/{id}/reject
+ */
+export const hardTimeInstallationRequestReject = <ThrowOnError extends boolean = false>(
+  options: Options<HardTimeInstallationRequestRejectData, ThrowOnError>,
+) =>
+  (options.client ?? client).post<
+    HardTimeInstallationRequestRejectResponses,
+    HardTimeInstallationRequestRejectErrors,
+    ThrowOnError
+  >({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/install-requests/{id}/reject',
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    },
   });
 
 /**

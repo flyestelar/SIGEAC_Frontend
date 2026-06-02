@@ -275,6 +275,11 @@ import {
   hardTimeComponentInstallations,
   hardTimeInstallationHistoryByAircraft,
   hardTimeInstallationInstall,
+  hardTimeInstallationRequestApprove,
+  hardTimeInstallationRequestIndex,
+  hardTimeInstallationRequestReject,
+  hardTimeInstallationRequestShow,
+  hardTimeInstallationRequestStore,
   hardTimeInstallationUninstall,
   hardTimeIntervalCompliances,
   hardTimeIntervalIndex,
@@ -1339,6 +1344,21 @@ import type {
   HardTimeInstallationInstallData,
   HardTimeInstallationInstallError,
   HardTimeInstallationInstallResponse,
+  HardTimeInstallationRequestApproveData,
+  HardTimeInstallationRequestApproveError,
+  HardTimeInstallationRequestApproveResponse,
+  HardTimeInstallationRequestIndexData,
+  HardTimeInstallationRequestIndexError,
+  HardTimeInstallationRequestIndexResponse,
+  HardTimeInstallationRequestRejectData,
+  HardTimeInstallationRequestRejectError,
+  HardTimeInstallationRequestRejectResponse,
+  HardTimeInstallationRequestShowData,
+  HardTimeInstallationRequestShowError,
+  HardTimeInstallationRequestShowResponse,
+  HardTimeInstallationRequestStoreData,
+  HardTimeInstallationRequestStoreError,
+  HardTimeInstallationRequestStoreResponse,
   HardTimeInstallationUninstallData,
   HardTimeInstallationUninstallError,
   HardTimeInstallationUninstallResponse,
@@ -9009,7 +9029,9 @@ export const hardTimeComponentInstallationsOptions = (options: Options<HardTimeC
   });
 
 /**
- * Mount a component into a controlled position
+ * Mount a component into a controlled position.
+ * Manual entry only — the component is already physically installed.
+ * For warehouse-sourced installations, use HardTimeInstallationRequestController
  */
 export const hardTimeInstallationInstallMutation = (
   options?: Partial<Options<HardTimeInstallationInstallData>>,
@@ -9091,6 +9113,142 @@ export const hardTimeInstallationHistoryByAircraftOptions = (
     },
     queryKey: hardTimeInstallationHistoryByAircraftQueryKey(options),
   });
+
+export const hardTimeInstallationRequestIndexQueryKey = (options?: Options<HardTimeInstallationRequestIndexData>) =>
+  createQueryKey('hardTimeInstallationRequestIndex', options);
+
+/**
+ * List installation requests.
+ * GET /install-requests
+ */
+export const hardTimeInstallationRequestIndexOptions = (options?: Options<HardTimeInstallationRequestIndexData>) =>
+  queryOptions<
+    HardTimeInstallationRequestIndexResponse,
+    AxiosError<HardTimeInstallationRequestIndexError>,
+    HardTimeInstallationRequestIndexResponse,
+    ReturnType<typeof hardTimeInstallationRequestIndexQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await hardTimeInstallationRequestIndex({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: hardTimeInstallationRequestIndexQueryKey(options),
+  });
+
+export const hardTimeInstallationRequestShowQueryKey = (options: Options<HardTimeInstallationRequestShowData>) =>
+  createQueryKey('hardTimeInstallationRequestShow', options);
+
+/**
+ * Show a single installation request.
+ * GET /install-requests/{id}
+ */
+export const hardTimeInstallationRequestShowOptions = (options: Options<HardTimeInstallationRequestShowData>) =>
+  queryOptions<
+    HardTimeInstallationRequestShowResponse,
+    AxiosError<HardTimeInstallationRequestShowError>,
+    HardTimeInstallationRequestShowResponse,
+    ReturnType<typeof hardTimeInstallationRequestShowQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await hardTimeInstallationRequestShow({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: hardTimeInstallationRequestShowQueryKey(options),
+  });
+
+/**
+ * Create an installation request from planificación.
+ * POST /aircraft-component-slots/{id}/install-request
+ */
+export const hardTimeInstallationRequestStoreMutation = (
+  options?: Partial<Options<HardTimeInstallationRequestStoreData>>,
+): UseMutationOptions<
+  HardTimeInstallationRequestStoreResponse,
+  AxiosError<HardTimeInstallationRequestStoreError>,
+  Options<HardTimeInstallationRequestStoreData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    HardTimeInstallationRequestStoreResponse,
+    AxiosError<HardTimeInstallationRequestStoreError>,
+    Options<HardTimeInstallationRequestStoreData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await hardTimeInstallationRequestStore({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+/**
+ * Approve and execute the installation.
+ * POST /install-requests/{id}/approve
+ */
+export const hardTimeInstallationRequestApproveMutation = (
+  options?: Partial<Options<HardTimeInstallationRequestApproveData>>,
+): UseMutationOptions<
+  HardTimeInstallationRequestApproveResponse,
+  AxiosError<HardTimeInstallationRequestApproveError>,
+  Options<HardTimeInstallationRequestApproveData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    HardTimeInstallationRequestApproveResponse,
+    AxiosError<HardTimeInstallationRequestApproveError>,
+    Options<HardTimeInstallationRequestApproveData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await hardTimeInstallationRequestApprove({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+/**
+ * Reject an installation request.
+ * POST /install-requests/{id}/reject
+ */
+export const hardTimeInstallationRequestRejectMutation = (
+  options?: Partial<Options<HardTimeInstallationRequestRejectData>>,
+): UseMutationOptions<
+  HardTimeInstallationRequestRejectResponse,
+  AxiosError<HardTimeInstallationRequestRejectError>,
+  Options<HardTimeInstallationRequestRejectData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    HardTimeInstallationRequestRejectResponse,
+    AxiosError<HardTimeInstallationRequestRejectError>,
+    Options<HardTimeInstallationRequestRejectData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await hardTimeInstallationRequestReject({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
 
 export const hardTimeIntervalIndexQueryKey = (options: Options<HardTimeIntervalIndexData>) =>
   createQueryKey('hardTimeIntervalIndex', options);
