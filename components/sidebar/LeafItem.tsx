@@ -8,7 +8,7 @@ import { cn } from '@/lib/utils';
 import { SidebarMenuButton } from '../ui/sidebar';
 import { motion } from 'motion/react';
 
-const AnimatedChevronDown = motion(ChevronDown);
+const AnimatedChevronDown = motion.create(ChevronDown);
 
 export function LeafItem({
   href,
