@@ -438,6 +438,25 @@ export type Batch = {
 export type BatchCategoryCode = 'COMPONENTE' | 'CONSUMIBLE' | 'HERRAMIENTA';
 
 /**
+ * BatchResource
+ */
+export type BatchResource = {
+  id: number;
+  name: string | null;
+  slug: string | null;
+  description: string | null;
+  category: string | null;
+  ata_code: string | null;
+  is_hazardous: string;
+  unit?: Unit;
+  min_quantity: number | null;
+  warehouse_id: number | null;
+  warehouse_name?: string;
+  created_at: string | null;
+  article_count: number | number;
+};
+
+/**
  * BulkCompleteWorkOrderItemTaskRequest
  */
 export type BulkCompleteWorkOrderItemTaskRequest = {
@@ -6727,6 +6746,94 @@ export type BatchesBatchesWithArticlesError = BatchesBatchesWithArticlesErrors[k
 export type BatchesBatchesWithArticlesResponses = {
   200: unknown;
 };
+
+export type BatchesPaginateData = {
+  body?: never;
+  path?: never;
+  query: {
+    location: number;
+    category?: string | null;
+    search?: string | null;
+    per_page?: number | null;
+    page?: number | null;
+  };
+  url: '/batches/paginate';
+};
+
+export type BatchesPaginateErrors = {
+  /**
+   * Unauthenticated
+   */
+  401: {
+    /**
+     * Error overview.
+     */
+    message: string;
+  };
+  /**
+   * Validation error
+   */
+  422: {
+    /**
+     * Errors overview.
+     */
+    message: string;
+    /**
+     * A detailed description of each field that failed validation.
+     */
+    errors: {
+      [key: string]: Array<string>;
+    };
+  };
+};
+
+export type BatchesPaginateError = BatchesPaginateErrors[keyof BatchesPaginateErrors];
+
+export type BatchesPaginateResponses = {
+  /**
+   * Paginated set of `BatchResource`
+   */
+  200: {
+    data: Array<BatchResource>;
+    links: {
+      first: string | null;
+      last: string | null;
+      prev: string | null;
+      next: string | null;
+    };
+    meta: {
+      current_page: number;
+      from: number | null;
+      last_page: number;
+      /**
+       * Generated paginator links.
+       */
+      links: Array<{
+        url: string | null;
+        label: string;
+        active: boolean;
+      }>;
+      /**
+       * Base path for paginator generated URLs.
+       */
+      path: string | null;
+      /**
+       * Number of items shown per page.
+       */
+      per_page: number;
+      /**
+       * Number of the last item in the slice.
+       */
+      to: number | null;
+      /**
+       * Total number of items being paginated.
+       */
+      total: number;
+    };
+  };
+};
+
+export type BatchesPaginateResponse = BatchesPaginateResponses[keyof BatchesPaginateResponses];
 
 export type BatchesShowBySlugData = {
   body?: never;

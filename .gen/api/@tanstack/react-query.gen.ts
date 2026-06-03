@@ -115,6 +115,7 @@ import {
   batchesDestroy,
   batchesGetArticlesWithBatch,
   batchesIndex,
+  batchesPaginate,
   batchesShow,
   batchesShowBatcheItemsByLocation,
   batchesShowBatchesByArticleCondition,
@@ -879,6 +880,9 @@ import type {
   BatchesIndexData,
   BatchesIndexError,
   BatchesIndexResponse,
+  BatchesPaginateData,
+  BatchesPaginateError,
+  BatchesPaginateResponse,
   BatchesShowBatcheItemsByLocationData,
   BatchesShowBatcheItemsByLocationError,
   BatchesShowBatchesByArticleConditionData,
@@ -5257,6 +5261,77 @@ export const batchesBatchesWithArticlesOptions = (options: Options<BatchesBatche
     },
     queryKey: batchesBatchesWithArticlesQueryKey(options),
   });
+
+export const batchesPaginateQueryKey = (options: Options<BatchesPaginateData>) =>
+  createQueryKey('batchesPaginate', options);
+
+/**
+ * Method: Get
+ * EndPoint: /batches-paginated?company=&location=&category=&search=&per_page=
+ * Function Name: paginate(Request $request)
+ * Docs: Paginated version of showByCategory with all query params and text search
+ */
+export const batchesPaginateOptions = (options: Options<BatchesPaginateData>) =>
+  queryOptions<
+    BatchesPaginateResponse,
+    AxiosError<BatchesPaginateError>,
+    BatchesPaginateResponse,
+    ReturnType<typeof batchesPaginateQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await batchesPaginate({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: batchesPaginateQueryKey(options),
+  });
+
+export const batchesPaginateInfiniteQueryKey = (
+  options: Options<BatchesPaginateData>,
+): QueryKey<Options<BatchesPaginateData>> => createQueryKey('batchesPaginate', options, true);
+
+/**
+ * Method: Get
+ * EndPoint: /batches-paginated?company=&location=&category=&search=&per_page=
+ * Function Name: paginate(Request $request)
+ * Docs: Paginated version of showByCategory with all query params and text search
+ */
+export const batchesPaginateInfiniteOptions = (options: Options<BatchesPaginateData>) =>
+  infiniteQueryOptions<
+    BatchesPaginateResponse,
+    AxiosError<BatchesPaginateError>,
+    InfiniteData<BatchesPaginateResponse>,
+    QueryKey<Options<BatchesPaginateData>>,
+    number | null | Pick<QueryKey<Options<BatchesPaginateData>>[0], 'body' | 'headers' | 'path' | 'query'>
+  >(
+    // @ts-ignore
+    {
+      queryFn: async ({ pageParam, queryKey, signal }) => {
+        // @ts-ignore
+        const page: Pick<QueryKey<Options<BatchesPaginateData>>[0], 'body' | 'headers' | 'path' | 'query'> =
+          typeof pageParam === 'object'
+            ? pageParam
+            : {
+                query: {
+                  page: pageParam,
+                },
+              };
+        const params = createInfiniteParams(queryKey, page);
+        const { data } = await batchesPaginate({
+          ...options,
+          ...params,
+          signal,
+          throwOnError: true,
+        });
+        return data;
+      },
+      queryKey: batchesPaginateInfiniteQueryKey(options),
+    },
+  );
 
 /**
  * Method: Get
