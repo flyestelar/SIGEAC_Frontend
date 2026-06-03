@@ -2,7 +2,7 @@
 
 import { UserNav } from '@/components/layout/UserNav';
 import { Button } from '@/components/ui/button';
-import { NavGroup } from '@/lib/menu-list-2';
+import { NavGroup } from '@/lib/menu-list';
 import { cn } from '@/lib/utils';
 import { Search } from 'lucide-react';
 import { useTheme } from 'next-themes';

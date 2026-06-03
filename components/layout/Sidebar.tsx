@@ -7,7 +7,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Sidebar, SidebarContent, SidebarHeader, useSidebar } from '../ui/sidebar';
 import CompanySelect from '../selects/CompanySelect';
-import { NavGroup } from '@/lib/menu-list-2';
+import { NavGroup } from '@/lib/menu-list';
 
 export function AppSidebar({ menuList }: { menuList: NavGroup[] }) {
   const sidebar = useSidebar();

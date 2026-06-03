@@ -6,7 +6,7 @@ import { AnimatePresence, motion } from 'motion/react';
 import { CollapseMenuButton } from '@/components/sidebar/CollapseMenuButton';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { getMenuList } from '@/lib/menu-list-2';
+import { getMenuList } from '@/lib/menu-list';
 import { cn } from '@/lib/utils';
 import { useSidebarSectionsStore } from '@/stores/SidebarSectionsStore';
 import { memo } from 'react';

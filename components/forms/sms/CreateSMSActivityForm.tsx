@@ -211,10 +211,17 @@ export default function CreateSMSActivityForm({
                 executed_by: initialData.executed_by || "",
                 mitigation_measure_id: (initialData as any)?.mitigation_measure_id ?? null,
             });
-        } else if (!isEditing && nextNumberData?.next_number) {
-            form.setValue("activity_number", nextNumberData.next_number);
+        } else if (!isEditing) {
+            if (nextNumberData?.next_number) {
+                form.setValue("activity_number", nextNumberData.next_number);
+            }
+            // Aplica mitigation_measure_id una vez que mitigationTable cargó,
+            // para que la opción exista en el Select al momento de mostrarla.
+            if (mitigationTable && (initialData as any)?.mitigation_measure_id != null) {
+                form.setValue("mitigation_measure_id", (initialData as any).mitigation_measure_id);
+            }
         }
-    }, [isEditing, initialData, employees, nextNumberData, form.reset, form]); // Dependencias del efecto
+    }, [isEditing, initialData, employees, nextNumberData, mitigationTable, form.reset, form]); // Dependencias del efecto
     // ======================= FIN DE LA SOLUCIÓN =======================
     useEffect(() => {
         if (initialData?.topics) {
