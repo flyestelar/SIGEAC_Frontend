@@ -13,6 +13,7 @@ import { SidebarToggle } from '../sidebar/SidebarToggle';
 import { useSidebar } from '../ui/sidebar';
 import { BreadcrumbNav } from './BreadcrumbNav';
 import { CommandPalette } from './CommandPalette';
+import { NotificationBell } from './NotificationBell';
 import { ThemeToggler } from './ThemeToggler';
 
 interface NavbarProps {
@@ -84,6 +85,7 @@ export function Navbar({ menuList }: NavbarProps) {
           <span className="ml-1 hidden h-5 w-px bg-border/60 md:block" />
 
           <div className="flex items-center gap-1.5">
+            <NotificationBell />
             <ThemeToggler />
             <UserNav />
           </div>
