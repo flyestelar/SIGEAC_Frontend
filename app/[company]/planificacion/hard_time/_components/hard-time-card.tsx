@@ -30,6 +30,8 @@ interface HardTimeCardProps {
   onInstall?: () => void;
   onUninstall?: () => void;
   onCreateInterval?: () => void;
+  onCancelRequest?: () => void;
+  isCancellingRequest?: boolean;
 }
 
 export function HardTimeCard({
@@ -40,6 +42,8 @@ export function HardTimeCard({
   onInstall,
   onUninstall,
   onCreateInterval,
+  onCancelRequest,
+  isCancellingRequest,
 }: HardTimeCardProps) {
   const isVacant = !component.active_installation;
   const rawIntervals = component.installed_part?.intervals;
@@ -124,7 +128,13 @@ export function HardTimeCard({
 
         <CardContent className="space-y-3 px-4 pb-3 pt-0">
           {pendingRequest ? (
-            <PendingInstallationRequest request={pendingRequest} />
+            <PendingInstallationRequest
+              request={pendingRequest}
+              position={component.position}
+              componentName={component.batch?.name || component.description || undefined}
+              onCancel={onCancelRequest}
+              isCancelling={isCancellingRequest}
+            />
           ) : (
             <div className="flex items-center gap-2 rounded-md border border-dashed border-sky-500/20 bg-background/60 px-3 py-2">
               <PlusCircle className="h-3.5 w-3.5 shrink-0 text-sky-700 dark:text-sky-300" />
@@ -151,18 +161,20 @@ export function HardTimeCard({
                   Intervalo
                 </Button>
               ) : null}
-              <Button
-                size="sm"
-                variant="outline"
-                className="h-7 gap-1 border-sky-500/30 px-2.5 text-[11px] text-sky-700 hover:bg-sky-500/10 dark:text-sky-300"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onInstall?.();
-                }}
-              >
-                <PackagePlus className="h-3.5 w-3.5" />
-                Montar
-              </Button>
+              {!pendingRequest && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="h-7 gap-1 border-sky-500/30 px-2.5 text-[11px] text-sky-700 hover:bg-sky-500/10 dark:text-sky-300"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onInstall?.();
+                  }}
+                >
+                  <PackagePlus className="h-3.5 w-3.5" />
+                  Montar
+                </Button>
+              )}
             </div>
           </div>
         </CardContent>

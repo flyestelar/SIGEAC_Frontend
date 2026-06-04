@@ -26,7 +26,7 @@ export function Navbar({ menuList }: NavbarProps) {
 
   const toggleCommand = () => setCommandOpen((prev) => !prev);
   const toggleTheme = useEffectEvent(() => setTheme(theme === 'dark' ? 'light' : 'dark'));
-
+  const toggleSidebar = useEffectEvent(() => sidebar.toggleSidebar());
   useEffect(
     () =>
       tinykeys(window, {
@@ -37,6 +37,10 @@ export function Navbar({ menuList }: NavbarProps) {
         '$mod+Alt+t': (event) => {
           event.preventDefault();
           toggleTheme();
+        },
+        '$mod+b': (event) => {
+          event.preventDefault();
+          toggleSidebar();
         },
       }),
     [],

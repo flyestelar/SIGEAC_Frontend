@@ -12736,7 +12736,9 @@ export type HardTimeInstallationHistoryByAircraftResponse =
 export type HardTimeInstallationRequestIndexData = {
   body?: never;
   path?: never;
-  query?: never;
+  query?: {
+    status?: string;
+  };
   url: '/install-requests';
 };
 

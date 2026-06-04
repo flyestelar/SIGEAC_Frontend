@@ -5,6 +5,7 @@ import {
   aircraftComponentSlotStoreMutation,
   hardTimeInstallationInstallMutation,
   hardTimeInstallationRequestApproveMutation,
+  hardTimeInstallationRequestIndexQueryKey,
   hardTimeInstallationRequestRejectMutation,
   hardTimeInstallationRequestStoreMutation,
   hardTimeIntervalStoreMutation,
@@ -237,7 +238,7 @@ export const useCreateInstallRequest = (slotId: number, aircraftId: number | nul
         queryKey: aircraftComponentSlotIndexQueryKey({ query: { aircraft_id: aircraftId! } }),
       });
       queryClient.invalidateQueries({ queryKey: aircraftComponentSlotShowQueryKey({ path: { id: slotId } }) });
-      queryClient.invalidateQueries({ queryKey: ['hard-time-installation-requests'] });
+      queryClient.invalidateQueries({ queryKey: hardTimeInstallationRequestIndexQueryKey() });
       toast.success('Solicitud de instalación creada', {
         description: 'Almacén debe aprobar la solicitud para consumir inventario.',
       });
@@ -257,7 +258,7 @@ export const useApproveInstallRequest = (requestId: number, aircraftId: number |
       queryClient.invalidateQueries({
         queryKey: aircraftComponentSlotIndexQueryKey({ query: { aircraft_id: aircraftId! } }),
       });
-      queryClient.invalidateQueries({ queryKey: ['hard-time-installation-requests'] });
+      queryClient.invalidateQueries({ queryKey: hardTimeInstallationRequestIndexQueryKey() });
       toast.success('Instalación aprobada', { description: 'El componente fue instalado y el inventario consumido.' });
     },
     onError: (error: any) =>
@@ -275,12 +276,30 @@ export const useRejectInstallRequest = (requestId: number, aircraftId: number | 
       queryClient.invalidateQueries({
         queryKey: aircraftComponentSlotIndexQueryKey({ query: { aircraft_id: aircraftId! } }),
       });
-      queryClient.invalidateQueries({ queryKey: ['hard-time-installation-requests'] });
+      queryClient.invalidateQueries({ queryKey: hardTimeInstallationRequestIndexQueryKey() });
       toast.success('Solicitud rechazada', { description: 'El slot fue liberado sin consumir inventario.' });
     },
     onError: (error: any) =>
       toast.error('No se pudo rechazar la solicitud', {
         description: error.response?.data?.message ?? 'Solo se pueden rechazar solicitudes pendientes.',
+      }),
+  });
+};
+
+export const useCancelInstallationRequest = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    ...hardTimeInstallationRequestRejectMutation(),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: aircraftComponentSlotIndexQueryKey(),
+      });
+      queryClient.invalidateQueries({ queryKey: hardTimeInstallationRequestIndexQueryKey() });
+      toast.success('Solicitud cancelada', { description: 'La solicitud de montaje fue cancelada.' });
+    },
+    onError: (error) =>
+      toast.error('No se pudo cancelar la solicitud', {
+        description: error.response?.data?.message ?? 'Solo se pueden cancelar solicitudes pendientes.',
       }),
   });
 };

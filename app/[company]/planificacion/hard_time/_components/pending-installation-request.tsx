@@ -1,15 +1,31 @@
 'use client';
 
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import { HardTimeInstallationRequestResource } from '@api/types';
 import { format, parseISO } from 'date-fns';
-import { ClockArrowUp, PackagePlus, UserRound } from 'lucide-react';
+import { Ban, ClockArrowUp, PackagePlus, UserRound } from 'lucide-react';
 
 interface PendingInstallationRequestProps {
   request: HardTimeInstallationRequestResource;
+  position?: string;
+  componentName?: string;
+  onCancel?: () => void;
+  isCancelling?: boolean;
 }
 
-export function PendingInstallationRequest({ request }: PendingInstallationRequestProps) {
+export function PendingInstallationRequest({ request, position, componentName, onCancel, isCancelling }: PendingInstallationRequestProps) {
   return (
     <div className="space-y-2 rounded-md border border-amber-500/20 bg-amber-500/5 px-3 py-2.5">
       <div className="flex items-center gap-2">
@@ -36,6 +52,46 @@ export function PendingInstallationRequest({ request }: PendingInstallationReque
           {format(parseISO(request.installed_at), 'dd/MM/yyyy HH:mm')}
         </span>
       </div>
+      {onCancel && (
+        <div className="flex justify-end border-t border-amber-500/10 pt-2">
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button
+                size="sm"
+                variant="outline"
+                className="h-7 gap-1 border-red-500/30 px-2.5 text-[11px] text-red-600 hover:bg-red-500/10 dark:text-red-400"
+                disabled={isCancelling}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <Ban className="h-3 w-3" />
+                {isCancelling ? 'Cancelando...' : 'Cancelar solicitud'}
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent onClick={(e) => e.stopPropagation()}>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Cancelar solicitud</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Se cancelará la solicitud de montaje{componentName ? <>, <span className="font-medium text-foreground">{componentName}</span></> : null} en la posición{' '}
+                  <span className="font-mono font-medium text-foreground">{position || 'esta posición'}</span>.
+                  Esta acción no se puede deshacer.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel onClick={(e) => e.stopPropagation()}>Volver</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onCancel();
+                  }}
+                  className="bg-red-600 hover:bg-red-700"
+                >
+                  Sí, cancelar solicitud
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </div>
+      )}
     </div>
   );
 }
