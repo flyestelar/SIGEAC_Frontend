@@ -29,9 +29,8 @@ import { useState } from 'react';
 import type { MaintenanceAlertStatus, MaintenanceControlExecutionResource, TaskExecutionStatus } from '@api/types';
 
 import { DataTableViewOptions } from '@/components/tables/DataTableViewOptions';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -41,18 +40,24 @@ import { maintenanceControlExecutionsIndexOptions } from '@api/queries';
 
 // ─── Status config ───────────────────────────────────────────
 
-const STATUS_CONFIG: Record<TaskExecutionStatus, { label: string; className: string }> = {
+const STATUS_CONFIG: Record<TaskExecutionStatus, { label: string; dot: string; text: string; bg: string }> = {
   COMPLETED: {
     label: 'Completado',
-    className: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400',
+    dot: 'bg-emerald-500',
+    text: 'text-emerald-700 dark:text-emerald-400',
+    bg: 'border-emerald-500/30 bg-emerald-500/10',
   },
   IN_PROGRESS: {
     label: 'En progreso',
-    className: 'border-amber-500/30 bg-amber-500/10 text-amber-600 dark:text-amber-400',
+    dot: 'bg-amber-500',
+    text: 'text-amber-700 dark:text-amber-400',
+    bg: 'border-amber-500/30 bg-amber-500/10',
   },
   CANCELLED: {
     label: 'Cancelado',
-    className: 'border-red-500/30 bg-red-500/10 text-red-600 dark:text-red-400',
+    dot: 'bg-red-500',
+    text: 'text-red-700 dark:text-red-400',
+    bg: 'border-red-500/30 bg-red-500/10',
   },
 };
 
@@ -63,11 +68,11 @@ function SortableHeader({ column, children }: { column: any; children: React.Rea
     <Button
       variant="ghost"
       size="sm"
-      className="-ml-3 h-8 text-xs font-semibold uppercase tracking-wider text-muted-foreground hover:text-foreground"
+      className="-ml-3 h-7 gap-1 px-2 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground hover:text-foreground"
       onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
     >
       {children}
-      <ArrowUpDown className="ml-1.5 h-3 w-3" />
+      <ArrowUpDown className="h-3 w-3" />
     </Button>
   );
 }
@@ -77,7 +82,7 @@ const columns: ColumnDef<MaintenanceControlExecutionResource>[] = [
     accessorKey: 'executed_at',
     header: ({ column }) => <SortableHeader column={column}>Fecha ejecución</SortableHeader>,
     cell: ({ row }) => (
-      <span className="whitespace-nowrap text-sm font-medium">
+      <span className="whitespace-nowrap text-sm font-medium tabular-nums">
         {format(new Date(row.original.executed_at), 'dd MMM yyyy', { locale: es })}
       </span>
     ),
@@ -87,7 +92,7 @@ const columns: ColumnDef<MaintenanceControlExecutionResource>[] = [
     header: ({ column }) => <SortableHeader column={column}>Fecha completado</SortableHeader>,
     cell: ({ row }) =>
       row.original.completed_at ? (
-        <span className="whitespace-nowrap text-sm text-foreground/80">
+        <span className="whitespace-nowrap text-sm tabular-nums text-foreground/80">
           {format(new Date(row.original.completed_at), 'dd MMM yyyy', { locale: es })}
         </span>
       ) : (
@@ -99,7 +104,7 @@ const columns: ColumnDef<MaintenanceControlExecutionResource>[] = [
     header: ({ column }) => <SortableHeader column={column}>Aeronave</SortableHeader>,
     accessorFn: (row) => row.aircraft?.acronym ?? '',
     cell: ({ row }) => (
-      <span className="whitespace-nowrap font-mono text-xs font-medium text-primary">
+      <span className="whitespace-nowrap font-mono text-xs font-semibold text-primary">
         {row.original.aircraft?.acronym ?? '—'}
       </span>
     ),
@@ -120,9 +125,12 @@ const columns: ColumnDef<MaintenanceControlExecutionResource>[] = [
     cell: ({ row }) => {
       const config = STATUS_CONFIG[row.original.status];
       return (
-        <Badge variant="outline" className={config.className}>
+        <span
+          className={`inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-[11px] font-medium ${config.bg} ${config.text}`}
+        >
+          <span className={`h-1.5 w-1.5 rounded-full ${config.dot}`} aria-hidden />
           {config.label}
-        </Badge>
+        </span>
       );
     },
     filterFn: (row, _columnId, filterValue) => {
@@ -132,10 +140,12 @@ const columns: ColumnDef<MaintenanceControlExecutionResource>[] = [
   },
   {
     accessorKey: 'notes',
-    header: () => <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Notas</span>,
+    header: () => (
+      <span className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">Notas</span>
+    ),
     cell: ({ row }) =>
       row.original.notes ? (
-        <span className="line-clamp-2 max-w-[200px] text-xs text-foreground/80">{row.original.notes}</span>
+        <span className="line-clamp-2 max-w-[220px] text-xs text-foreground/80">{row.original.notes}</span>
       ) : (
         <span className="text-sm text-muted-foreground/50">—</span>
       ),
@@ -202,13 +212,11 @@ export function ExecutionsTable({ controlId, controlName, selectedAircraftId }: 
   if (!isLoading && !executions.length && statusFilter === 'ALL' && !globalFilter) {
     return (
       <Card className="border-border/60 bg-card">
-        <CardContent className="py-10">
+        <CardContent className="py-12">
           <div className="flex flex-col items-center justify-center text-center">
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted">
-              <Activity className="h-6 w-6 text-muted-foreground/60" />
-            </div>
-            <p className="mt-3 text-sm font-medium text-muted-foreground">Sin ejecuciones registradas</p>
-            <p className="mt-1 text-xs text-muted-foreground/60">Este control no tiene ejecuciones de mantenimiento</p>
+            <Activity className="h-5 w-5 text-muted-foreground/40" />
+            <p className="mt-3 text-sm font-medium text-foreground/80">Sin ejecuciones registradas</p>
+            <p className="mt-1 text-xs text-muted-foreground">Este control no tiene ejecuciones de mantenimiento</p>
           </div>
         </CardContent>
       </Card>
@@ -217,38 +225,36 @@ export function ExecutionsTable({ controlId, controlName, selectedAircraftId }: 
 
   return (
     <Card className="border-border/60 bg-card">
-      <CardHeader className="pb-3">
+      <div className="flex flex-col gap-3 border-b border-border/60 px-5 py-3">
         <div className="flex items-start justify-between gap-3">
-          <div className="min-w-0">
-            <CardTitle className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-              <Activity className="h-4 w-4 text-primary" />
+          <div className="flex min-w-0 items-center gap-2">
+            <Activity className="h-3.5 w-3.5 shrink-0 text-primary" />
+            <span className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
               Ejecuciones
-              <span className="font-normal normal-case tracking-normal text-foreground">— {controlName}</span>
-            </CardTitle>
-            <p className="mt-1 text-xs text-muted-foreground">
-              {totalItems} ejecuci{totalItems === 1 ? 'ón' : 'ones'} en total
-            </p>
+            </span>
+            <span className="truncate text-sm font-medium text-foreground/80">{controlName}</span>
+            <span className="shrink-0 rounded-sm bg-muted px-1.5 py-0.5 font-mono text-[10px] tabular-nums text-muted-foreground">
+              {totalItems}
+            </span>
           </div>
-          <div className="flex items-center gap-2">
-            <DataTableViewOptions table={table} />
-          </div>
+          <DataTableViewOptions table={table} />
         </div>
 
-        <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-center gap-2">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-1 items-center gap-2">
             <div className="relative w-full sm:max-w-xs">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
               <Input
                 value={globalFilter ?? ''}
                 onChange={(e) => setGlobalFilter(e.target.value)}
                 placeholder="Buscar..."
-                className="h-8 pl-9 pr-9 text-sm"
+                className="h-8 pl-8 pr-8 text-sm"
               />
               {!!globalFilter && (
                 <button
                   type="button"
                   onClick={() => setGlobalFilter('')}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                 >
                   <X className="h-3.5 w-3.5" />
                 </button>
@@ -262,7 +268,7 @@ export function ExecutionsTable({ controlId, controlName, selectedAircraftId }: 
                 setPage(1);
               }}
             >
-              <SelectTrigger className="h-8 w-[150px] text-xs">
+              <SelectTrigger className="h-8 w-[160px] text-xs">
                 <SelectValue placeholder="Estado" />
               </SelectTrigger>
               <SelectContent>
@@ -272,23 +278,23 @@ export function ExecutionsTable({ controlId, controlName, selectedAircraftId }: 
                 <SelectItem value="CANCELLED">Cancelado</SelectItem>
               </SelectContent>
             </Select>
-          </div>
 
-          {hasActiveFilters && (
-            <Button variant="ghost" size="sm" onClick={resetAll} className="h-8">
-              Reiniciar
-              <ListRestart className="ml-1.5 h-3.5 w-3.5" />
-            </Button>
-          )}
+            {hasActiveFilters && (
+              <Button variant="ghost" size="sm" onClick={resetAll} className="h-8 gap-1.5 text-xs">
+                <ListRestart className="h-3.5 w-3.5" />
+                Reiniciar
+              </Button>
+            )}
+          </div>
         </div>
-      </CardHeader>
+      </div>
 
       <CardContent className="px-0 pb-0">
         <ScrollArea className="w-full">
           <div className="min-w-[820px]">
             <Table>
-              <TableHeader>
-                <TableRow className="border-border/60 bg-muted/40 hover:bg-muted/40">
+              <TableHeader className="sticky top-0 z-10 bg-muted/60 backdrop-blur supports-[backdrop-filter]:bg-muted/50">
+                <TableRow className="border-border/60 hover:bg-transparent">
                   {table.getHeaderGroups().map((headerGroup) =>
                     headerGroup.headers.map((header) => (
                       <TableHead key={header.id} className="whitespace-nowrap">
@@ -311,7 +317,10 @@ export function ExecutionsTable({ controlId, controlName, selectedAircraftId }: 
                   ))
                 ) : table.getRowModel().rows?.length ? (
                   table.getRowModel().rows.map((row) => (
-                    <TableRow key={row.id} className="group border-border/40 hover:bg-muted/30 transition-colors">
+                    <TableRow
+                      key={row.id}
+                      className="group border-l-2 border-transparent border-b-border/40 transition-colors hover:border-l-primary/40 hover:bg-muted/30"
+                    >
                       {row.getVisibleCells().map((cell) => (
                         <TableCell key={cell.id} className="align-middle">
                           {flexRender(cell.column.columnDef.cell, cell.getContext())}
@@ -321,7 +330,7 @@ export function ExecutionsTable({ controlId, controlName, selectedAircraftId }: 
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={columns.length} className="h-32 text-center text-muted-foreground">
+                    <TableCell colSpan={columns.length} className="h-32 text-center text-sm text-muted-foreground">
                       No se encontraron ejecuciones con los filtros aplicados.
                     </TableCell>
                   </TableRow>
@@ -334,13 +343,13 @@ export function ExecutionsTable({ controlId, controlName, selectedAircraftId }: 
 
         {/* Pagination — backend-driven */}
         <div className="flex flex-col items-center justify-between gap-3 border-t border-border/60 px-5 py-3 sm:flex-row">
-          <p className="text-xs text-muted-foreground">
+          <p className="text-[11px] tabular-nums text-muted-foreground">
             Mostrando {meta?.from ?? 0}–{meta?.to ?? 0} de {totalItems}
           </p>
 
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2">
-              <span className="text-xs text-muted-foreground">Items por página:</span>
+              <span className="text-[11px] text-muted-foreground">Por página</span>
               <Select
                 value={String(perPage)}
                 onValueChange={(value) => {
@@ -348,7 +357,7 @@ export function ExecutionsTable({ controlId, controlName, selectedAircraftId }: 
                   setPage(1);
                 }}
               >
-                <SelectTrigger className="h-7 w-[60px] text-xs">
+                <SelectTrigger className="h-7 w-[64px] text-xs">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -361,7 +370,7 @@ export function ExecutionsTable({ controlId, controlName, selectedAircraftId }: 
               </Select>
             </div>
 
-            <span className="text-xs font-medium text-muted-foreground">
+            <span className="text-[11px] font-medium tabular-nums text-muted-foreground">
               Página {page} de {totalPages}
             </span>
 
