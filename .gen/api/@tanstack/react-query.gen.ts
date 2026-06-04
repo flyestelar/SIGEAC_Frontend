@@ -225,6 +225,7 @@ import {
   dispatchOrderShowDispatchInProcess,
   dispatchOrderShowDispatchOrders,
   dispatchOrderShowItemsDispatch,
+  dispatchOrderShowItemsDispatchPaginated,
   dispatchOrderStore,
   dispatchOrderUpdate,
   dispatchOrderUpdateStatusItems,
@@ -872,11 +873,13 @@ import type {
   BanksUpdateError,
   BatchesBatchesWithArticlesData,
   BatchesBatchesWithArticlesError,
+  BatchesBatchesWithArticlesResponse,
   BatchesDestroyData,
   BatchesDestroyError,
   BatchesDestroyResponse,
   BatchesGetArticlesWithBatchData,
   BatchesGetArticlesWithBatchError,
+  BatchesGetArticlesWithBatchResponse,
   BatchesIndexData,
   BatchesIndexError,
   BatchesIndexResponse,
@@ -885,19 +888,24 @@ import type {
   BatchesPaginateResponse,
   BatchesShowBatcheItemsByLocationData,
   BatchesShowBatcheItemsByLocationError,
+  BatchesShowBatcheItemsByLocationResponse,
   BatchesShowBatchesByArticleConditionData,
   BatchesShowBatchesByArticleConditionError,
+  BatchesShowBatchesByArticleConditionResponse,
   BatchesShowBatchesWithArticlesByCategoryData,
   BatchesShowBatchesWithArticlesByCategoryError,
+  BatchesShowBatchesWithArticlesByCategoryResponse,
   BatchesShowByCategoryData,
   BatchesShowByCategoryError,
   BatchesShowByCategoryResponse,
   BatchesShowBySlugData,
   BatchesShowBySlugError,
+  BatchesShowBySlugResponse,
   BatchesShowData,
   BatchesShowError,
   BatchesShowLocationsBatchesData,
   BatchesShowLocationsBatchesError,
+  BatchesShowLocationsBatchesResponse,
   BatchesShowResponse,
   BatchesUpdateData,
   BatchesUpdateError,
@@ -1186,15 +1194,22 @@ import type {
   DispatchOrderDestroyResponse,
   DispatchOrderDispatchArticlesByLocationData,
   DispatchOrderDispatchArticlesByLocationError,
+  DispatchOrderDispatchArticlesByLocationResponse,
   DispatchOrderReportDispatchOrdersData,
   DispatchOrderReportDispatchOrdersError,
   DispatchOrderReportDispatchOrdersResponse,
   DispatchOrderShowDispatchInProcessData,
   DispatchOrderShowDispatchInProcessError,
+  DispatchOrderShowDispatchInProcessResponse,
   DispatchOrderShowDispatchOrdersData,
   DispatchOrderShowDispatchOrdersError,
+  DispatchOrderShowDispatchOrdersResponse,
   DispatchOrderShowItemsDispatchData,
   DispatchOrderShowItemsDispatchError,
+  DispatchOrderShowItemsDispatchPaginatedData,
+  DispatchOrderShowItemsDispatchPaginatedError,
+  DispatchOrderShowItemsDispatchPaginatedResponse,
+  DispatchOrderShowItemsDispatchResponse,
   DispatchOrderStoreData,
   DispatchOrderStoreError,
   DispatchOrderStoreResponse,
@@ -5161,12 +5176,12 @@ export const batchesUpdateMutation = (
 export const batchesShowLocationsBatchesMutation = (
   options?: Partial<Options<BatchesShowLocationsBatchesData>>,
 ): UseMutationOptions<
-  unknown,
+  BatchesShowLocationsBatchesResponse,
   AxiosError<BatchesShowLocationsBatchesError>,
   Options<BatchesShowLocationsBatchesData>
 > => {
   const mutationOptions: UseMutationOptions<
-    unknown,
+    BatchesShowLocationsBatchesResponse,
     AxiosError<BatchesShowLocationsBatchesError>,
     Options<BatchesShowLocationsBatchesData>
   > = {
@@ -5213,12 +5228,12 @@ export const batchesShowByCategoryOptions = (options: Options<BatchesShowByCateg
 export const batchesShowBatcheItemsByLocationMutation = (
   options?: Partial<Options<BatchesShowBatcheItemsByLocationData>>,
 ): UseMutationOptions<
-  unknown,
+  BatchesShowBatcheItemsByLocationResponse,
   AxiosError<BatchesShowBatcheItemsByLocationError>,
   Options<BatchesShowBatcheItemsByLocationData>
 > => {
   const mutationOptions: UseMutationOptions<
-    unknown,
+    BatchesShowBatcheItemsByLocationResponse,
     AxiosError<BatchesShowBatcheItemsByLocationError>,
     Options<BatchesShowBatcheItemsByLocationData>
   > = {
@@ -5245,9 +5260,9 @@ export const batchesBatchesWithArticlesQueryKey = (options: Options<BatchesBatch
  */
 export const batchesBatchesWithArticlesOptions = (options: Options<BatchesBatchesWithArticlesData>) =>
   queryOptions<
-    unknown,
+    BatchesBatchesWithArticlesResponse,
     AxiosError<BatchesBatchesWithArticlesError>,
-    unknown,
+    BatchesBatchesWithArticlesResponse,
     ReturnType<typeof batchesBatchesWithArticlesQueryKey>
   >({
     queryFn: async ({ queryKey, signal }) => {
@@ -5341,9 +5356,13 @@ export const batchesPaginateInfiniteOptions = (options: Options<BatchesPaginateD
  */
 export const batchesShowBySlugMutation = (
   options?: Partial<Options<BatchesShowBySlugData>>,
-): UseMutationOptions<unknown, AxiosError<BatchesShowBySlugError>, Options<BatchesShowBySlugData>> => {
+): UseMutationOptions<
+  BatchesShowBySlugResponse,
+  AxiosError<BatchesShowBySlugError>,
+  Options<BatchesShowBySlugData>
+> => {
   const mutationOptions: UseMutationOptions<
-    unknown,
+    BatchesShowBySlugResponse,
     AxiosError<BatchesShowBySlugError>,
     Options<BatchesShowBySlugData>
   > = {
@@ -5364,9 +5383,9 @@ export const batchesGetArticlesWithBatchQueryKey = (options: Options<BatchesGetA
 
 export const batchesGetArticlesWithBatchOptions = (options: Options<BatchesGetArticlesWithBatchData>) =>
   queryOptions<
-    unknown,
+    BatchesGetArticlesWithBatchResponse,
     AxiosError<BatchesGetArticlesWithBatchError>,
-    unknown,
+    BatchesGetArticlesWithBatchResponse,
     ReturnType<typeof batchesGetArticlesWithBatchQueryKey>
   >({
     queryFn: async ({ queryKey, signal }) => {
@@ -5395,9 +5414,9 @@ export const batchesShowBatchesByArticleConditionOptions = (
   options: Options<BatchesShowBatchesByArticleConditionData>,
 ) =>
   queryOptions<
-    unknown,
+    BatchesShowBatchesByArticleConditionResponse,
     AxiosError<BatchesShowBatchesByArticleConditionError>,
-    unknown,
+    BatchesShowBatchesByArticleConditionResponse,
     ReturnType<typeof batchesShowBatchesByArticleConditionQueryKey>
   >({
     queryFn: async ({ queryKey, signal }) => {
@@ -5426,9 +5445,9 @@ export const batchesShowBatchesWithArticlesByCategoryOptions = (
   options: Options<BatchesShowBatchesWithArticlesByCategoryData>,
 ) =>
   queryOptions<
-    unknown,
+    BatchesShowBatchesWithArticlesByCategoryResponse,
     AxiosError<BatchesShowBatchesWithArticlesByCategoryError>,
-    unknown,
+    BatchesShowBatchesWithArticlesByCategoryResponse,
     ReturnType<typeof batchesShowBatchesWithArticlesByCategoryQueryKey>
   >({
     queryFn: async ({ queryKey, signal }) => {
@@ -7774,9 +7793,9 @@ export const dispatchOrderShowDispatchOrdersQueryKey = (options: Options<Dispatc
  */
 export const dispatchOrderShowDispatchOrdersOptions = (options: Options<DispatchOrderShowDispatchOrdersData>) =>
   queryOptions<
-    unknown,
+    DispatchOrderShowDispatchOrdersResponse,
     AxiosError<DispatchOrderShowDispatchOrdersError>,
-    unknown,
+    DispatchOrderShowDispatchOrdersResponse,
     ReturnType<typeof dispatchOrderShowDispatchOrdersQueryKey>
   >({
     queryFn: async ({ queryKey, signal }) => {
@@ -7883,9 +7902,9 @@ export const dispatchOrderDispatchArticlesByLocationOptions = (
   options: Options<DispatchOrderDispatchArticlesByLocationData>,
 ) =>
   queryOptions<
-    unknown,
+    DispatchOrderDispatchArticlesByLocationResponse,
     AxiosError<DispatchOrderDispatchArticlesByLocationError>,
-    unknown,
+    DispatchOrderDispatchArticlesByLocationResponse,
     ReturnType<typeof dispatchOrderDispatchArticlesByLocationQueryKey>
   >({
     queryFn: async ({ queryKey, signal }) => {
@@ -7911,9 +7930,9 @@ export const dispatchOrderShowItemsDispatchQueryKey = (options: Options<Dispatch
  */
 export const dispatchOrderShowItemsDispatchOptions = (options: Options<DispatchOrderShowItemsDispatchData>) =>
   queryOptions<
-    unknown,
+    DispatchOrderShowItemsDispatchResponse,
     AxiosError<DispatchOrderShowItemsDispatchError>,
-    unknown,
+    DispatchOrderShowItemsDispatchResponse,
     ReturnType<typeof dispatchOrderShowItemsDispatchQueryKey>
   >({
     queryFn: async ({ queryKey, signal }) => {
@@ -7927,6 +7946,84 @@ export const dispatchOrderShowItemsDispatchOptions = (options: Options<DispatchO
     },
     queryKey: dispatchOrderShowItemsDispatchQueryKey(options),
   });
+
+export const dispatchOrderShowItemsDispatchPaginatedQueryKey = (
+  options: Options<DispatchOrderShowItemsDispatchPaginatedData>,
+) => createQueryKey('dispatchOrderShowItemsDispatchPaginated', options);
+
+/**
+ * Method: Get
+ * Docs: version paginada de showItemsDispatch con busqueda de texto
+ */
+export const dispatchOrderShowItemsDispatchPaginatedOptions = (
+  options: Options<DispatchOrderShowItemsDispatchPaginatedData>,
+) =>
+  queryOptions<
+    DispatchOrderShowItemsDispatchPaginatedResponse,
+    AxiosError<DispatchOrderShowItemsDispatchPaginatedError>,
+    DispatchOrderShowItemsDispatchPaginatedResponse,
+    ReturnType<typeof dispatchOrderShowItemsDispatchPaginatedQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await dispatchOrderShowItemsDispatchPaginated({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: dispatchOrderShowItemsDispatchPaginatedQueryKey(options),
+  });
+
+export const dispatchOrderShowItemsDispatchPaginatedInfiniteQueryKey = (
+  options: Options<DispatchOrderShowItemsDispatchPaginatedData>,
+): QueryKey<Options<DispatchOrderShowItemsDispatchPaginatedData>> =>
+  createQueryKey('dispatchOrderShowItemsDispatchPaginated', options, true);
+
+/**
+ * Method: Get
+ * Docs: version paginada de showItemsDispatch con busqueda de texto
+ */
+export const dispatchOrderShowItemsDispatchPaginatedInfiniteOptions = (
+  options: Options<DispatchOrderShowItemsDispatchPaginatedData>,
+) =>
+  infiniteQueryOptions<
+    DispatchOrderShowItemsDispatchPaginatedResponse,
+    AxiosError<DispatchOrderShowItemsDispatchPaginatedError>,
+    InfiniteData<DispatchOrderShowItemsDispatchPaginatedResponse>,
+    QueryKey<Options<DispatchOrderShowItemsDispatchPaginatedData>>,
+    | number
+    | null
+    | Pick<QueryKey<Options<DispatchOrderShowItemsDispatchPaginatedData>>[0], 'body' | 'headers' | 'path' | 'query'>
+  >(
+    // @ts-ignore
+    {
+      queryFn: async ({ pageParam, queryKey, signal }) => {
+        // @ts-ignore
+        const page: Pick<
+          QueryKey<Options<DispatchOrderShowItemsDispatchPaginatedData>>[0],
+          'body' | 'headers' | 'path' | 'query'
+        > =
+          typeof pageParam === 'object'
+            ? pageParam
+            : {
+                query: {
+                  page: pageParam,
+                },
+              };
+        const params = createInfiniteParams(queryKey, page);
+        const { data } = await dispatchOrderShowItemsDispatchPaginated({
+          ...options,
+          ...params,
+          signal,
+          throwOnError: true,
+        });
+        return data;
+      },
+      queryKey: dispatchOrderShowItemsDispatchPaginatedInfiniteQueryKey(options),
+    },
+  );
 
 /**
  * Doc: Modifica el status de la salida
@@ -7993,9 +8090,9 @@ export const dispatchOrderShowDispatchInProcessQueryKey = (options: Options<Disp
  */
 export const dispatchOrderShowDispatchInProcessOptions = (options: Options<DispatchOrderShowDispatchInProcessData>) =>
   queryOptions<
-    unknown,
+    DispatchOrderShowDispatchInProcessResponse,
     AxiosError<DispatchOrderShowDispatchInProcessError>,
-    unknown,
+    DispatchOrderShowDispatchInProcessResponse,
     ReturnType<typeof dispatchOrderShowDispatchInProcessQueryKey>
   >({
     queryFn: async ({ queryKey, signal }) => {

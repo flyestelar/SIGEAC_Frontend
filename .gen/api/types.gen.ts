@@ -95,6 +95,7 @@ export type AircraftComponentSlotResource = {
   installed_part_id?: number;
   installed_part?: AircraftPartResource;
   batch?: Batch;
+  pending_installation_request?: HardTimeInstallationRequestResource;
 };
 
 /**
@@ -314,6 +315,34 @@ export type Article = {
 };
 
 /**
+ * ArticleDispatchResource
+ */
+export type ArticleDispatchResource = {
+  id: number;
+  serial: string | null;
+  lot_number: string;
+  part_number: string | null;
+  alt_part_number: Array<unknown> | null;
+  status: string;
+  quantity: string;
+  description: string | null;
+  image: string | null;
+  brand: string | null;
+  unit: string;
+  condition: string;
+  cost: number | null;
+  zone: string | null | 'N/A';
+  certificates: Array<unknown>;
+  aircraft_part?: {
+    id: number;
+    part_number: string;
+    description: string | null;
+    total_flight_hours: number;
+    total_flight_cycles: number;
+  };
+};
+
+/**
  * ArticleListItemResource
  */
 export type ArticleListItemResource = {
@@ -436,6 +465,20 @@ export type Batch = {
  * BatchCategoryCode
  */
 export type BatchCategoryCode = 'COMPONENTE' | 'CONSUMIBLE' | 'HERRAMIENTA';
+
+/**
+ * BatchDispatchResource
+ */
+export type BatchDispatchResource = {
+  batch_id: number;
+  name: string | null;
+  slug: string | null;
+  min_quantity: number | null;
+  category: string | null;
+  actual_count?: number;
+  unit?: Unit;
+  articles?: Array<ArticleDispatchResource>;
+};
 
 /**
  * BatchResource
@@ -947,6 +990,11 @@ export type InstallComponentRequest = {
  * JobTitle
  */
 export type JobTitle = Array<string>;
+
+/**
+ * LengthAwarePaginator
+ */
+export type LengthAwarePaginator = Array<unknown>;
 
 /**
  * Location
@@ -6643,8 +6691,21 @@ export type BatchesShowLocationsBatchesError =
   BatchesShowLocationsBatchesErrors[keyof BatchesShowLocationsBatchesErrors];
 
 export type BatchesShowLocationsBatchesResponses = {
-  200: unknown;
+  200: Array<{
+    id: number;
+    name: string | null;
+    description: string | null;
+    ata_code: string | null;
+    is_hazardous: boolean;
+    category: string | null;
+    min_quantity: number | null;
+    warehouse_id: number | null;
+    warehouse_name: string | null;
+  }>;
 };
+
+export type BatchesShowLocationsBatchesResponse =
+  BatchesShowLocationsBatchesResponses[keyof BatchesShowLocationsBatchesResponses];
 
 export type BatchesShowByCategoryData = {
   body?: never;
@@ -6716,8 +6777,18 @@ export type BatchesShowBatcheItemsByLocationError =
   BatchesShowBatcheItemsByLocationErrors[keyof BatchesShowBatcheItemsByLocationErrors];
 
 export type BatchesShowBatcheItemsByLocationResponses = {
-  200: unknown;
+  200: Array<{
+    batch_id: number;
+    name: string | null;
+    min_quantity: number | null;
+    category: string | null;
+    article_count: number;
+    articles: string;
+  }>;
 };
+
+export type BatchesShowBatcheItemsByLocationResponse =
+  BatchesShowBatcheItemsByLocationResponses[keyof BatchesShowBatcheItemsByLocationResponses];
 
 export type BatchesBatchesWithArticlesData = {
   body?: never;
@@ -6744,15 +6815,18 @@ export type BatchesBatchesWithArticlesErrors = {
 export type BatchesBatchesWithArticlesError = BatchesBatchesWithArticlesErrors[keyof BatchesBatchesWithArticlesErrors];
 
 export type BatchesBatchesWithArticlesResponses = {
-  200: unknown;
+  200: string;
 };
+
+export type BatchesBatchesWithArticlesResponse =
+  BatchesBatchesWithArticlesResponses[keyof BatchesBatchesWithArticlesResponses];
 
 export type BatchesPaginateData = {
   body?: never;
   path?: never;
   query: {
     location: number;
-    category?: string | null;
+    category?: BatchCategoryCode;
     search?: string | null;
     per_page?: number | null;
     page?: number | null;
@@ -6860,8 +6934,10 @@ export type BatchesShowBySlugErrors = {
 export type BatchesShowBySlugError = BatchesShowBySlugErrors[keyof BatchesShowBySlugErrors];
 
 export type BatchesShowBySlugResponses = {
-  200: unknown;
+  200: string;
 };
+
+export type BatchesShowBySlugResponse = BatchesShowBySlugResponses[keyof BatchesShowBySlugResponses];
 
 export type BatchesGetArticlesWithBatchData = {
   body?: never;
@@ -6874,6 +6950,9 @@ export type BatchesGetArticlesWithBatchData = {
 };
 
 export type BatchesGetArticlesWithBatchErrors = {
+  400: {
+    message: 'El número de parte es requerido.';
+  };
   /**
    * Unauthenticated
    */
@@ -6883,14 +6962,30 @@ export type BatchesGetArticlesWithBatchErrors = {
      */
     message: string;
   };
+  500:
+    | {
+        message: 'Error 500: Fallo al Mapear o Transformar los Datos de Lotes y Artículos.';
+        detail: string;
+      }
+    | {
+        message: 'Error 500: Fallo General al Intentar Buscar Lotes y Artículos.';
+        detail: string;
+      }
+    | {
+        message: 'Error 500: Fallo en la Conexión o Ejecución de la Consulta a la Base de Datos.';
+        detail: string;
+      };
 };
 
 export type BatchesGetArticlesWithBatchError =
   BatchesGetArticlesWithBatchErrors[keyof BatchesGetArticlesWithBatchErrors];
 
 export type BatchesGetArticlesWithBatchResponses = {
-  200: unknown;
+  200: string | Array<Batch>;
 };
+
+export type BatchesGetArticlesWithBatchResponse =
+  BatchesGetArticlesWithBatchResponses[keyof BatchesGetArticlesWithBatchResponses];
 
 export type BatchesShowBatchesByArticleConditionData = {
   body?: never;
@@ -6919,8 +7014,25 @@ export type BatchesShowBatchesByArticleConditionError =
   BatchesShowBatchesByArticleConditionErrors[keyof BatchesShowBatchesByArticleConditionErrors];
 
 export type BatchesShowBatchesByArticleConditionResponses = {
-  200: unknown;
+  200: Array<{
+    id: number;
+    name: string | null;
+    slug: string | null;
+    description: string | null;
+    category: string | null;
+    ata_code: string | null;
+    is_hazardous: boolean;
+    unit: Unit | null;
+    min_quantity: number | null;
+    warehouse_id: string;
+    warehouse_name: string;
+    created_at: string | null;
+    article_count: number | string;
+  }>;
 };
+
+export type BatchesShowBatchesByArticleConditionResponse =
+  BatchesShowBatchesByArticleConditionResponses[keyof BatchesShowBatchesByArticleConditionResponses];
 
 export type BatchesShowBatchesWithArticlesByCategoryData = {
   body?: never;
@@ -6948,8 +7060,11 @@ export type BatchesShowBatchesWithArticlesByCategoryError =
   BatchesShowBatchesWithArticlesByCategoryErrors[keyof BatchesShowBatchesWithArticlesByCategoryErrors];
 
 export type BatchesShowBatchesWithArticlesByCategoryResponses = {
-  200: unknown;
+  200: LengthAwarePaginator;
 };
+
+export type BatchesShowBatchesWithArticlesByCategoryResponse =
+  BatchesShowBatchesWithArticlesByCategoryResponses[keyof BatchesShowBatchesWithArticlesByCategoryResponses];
 
 export type BroadcastAuthenticateData = {
   body?: never;
@@ -10386,8 +10501,11 @@ export type DispatchOrderShowDispatchOrdersError =
   DispatchOrderShowDispatchOrdersErrors[keyof DispatchOrderShowDispatchOrdersErrors];
 
 export type DispatchOrderShowDispatchOrdersResponses = {
-  200: unknown;
+  200: string;
 };
+
+export type DispatchOrderShowDispatchOrdersResponse =
+  DispatchOrderShowDispatchOrdersResponses[keyof DispatchOrderShowDispatchOrdersResponses];
 
 export type DispatchOrderStoreData = {
   body: {
@@ -10527,8 +10645,11 @@ export type DispatchOrderDispatchArticlesByLocationError =
   DispatchOrderDispatchArticlesByLocationErrors[keyof DispatchOrderDispatchArticlesByLocationErrors];
 
 export type DispatchOrderDispatchArticlesByLocationResponses = {
-  200: unknown;
+  200: Array<unknown>;
 };
+
+export type DispatchOrderDispatchArticlesByLocationResponse =
+  DispatchOrderDispatchArticlesByLocationResponses[keyof DispatchOrderDispatchArticlesByLocationResponses];
 
 export type DispatchOrderShowItemsDispatchData = {
   body?: never;
@@ -10556,8 +10677,110 @@ export type DispatchOrderShowItemsDispatchError =
   DispatchOrderShowItemsDispatchErrors[keyof DispatchOrderShowItemsDispatchErrors];
 
 export type DispatchOrderShowItemsDispatchResponses = {
-  200: unknown;
+  200: Array<{
+    batch_id: number;
+    name: string | null;
+    min_quantity: number | null;
+    category: string | null;
+    actual_count: number | 0;
+    unit: Unit | null;
+    articles: string;
+  }>;
 };
+
+export type DispatchOrderShowItemsDispatchResponse =
+  DispatchOrderShowItemsDispatchResponses[keyof DispatchOrderShowItemsDispatchResponses];
+
+export type DispatchOrderShowItemsDispatchPaginatedData = {
+  body?: never;
+  path?: never;
+  query: {
+    location: number;
+    category: string;
+    search?: string | null;
+    page?: number | null;
+    per_page?: number | null;
+    include_aircraft_part?: boolean | null;
+  };
+  url: '/items-for-dispatch/paginated';
+};
+
+export type DispatchOrderShowItemsDispatchPaginatedErrors = {
+  /**
+   * Unauthenticated
+   */
+  401: {
+    /**
+     * Error overview.
+     */
+    message: string;
+  };
+  /**
+   * Validation error
+   */
+  422: {
+    /**
+     * Errors overview.
+     */
+    message: string;
+    /**
+     * A detailed description of each field that failed validation.
+     */
+    errors: {
+      [key: string]: Array<string>;
+    };
+  };
+};
+
+export type DispatchOrderShowItemsDispatchPaginatedError =
+  DispatchOrderShowItemsDispatchPaginatedErrors[keyof DispatchOrderShowItemsDispatchPaginatedErrors];
+
+export type DispatchOrderShowItemsDispatchPaginatedResponses = {
+  /**
+   * Paginated set of `BatchDispatchResource`
+   */
+  200: {
+    data: Array<BatchDispatchResource>;
+    links: {
+      first: string | null;
+      last: string | null;
+      prev: string | null;
+      next: string | null;
+    };
+    meta: {
+      current_page: number;
+      from: number | null;
+      last_page: number;
+      /**
+       * Generated paginator links.
+       */
+      links: Array<{
+        url: string | null;
+        label: string;
+        active: boolean;
+      }>;
+      /**
+       * Base path for paginator generated URLs.
+       */
+      path: string | null;
+      /**
+       * Number of items shown per page.
+       */
+      per_page: number;
+      /**
+       * Number of the last item in the slice.
+       */
+      to: number | null;
+      /**
+       * Total number of items being paginated.
+       */
+      total: number;
+    };
+  };
+};
+
+export type DispatchOrderShowItemsDispatchPaginatedResponse =
+  DispatchOrderShowItemsDispatchPaginatedResponses[keyof DispatchOrderShowItemsDispatchPaginatedResponses];
 
 export type DispatchOrderUpdateToCancelledDispatchData = {
   body?: never;
@@ -10649,8 +10872,11 @@ export type DispatchOrderShowDispatchInProcessError =
   DispatchOrderShowDispatchInProcessErrors[keyof DispatchOrderShowDispatchInProcessErrors];
 
 export type DispatchOrderShowDispatchInProcessResponses = {
-  200: unknown;
+  200: string;
 };
+
+export type DispatchOrderShowDispatchInProcessResponse =
+  DispatchOrderShowDispatchInProcessResponses[keyof DispatchOrderShowDispatchInProcessResponses];
 
 export type DispatchOrderReportDispatchOrdersData = {
   body?: never;

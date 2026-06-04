@@ -649,6 +649,9 @@ import type {
   DispatchOrderShowDispatchOrdersResponses,
   DispatchOrderShowItemsDispatchData,
   DispatchOrderShowItemsDispatchErrors,
+  DispatchOrderShowItemsDispatchPaginatedData,
+  DispatchOrderShowItemsDispatchPaginatedErrors,
+  DispatchOrderShowItemsDispatchPaginatedResponses,
   DispatchOrderShowItemsDispatchResponses,
   DispatchOrderStoreData,
   DispatchOrderStoreErrors,
@@ -3424,6 +3427,7 @@ export const batchesShowLocationsBatches = <ThrowOnError extends boolean = false
     BatchesShowLocationsBatchesErrors,
     ThrowOnError
   >({
+    responseType: 'json',
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/{company}/batches-by-location',
     ...options,
@@ -3453,6 +3457,7 @@ export const batchesShowBatcheItemsByLocation = <ThrowOnError extends boolean = 
     BatchesShowBatcheItemsByLocationErrors,
     ThrowOnError
   >({
+    responseType: 'json',
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/{company}/batches-with-articles-by-location',
     ...options,
@@ -3468,6 +3473,7 @@ export const batchesBatchesWithArticles = <ThrowOnError extends boolean = false>
   options: Options<BatchesBatchesWithArticlesData, ThrowOnError>,
 ): RequestResult<BatchesBatchesWithArticlesResponses, BatchesBatchesWithArticlesErrors, ThrowOnError> =>
   (options.client ?? client).get<BatchesBatchesWithArticlesResponses, BatchesBatchesWithArticlesErrors, ThrowOnError>({
+    responseType: 'json',
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/{company}/{location}/batches',
     ...options,
@@ -3499,6 +3505,7 @@ export const batchesShowBySlug = <ThrowOnError extends boolean = false>(
   options: Options<BatchesShowBySlugData, ThrowOnError>,
 ): RequestResult<BatchesShowBySlugResponses, BatchesShowBySlugErrors, ThrowOnError> =>
   (options.client ?? client).post<BatchesShowBySlugResponses, BatchesShowBySlugErrors, ThrowOnError>({
+    responseType: 'json',
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/{company}/batches/{slug}',
     ...options,
@@ -3509,6 +3516,7 @@ export const batchesGetArticlesWithBatch = <ThrowOnError extends boolean = false
 ): RequestResult<BatchesGetArticlesWithBatchResponses, BatchesGetArticlesWithBatchErrors, ThrowOnError> =>
   (options.client ?? client).get<BatchesGetArticlesWithBatchResponses, BatchesGetArticlesWithBatchErrors, ThrowOnError>(
     {
+      responseType: 'json',
       security: [{ scheme: 'bearer', type: 'http' }],
       url: '/{company}/{location}/search-articles-with-batch',
       ...options,
@@ -3533,6 +3541,7 @@ export const batchesShowBatchesByArticleCondition = <ThrowOnError extends boolea
     BatchesShowBatchesByArticleConditionErrors,
     ThrowOnError
   >({
+    responseType: 'json',
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/{company}/{location}/show-by-article-condition/{condition}',
     ...options,
@@ -3556,6 +3565,7 @@ export const batchesShowBatchesWithArticlesByCategory = <ThrowOnError extends bo
     BatchesShowBatchesWithArticlesByCategoryErrors,
     ThrowOnError
   >({
+    responseType: 'json',
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/{company}/{location}/articles-by-category',
     ...options,
@@ -4955,6 +4965,7 @@ export const dispatchOrderShowDispatchOrders = <ThrowOnError extends boolean = f
     DispatchOrderShowDispatchOrdersErrors,
     ThrowOnError
   >({
+    responseType: 'json',
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/{company}/{location_id}/dispatch-orders',
     ...options,
@@ -5018,6 +5029,7 @@ export const dispatchOrderDispatchArticlesByLocation = <ThrowOnError extends boo
     DispatchOrderDispatchArticlesByLocationErrors,
     ThrowOnError
   >({
+    responseType: 'json',
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/{company}/{location_id}/dispatched-articles',
     ...options,
@@ -5037,8 +5049,31 @@ export const dispatchOrderShowItemsDispatch = <ThrowOnError extends boolean = fa
     DispatchOrderShowItemsDispatchErrors,
     ThrowOnError
   >({
+    responseType: 'json',
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/{company}/{location_id}/items-for-dispatch',
+    ...options,
+  });
+
+/**
+ * Method: Get
+ * Docs: version paginada de showItemsDispatch con busqueda de texto
+ */
+export const dispatchOrderShowItemsDispatchPaginated = <ThrowOnError extends boolean = false>(
+  options: Options<DispatchOrderShowItemsDispatchPaginatedData, ThrowOnError>,
+): RequestResult<
+  DispatchOrderShowItemsDispatchPaginatedResponses,
+  DispatchOrderShowItemsDispatchPaginatedErrors,
+  ThrowOnError
+> =>
+  (options.client ?? client).get<
+    DispatchOrderShowItemsDispatchPaginatedResponses,
+    DispatchOrderShowItemsDispatchPaginatedErrors,
+    ThrowOnError
+  >({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/items-for-dispatch/paginated',
     ...options,
   });
 
@@ -5094,6 +5129,7 @@ export const dispatchOrderShowDispatchInProcess = <ThrowOnError extends boolean 
     DispatchOrderShowDispatchInProcessErrors,
     ThrowOnError
   >({
+    responseType: 'json',
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/{company}/{location_id}/show-dispatch-in-process',
     ...options,

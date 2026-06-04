@@ -1,13 +1,14 @@
 'use client';
 
-import { useMemo } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
-import { HardTimeAlertLevel, HardTimeIntervalWithMetrics, HardTimeMetric } from '@/types';
+import { HardTimeAlertLevel, HardTimeIntervalWithMetrics } from '@/types';
+import { AircraftComponentSlotResource } from '@api/types';
 import { CircleOff, ListPlus, MapPinned, PackageMinus, PackagePlus, PlusCircle } from 'lucide-react';
+import { useMemo } from 'react';
 import {
   AlertBadge,
   computeIntervalMetrics,
@@ -17,19 +18,6 @@ import {
   METRIC_UNITS,
   STATUS_ORDER,
 } from './hard-time-shared';
-import { AircraftComponentSlotResource } from '@api/types';
-
-function estimatedDaysToExpiry(
-  metric: HardTimeMetric,
-  averageDailyFH?: number | null,
-  averageDailyFC?: number | null,
-): number | null {
-  if (metric.remaining <= 0) return 0;
-  if (metric.type === 'DAYS') return metric.remaining;
-  if (metric.type === 'FH' && averageDailyFH && averageDailyFH > 0) return metric.remaining / averageDailyFH;
-  if (metric.type === 'FC' && averageDailyFC && averageDailyFC > 0) return metric.remaining / averageDailyFC;
-  return null;
-}
 
 interface HardTimeCardProps {
   component: AircraftComponentSlotResource;
@@ -39,7 +27,6 @@ interface HardTimeCardProps {
   aircraftFlightHours?: number | null;
   aircraftFlightCycles?: number | null;
   onInstall?: () => void;
-  onInstallRequest?: () => void;
   onUninstall?: () => void;
   onCreateInterval?: () => void;
 }
@@ -47,29 +34,29 @@ interface HardTimeCardProps {
 export function HardTimeCard({
   component,
   onSelect,
-  averageDailyFH,
-  averageDailyFC,
   aircraftFlightHours,
   aircraftFlightCycles,
   onInstall,
-  onInstallRequest,
   onUninstall,
   onCreateInterval,
 }: HardTimeCardProps) {
   const isVacant = !component.active_installation;
-  const rawIntervals = component.installed_part?.intervals ?? [];
-  const rawIntervalsCount = rawIntervals.length;
+  const rawIntervals = component.installed_part?.intervals;
+  const rawIntervalsCount = rawIntervals?.length ?? 0;
   const installation = component.active_installation;
 
-  const intervals = useMemo<HardTimeIntervalWithMetrics[]>(() => {
+  const intervals = useMemo(() => {
     if (!installation || aircraftFlightHours == null || aircraftFlightCycles == null) return [];
-    return rawIntervals
+    return (rawIntervals ?? [])
       .filter((i) => i.is_active !== false)
-      .map((i) => computeIntervalMetrics(i, installation, aircraftFlightHours, aircraftFlightCycles));
+      .map(
+        (i): HardTimeIntervalWithMetrics =>
+          computeIntervalMetrics(i, installation, aircraftFlightHours, aircraftFlightCycles),
+      );
   }, [rawIntervals, installation, aircraftFlightHours, aircraftFlightCycles]);
 
-  const componentStatus = useMemo<HardTimeAlertLevel>(() => {
-    return intervals.reduce<HardTimeAlertLevel>(
+  const componentStatus = useMemo(() => {
+    return (intervals || []).reduce<HardTimeAlertLevel>(
       (worst, i) => (STATUS_ORDER[i.status] > STATUS_ORDER[worst] ? i.status : worst),
       'OK',
     );
@@ -85,23 +72,6 @@ export function HardTimeCard({
 
   const allMetricsWithTask = intervals.flatMap((i) => i.metrics);
   const shouldScrollMetrics = intervals.length > 2;
-
-  const closestMetric = (() => {
-    if (allMetricsWithTask.length === 0) return null;
-
-    const withEstimates = allMetricsWithTask
-      .map((m) => ({ ...m, estDays: estimatedDaysToExpiry(m, averageDailyFH, averageDailyFC) }))
-      .filter((m) => m.estDays !== null);
-
-    if (withEstimates.length === 0) return null;
-
-    const allOverdue = withEstimates.every((m) => m.estDays === 0);
-    if (allOverdue) {
-      return withEstimates.sort((a, b) => b.percentage - a.percentage)[0];
-    }
-
-    return withEstimates.sort((a, b) => a.estDays! - b.estDays!)[0];
-  })();
 
   const category = component.category;
   const componentTitle = component.batch?.name || component.description || 'Sin nombre';
@@ -185,19 +155,7 @@ export function HardTimeCard({
                 }}
               >
                 <PackagePlus className="h-3.5 w-3.5" />
-                Manual
-              </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                className="h-7 gap-1 border-sky-500/30 px-2.5 text-[11px] text-sky-700 hover:bg-sky-500/10 dark:text-sky-300"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onInstallRequest?.();
-                }}
-              >
-                <PackagePlus className="h-3.5 w-3.5" />
-                Almacén
+                Montar
               </Button>
             </div>
           </div>
@@ -218,9 +176,7 @@ export function HardTimeCard({
               <LevelIcon className={`h-3.5 w-3.5 ${cfg.iconText}`} />
             </div>
             <div className="min-w-0 space-y-0.5">
-              <p className="truncate text-[15px] font-semibold leading-tight text-foreground">
-                {componentTitle}
-              </p>
+              <p className="truncate text-[15px] font-semibold leading-tight text-foreground">{componentTitle}</p>
               <div className="flex flex-wrap items-center gap-1.5 text-[11px] text-muted-foreground">
                 <MapPinned className="h-3 w-3" />
                 <span className="font-mono text-foreground/80">{component.position}</span>

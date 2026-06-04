@@ -4,7 +4,7 @@ import { workOrdersIndexOptions } from '@api/queries';
 import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
 import { startTransition, useEffect, useMemo, useState } from 'react';
-import { AlertCircle, Plus, SearchCheck, Upload, Wrench } from 'lucide-react';
+import { AlertCircle, Plus, SearchCheck, Wrench } from 'lucide-react';
 
 import { ContentLayout } from '@/components/layout/ContentLayout';
 import LoadingPage from '@/components/misc/LoadingPage';
@@ -26,8 +26,7 @@ import { UninstallComponentDialog } from './hard-time-dashboard/uninstall-compon
 import { IntervalDialog } from './hard-time-dashboard/interval-dialog';
 import { ComplianceDialog } from './hard-time-dashboard/compliance-dialog';
 import { HardTimeImportDialog } from './hard-time-import-dialog';
-import { InstallComponentDialog } from './install-component-dialog';
-import { InstallRequestDialog } from './install-request-dialog';
+import { InstallDialog } from './install-dialog';
 import { AircraftComponentSlotResource, HardTimeIntervalResource } from '@api/types';
 
 export function HardTimeDashboard() {
@@ -37,8 +36,7 @@ export function HardTimeDashboard() {
   const [isCreateComponentOpen, setIsCreateComponentOpen] = useState(false);
   const [createComponentDefaultCategory, setCreateComponentDefaultCategory] = useState<string | null>(null);
   const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
-  const [installingComponent, setInstallingComponent] = useState<AircraftComponentSlotResource | null>(null);
-  const [installingRequestComponent, setInstallingRequestComponent] = useState<AircraftComponentSlotResource | null>(null);
+  const [installTargetComponent, setInstallTargetComponent] = useState<AircraftComponentSlotResource | null>(null);
   const [uninstallingComponent, setUninstallingComponent] = useState<AircraftComponentSlotResource | null>(null);
   const [isIntervalDialogOpen, setIsIntervalDialogOpen] = useState(false);
   const [editingInterval, setEditingInterval] = useState<HardTimeIntervalResource | null>(null);
@@ -85,7 +83,7 @@ export function HardTimeDashboard() {
   const averages = selectedAircraft?.last_average_metric ?? null;
   const installingComponentPartNumber =
     selectedComponentDetail?.part_number ??
-    componentsList.find((component) => component.id === installingComponent?.id)?.part_number ??
+    componentsList.find((component) => component.id === installTargetComponent?.id)?.part_number ??
     '';
 
   const handleSelectAircraft = (id: number) => {
@@ -102,11 +100,7 @@ export function HardTimeDashboard() {
   };
 
   const openInstall = (component: AircraftComponentSlotResource) => {
-    setInstallingComponent(component);
-  };
-
-  const openInstallRequest = (component: AircraftComponentSlotResource) => {
-    setInstallingRequestComponent(component);
+    setInstallTargetComponent(component);
   };
 
   const openUninstall = (component: AircraftComponentSlotResource) => {
@@ -207,7 +201,6 @@ export function HardTimeDashboard() {
                   aircraftFlightCycles={selectedAircraft?.flight_cycles ?? null}
                   onBack={() => setSelectedComponent(null)}
                   onInstall={() => openInstall(selectedComponent)}
-                  onInstallRequest={() => openInstallRequest(selectedComponent)}
                   onUninstall={() => openUninstall(selectedComponent)}
                   onCreateInterval={() => openCreateInterval(selectedComponent)}
                   onRegisterCompliance={() => setIsComplianceDialogOpen(true)}
@@ -221,7 +214,6 @@ export function HardTimeDashboard() {
                   aircraftFlightCycles={selectedAircraft?.flight_cycles ?? null}
                   onSelectComponent={handleSelectComponent}
                   onInstallComponent={openInstall}
-                  onInstallRequestComponent={openInstallRequest}
                   onUninstallComponent={openUninstall}
                   onCreateIntervalForComponent={openCreateInterval}
                   onCreateComponentInAta={(code) => openCreateComponent(code)}
@@ -250,30 +242,16 @@ export function HardTimeDashboard() {
         categories={categories}
       />
 
-      <InstallComponentDialog
-        open={installingComponent !== null}
+      <InstallDialog
+        open={installTargetComponent !== null}
         onOpenChange={(open) => {
-          if (!open) setInstallingComponent(null);
+          if (!open) setInstallTargetComponent(null);
         }}
-        componentId={installingComponent?.id ?? null}
+        componentId={installTargetComponent?.id ?? null}
         aircraft={selectedAircraft}
         defaultPartNumber={installingComponentPartNumber}
-        slotLabel={installingComponent?.position}
-        componentLabel={installingComponent?.batch?.name ?? installingComponent?.description ?? undefined}
-      />
-
-      <InstallRequestDialog
-        open={installingRequestComponent !== null}
-        onOpenChange={(open) => {
-          if (!open) setInstallingRequestComponent(null);
-        }}
-        componentId={installingRequestComponent?.id ?? null}
-        aircraft={selectedAircraft}
-        defaultPartNumber={installingComponentPartNumber}
-        slotLabel={installingRequestComponent?.position}
-        componentLabel={
-          installingRequestComponent?.batch?.name ?? installingRequestComponent?.description ?? undefined
-        }
+        slotLabel={installTargetComponent?.position}
+        componentLabel={installTargetComponent?.batch?.name ?? installTargetComponent?.description ?? undefined}
       />
 
       <UninstallComponentDialog
