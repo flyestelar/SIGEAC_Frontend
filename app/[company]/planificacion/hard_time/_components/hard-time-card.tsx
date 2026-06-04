@@ -7,7 +7,7 @@ import { Progress } from '@/components/ui/progress';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { HardTimeAlertLevel, HardTimeIntervalWithMetrics } from '@/types';
 import { AircraftComponentSlotResource } from '@api/types';
-import { CircleOff, ListPlus, MapPinned, PackageMinus, PackagePlus, PlusCircle } from 'lucide-react';
+import { CircleOff, ClockArrowUp, ListPlus, MapPinned, PackageMinus, PackagePlus, PlusCircle } from 'lucide-react';
 import { useMemo } from 'react';
 import {
   AlertBadge,
@@ -18,6 +18,7 @@ import {
   METRIC_UNITS,
   STATUS_ORDER,
 } from './hard-time-shared';
+import { PendingInstallationRequest } from './pending-installation-request';
 
 interface HardTimeCardProps {
   component: AircraftComponentSlotResource;
@@ -44,6 +45,7 @@ export function HardTimeCard({
   const rawIntervals = component.installed_part?.intervals;
   const rawIntervalsCount = rawIntervals?.length ?? 0;
   const installation = component.active_installation;
+  const pendingRequest = component.pending_installation_request;
 
   const intervals = useMemo(() => {
     if (!installation || aircraftFlightHours == null || aircraftFlightCycles == null) return [];
@@ -121,10 +123,14 @@ export function HardTimeCard({
         </CardHeader>
 
         <CardContent className="space-y-3 px-4 pb-3 pt-0">
-          <div className="flex items-center gap-2 rounded-md border border-dashed border-sky-500/20 bg-background/60 px-3 py-2">
-            <PlusCircle className="h-3.5 w-3.5 shrink-0 text-sky-700 dark:text-sky-300" />
-            <p className="text-[11px] text-foreground/80">Monta un componente para activar el control hard time.</p>
-          </div>
+          {pendingRequest ? (
+            <PendingInstallationRequest request={pendingRequest} />
+          ) : (
+            <div className="flex items-center gap-2 rounded-md border border-dashed border-sky-500/20 bg-background/60 px-3 py-2">
+              <PlusCircle className="h-3.5 w-3.5 shrink-0 text-sky-700 dark:text-sky-300" />
+              <p className="text-[11px] text-foreground/80">Monta un componente para activar el control hard time.</p>
+            </div>
+          )}
 
           <div className="flex items-center justify-between gap-3">
             <Badge variant="outline" className="h-5 border-border/60 px-2 text-[10px] font-normal">
@@ -192,7 +198,18 @@ export function HardTimeCard({
               )}
             </div>
           </div>
-          <AlertBadge status={componentStatus} size="small" />
+          <div className="flex shrink-0 items-center gap-1.5">
+            {pendingRequest && (
+              <Badge
+                variant="outline"
+                className="h-5 gap-1 border-amber-500/20 bg-amber-500/10 px-1.5 text-[10px] text-amber-600 dark:text-amber-400"
+              >
+                <ClockArrowUp className="h-2.5 w-2.5" />
+                Pendiente
+              </Badge>
+            )}
+            <AlertBadge status={componentStatus} size="small" />
+          </div>
         </div>
 
         <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 pl-[38px] text-[11px] text-muted-foreground">
