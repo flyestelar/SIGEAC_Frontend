@@ -6,7 +6,8 @@ declare module '@laravel/echo-react' {
   interface Events {}
 }
 export function setupEchoReverb(token: string | null = null) {
-  window.Pusher = Pusher;
+  if (typeof window !== 'undefined') window.Pusher = Pusher;
+
   configureEcho({
     broadcaster: 'reverb',
     key: process.env.NEXT_PUBLIC_REVERB_APP_KEY,

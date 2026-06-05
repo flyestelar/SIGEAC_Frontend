@@ -13,17 +13,11 @@ import { useInfiniteQuery, useMutation, useQuery } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
 export function useGetUnreadNotificationsCount() {
-  return useQuery({
-    ...notificationUnreadCountOptions(),
-    refetchInterval: 60_000, // 60 seconds
-  });
+  return useQuery(notificationUnreadCountOptions());
 }
 
 export function useGetUnreadNotifications(perPage = 10) {
-  return useQuery({
-    ...notificationUnreadOptions({ query: { per_page: perPage } }),
-    refetchInterval: 60000, // 60 seconds
-  });
+  return useQuery(notificationUnreadOptions({ query: { per_page: perPage } }));
 }
 
 export function useGetNotificationsInfinite(query: NotificationIndexData['query'] = {}) {
@@ -33,7 +27,6 @@ export function useGetNotificationsInfinite(query: NotificationIndexData['query'
       const { current_page, last_page } = lastPage.meta;
       return current_page < last_page ? current_page + 1 : undefined;
     },
-    refetchInterval: 60000,
   });
 }
 

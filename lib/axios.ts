@@ -1,8 +1,9 @@
-import { toast } from 'sonner';
 import { useCompanyStore } from '@/stores/CompanyStore';
 import { client } from '@api/client';
 import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
 import Cookies from 'js-cookie';
+import { cache } from 'react';
+import { toast } from 'sonner';
 
 const axiosInstance = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_BASE_URL,
@@ -18,17 +19,19 @@ client.setConfig({
   headers: {
     skip_zrok_interstitial: true,
   },
-  auth() {
-    return getAuthToken();
-  },
+  axios: axiosInstance,
 });
 
-function getAuthToken() {
+export const getAuthToken = cache(async () => {
+  if (typeof window === 'undefined') {
+    const { cookies } = await import('next/headers');
+    return cookies().then((c) => c.get('auth_token')?.value.replace('Bearer ', ''));
+  }
   return Cookies.get('auth_token')?.replace('Bearer ', '');
-}
+});
 
-function authInterceptor(config: InternalAxiosRequestConfig) {
-  const token = getAuthToken();
+async function authInterceptor(config: InternalAxiosRequestConfig) {
+  const token = await getAuthToken();
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
@@ -47,8 +50,10 @@ function companyInterceptor(config: InternalAxiosRequestConfig) {
 }
 
 axiosInstance.interceptors.request.use(authInterceptor);
-axiosInstance.interceptors.request.use(companyInterceptor);
-client.instance.interceptors.request.use(companyInterceptor);
+
+if (typeof window !== 'undefined') {
+  axiosInstance.interceptors.request.use(companyInterceptor);
+}
 
 export default axiosInstance;
 

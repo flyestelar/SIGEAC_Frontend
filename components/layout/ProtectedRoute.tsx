@@ -1,5 +1,6 @@
 'use client';
-import useAuthorize from '@/hooks/auth/useAuthorize';
+import { useAuth } from '@/contexts/AuthContext';
+import { authorizeUser } from '@/lib/auth/authorization';
 import { ReactNode } from 'react';
 import LoadingPage from '../misc/LoadingPage';
 
@@ -10,12 +11,14 @@ interface ProtectedRouteProps {
   directPermissions?: string[];
 }
 
-const ProtectedRoute = ({ children, roles, permissions, directPermissions }: ProtectedRouteProps) => {
-  const authorized = useAuthorize({ roles, permissions, directPermissions, redirect: true });
+function ProtectedRoute({ children, ...authorizeOptions }: ProtectedRouteProps) {
+  const { user, loading } = useAuth();
 
-  if (authorized.loading) return <LoadingPage />;
+  if (loading) return <LoadingPage />;
 
-  return <>{children}</>;
-};
+  authorizeUser({ ...authorizeOptions, user, redirect: true });
+
+  return children;
+}
 
 export default ProtectedRoute;

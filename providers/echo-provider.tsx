@@ -4,9 +4,7 @@ import { NotificationListener } from '@/components/misc/NotificationListener';
 import { setupEchoReverb } from '@/lib/echo';
 import { type ReactNode } from 'react';
 
-if (typeof window !== 'undefined') {
-  setupEchoReverb();
-}
+setupEchoReverb();
 
 interface Props {
   children: ReactNode;

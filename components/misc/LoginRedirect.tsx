@@ -1,8 +1,7 @@
-"use client";
+'use client';
 
-import { useAuth } from "@/contexts/AuthContext";
-import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useAuth } from '@/contexts/AuthContext';
+import { redirect } from 'next/navigation';
 
 interface LoginRedirectProps {
   redirectTo?: string;
@@ -10,13 +9,11 @@ interface LoginRedirectProps {
 
 export const LoginRedirect = ({ redirectTo }: LoginRedirectProps) => {
   const { isAuthenticated, loading } = useAuth();
-  const router = useRouter();
+  console.log('LoginRedirect - isAuthenticated:', isAuthenticated, 'loading:', loading);
 
-  useEffect(() => {
-    if (!loading && isAuthenticated) {
-      router.replace(redirectTo ?? '/inicio');
-    }
-  }, [isAuthenticated, loading, redirectTo, router]);
+  if (!loading && isAuthenticated) {
+    redirect(redirectTo ?? '/inicio');
+  }
 
   return null;
 };

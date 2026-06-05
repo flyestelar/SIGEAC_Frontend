@@ -1,11 +1,19 @@
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import RequireCompany from '@/components/misc/RequireCompany';
+import { getQueryClient } from '@/lib/query-client';
+import { notificationUnreadCountOptions } from '@api/queries';
+import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
 
-const RoutesLayout = ({ children }: { children: React.ReactNode }) => {
+const RoutesLayout = async ({ children }: { children: React.ReactNode }) => {
+  const queryClient = getQueryClient();
+  void queryClient.prefetchQuery(notificationUnreadCountOptions());
+
   return (
-    <RequireCompany>
-      <DashboardLayout>{children}</DashboardLayout>
-    </RequireCompany>
+    <HydrationBoundary state={dehydrate(queryClient)}>
+      <RequireCompany>
+        <DashboardLayout>{children}</DashboardLayout>
+      </RequireCompany>
+    </HydrationBoundary>
   );
 };
 

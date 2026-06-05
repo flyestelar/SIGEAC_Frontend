@@ -1,3 +1,5 @@
+import ErrorBoundary from '@/components/ErrorBoundary';
+import { RedirectHandler } from '@/components/misc/RedirectHandler';
 import { Toaster } from '@/components/ui/sonner';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { EchoProvider } from '@/providers/echo-provider';
@@ -5,10 +7,9 @@ import QueryClientProvider from '@/providers/query-provider';
 import { ThemeProvider } from '@/providers/theme-provider';
 import type { Metadata } from 'next';
 import { Poppins } from 'next/font/google';
+
+import { getCurrentUser } from '@/lib/auth/user';
 import './globals.css';
-import { RedirectHandler } from '@/components/misc/RedirectHandler';
-import { NotificationListener } from '@/components/misc/NotificationListener';
-import ErrorBoundary from '@/components/ErrorBoundary';
 
 const inter = Poppins({
   subsets: ['latin'],
@@ -21,11 +22,12 @@ export const metadata: Metadata = {
   description: 'Sistema de Gestión Aeronáutica Civil',
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const user = await getCurrentUser();
   return (
     <html lang="en" suppressHydrationWarning className={inter.variable}>
       <head>
@@ -34,7 +36,7 @@ export default function RootLayout({
       <body className={inter.className} suppressHydrationWarning>
         <QueryClientProvider>
           <RedirectHandler />
-          <AuthProvider>
+          <AuthProvider user={user}>
             <EchoProvider>
               <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
                 <ErrorBoundary>{children}</ErrorBoundary>
