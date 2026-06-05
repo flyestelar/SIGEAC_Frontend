@@ -1,6 +1,5 @@
 "use client"
 
-import { CreateFlightControlDialog } from "@/components/dialogs/aerolinea/administracion/CreateFlightControl"
 import { DataTablePagination } from "@/components/tables/DataTablePagination"
 import { DataTableViewOptions } from "@/components/tables/DataTableViewOptions"
 import {
@@ -56,8 +55,7 @@ export function DataTable<TData, TValue>({
 
   return (
     <div>
-      <div className="flex items-center mb-4">
-        <CreateFlightControlDialog />
+      <div className="flex items-center justify-end mb-4">
         <DataTableViewOptions table={table} />
       </div>
       <div className="rounded-md border mb-4 whitespace-nowrap">
