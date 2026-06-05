@@ -1,11 +1,13 @@
 import { Toaster } from '@/components/ui/sonner';
 import { AuthProvider } from '@/contexts/AuthContext';
+import { EchoProvider } from '@/providers/echo-provider';
 import QueryClientProvider from '@/providers/query-provider';
 import { ThemeProvider } from '@/providers/theme-provider';
 import type { Metadata } from 'next';
 import { Poppins } from 'next/font/google';
 import './globals.css';
 import { RedirectHandler } from '@/components/misc/RedirectHandler';
+import { NotificationListener } from '@/components/misc/NotificationListener';
 import ErrorBoundary from '@/components/ErrorBoundary';
 
 const inter = Poppins({
@@ -33,10 +35,12 @@ export default function RootLayout({
         <QueryClientProvider>
           <RedirectHandler />
           <AuthProvider>
-            <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
-              <ErrorBoundary>{children}</ErrorBoundary>
-              <Toaster />
-            </ThemeProvider>
+            <EchoProvider>
+              <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+                <ErrorBoundary>{children}</ErrorBoundary>
+                <Toaster />
+              </ThemeProvider>
+            </EchoProvider>
           </AuthProvider>
         </QueryClientProvider>
       </body>

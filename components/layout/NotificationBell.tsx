@@ -1,8 +1,8 @@
 'use client';
 
-import { Bell, Loader2, MailOpen } from 'lucide-react';
+import { Bell, Check, Loader2, MailOpen } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
-import { useParams, useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -102,19 +102,22 @@ function NotificationList() {
           return (
             <DropdownMenuItem
               key={n.id}
-              className="cursor-pointer py-3"
+              className="group cursor-pointer py-3"
               onClick={() => {
-                if (!n.read_at) {
-                  markAsRead.mutate({ path: { id: n.id } });
-                }
                 if (
                   typeof n.data === 'object' &&
                   n.data !== null &&
                   'url' in n.data &&
                   typeof n.data.url === 'string'
                 ) {
+                  if (!n.read_at) {
+                    markAsRead.mutate({ path: { id: n.id } });
+                  }
                   router.push(n.data.url);
                   return;
+                }
+                if (!n.read_at) {
+                  markAsRead.mutate({ path: { id: n.id } });
                 }
                 router.push('/sistema/notificaciones');
               }}
@@ -131,6 +134,20 @@ function NotificationList() {
                   )}
                   <p className="mt-1 text-[11px] text-muted-foreground/70">{formatTime(n.created_at)}</p>
                 </div>
+                {!n.read_at && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="mt-0.5 h-6 w-6 shrink-0 opacity-0 transition-opacity group-hover:opacity-100 hover:bg-accent-foreground/10"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      markAsRead.mutate({ path: { id: n.id } });
+                    }}
+                  >
+                    <Check className="h-3.5 w-3.5" />
+                    <span className="sr-only">Marcar como leída</span>
+                  </Button>
+                )}
               </div>
             </DropdownMenuItem>
           );

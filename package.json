@@ -13,6 +13,7 @@
   "dependencies": {
     "@hey-api/client-axios": "^0.9.1",
     "@hookform/resolvers": "^3.10.0",
+    "@laravel/echo-react": "^2.3.3",
     "@react-pdf/renderer": "^4.5.1",
     "@schedule-x/calendar": "^2.36.0",
     "@schedule-x/drag-and-drop": "^2.36.0",
@@ -36,7 +37,7 @@
     "input-otp": "^1.4.2",
     "jose": "^6.2.3",
     "js-cookie": "^3.0.8",
-    "laravel-echo": "^1.16.1",
+    "laravel-echo": "^2.3.7",
     "lucide-react": "^0.408.0",
     "motion": "^12.39.0",
     "next": "^16.2.7",

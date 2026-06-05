@@ -1,7 +1,6 @@
-'use client'
+'use client';
+import useAuthorize from '@/hooks/auth/useAuthorize';
 import { ReactNode } from 'react';
-import { useRouter } from 'next/navigation';
-import { useAuth } from '@/contexts/AuthContext';
 import LoadingPage from '../misc/LoadingPage';
 
 interface ProtectedRouteProps {
@@ -12,36 +11,9 @@ interface ProtectedRouteProps {
 }
 
 const ProtectedRoute = ({ children, roles, permissions, directPermissions }: ProtectedRouteProps) => {
-  const { user, loading } = useAuth();
-  const router = useRouter();
+  const authorized = useAuthorize({ roles, permissions, directPermissions, redirect: true });
 
-  if (loading) return <LoadingPage />;
-
-  if (!user) {
-    router.push('/login');
-    return null;
-  }
-
-  const userRoles = user.roles?.map(role => role.name) || [];
-
-  const userPermissions = user.roles?.flatMap(role => role.permissions.map(permission => permission.name)) || [];
-
-  const userDirectPermissions = user.permissions?.map(directPermissions => directPermissions.name) || [];
-
-  if (roles && !roles.some(role => userRoles.includes(role))) {
-    router.push('/not-authorized');
-    return null;
-  }
-
-  if (permissions && !permissions.some(permission => userPermissions.includes(permission))) {
-    router.push('/not-authorized');
-    return null;
-  }
-
-  if (directPermissions && !directPermissions.some(permission => userDirectPermissions.includes(permission))) {
-    router.push('/not-authorized');
-    return null;
-  }
+  if (authorized.loading) return <LoadingPage />;
 
   return <>{children}</>;
 };
