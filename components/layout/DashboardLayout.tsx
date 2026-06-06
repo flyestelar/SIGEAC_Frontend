@@ -1,15 +1,17 @@
 'use client';
 
+import { useAuth } from '@/contexts/AuthContext';
+import { getMenuList } from '@/lib/menu-list';
 import { cn } from '@/lib/utils';
+import { useCompanyStore } from '@/stores/CompanyStore';
 import { SidebarSectionsStoreProvider, useSidebarSectionsStore } from '@/stores/SidebarSectionsStore';
+import { useMemo } from 'react';
+import { useRequireAuthRedirect } from '../misc/RequireAuthRedirect';
+import RequireCompany from '../misc/RequireCompany';
 import { SidebarProvider } from '../ui/sidebar';
 import Footer from './Footer';
-import { AppSidebar } from './Sidebar';
-import { useMemo } from 'react';
-import { useCompanyStore } from '@/stores/CompanyStore';
-import { getMenuList } from '@/lib/menu-list';
-import { useAuth } from '@/contexts/AuthContext';
 import { Navbar } from './Navbar';
+import { AppSidebar } from './Sidebar';
 
 function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
   const isOpen = useSidebarSectionsStore((state) => state.isOpen);
@@ -39,12 +41,20 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
   );
 }
 
-function DashboardLayout({ children }: { children: React.ReactNode }) {
-  return (
+function DashboardLayout({ children, requireCompany }: { children: React.ReactNode; requireCompany?: boolean }) {
+  useRequireAuthRedirect();
+
+  const content = (
     <SidebarSectionsStoreProvider>
       <DashboardLayoutContent>{children}</DashboardLayoutContent>
     </SidebarSectionsStoreProvider>
   );
+
+  if (requireCompany) {
+    return <RequireCompany>{content}</RequireCompany>;
+  }
+
+  return content;
 }
 
 export default DashboardLayout;

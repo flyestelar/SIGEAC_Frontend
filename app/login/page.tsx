@@ -1,11 +1,12 @@
-import { LoginForm } from '@/components/forms/ajustes/LoginForm'
-import { ThemeToggler } from '@/components/layout/ThemeToggler'
-import { LoginRedirect } from '@/components/misc/LoginRedirect'
-import Logo from '@/components/misc/Logo'
+import { LoginForm } from '@/components/forms/ajustes/LoginForm';
+import { ThemeToggler } from '@/components/layout/ThemeToggler';
+import Logo from '@/components/misc/Logo';
+import { loginRedirect } from '@/lib/auth/login';
 
-const Login = async (props: { searchParams: Promise<{ from?: string }> }) => {
+async function Login(props: PageProps<'/login'>) {
   const searchParams = await props.searchParams;
-  const redirectTo = searchParams.from;
+  const from = searchParams.from?.toString();
+  await loginRedirect(from);
 
   return (
     <div className="h-dvh w-dvw">
@@ -22,14 +23,15 @@ const Login = async (props: { searchParams: Promise<{ from?: string }> }) => {
               <ThemeToggler />
             </div>
             <h1 className="text-center text-3xl font-bold">Ingrese al Sistema</h1>
-            <p className="text-center font-light text-sm text-muted-foreground">Por favor, inicie sesión con sus credenciales para ingresar.</p>
-            <LoginRedirect redirectTo={redirectTo} />
+            <p className="text-center font-light text-sm text-muted-foreground">
+              Por favor, inicie sesión con sus credenciales para ingresar.
+            </p>
             <LoginForm />
           </div>
         </div>
       </div>
     </div>
-  )
+  );
 }
 
-export default Login
+export default Login;

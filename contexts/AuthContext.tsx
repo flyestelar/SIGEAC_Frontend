@@ -21,13 +21,15 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export const AuthProvider = ({ children, user: initialUser }: { children: ReactNode; user: User | null }) => {
+const USER_QUERY_KEY = ['user'] as const;
+
+export function AuthProvider({ children, user: initialUser }: { children: ReactNode; user: User | null }) {
   const queryClient = useQueryClient();
-  const router = useRouter();
   const reset = useCompanyStore((state) => state.reset);
+  const router = useRouter();
 
   const query = useQuery({
-    queryKey: ['user'],
+    queryKey: USER_QUERY_KEY,
     queryFn: () => getCurrentUser(),
     initialData: initialUser,
     staleTime: Infinity,
@@ -62,14 +64,13 @@ export const AuthProvider = ({ children, user: initialUser }: { children: ReactN
   const logout = useCallback(async () => {
     try {
       await logoutAction();
-      queryClient.setQueryData(['user'], null);
       reset();
       queryClient.clear();
-      router.push('/login');
-      router.refresh();
+      queryClient.setQueryData(USER_QUERY_KEY, null);
       toast.success('Sesión cerrada correctamente', {
         position: 'bottom-center',
       });
+      router.push('/login');
     } catch (err) {
       console.error('Error durante logout:', err);
       toast.error('Error al cerrar sesión', {
@@ -92,7 +93,7 @@ export const AuthProvider = ({ children, user: initialUser }: { children: ReactN
   );
 
   return <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>;
-};
+}
 
 export const useAuth = (): AuthContextType => {
   const context = useContext(AuthContext);
