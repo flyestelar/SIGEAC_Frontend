@@ -1,6 +1,7 @@
 import axiosInstance from '@/lib/axios';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
+import { getFlightToastError } from './error-handlers';
 
 interface CreateFlightControlData {
   aircraft_id: string;
@@ -29,9 +30,8 @@ export const useCreateFlightControl = () => {
       });
     },
     onError: (error) => {
-      toast.error('Oops!', {
-        description: 'No se pudo registrar el vuelo...',
-      });
+      const { title, description } = getFlightToastError(error, 'create');
+      toast.error(title, { description });
       console.error(error);
     },
   });
@@ -61,9 +61,8 @@ export const useUpdateFlightControl = () => {
       });
     },
     onError: (error) => {
-      toast.error('Oops!', {
-        description: 'No se pudo actualizar el vuelo...',
-      });
+      const { title, description } = getFlightToastError(error, 'update');
+      toast.error(title, { description });
       console.error(error);
     },
   });
@@ -85,9 +84,8 @@ export const useDeleteFlightControl = () => {
       });
     },
     onError: (error) => {
-      toast.error('Oops!', {
-        description: 'No se pudo eliminar el vuelo...',
-      });
+      const { title, description } = getFlightToastError(error, 'delete');
+      toast.error(title, { description });
       console.error(error);
     },
   });
