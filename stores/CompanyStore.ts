@@ -4,6 +4,8 @@ import { Company } from '@/types';
 import { useSyncExternalStore } from 'react';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import Cookies from 'js-cookie';
+import { COMPANY_ID_COOKIE } from '@/lib/cookies/constants';
 
 // Actualizamos el estado para usar el objeto Company
 interface CompanyState {
@@ -29,6 +31,11 @@ export const useCompanyStore = create<CompanyState & CompanyActions>()(
 
       setSelectedCompany: (company) => {
         set({ selectedCompany: company });
+        Cookies.set(COMPANY_ID_COOKIE, company.id.toString(), {
+          sameSite: 'lax',
+          secure: process.env.NODE_ENV === 'production',
+          path: '/',
+        });
       },
 
       setSelectedStation: (station) => {
@@ -37,6 +44,7 @@ export const useCompanyStore = create<CompanyState & CompanyActions>()(
 
       reset: () => {
         set(initialState);
+        Cookies.remove(COMPANY_ID_COOKIE);
       },
     }),
     {

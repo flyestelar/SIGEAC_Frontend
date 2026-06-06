@@ -1,7 +1,8 @@
 import { User } from '@/types';
 import { user } from '@api/sdk';
 import { cache } from 'react';
-import axiosInstance, { getAuthToken } from '../axios';
+import axiosInstance from '../axios';
+import { getAuthToken } from '../cookies/server';
 
 export const isAuthenticated = cache(async (): Promise<boolean> => (await getCurrentUser()) !== null);
 
