@@ -40,15 +40,15 @@ export const getColumns = (companySlug: string): ColumnDef<FlightControl>[] => [
     accessorKey: 'flight_number',
     header: ({ column }) => <DataTableColumnHeader filter column={column} title="Vuelo" />,
     cell: ({ row }) => {
-      const n = row.original.flight_number;
-      if (!n) return <span className="font-mono text-sm text-muted-foreground">—</span>;
-      const href = `/${companySlug}/planificacion/control_vuelos/vuelos/${encodeURIComponent(n)}`;
+      const id = row.original.id;
+      const label = row.original.flight_number || `#${id}`;
+      const href = `/${companySlug}/planificacion/control_vuelos/vuelos/${encodeURIComponent(String(id))}`;
       return (
         <Link
           href={href}
           className="font-mono text-sm font-medium text-foreground tracking-wider hover:text-sky-700 dark:hover:text-sky-300"
         >
-          {n}
+          {label}
         </Link>
       );
     },
