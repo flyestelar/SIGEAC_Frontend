@@ -1,4 +1,4 @@
- /** @type {import('next').NextConfig} */
+/** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: false,
   images: {
@@ -16,12 +16,21 @@ const nextConfig = {
         protocol: 'http',
         hostname: '127.0.0.1',
         port: '81',
-      }
+      },
     ],
   },
   typescript: {
-    ignoreBuildErrors: true
-  }
+    ignoreBuildErrors: true,
+  },
+  experimental: {
+    serverComponentsHmrCache: true,
+  },
+  logging: {
+    fetches: {
+      fullUrl: true,
+      hmrRefreshes: true,
+    },
+  },
 };
 
 export default nextConfig;

@@ -8,7 +8,8 @@ export function useRequireAuthRedirect() {
   const { isAuthenticated, loading } = useAuth();
 
   if (!loading && !isAuthenticated) {
-    redirect(`/login?from=${encodeURIComponent(pathname)}`);
+    const target = `/login?from=${encodeURIComponent(pathname)}`;
+    redirect(target);
   }
 
   return null;

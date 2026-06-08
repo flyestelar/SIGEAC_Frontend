@@ -8,7 +8,6 @@ import { ThemeProvider } from '@/providers/theme-provider';
 import type { Metadata } from 'next';
 import { Poppins } from 'next/font/google';
 
-import { getCurrentUser } from '@/lib/auth/user';
 import './globals.css';
 
 const inter = Poppins({
@@ -27,7 +26,6 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const user = await getCurrentUser();
   return (
     <html lang="en" suppressHydrationWarning className={inter.variable}>
       <head>
@@ -35,15 +33,17 @@ export default async function RootLayout({
       </head>
       <body className={inter.className} suppressHydrationWarning>
         <QueryClientProvider>
-          <RedirectHandler />
-          <AuthProvider user={user}>
-            <EchoProvider>
-              <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
-                <ErrorBoundary>{children}</ErrorBoundary>
-                <Toaster />
-              </ThemeProvider>
-            </EchoProvider>
-          </AuthProvider>
+          <ErrorBoundary>
+            <RedirectHandler />
+            <AuthProvider>
+              <EchoProvider>
+                <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+                  {children}
+                  <Toaster />
+                </ThemeProvider>
+              </EchoProvider>
+            </AuthProvider>
+          </ErrorBoundary>
         </QueryClientProvider>
       </body>
     </html>

@@ -7,7 +7,9 @@ import { getAuthToken } from '../cookies/server';
 export const isAuthenticated = cache(async (): Promise<boolean> => (await getCurrentUser()) !== null);
 
 export const getCurrentUser = cache(async (): Promise<User | null> => {
-  if (!(await getAuthToken())) {
+  const token = await getAuthToken();
+
+  if (!token) {
     return null;
   }
 

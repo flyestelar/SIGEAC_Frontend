@@ -1,13 +1,16 @@
 import DashboardLayout from '@/components/layout/DashboardLayout';
-import { isAuthenticated } from '@/lib/auth/user';
+import { userQueryOptions } from '@/lib/auth/queries';
 import { getQueryClient } from '@/lib/query-client';
 import { notificationUnreadCountOptions } from '@api/queries';
 import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
 
-async function RoutesLayout({ children }: { children: React.ReactNode }) {
-  const queryClient = getQueryClient();
+export const dynamic = 'force-dynamic';
 
-  if (await isAuthenticated()) {
+async function CompanyLayout({ children }: { children: React.ReactNode }) {
+  const queryClient = getQueryClient();
+  const user = await queryClient.ensureQueryData(userQueryOptions());
+
+  if (user) {
     void queryClient.prefetchQuery(notificationUnreadCountOptions());
   }
 
@@ -18,4 +21,4 @@ async function RoutesLayout({ children }: { children: React.ReactNode }) {
   );
 }
 
-export default RoutesLayout;
+export default CompanyLayout;

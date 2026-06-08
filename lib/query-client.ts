@@ -1,4 +1,5 @@
 import { defaultShouldDehydrateQuery, environmentManager, QueryClient } from '@tanstack/react-query';
+import { cache } from 'react';
 
 // This code is only for TypeScript
 declare global {
@@ -33,7 +34,7 @@ function makeQueryClient() {
 
 let browserQueryClient: QueryClient | undefined = undefined;
 
-export function getQueryClient() {
+export const getQueryClient = cache(() => {
   if (environmentManager.isServer()) {
     // Server: always make a new query client
     return makeQueryClient();
@@ -48,4 +49,4 @@ export function getQueryClient() {
     }
     return browserQueryClient;
   }
-}
+});

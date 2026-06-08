@@ -17,7 +17,9 @@ export function authorizeUser({
   redirect: shouldRedirect = true,
 }: UseAuthorizeProps) {
   if (!user) {
-    if (shouldRedirect) redirect('/login', RedirectType.replace);
+    if (shouldRedirect) {
+      redirect('/login', RedirectType.replace);
+    }
     return { authenticated: false };
   }
 
@@ -26,17 +28,23 @@ export function authorizeUser({
   const userDirectPermissions = user.permissions?.map((directPermissions) => directPermissions.name) || [];
 
   if (roles && !roles.some((role) => userRoles.includes(role))) {
-    if (shouldRedirect) redirect('/not-authorized', RedirectType.replace);
+    if (shouldRedirect) {
+      redirect('/not-authorized', RedirectType.replace);
+    }
     return { authorized: false };
   }
 
   if (permissions && !permissions.some((permission) => userPermissions.includes(permission))) {
-    if (shouldRedirect) redirect('/not-authorized', RedirectType.replace);
+    if (shouldRedirect) {
+      redirect('/not-authorized', RedirectType.replace);
+    }
     return { authorized: false };
   }
 
   if (directPermissions && !directPermissions.some((permission) => userDirectPermissions.includes(permission))) {
-    if (shouldRedirect) redirect('/not-authorized', RedirectType.replace);
+    if (shouldRedirect) {
+      redirect('/not-authorized', RedirectType.replace);
+    }
     return { authorized: false };
   }
 

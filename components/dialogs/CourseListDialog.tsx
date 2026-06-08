@@ -1,7 +1,5 @@
 "use client";
 
-import Loading from "@/app/[company]/loading";
-import { Card } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,

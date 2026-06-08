@@ -1,40 +1,22 @@
 'use client';
 
+import { AuthContext, useAuth } from '@/lib/auth/context';
 import { loginAction, logoutAction } from '@/lib/auth/login';
-import { getCurrentUser } from '@/lib/auth/user';
+import { USER_QUERY_KEY, userQueryOptions } from '@/lib/auth/queries';
 import { useCompanyStore } from '@/stores/CompanyStore';
-import { User } from '@/types';
 import { LoginData } from '@api/types';
-import { useMutation, UseMutationResult, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
-import { createContext, ReactNode, useCallback, useContext, useMemo } from 'react';
+import { ReactNode, useCallback, useMemo } from 'react';
 import { toast } from 'sonner';
 
-interface AuthContextType {
-  user: User | null;
-  isAuthenticated: boolean;
-  loading: boolean;
-  error: string | null;
-  loginMutation: UseMutationResult<void, Error, LoginData['body'], unknown>;
-  logout: () => Promise<void>;
-}
-
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
-const USER_QUERY_KEY = ['user'] as const;
-
-export function AuthProvider({ children, user: initialUser }: { children: ReactNode; user: User | null }) {
+export function AuthProvider({ children }: { children: ReactNode }) {
   const queryClient = useQueryClient();
   const reset = useCompanyStore((state) => state.reset);
   const router = useRouter();
 
-  const query = useQuery({
-    queryKey: USER_QUERY_KEY,
-    queryFn: () => getCurrentUser(),
-    initialData: initialUser,
-    staleTime: Infinity,
-  });
-  const user = query.data;
+  const query = useQuery(userQueryOptions());
+  const user = query.data ?? null;
   const isAuthenticated = !!query.data;
 
   const loginMutation = useMutation({
@@ -95,10 +77,4 @@ export function AuthProvider({ children, user: initialUser }: { children: ReactN
   return <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>;
 }
 
-export const useAuth = (): AuthContextType => {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth debe usarse dentro de un AuthProvider');
-  }
-  return context;
-};
+export { useAuth };

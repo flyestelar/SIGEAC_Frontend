@@ -19,7 +19,7 @@ export function AppSidebar({ menuList }: { menuList: NavGroup[] }) {
           href={`/${selectedCompany?.slug}/dashboard`}
           className={cn('transition-transform ease-in-out duration-300 flex items-center justify-center gap-2 px-1')}
         >
-          <Image src={'/images/logo.png'} width={150} height={150} alt="Logo" />
+          <Image loading='eager' src={'/images/logo.png'} width={150} height={150} alt="Logo" />
         </Link>
         {sidebar.isMobile && <CompanySelect />}
       </SidebarHeader>
