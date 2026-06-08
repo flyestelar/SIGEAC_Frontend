@@ -14,9 +14,17 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { useGetUnreadNotifications, useGetUnreadNotificationsCount, useMarkAsRead } from '@/hooks/sistema/useNotifications';
+import {
+  useGetUnreadNotifications,
+  useGetUnreadNotificationsCount,
+  useMarkAsRead,
+} from '@/hooks/sistema/useNotifications';
 import { formatTime, getNotificationInfo, statusIcon } from '@/lib/notification';
+import { notificationUnreadOptions } from '@api/queries';
+import { useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
+
+const NOTIFICATIONS_PREVIEW_COUNT = 5;
 
 interface NotificationBellProps {
   onClick?: () => void;
@@ -26,6 +34,11 @@ export function NotificationBell({ onClick }: NotificationBellProps) {
   const { data: countData } = useGetUnreadNotificationsCount();
   const unreadCount = countData?.count ?? 0;
   const hasUnread = unreadCount > 0;
+  const queryClient = useQueryClient();
+
+  const handleMouseEnter = () => {
+    queryClient.prefetchQuery(notificationUnreadOptions({ query: { per_page: NOTIFICATIONS_PREVIEW_COUNT } }));
+  };
 
   return (
     <DropdownMenu>
@@ -38,6 +51,7 @@ export function NotificationBell({ onClick }: NotificationBellProps) {
                 variant="outline"
                 size="icon"
                 onClick={onClick}
+                onMouseEnter={handleMouseEnter}
               >
                 <Bell className="h-[1.1rem] w-[1.1rem]" />
                 <AnimatePresence>
@@ -82,7 +96,7 @@ export function NotificationBell({ onClick }: NotificationBellProps) {
 
 function NotificationList() {
   const router = useRouter();
-  const { data: unreadData, isLoading: notifLoading } = useGetUnreadNotifications(5);
+  const { data: unreadData, isLoading: notifLoading } = useGetUnreadNotifications(NOTIFICATIONS_PREVIEW_COUNT);
   const markAsRead = useMarkAsRead();
   const notifications = unreadData?.data ?? [];
   return (
