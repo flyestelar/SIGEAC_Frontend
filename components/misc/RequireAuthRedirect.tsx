@@ -11,6 +11,4 @@ export function useRequireAuthRedirect() {
     const target = `/login?from=${encodeURIComponent(pathname)}`;
     redirect(target);
   }
-
-  return null;
 }

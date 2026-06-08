@@ -1,11 +1,11 @@
 'use client';
 
+import { COMPANY_ID_COOKIE } from '@/lib/cookies/constants';
 import { Company } from '@/types';
+import Cookies from 'js-cookie';
 import { useSyncExternalStore } from 'react';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import Cookies from 'js-cookie';
-import { COMPANY_ID_COOKIE } from '@/lib/cookies/constants';
 
 // Actualizamos el estado para usar el objeto Company
 interface CompanyState {
@@ -24,6 +24,14 @@ const initialState: CompanyState = {
   selectedStation: null,
 };
 
+const setComanyIdCookie = (company: Company) => {
+  Cookies.set(COMPANY_ID_COOKIE, company.id.toString(), {
+    sameSite: 'lax',
+    secure: process.env.NODE_ENV === 'production',
+    path: '/',
+  });
+};
+
 export const useCompanyStore = create<CompanyState & CompanyActions>()(
   persist(
     (set) => ({
@@ -31,11 +39,7 @@ export const useCompanyStore = create<CompanyState & CompanyActions>()(
 
       setSelectedCompany: (company) => {
         set({ selectedCompany: company });
-        Cookies.set(COMPANY_ID_COOKIE, company.id.toString(), {
-          sameSite: 'lax',
-          secure: process.env.NODE_ENV === 'production',
-          path: '/',
-        });
+        setComanyIdCookie(company);
       },
 
       setSelectedStation: (station) => {
@@ -49,6 +53,13 @@ export const useCompanyStore = create<CompanyState & CompanyActions>()(
     }),
     {
       name: 'company-storage',
+      onRehydrateStorage: () => (state) => {
+        if (state?.selectedCompany) {
+          setComanyIdCookie(state.selectedCompany);
+        } else {
+          Cookies.remove(COMPANY_ID_COOKIE);
+        }
+      },
     },
   ),
 );

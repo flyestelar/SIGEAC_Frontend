@@ -1,5 +1,5 @@
 import { getMaintenanceAircraftsOptions } from '@/hooks/planificacion/useGetMaintenanceAircrafts';
-import { isAuthenticated } from '@/lib/auth/user';
+import { userQueryOptions } from '@/lib/auth/queries';
 import { getQueryClient } from '@/lib/query-client';
 import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
 import MaintenanceDashboardClient from './_components/maintenance-dashboard-client';
@@ -7,8 +7,9 @@ import MaintenanceDashboardClient from './_components/maintenance-dashboard-clie
 async function MaintenanceDashboardPage({ params }: PageProps<'/[company]/planificacion/control_mantenimiento'>) {
   const { company } = await params;
   const queryClient = getQueryClient();
+  const user = await queryClient.ensureQueryData(userQueryOptions());
 
-  if (await isAuthenticated()) {
+  if (user) {
     void queryClient.prefetchQuery(getMaintenanceAircraftsOptions(company));
   }
 

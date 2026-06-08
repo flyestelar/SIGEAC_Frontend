@@ -3,7 +3,7 @@ import { useRequireAuthRedirect } from '@/components/misc/RequireAuthRedirect';
 import CompanySelect from '@/components/selects/CompanySelect';
 import { PlaneTakeoff } from 'lucide-react';
 
-const HomePage = () => {
+function HomePage() {
   useRequireAuthRedirect();
 
   return (
@@ -20,6 +20,6 @@ const HomePage = () => {
       </div>
     </div>
   );
-};
+}
 
 export default HomePage;

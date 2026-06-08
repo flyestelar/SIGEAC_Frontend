@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import { LayoutGrid, Loader2, LogOut, MailIcon, User2 } from "lucide-react";
-import Link from "next/link";
+import { LayoutGrid, Loader2 } from 'lucide-react';
+import Link from 'next/link';
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,14 +12,9 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { useAuth } from "@/contexts/AuthContext";
+} from '@/components/ui/dropdown-menu';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { useAuth } from '@/contexts/AuthContext';
 
 export function GuestUserNav() {
   const { user, loading, logout } = useAuth();
@@ -29,18 +24,11 @@ export function GuestUserNav() {
         <Tooltip delayDuration={100}>
           <TooltipTrigger asChild>
             <DropdownMenuTrigger asChild>
-              <Button
-                variant="outline"
-                className="relative h-8 w-8 rounded-full"
-              >
+              <Button variant="outline" className="relative h-8 w-8 rounded-full">
                 <Avatar className="h-8 w-8">
-                  <AvatarImage src="#" alt="Avatar" />
+                  {/* {user?.avatarUrl ? <AvatarImage src={user.avatarUrl} alt="Avatar" /> : null} */}
                   <AvatarFallback className="bg-transparent">
-                    {loading ? (
-                      <Loader2 className="animate-spin" />
-                    ) : (
-                      `G`
-                    )}
+                    {loading ? <Loader2 className="animate-spin" /> : `G`}
                   </AvatarFallback>
                 </Avatar>
               </Button>

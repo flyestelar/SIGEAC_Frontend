@@ -1,4 +1,3 @@
-import ErrorBoundary from '@/components/ErrorBoundary';
 import { RedirectHandler } from '@/components/misc/RedirectHandler';
 import { Toaster } from '@/components/ui/sonner';
 import { AuthProvider } from '@/contexts/AuthContext';
@@ -33,17 +32,15 @@ export default async function RootLayout({
       </head>
       <body className={inter.className} suppressHydrationWarning>
         <QueryClientProvider>
-          <ErrorBoundary>
-            <RedirectHandler />
-            <AuthProvider>
-              <EchoProvider>
-                <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
-                  {children}
-                  <Toaster />
-                </ThemeProvider>
-              </EchoProvider>
-            </AuthProvider>
-          </ErrorBoundary>
+          <RedirectHandler />
+          <AuthProvider>
+            <EchoProvider>
+              <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+                {children}
+                <Toaster />
+              </ThemeProvider>
+            </EchoProvider>
+          </AuthProvider>
         </QueryClientProvider>
       </body>
     </html>
