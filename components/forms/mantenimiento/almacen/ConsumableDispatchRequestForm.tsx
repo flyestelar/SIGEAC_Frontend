@@ -22,18 +22,30 @@ import { useGetWorkshopsByLocation } from '@/hooks/sistema/empresas/talleres/use
 import { useGetEmployeesByDepartment } from '@/hooks/sistema/useGetEmployeesByDepartament';
 import { cn } from '@/lib/utils';
 import { useCompanyStore } from '@/stores/CompanyStore';
-import { Batch, Consumable, Employee, ThirdParty, Vendor } from '@/types';
+import { Batch, Consumable, Employee, ThirdParty } from '@/types';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { CalendarIcon, Check, ChevronsUpDown, Loader2, Plus, Trash2 } from 'lucide-react';
+import {
+  Building2,
+  CalendarIcon,
+  Check,
+  ChevronsUpDown,
+  Droplet,
+  Handshake,
+  Loader2,
+  Package,
+  Plane,
+  Plus,
+  Trash2,
+  Wrench,
+} from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { useFieldArray, useForm } from 'react-hook-form';
 import { z } from 'zod';
 
 const FormSchema = z
   .object({
-    // 1. Campos base
     dispatch_type: z.enum(['aircraft', 'workshop', 'loan'], {
       message: 'Debe seleccionar el tipo de despacho.',
     }),
@@ -41,17 +53,11 @@ const FormSchema = z
     submission_date: z.date({ message: 'Debe ingresar la fecha.' }),
     delivered_by: z.string().min(1, 'Debe seleccionar quién entrega.'),
     status: z.string(),
-
-    // 2. Campos condicionales (Todos opcionales inicialmente)
     requested_by: z.string().optional(),
     aircraft_id: z.string().optional(),
     workshop_id: z.string().optional(),
     third_party_id: z.string().optional(),
-
-    // 3. Justificación (Corregido: .min(1) para que sea obligatorio con mensaje personalizado)
     justification: z.string().optional(),
-
-    // 4. Artículos
     articles: z
       .array(
         z.object({
@@ -65,7 +71,6 @@ const FormSchema = z
       .min(1, 'Debe agregar al menos un artículo'),
   })
   .superRefine((d, ctx) => {
-    // REGLA PARA AIRCRAFT: Obliga a tener aircraft_id y requested_by
     if (d.dispatch_type === 'aircraft') {
       if (!d.aircraft_id) {
         ctx.addIssue({
@@ -83,7 +88,6 @@ const FormSchema = z
       }
     }
 
-    // REGLA PARA WORKSHOP: Obliga a tener workshop_id y requested_by
     if (d.dispatch_type === 'workshop') {
       if (!d.workshop_id) {
         ctx.addIssue({
@@ -101,7 +105,6 @@ const FormSchema = z
       }
     }
 
-    // REGLA PARA LOAN: Obliga a tener third_party_id, pero IGNORA requested_by (es opcional)
     if (d.dispatch_type === 'loan') {
       if (!d.third_party_id || d.third_party_id.trim() === '') {
         ctx.addIssue({
@@ -110,14 +113,80 @@ const FormSchema = z
           path: ['third_party_id'],
         });
       }
-      // Aquí no validamos requested_by, por lo tanto queda como opcional/nullable.
     }
   });
 
 type FormSchemaType = z.infer<typeof FormSchema>;
+type DispatchType = 'aircraft' | 'workshop' | 'loan';
 
 interface FormProps {
   onClose: () => void;
+}
+
+const DISPATCH_CONFIG: Record<
+  DispatchType,
+  {
+    label: string;
+    icon: typeof Plane;
+    stripBg: string;
+    stripBorder: string;
+    iconBg: string;
+    iconBorder: string;
+    iconText: string;
+    accentText: string;
+    activeBg: string;
+    activeText: string;
+  }
+> = {
+  aircraft: {
+    label: 'Aeronave',
+    icon: Plane,
+    stripBg: 'bg-sky-50 dark:bg-sky-950/20',
+    stripBorder: 'border-sky-200 dark:border-sky-800/40',
+    iconBg: 'bg-sky-100 dark:bg-sky-900/40',
+    iconBorder: 'border-sky-300 dark:border-sky-700/50',
+    iconText: 'text-sky-700 dark:text-sky-300',
+    accentText: 'text-sky-700 dark:text-sky-300',
+    activeBg: 'bg-sky-50 dark:bg-sky-950/30',
+    activeText: 'text-sky-700 dark:text-sky-300',
+  },
+  workshop: {
+    label: 'Taller',
+    icon: Wrench,
+    stripBg: 'bg-orange-50 dark:bg-orange-950/20',
+    stripBorder: 'border-orange-200 dark:border-orange-800/40',
+    iconBg: 'bg-orange-100 dark:bg-orange-900/40',
+    iconBorder: 'border-orange-300 dark:border-orange-700/50',
+    iconText: 'text-orange-700 dark:text-orange-300',
+    accentText: 'text-orange-700 dark:text-orange-300',
+    activeBg: 'bg-orange-50 dark:bg-orange-950/30',
+    activeText: 'text-orange-700 dark:text-orange-300',
+  },
+  loan: {
+    label: 'Préstamo',
+    icon: Handshake,
+    stripBg: 'bg-indigo-50 dark:bg-indigo-950/20',
+    stripBorder: 'border-indigo-200 dark:border-indigo-800/40',
+    iconBg: 'bg-indigo-100 dark:bg-indigo-900/40',
+    iconBorder: 'border-indigo-300 dark:border-indigo-700/50',
+    iconText: 'text-indigo-700 dark:text-indigo-300',
+    accentText: 'text-indigo-700 dark:text-indigo-300',
+    activeBg: 'bg-indigo-50 dark:bg-indigo-950/30',
+    activeText: 'text-indigo-700 dark:text-indigo-300',
+  },
+};
+
+const FIELD_LABEL = 'text-[11px] font-semibold uppercase tracking-widest text-muted-foreground';
+const SECTION_HEADER = 'flex items-center gap-2 border-b px-5 py-3';
+const SECTION_TITLE = 'text-[11px] font-semibold uppercase tracking-widest text-muted-foreground';
+
+function SectionHeader({ icon: Icon, title }: { icon: typeof Plane; title: string }) {
+  return (
+    <div className={SECTION_HEADER}>
+      <Icon className="h-3.5 w-3.5 text-muted-foreground" />
+      <span className={SECTION_TITLE}>{title}</span>
+    </div>
+  );
 }
 
 export function ConsumableDispatchForm({ onClose }: FormProps) {
@@ -165,6 +234,7 @@ export function ConsumableDispatchForm({ onClose }: FormProps) {
   const { control, watch, setValue, setError, clearErrors } = form;
   const { fields, append, remove, update } = useFieldArray({ control, name: 'articles' });
   const dispatchType = watch('dispatch_type');
+  const cfg = DISPATCH_CONFIG[dispatchType];
 
   const findBatchById = (batch_id: number): Batch | null =>
     consumableBatches.find((b) => b.batch_id === batch_id) ?? null;
@@ -186,12 +256,9 @@ export function ConsumableDispatchForm({ onClose }: FormProps) {
   }
 
   function validateQuantityAtRow(rowIndex: number, raw: string, article_id?: number) {
-    // Si no hay artículo seleccionado, no validamos
     if (!article_id) return;
-
     const trimmed = raw.trim();
 
-    // Vacío => 0 (sin error)
     if (trimmed === '') {
       setValue(`articles.${rowIndex}.quantity`, 0, { shouldValidate: true, shouldDirty: true });
       clearErrors(`articles.${rowIndex}.quantity`);
@@ -213,8 +280,6 @@ export function ConsumableDispatchForm({ onClose }: FormProps) {
       return;
     }
 
-    // Si son unidades, normalmente debe ser entero.
-    // Si quieres permitir decimales, elimina este bloque.
     if (!Number.isInteger(value)) {
       setError(`articles.${rowIndex}.quantity`, { type: 'manual', message: 'La cantidad debe ser un número entero' });
       return;
@@ -267,241 +332,310 @@ export function ConsumableDispatchForm({ onClose }: FormProps) {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col space-y-2 w-full">
-        <div className="flex gap-2 items-center">
-          <FormField
-            control={form.control}
-            name="request_number"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Número de Solicitud</FormLabel>
-                <FormControl>
-                  <Input className="w-[250px]" placeholder="Ingrese el número de solicitud" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          {/* Tipo de Despacho */}
+      <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-4 w-full">
+        {/* § Cabecera */}
+        <section className="overflow-hidden rounded-lg border bg-background">
+          <SectionHeader icon={Droplet} title="Cabecera" />
+          <div className="grid grid-cols-1 gap-4 p-5 md:grid-cols-2">
+            <FormField
+              control={form.control}
+              name="request_number"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className={FIELD_LABEL}>N.º Solicitud</FormLabel>
+                  <FormControl>
+                    <Input className="font-mono" placeholder="Ej: REQ-00123" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="submission_date"
+              render={({ field }) => (
+                <FormItem className="flex flex-col">
+                  <FormLabel className={FIELD_LABEL}>Fecha de Solicitud</FormLabel>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <FormControl>
+                        <Button
+                          variant="outline"
+                          className={cn('justify-start text-left font-normal', !field.value && 'text-muted-foreground')}
+                        >
+                          <CalendarIcon className="mr-2 h-4 w-4 opacity-50" />
+                          {field.value ? format(field.value, 'PPP', { locale: es }) : 'Seleccione una fecha...'}
+                        </Button>
+                      </FormControl>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={field.value}
+                        onSelect={field.onChange}
+                        disabled={(date) => date > new Date() || date < new Date('1900-01-01')}
+                        initialFocus
+                        locale={es}
+                      />
+                    </PopoverContent>
+                  </Popover>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+        </section>
+
+        {/* § Destino */}
+        <section className="overflow-hidden rounded-lg border bg-background">
+          <SectionHeader icon={cfg.icon} title="Destino del Despacho" />
+
           <FormField
             control={form.control}
             name="dispatch_type"
             render={({ field }) => (
-              <FormItem>
-                <FormLabel>Tipo de Despacho</FormLabel>
+              <FormItem className="px-5 pt-4">
+                <FormLabel className={FIELD_LABEL}>Tipo</FormLabel>
                 <FormControl>
-                  <div className="flex gap-4">
-                    <label className="flex items-center space-x-2">
-                      <input
-                        type="radio"
-                        value="aircraft"
-                        checked={field.value === 'aircraft'}
-                        onChange={() => field.onChange('aircraft')}
-                      />
-                      <span>Aeronave</span>
-                    </label>
-                    <label className="flex items-center space-x-2">
-                      <input
-                        type="radio"
-                        value="workshop"
-                        checked={field.value === 'workshop'}
-                        onChange={() => field.onChange('workshop')}
-                      />
-                      <span>Taller</span>
-                    </label>
-                    <label className="flex items-center space-x-2">
-                      <input
-                        type="radio"
-                        value="loan"
-                        checked={field.value === 'loan'}
-                        onChange={() => field.onChange('loan')}
-                      />
-                      <span>Prestamo</span>
-                    </label>
+                  <div className="mt-1.5 grid grid-cols-3 gap-0 overflow-hidden rounded-md border">
+                    {(Object.keys(DISPATCH_CONFIG) as DispatchType[]).map((key, i) => {
+                      const c = DISPATCH_CONFIG[key];
+                      const Icon = c.icon;
+                      const active = field.value === key;
+                      return (
+                        <button
+                          type="button"
+                          key={key}
+                          onClick={() => field.onChange(key)}
+                          className={cn(
+                            'flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium transition-colors',
+                            i > 0 && 'border-l',
+                            active
+                              ? cn(c.activeBg, c.activeText)
+                              : 'bg-background text-muted-foreground hover:bg-muted/40 hover:text-foreground',
+                          )}
+                        >
+                          <Icon className="h-4 w-4" />
+                          {c.label}
+                        </button>
+                      );
+                    })}
                   </div>
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
-        </div>
 
-        <div className="flex gap-2">
-          {/* Aeronave */}
-          {dispatchType === 'aircraft' && (
-            <FormField
-              control={form.control}
-              name="aircraft_id"
-              render={({ field }) => (
-                <FormItem className="flex flex-col space-y-3 mt-1.5 w-full">
-                  <FormLabel>Aeronave</FormLabel>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <FormControl>
-                        <Button
-                          disabled={isAircraftsLoading || isAircraftsError}
-                          variant="outline"
-                          role="combobox"
-                          className={cn('justify-between', !field.value && 'text-muted-foreground')}
-                        >
-                          {isAircraftsLoading && <Loader2 className="size-4 animate-spin mr-2" />}
-                          {field.value ? (
-                            <p>{aircrafts?.find((a) => `${a.id}` === field.value)?.acronym}</p>
-                          ) : (
-                            'Elige la aeronave...'
-                          )}
-                          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                        </Button>
-                      </FormControl>
-                    </PopoverTrigger>
-                    <PopoverContent className="p-0">
-                      <Command>
-                        <CommandInput placeholder="Busque una aeronave..." />
-                        <CommandList>
-                          <CommandEmpty className="text-xs p-2 text-center">
-                            No se ha encontrado ninguna aeronave.
-                          </CommandEmpty>
-                          <CommandGroup>
-                            {aircrafts?.map((aircraft) => (
-                              <CommandItem
-                                value={`${aircraft.acronym}`}
-                                key={aircraft.id}
-                                onSelect={() => {
-                                  form.setValue('aircraft_id', aircraft.id.toString(), { shouldValidate: true });
-                                }}
-                              >
-                                <Check
-                                  className={cn(
-                                    'mr-2 h-4 w-4',
-                                    `${aircraft.id}` === field.value ? 'opacity-100' : 'opacity-0',
-                                  )}
-                                />
-                                <p>{aircraft.acronym}</p>
-                              </CommandItem>
-                            ))}
-                          </CommandGroup>
-                        </CommandList>
-                      </Command>
-                    </PopoverContent>
-                  </Popover>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          )}
+          <div className={cn('mt-4 flex items-center gap-3 border-y px-5 py-2.5', cfg.stripBg, cfg.stripBorder)}>
+            <div
+              className={cn('flex h-6 w-6 items-center justify-center rounded border', cfg.iconBg, cfg.iconBorder)}
+            >
+              <cfg.icon className={cn('h-3 w-3', cfg.iconText)} />
+            </div>
+            <span className={cn('text-[11px] font-bold uppercase tracking-widest', cfg.accentText)}>
+              Despacho hacia {cfg.label}
+            </span>
+          </div>
 
-          {/* Taller */}
-          {dispatchType === 'workshop' && (
-            <FormField
-              control={form.control}
-              name="workshop_id"
-              render={({ field }) => (
-                <FormItem className="flex flex-col space-y-3 mt-1.5 w-full">
-                  <FormLabel>Taller</FormLabel>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <FormControl>
-                        <Button
-                          disabled={isWorkshopsLoading || isWorkshopsError}
-                          variant="outline"
-                          role="combobox"
-                          className={cn('justify-between', !field.value && 'text-muted-foreground')}
-                        >
-                          {isWorkshopsLoading && <Loader2 className="size-4 animate-spin mr-2" />}
-                          {field.value ? (
-                            <p>{workshops?.find((ws) => `${ws.id}` === field.value)?.name}</p>
-                          ) : (
-                            'Elige el taller...'
-                          )}
-                          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                        </Button>
-                      </FormControl>
-                    </PopoverTrigger>
-                    <PopoverContent className="p-0">
-                      <Command>
-                        <CommandInput placeholder="Busque un taller..." />
-                        <CommandList>
-                          <CommandEmpty className="text-xs p-2 text-center">
-                            No se ha encontrado ningun taller.
-                          </CommandEmpty>
-                          <CommandGroup>
-                            {workshops?.map((workshop) => (
-                              <CommandItem
-                                value={`${workshop.id}`}
-                                key={workshop.id}
-                                onSelect={() => {
-                                  form.setValue('workshop_id', workshop.id.toString(), { shouldValidate: true });
-                                }}
-                              >
-                                <Check
-                                  className={cn(
-                                    'mr-2 h-4 w-4',
-                                    `${workshop.id}` === field.value ? 'opacity-100' : 'opacity-0',
-                                  )}
-                                />
-                                <p>{workshop.name}</p>
-                              </CommandItem>
-                            ))}
-                          </CommandGroup>
-                        </CommandList>
-                      </Command>
-                    </PopoverContent>
-                  </Popover>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          )}
-
-          {/* Fecha */}
-          <FormField
-            control={form.control}
-            name="submission_date"
-            render={({ field }) => (
-              <FormItem className="flex flex-col mt-2.5 w-full col-span-2">
-                <FormLabel>Fecha de Solicitud</FormLabel>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <FormControl>
-                      <Button
-                        variant={'outline'}
-                        className={cn('pl-3 text-left font-normal', !field.value && 'text-muted-foreground')}
-                      >
-                        {field.value ? (
-                          format(field.value, 'PPP', { locale: es })
-                        ) : (
-                          <span>Seleccione una fecha...</span>
-                        )}
-                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                      </Button>
-                    </FormControl>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={field.value}
-                      onSelect={field.onChange}
-                      disabled={(date) => date > new Date() || date < new Date('1900-01-01')}
-                      initialFocus
-                      locale={es}
-                    />
-                  </PopoverContent>
-                </Popover>
-                <FormMessage />
-              </FormItem>
+          <div className="p-5">
+            {dispatchType === 'aircraft' && (
+              <FormField
+                control={form.control}
+                name="aircraft_id"
+                render={({ field }) => (
+                  <FormItem className="flex flex-col">
+                    <FormLabel className={FIELD_LABEL}>Aeronave</FormLabel>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <FormControl>
+                          <Button
+                            disabled={isAircraftsLoading || isAircraftsError}
+                            variant="outline"
+                            role="combobox"
+                            className={cn('justify-between font-mono', !field.value && 'text-muted-foreground font-sans')}
+                          >
+                            {isAircraftsLoading && <Loader2 className="size-4 animate-spin mr-2" />}
+                            {field.value
+                              ? aircrafts?.find((a) => `${a.id}` === field.value)?.acronym
+                              : 'Elige la aeronave...'}
+                            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                          </Button>
+                        </FormControl>
+                      </PopoverTrigger>
+                      <PopoverContent className="p-0">
+                        <Command>
+                          <CommandInput placeholder="Busque una aeronave..." />
+                          <CommandList>
+                            <CommandEmpty className="text-xs p-2 text-center">
+                              No se ha encontrado ninguna aeronave.
+                            </CommandEmpty>
+                            <CommandGroup>
+                              {aircrafts?.map((aircraft) => (
+                                <CommandItem
+                                  value={`${aircraft.acronym}`}
+                                  key={aircraft.id}
+                                  onSelect={() => {
+                                    form.setValue('aircraft_id', aircraft.id.toString(), { shouldValidate: true });
+                                  }}
+                                >
+                                  <Check
+                                    className={cn(
+                                      'mr-2 h-4 w-4',
+                                      `${aircraft.id}` === field.value ? 'opacity-100' : 'opacity-0',
+                                    )}
+                                  />
+                                  <span className="font-mono">{aircraft.acronym}</span>
+                                </CommandItem>
+                              ))}
+                            </CommandGroup>
+                          </CommandList>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             )}
-          />
-        </div>
 
-        {/* Entregado / Recibe */}
-        <div className="grid grid-cols-2 gap-2">
-          {
+            {dispatchType === 'workshop' && (
+              <FormField
+                control={form.control}
+                name="workshop_id"
+                render={({ field }) => (
+                  <FormItem className="flex flex-col">
+                    <FormLabel className={FIELD_LABEL}>Taller</FormLabel>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <FormControl>
+                          <Button
+                            disabled={isWorkshopsLoading || isWorkshopsError}
+                            variant="outline"
+                            role="combobox"
+                            className={cn('justify-between', !field.value && 'text-muted-foreground')}
+                          >
+                            {isWorkshopsLoading && <Loader2 className="size-4 animate-spin mr-2" />}
+                            {field.value
+                              ? workshops?.find((ws) => `${ws.id}` === field.value)?.name
+                              : 'Elige el taller...'}
+                            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                          </Button>
+                        </FormControl>
+                      </PopoverTrigger>
+                      <PopoverContent className="p-0">
+                        <Command>
+                          <CommandInput placeholder="Busque un taller..." />
+                          <CommandList>
+                            <CommandEmpty className="text-xs p-2 text-center">
+                              No se ha encontrado ningun taller.
+                            </CommandEmpty>
+                            <CommandGroup>
+                              {workshops?.map((workshop) => (
+                                <CommandItem
+                                  value={`${workshop.id}`}
+                                  key={workshop.id}
+                                  onSelect={() => {
+                                    form.setValue('workshop_id', workshop.id.toString(), { shouldValidate: true });
+                                  }}
+                                >
+                                  <Check
+                                    className={cn(
+                                      'mr-2 h-4 w-4',
+                                      `${workshop.id}` === field.value ? 'opacity-100' : 'opacity-0',
+                                    )}
+                                  />
+                                  {workshop.name}
+                                </CommandItem>
+                              ))}
+                            </CommandGroup>
+                          </CommandList>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
+
+            {dispatchType === 'loan' && (
+              <FormField
+                control={form.control}
+                name="third_party_id"
+                render={({ field }) => (
+                  <FormItem className="flex flex-col">
+                    <FormLabel className={FIELD_LABEL}>Empresa del Préstamo</FormLabel>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <FormControl>
+                          <Button
+                            disabled={isThirdPartyLoading || isThirdPartyError}
+                            variant="outline"
+                            role="combobox"
+                            className={cn('justify-between', !field.value && 'text-muted-foreground')}
+                          >
+                            {isThirdPartyLoading && <Loader2 className="size-4 animate-spin mr-2" />}
+                            {field.value
+                              ? thirdParty?.find((t: ThirdParty) => `${t.id}` === `${field.value}`)?.name
+                              : 'Seleccione la empresa...'}
+                            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                          </Button>
+                        </FormControl>
+                      </PopoverTrigger>
+                      <PopoverContent className="p-0" align="start">
+                        <Command>
+                          <CommandInput placeholder="Buscar empresa..." />
+                          <CommandList>
+                            <CommandEmpty className="text-xs p-2 text-center">
+                              {isThirdPartyError ? 'Error al cargar empresas.' : 'No se encontraron resultados.'}
+                            </CommandEmpty>
+                            <CommandGroup>
+                              {thirdParty?.map((t: ThirdParty) => (
+                                <CommandItem
+                                  key={t.id}
+                                  value={t.name}
+                                  onSelect={() => {
+                                    form.setValue('third_party_id', t.id.toString(), { shouldValidate: true });
+                                  }}
+                                >
+                                  <Check
+                                    className={cn(
+                                      'mr-2 h-4 w-4',
+                                      `${t.id}` === `${field.value}` ? 'opacity-100' : 'opacity-0',
+                                    )}
+                                  />
+                                  <div className="flex flex-col">
+                                    <span>{t.name}</span>
+                                    <span className="text-[10px] text-muted-foreground uppercase">
+                                      {t.party_roles.map((role) => role.label).join(', ')}
+                                    </span>
+                                  </div>
+                                </CommandItem>
+                              ))}
+                            </CommandGroup>
+                          </CommandList>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
+          </div>
+        </section>
+
+        {/* § Responsables */}
+        <section className="overflow-hidden rounded-lg border bg-background">
+          <SectionHeader icon={Building2} title="Responsables" />
+          <div className="grid grid-cols-1 gap-4 p-5 md:grid-cols-2">
             <FormField
               control={form.control}
               name="delivered_by"
               render={({ field }) => (
-                <FormItem className="w-full">
-                  <FormLabel>Entregado por:</FormLabel>
+                <FormItem>
+                  <FormLabel className={FIELD_LABEL}>Entregado por (Almacén)</FormLabel>
                   <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
                       <SelectTrigger>
@@ -524,288 +658,246 @@ export function ConsumableDispatchForm({ onClose }: FormProps) {
                 </FormItem>
               )}
             />
-          }
 
-          {dispatchType === 'loan' && (
-            <FormField
-              control={form.control}
-              name="third_party_id"
-              render={({ field }) => (
-                <FormItem className="flex flex-col space-y-3 mt-1.5 w-full">
-                  <FormLabel>Empresa del Préstamo</FormLabel>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <FormControl>
+            {dispatchType !== 'loan' && (
+              <FormField
+                control={form.control}
+                name="requested_by"
+                render={({ field }) => (
+                  <FormItem className="flex flex-col">
+                    <FormLabel className={FIELD_LABEL}>Técnico Responsable</FormLabel>
+                    <Popover open={openRequestedBy} onOpenChange={setOpenRequestedBy}>
+                      <PopoverTrigger asChild>
                         <Button
-                          disabled={isThirdPartyLoading || isThirdPartyError}
+                          disabled={employeesLoading || employeesError}
                           variant="outline"
                           role="combobox"
-                          className={cn('justify-between', !field.value && 'text-muted-foreground')}
+                          aria-expanded={openRequestedBy}
+                          className={cn('justify-between', !field.value && !requestBy && 'text-muted-foreground')}
                         >
-                          {isThirdPartyLoading && <Loader2 className="size-4 animate-spin mr-2" />}
-                          {field.value
-                            ? // Buscamos el vendor por ID para mostrar su nombre en el botón
-                              thirdParty?.find((t: ThirdParty) => `${t.id}` === `${field.value}`)?.name
-                            : 'Seleccione la empresa...'}
+                          {requestBy
+                            ? `${requestBy.first_name} ${requestBy.last_name}`
+                            : (() => {
+                                const dni = field.value;
+                                const found = employees?.find((e) => String(e.dni) === String(dni));
+                                return found ? `${found.first_name} ${found.last_name}` : 'Selec. el técnico';
+                              })()}
                           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                         </Button>
-                      </FormControl>
-                    </PopoverTrigger>
-                    <PopoverContent className="p-0" align="start">
-                      <Command>
-                        <CommandInput placeholder="Buscar empresa..." />
-                        <CommandList>
-                          <CommandEmpty className="text-xs p-2 text-center">
-                            {isThirdPartyError ? 'Error al cargar empresas.' : 'No se encontraron resultados.'}
-                          </CommandEmpty>
-                          <CommandGroup>
-                            {thirdParty?.map((t: ThirdParty) => (
+                      </PopoverTrigger>
+                      <PopoverContent className="w-[260px] p-0">
+                        <Command>
+                          <CommandInput placeholder="Selec. el técnico..." />
+                          <CommandList>
+                            <CommandEmpty>No se han encontrado técnicos...</CommandEmpty>
+                            {employees?.map((e) => (
                               <CommandItem
-                                key={t.id}
-                                value={t.name}
+                                value={`${e.first_name} ${e.last_name} ${e.dni}`}
+                                key={e.id}
                                 onSelect={() => {
-                                  form.setValue('third_party_id', t.id.toString(), {
+                                  setRequestedBy(e);
+                                  form.setValue('requested_by', String(e.dni), {
                                     shouldValidate: true,
+                                    shouldDirty: true,
                                   });
+                                  setOpenRequestedBy(false);
                                 }}
                               >
                                 <Check
                                   className={cn(
                                     'mr-2 h-4 w-4',
-                                    `${t.id}` === `${field.value}` ? 'opacity-100' : 'opacity-0',
+                                    String(requestBy?.dni ?? field.value) === String(e.dni)
+                                      ? 'opacity-100'
+                                      : 'opacity-0',
                                   )}
                                 />
-                                <div className="flex flex-col">
-                                  <span>{t.name}</span>
-                                  <span className="text-[10px] text-muted-foreground uppercase">
-                                    {t.party_roles.map((role) => role.label).join(', ')}
-                                  </span>
-                                </div>
+                                {`${e.first_name} ${e.last_name}`}
                               </CommandItem>
                             ))}
-                          </CommandGroup>
-                        </CommandList>
-                      </Command>
-                    </PopoverContent>
-                  </Popover>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          )}
+                          </CommandList>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
+          </div>
+        </section>
 
-          {dispatchType !== 'loan' && (
-            <FormField
-              control={form.control}
-              name="requested_by"
-              render={({ field }) => (
-                <FormItem className="flex flex-col mt-2.5 w-full">
-                  <FormLabel>Empleado Responsable</FormLabel>
-                  <Popover open={openRequestedBy} onOpenChange={setOpenRequestedBy}>
-                    <PopoverTrigger asChild>
-                      <Button
-                        disabled={employeesLoading || employeesError}
-                        variant="outline"
-                        role="combobox"
-                        aria-expanded={openRequestedBy}
-                        className="justify-between"
-                      >
-                        {requestBy
-                          ? `${requestBy.first_name} ${requestBy.last_name}`
-                          : (() => {
-                              const dni = field.value;
-                              const found = employees?.find((e) => String(e.dni) === String(dni));
-                              return found ? `${found.first_name} ${found.last_name}` : 'Selec. el técnico';
-                            })()}
-                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-[260px] p-0">
-                      <Command>
-                        <CommandInput placeholder="Selec. el técnico..." />
-                        <CommandList>
-                          <CommandEmpty>No se han encontrado técnicos...</CommandEmpty>
-                          {employees?.map((e) => (
-                            <CommandItem
-                              value={`${e.first_name} ${e.last_name} ${e.dni}`}
-                              key={e.id}
-                              onSelect={() => {
-                                setRequestedBy(e);
-                                form.setValue('requested_by', String(e.dni), {
-                                  shouldValidate: true,
-                                  shouldDirty: true,
-                                });
-                                setOpenRequestedBy(false);
-                              }}
-                            >
-                              <Check
-                                className={cn(
-                                  'mr-2 h-4 w-4',
-                                  String(requestBy?.dni ?? field.value) === String(e.dni) ? 'opacity-100' : 'opacity-0',
-                                )}
-                              />
-                              {`${e.first_name} ${e.last_name}`}
-                            </CommandItem>
-                          ))}
-                        </CommandList>
-                      </Command>
-                    </PopoverContent>
-                  </Popover>
-                  <FormMessage />
-                </FormItem>
+        {/* § Artículos */}
+        <section className="overflow-hidden rounded-lg border bg-background">
+          <div className="flex items-center justify-between border-b px-5 py-3">
+            <div className="flex items-center gap-2">
+              <Package className="h-3.5 w-3.5 text-muted-foreground" />
+              <span className={SECTION_TITLE}>Consumibles</span>
+              {fields.length > 0 && (
+                <Badge variant="secondary" className="ml-1 h-5 px-1.5 text-[10px] font-mono">
+                  {fields.length}
+                </Badge>
               )}
-            />
-          )}
-        </div>
-
-        {/* Lista de artículos */}
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <FormLabel>Artículos</FormLabel>
+            </div>
             <Button
               disabled={isBatchesLoading}
               type="button"
               variant="outline"
+              size="sm"
               onClick={() => append({ article_id: 0, serial: null, quantity: 0, batch_id: 0, unit: undefined })}
-              className="h-8"
+              className="h-8 text-xs"
             >
-              <Plus className="h-4 w-4 mr-1" /> Agregar
+              <Plus className="mr-1 h-3 w-3" /> Agregar
             </Button>
           </div>
-          <ScrollArea className={fields.length > 1 ? 'h-[200px] pr-2' : ''}>
-            <div className="flex flex-col gap-2">
+
+          <ScrollArea className={fields.length > 2 ? 'h-[300px]' : ''}>
+            <ul className="divide-y">
               {fields.map((field, idx) => {
                 const currentBatch = findBatchById(watch(`articles.${idx}.batch_id`));
-                const unitType = currentBatch?.unit?.value?.toUpperCase(); // 'U' | 'L' | undefined
+                const unitType = currentBatch?.unit?.value?.toUpperCase();
                 const selectedArticleId = watch(`articles.${idx}.article_id`);
                 const selectedArticle = selectedArticleId ? findArticleById(selectedArticleId) : undefined;
                 const available = Number(selectedArticle?.quantity ?? 0);
 
                 return (
-                  <div key={field.id} className="border rounded-lg p-3 flex gap-2">
-                    {/* Selector de consumible */}
-                    <FormField
-                      control={form.control}
-                      name={`articles.${idx}.article_id`}
-                      render={() => (
-                        <FormItem className="flex flex-col w-full mt-2.5">
-                          <FormLabel>Consumible #{idx + 1}</FormLabel>
-                          <Popover>
-                            <PopoverTrigger asChild>
-                              <Button
-                                disabled={isBatchesLoading}
-                                variant="outline"
-                                role="combobox"
-                                className="justify-between"
-                              >
-                                {isBatchesLoading ? (
-                                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                    <Loader2 className="size-4 animate-spin" />
-                                    <span className="truncate">Cargando…</span>
-                                  </div>
-                                ) : selectedArticle ? (
-                                  <div className="flex w-full items-center justify-between gap-2">
-                                    <div className="flex flex-col justify-center items-center">
-                                      <span className="text-muted-foreground font-bold text-xs">
-                                        {currentBatch?.name}
-                                      </span>
-                                      <span className="min-w-0 truncate text-sm">
-                                        {selectedArticle.part_number}
-                                        {selectedArticle.serial ? (
-                                          <span className="text-xs text-muted-foreground">
-                                            {' '}
-                                            · {selectedArticle.serial}
-                                          </span>
-                                        ) : null}
+                  <li key={field.id} className="space-y-3 px-5 py-4">
+                    <div className="flex items-center justify-between">
+                      <span className={FIELD_LABEL}>Consumible #{idx + 1}</span>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="h-7 w-7 text-muted-foreground hover:text-destructive"
+                        onClick={() => remove(idx)}
+                        title="Quitar"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+
+                    <div className="grid grid-cols-1 gap-3 md:grid-cols-[1fr_220px]">
+                      {/* Selector */}
+                      <FormField
+                        control={form.control}
+                        name={`articles.${idx}.article_id`}
+                        render={() => (
+                          <FormItem className="flex flex-col">
+                            <FormLabel className={FIELD_LABEL}>Artículo</FormLabel>
+                            <Popover>
+                              <PopoverTrigger asChild>
+                                <Button
+                                  disabled={isBatchesLoading}
+                                  variant="outline"
+                                  role="combobox"
+                                  className="justify-between h-auto py-2"
+                                >
+                                  {isBatchesLoading ? (
+                                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                      <Loader2 className="size-4 animate-spin" />
+                                      <span>Cargando…</span>
+                                    </div>
+                                  ) : selectedArticle ? (
+                                    <div className="flex w-full items-center justify-between gap-2 text-left">
+                                      <div className="flex flex-col min-w-0">
+                                        <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                                          {currentBatch?.name}
+                                        </span>
+                                        <span className="truncate font-mono text-sm">
+                                          {selectedArticle.part_number}
+                                          {selectedArticle.serial && (
+                                            <span className="text-xs text-muted-foreground">
+                                              {' · '}
+                                              {selectedArticle.serial}
+                                            </span>
+                                          )}
+                                        </span>
+                                      </div>
+                                      <span
+                                        className={cn(
+                                          'shrink-0 font-mono text-xs tabular-nums',
+                                          available > 0 ? 'text-muted-foreground' : 'text-destructive',
+                                        )}
+                                      >
+                                        {available} u
                                       </span>
                                     </div>
-
-                                    <span
-                                      className={cn(
-                                        'shrink-0 text-xs tabular-nums',
-                                        available > 0 ? 'text-muted-foreground' : 'text-destructive',
-                                      )}
-                                    >
-                                      {available} u
-                                    </span>
-                                  </div>
-                                ) : (
-                                  <span className="text-muted-foreground">Selec. el consumible</span>
-                                )}
-
-                                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                              </Button>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-[360px] p-0">
-                              <Command>
-                                <CommandInput placeholder="Buscar por P/N o serial..." />
-                                <CommandList>
-                                  <CommandEmpty>No se han encontrado consumibles...</CommandEmpty>
-                                  {consumableBatches?.map((b) => (
-                                    <CommandGroup key={b.batch_id} heading={`${b.name} · ${b.unit?.label ?? ''}`}>
-                                      {b.articles.map((a) => (
-                                        <CommandItem
-                                          value={`${a.part_number} ${a.serial ?? ''} ${a.id}`}
-                                          key={a.id}
-                                          disabled={Number(a.quantity ?? 0) <= 0}
-                                          onSelect={() => {
-                                            if (Number(a.quantity ?? 0) <= 0) return;
-                                            handleArticleSelectAtRow(idx, a.id!, a.serial ?? null, b.batch_id);
-                                          }}
-                                          className={cn(
-                                            'flex items-center justify-between gap-3',
-                                            Number(a.quantity ?? 0) <= 0 && 'opacity-60 cursor-not-allowed',
-                                          )}
-                                        >
-                                          <div className="flex flex-col min-w-0">
-                                            <span className="text-sm font-medium truncate">{a.part_number}</span>
-                                            <span className="text-xs text-muted-foreground truncate">
-                                              Serial: {a.serial ?? 'N/A'}
-                                            </span>
-                                          </div>
-
-                                          <Badge
-                                            variant={Number(a.quantity ?? 0) > 0 ? 'secondary' : 'outline'}
+                                  ) : (
+                                    <span className="text-muted-foreground">Selec. el consumible</span>
+                                  )}
+                                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                </Button>
+                              </PopoverTrigger>
+                              <PopoverContent className="w-[360px] p-0">
+                                <Command>
+                                  <CommandInput placeholder="Buscar por P/N o serial..." />
+                                  <CommandList>
+                                    <CommandEmpty>No se han encontrado consumibles...</CommandEmpty>
+                                    {consumableBatches?.map((b) => (
+                                      <CommandGroup key={b.batch_id} heading={`${b.name} · ${b.unit?.label ?? ''}`}>
+                                        {b.articles.map((a) => (
+                                          <CommandItem
+                                            value={`${a.part_number} ${a.serial ?? ''} ${a.id}`}
+                                            key={a.id}
+                                            disabled={Number(a.quantity ?? 0) <= 0}
+                                            onSelect={() => {
+                                              if (Number(a.quantity ?? 0) <= 0) return;
+                                              handleArticleSelectAtRow(idx, a.id!, a.serial ?? null, b.batch_id);
+                                            }}
                                             className={cn(
-                                              Number(a.quantity ?? 0) <= 0 && 'text-destructive border-destructive',
+                                              'flex items-center justify-between gap-3',
+                                              Number(a.quantity ?? 0) <= 0 && 'opacity-60 cursor-not-allowed',
                                             )}
                                           >
-                                            {Number(a.quantity ?? 0) > 0 ? `Disp: ${a.quantity}` : 'Sin stock'}
-                                          </Badge>
-                                        </CommandItem>
-                                      ))}
-                                    </CommandGroup>
-                                  ))}
-                                </CommandList>
-                              </Command>
-                            </PopoverContent>
-                          </Popover>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                                            <div className="flex flex-col min-w-0">
+                                              <span className="truncate font-mono text-sm font-medium">
+                                                {a.part_number}
+                                              </span>
+                                              <span className="truncate text-xs text-muted-foreground">
+                                                Serial: {a.serial ?? 'N/A'}
+                                              </span>
+                                            </div>
+                                            <Badge
+                                              variant={Number(a.quantity ?? 0) > 0 ? 'secondary' : 'outline'}
+                                              className={cn(
+                                                'font-mono text-[10px]',
+                                                Number(a.quantity ?? 0) <= 0 && 'text-destructive border-destructive',
+                                              )}
+                                            >
+                                              {Number(a.quantity ?? 0) > 0 ? `Disp: ${a.quantity}` : 'Sin stock'}
+                                            </Badge>
+                                          </CommandItem>
+                                        ))}
+                                      </CommandGroup>
+                                    ))}
+                                  </CommandList>
+                                </Command>
+                              </PopoverContent>
+                            </Popover>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
 
-                    {/* Cantidad + Unidad por fila + Quitar */}
-                    <div className="flex items-end gap-3">
+                      {/* Cantidad */}
                       <FormField
                         control={form.control}
                         name={`articles.${idx}.quantity`}
                         render={({ field }) => (
-                          <FormItem className="w-full">
-                            <FormLabel>Cantidad</FormLabel>
+                          <FormItem>
+                            <FormLabel className={FIELD_LABEL}>Cantidad</FormLabel>
                             <FormControl>
-                              <div className="relative w-[220px]">
+                              <div className="relative">
                                 <Input
-                                  className="pr-20"
+                                  className="pr-20 font-mono tabular-nums"
                                   inputMode="numeric"
-                                  placeholder={!selectedArticle ? 'Seleccione un consumible' : 'Ej: 1, 2, 3...'}
+                                  placeholder={!selectedArticle ? 'Selec. consumible' : 'Ej: 1, 2, 3…'}
                                   value={field.value ?? ''}
                                   disabled={!selectedArticle}
                                   onChange={(e) => validateQuantityAtRow(idx, e.target.value, selectedArticle?.id)}
                                 />
-                                <div className="absolute inset-y-0 right-2 flex items-center gap-2">
-                                  <Badge variant="secondary" className="px-2">
-                                    {selectedArticle ? `Disp: ${available}` : 'Disp: -'} u
+                                <div className="absolute inset-y-0 right-2 flex items-center">
+                                  <Badge variant="outline" className="h-5 px-1.5 text-[10px] font-mono">
+                                    {selectedArticle ? `/ ${available}` : '/ -'}
                                   </Badge>
                                 </div>
                               </div>
@@ -814,52 +906,60 @@ export function ConsumableDispatchForm({ onClose }: FormProps) {
                           </FormItem>
                         )}
                       />
-
-                      {unitType === 'L' && (
-                        <FormField
-                          control={form.control}
-                          name={`articles.${idx}.unit`}
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Unidad</FormLabel>
-                              <FormControl>
-                                <RadioGroup onValueChange={field.onChange} value={field.value} className="flex gap-4">
-                                  <div className="flex items-center space-x-2">
-                                    <RadioGroupItem value="litros" id={`litros-${idx}`} />
-                                    <Label htmlFor={`litros-${idx}`}>Litros</Label>
-                                  </div>
-                                  <div className="flex items-center space-x-2">
-                                    <RadioGroupItem value="mililitros" id={`ml-${idx}`} />
-                                    <Label htmlFor={`ml-${idx}`}>Mililitros</Label>
-                                  </div>
-                                </RadioGroup>
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      )}
-
-                      <Button type="button" variant="secondary" onClick={() => remove(idx)} className="h-9">
-                        <Trash2 className="h-4 w-4 mr-1" /> Quitar
-                      </Button>
                     </div>
-                  </div>
+
+                    {unitType === 'L' && (
+                      <FormField
+                        control={form.control}
+                        name={`articles.${idx}.unit`}
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className={FIELD_LABEL}>Unidad</FormLabel>
+                            <FormControl>
+                              <RadioGroup onValueChange={field.onChange} value={field.value} className="flex gap-4 pt-1">
+                                <div className="flex items-center space-x-2">
+                                  <RadioGroupItem value="litros" id={`litros-${idx}`} />
+                                  <Label htmlFor={`litros-${idx}`} className="text-sm font-normal">
+                                    Litros
+                                  </Label>
+                                </div>
+                                <div className="flex items-center space-x-2">
+                                  <RadioGroupItem value="mililitros" id={`ml-${idx}`} />
+                                  <Label htmlFor={`ml-${idx}`} className="text-sm font-normal">
+                                    Mililitros
+                                  </Label>
+                                </div>
+                              </RadioGroup>
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    )}
+                  </li>
                 );
               })}
-            </div>
+            </ul>
           </ScrollArea>
-        </div>
+          {form.formState.errors.articles?.message && (
+            <p className="border-t px-5 py-2 text-xs text-destructive">{form.formState.errors.articles.message}</p>
+          )}
+        </section>
 
-        {/* Justificación */}
+        {/* § Justificación */}
         <FormField
           control={form.control}
           name="justification"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Justificación</FormLabel>
+              <FormLabel className={FIELD_LABEL}>Justificación</FormLabel>
               <FormControl>
-                <Textarea rows={2} className="w-full" placeholder="EJ: Se necesita para la limpieza de..." {...field} />
+                <Textarea
+                  rows={2}
+                  className="w-full resize-none"
+                  placeholder="EJ: Se necesita para la limpieza de…"
+                  {...field}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -867,13 +967,14 @@ export function ConsumableDispatchForm({ onClose }: FormProps) {
         />
 
         {/* Submit */}
-        <Button
-          className="bg-primary mt-2 text-white hover:bg-blue-900 disabled:bg-primary/70"
-          disabled={createDispatchRequest?.isPending}
-          type="submit"
-        >
-          {createDispatchRequest?.isPending ? <Loader2 className="size-4 animate-spin" /> : <p>Crear</p>}
-        </Button>
+        <div className="flex items-center justify-end gap-2 border-t pt-4">
+          <Button type="button" variant="ghost" onClick={onClose} disabled={createDispatchRequest?.isPending}>
+            Cancelar
+          </Button>
+          <Button type="submit" disabled={createDispatchRequest?.isPending} className="min-w-[120px]">
+            {createDispatchRequest?.isPending ? <Loader2 className="size-4 animate-spin" /> : 'Crear Despacho'}
+          </Button>
+        </div>
       </form>
     </Form>
   );
