@@ -17,6 +17,7 @@ export async function loginAction(credentials: LoginData['body']) {
   }
 
   if (error) {
+    console.error('Error during login:', error);
     return { success: false, error: error.message };
   }
 
