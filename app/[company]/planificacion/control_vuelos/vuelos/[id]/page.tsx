@@ -1,5 +1,6 @@
 'use client';
 
+import { findFlightById } from '@/actions/planificacion/vuelos/flight-lookup';
 import { ContentLayout } from '@/components/layout/ContentLayout';
 import LoadingPage from '@/components/misc/LoadingPage';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -15,25 +16,23 @@ import { FlightMetricsPanel } from '../_components/FlightMetricsPanel';
 import { FlightStripHeader } from '../_components/FlightStripHeader';
 
 export default function FlightControlDetailPage() {
-  const params = useParams<{ company: string; flight_number: string }>();
+  const params = useParams<{ company: string; id: string }>();
   const { selectedCompany } = useCompanyStore();
   const companySlug = selectedCompany?.slug ?? params?.company ?? '';
-  const flightNumber = decodeURIComponent(params?.flight_number ?? '');
+  const flightId = decodeURIComponent(params?.id ?? '');
 
   const { data: flights, isLoading, isError } = useGetFlightControl(companySlug);
-  const flight = useMemo(
-    () => flights?.find((f) => f.flight_number === flightNumber),
-    [flights, flightNumber],
-  );
+  const flight = useMemo(() => findFlightById(flights, flightId), [flights, flightId]);
 
+  const flightLabel = flight?.flight_number || `Vuelo #${flightId}`;
   const backHref = `/${companySlug}/planificacion/control_vuelos/vuelos`;
 
   if (isLoading) return <LoadingPage />;
 
   return (
-    <ContentLayout title={`Vuelo ${flightNumber}`}>
+    <ContentLayout title={`Vuelo ${flightLabel}`}>
       <div className="mx-auto w-full max-w-6xl space-y-5">
-        <DetailHeader flightNumber={flightNumber} backHref={backHref} />
+        <DetailHeader title={flightLabel} backHref={backHref} />
 
         {isError && (
           <Alert variant="destructive" className="border-red-500/30 bg-red-500/10 text-red-900 dark:text-red-300">
@@ -43,7 +42,7 @@ export default function FlightControlDetailPage() {
           </Alert>
         )}
 
-        {!isError && !flight && <FlightNotFound flightNumber={flightNumber} backHref={backHref} />}
+        {!isError && !flight && <FlightNotFound flightLabel={flightLabel} backHref={backHref} />}
 
         {flight && (
           <>
@@ -57,11 +56,11 @@ export default function FlightControlDetailPage() {
 }
 
 interface DetailHeaderProps {
-  flightNumber: string;
+  title: string;
   backHref: string;
 }
 
-function DetailHeader({ flightNumber, backHref }: DetailHeaderProps) {
+function DetailHeader({ title, backHref }: DetailHeaderProps) {
   return (
     <div className="flex items-center justify-between gap-4">
       <div className="flex items-center gap-3">
@@ -72,9 +71,7 @@ function DetailHeader({ flightNumber, backHref }: DetailHeaderProps) {
         </Button>
         <div className="space-y-0.5">
           <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Registro</span>
-          <h1 className="font-mono text-2xl font-semibold leading-none tracking-tight text-foreground">
-            {flightNumber}
-          </h1>
+          <h1 className="font-mono text-2xl font-semibold leading-none tracking-tight text-foreground">{title}</h1>
         </div>
       </div>
     </div>
@@ -113,7 +110,7 @@ function CrewSection({ flight }: { flight: FlightControl }) {
   );
 }
 
-function FlightNotFound({ flightNumber, backHref }: { flightNumber: string; backHref: string }) {
+function FlightNotFound({ flightLabel, backHref }: { flightLabel: string; backHref: string }) {
   return (
     <div className="rounded-lg border bg-background">
       <div className="flex flex-col items-center gap-3 px-6 py-12 text-center">
@@ -121,8 +118,8 @@ function FlightNotFound({ flightNumber, backHref }: { flightNumber: string; back
           <Plane className="h-4 w-4" />
         </div>
         <div className="space-y-1">
-          <p className="text-sm font-medium">Sin registro para {flightNumber}</p>
-          <p className="text-xs text-muted-foreground">El número puede haber cambiado o el vuelo fue eliminado.</p>
+          <p className="text-sm font-medium">Sin registro para {flightLabel}</p>
+          <p className="text-xs text-muted-foreground">El vuelo puede haber sido eliminado o el enlace está obsoleto.</p>
         </div>
         <Button asChild size="sm" variant="outline">
           <Link href={backHref}>Regresar al listado</Link>
