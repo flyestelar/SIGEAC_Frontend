@@ -1,7 +1,7 @@
-'use client'
-import { ReactNode } from 'react';
-import { useRouter } from 'next/navigation';
+'use client';
 import { useAuth } from '@/contexts/AuthContext';
+import { authorizeUser } from '@/lib/auth/authorization';
+import { ReactNode } from 'react';
 import LoadingPage from '../misc/LoadingPage';
 
 interface ProtectedRouteProps {
@@ -11,39 +11,14 @@ interface ProtectedRouteProps {
   directPermissions?: string[];
 }
 
-const ProtectedRoute = ({ children, roles, permissions, directPermissions }: ProtectedRouteProps) => {
+function ProtectedRoute({ children, ...authorizeOptions }: ProtectedRouteProps) {
   const { user, loading } = useAuth();
-  const router = useRouter();
 
   if (loading) return <LoadingPage />;
 
-  if (!user) {
-    router.push('/login');
-    return null;
-  }
+  authorizeUser({ ...authorizeOptions, user, redirect: true });
 
-  const userRoles = user.roles?.map(role => role.name) || [];
-
-  const userPermissions = user.roles?.flatMap(role => role.permissions.map(permission => permission.name)) || [];
-
-  const userDirectPermissions = user.permissions?.map(directPermissions => directPermissions.name) || [];
-
-  if (roles && !roles.some(role => userRoles.includes(role))) {
-    router.push('/not-authorized');
-    return null;
-  }
-
-  if (permissions && !permissions.some(permission => userPermissions.includes(permission))) {
-    router.push('/not-authorized');
-    return null;
-  }
-
-  if (directPermissions && !directPermissions.some(permission => userDirectPermissions.includes(permission))) {
-    router.push('/not-authorized');
-    return null;
-  }
-
-  return <>{children}</>;
-};
+  return children;
+}
 
 export default ProtectedRoute;

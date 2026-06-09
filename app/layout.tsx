@@ -1,12 +1,13 @@
+import { RedirectHandler } from '@/components/misc/RedirectHandler';
 import { Toaster } from '@/components/ui/sonner';
 import { AuthProvider } from '@/contexts/AuthContext';
+import { EchoProvider } from '@/providers/echo-provider';
 import QueryClientProvider from '@/providers/query-provider';
 import { ThemeProvider } from '@/providers/theme-provider';
 import type { Metadata } from 'next';
 import { Poppins } from 'next/font/google';
+
 import './globals.css';
-import { RedirectHandler } from '@/components/misc/RedirectHandler';
-import ErrorBoundary from '@/components/ErrorBoundary';
 
 const inter = Poppins({
   subsets: ['latin'],
@@ -19,7 +20,7 @@ export const metadata: Metadata = {
   description: 'Sistema de Gestión Aeronáutica Civil',
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
@@ -33,10 +34,12 @@ export default function RootLayout({
         <QueryClientProvider>
           <RedirectHandler />
           <AuthProvider>
-            <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
-              <ErrorBoundary>{children}</ErrorBoundary>
-              <Toaster />
-            </ThemeProvider>
+            <EchoProvider>
+              <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+                {children}
+                <Toaster />
+              </ThemeProvider>
+            </EchoProvider>
           </AuthProvider>
         </QueryClientProvider>
       </body>

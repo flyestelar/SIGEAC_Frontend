@@ -19,6 +19,8 @@ interface HardTimeCategorySidebarProps {
   onUninstallComponent: (component: AircraftComponentSlotResource) => void;
   onCreateIntervalForComponent: (component: AircraftComponentSlotResource) => void;
   onCreateComponentInAta: (categoryCode: string) => void;
+  onCancelRequest?: (component: AircraftComponentSlotResource) => void;
+  isCancellingRequest?: boolean;
 }
 
 type CategoryStats = {
@@ -64,6 +66,8 @@ export function HardTimeCategorySidebar({
   onUninstallComponent,
   onCreateIntervalForComponent,
   onCreateComponentInAta,
+  onCancelRequest,
+  isCancellingRequest,
 }: HardTimeCategorySidebarProps) {
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -325,6 +329,8 @@ export function HardTimeCategorySidebar({
                     onInstall={() => onInstallComponent(component)}
                     onUninstall={() => onUninstallComponent(component)}
                     onCreateInterval={() => onCreateIntervalForComponent(component)}
+                    onCancelRequest={() => onCancelRequest?.(component)}
+                    isCancellingRequest={isCancellingRequest}
                   />
                 ))}
                 {selectedCategory?.code && (

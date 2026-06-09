@@ -1001,6 +1001,21 @@ import type {
   NonRoutineTaskUpdateStatusData,
   NonRoutineTaskUpdateStatusErrors,
   NonRoutineTaskUpdateStatusResponses,
+  NotificationIndexData,
+  NotificationIndexErrors,
+  NotificationIndexResponses,
+  NotificationMarkAllAsReadData,
+  NotificationMarkAllAsReadErrors,
+  NotificationMarkAllAsReadResponses,
+  NotificationMarkAsReadData,
+  NotificationMarkAsReadErrors,
+  NotificationMarkAsReadResponses,
+  NotificationUnreadCountData,
+  NotificationUnreadCountErrors,
+  NotificationUnreadCountResponses,
+  NotificationUnreadData,
+  NotificationUnreadErrors,
+  NotificationUnreadResponses,
   ObligatoryReportAcceptObligatoryReportData,
   ObligatoryReportAcceptObligatoryReportErrors,
   ObligatoryReportAcceptObligatoryReportResponses,
@@ -6711,6 +6726,56 @@ export const nonRoutineTasksUpdate = <ThrowOnError extends boolean = false>(
       'Content-Type': 'application/json',
       ...options.headers,
     },
+  });
+
+export const notificationIndex = <ThrowOnError extends boolean = false>(
+  options?: Options<NotificationIndexData, ThrowOnError>,
+): RequestResult<NotificationIndexResponses, NotificationIndexErrors, ThrowOnError> =>
+  (options?.client ?? client).get<NotificationIndexResponses, NotificationIndexErrors, ThrowOnError>({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/notifications',
+    ...options,
+  });
+
+export const notificationUnread = <ThrowOnError extends boolean = false>(
+  options?: Options<NotificationUnreadData, ThrowOnError>,
+): RequestResult<NotificationUnreadResponses, NotificationUnreadErrors, ThrowOnError> =>
+  (options?.client ?? client).get<NotificationUnreadResponses, NotificationUnreadErrors, ThrowOnError>({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/notifications/unread',
+    ...options,
+  });
+
+export const notificationUnreadCount = <ThrowOnError extends boolean = false>(
+  options?: Options<NotificationUnreadCountData, ThrowOnError>,
+): RequestResult<NotificationUnreadCountResponses, NotificationUnreadCountErrors, ThrowOnError> =>
+  (options?.client ?? client).get<NotificationUnreadCountResponses, NotificationUnreadCountErrors, ThrowOnError>({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/notifications/unread-count',
+    ...options,
+  });
+
+export const notificationMarkAsRead = <ThrowOnError extends boolean = false>(
+  options: Options<NotificationMarkAsReadData, ThrowOnError>,
+): RequestResult<NotificationMarkAsReadResponses, NotificationMarkAsReadErrors, ThrowOnError> =>
+  (options.client ?? client).post<NotificationMarkAsReadResponses, NotificationMarkAsReadErrors, ThrowOnError>({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/notifications/{id}/read',
+    ...options,
+  });
+
+export const notificationMarkAllAsRead = <ThrowOnError extends boolean = false>(
+  options?: Options<NotificationMarkAllAsReadData, ThrowOnError>,
+): RequestResult<NotificationMarkAllAsReadResponses, NotificationMarkAllAsReadErrors, ThrowOnError> =>
+  (options?.client ?? client).post<NotificationMarkAllAsReadResponses, NotificationMarkAllAsReadErrors, ThrowOnError>({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/notifications/read-all',
+    ...options,
   });
 
 /**

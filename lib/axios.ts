@@ -1,8 +1,7 @@
-import { toast } from 'sonner';
-import { useCompanyStore } from '@/stores/CompanyStore';
 import { client } from '@api/client';
 import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
-import Cookies from 'js-cookie';
+import { toast } from 'sonner';
+import { getAuthToken, getCompanyId } from '@/lib/cookies/server';
 
 const axiosInstance = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_BASE_URL,
@@ -18,17 +17,11 @@ client.setConfig({
   headers: {
     skip_zrok_interstitial: true,
   },
-  auth() {
-    return getAuthToken();
-  },
+  axios: axiosInstance,
 });
 
-function getAuthToken() {
-  return Cookies.get('auth_token')?.replace('Bearer ', '');
-}
-
-function authInterceptor(config: InternalAxiosRequestConfig) {
-  const token = getAuthToken();
+async function authInterceptor(config: InternalAxiosRequestConfig) {
+  const token = await getAuthToken();
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
@@ -36,11 +29,11 @@ function authInterceptor(config: InternalAxiosRequestConfig) {
   return config;
 }
 
-function companyInterceptor(config: InternalAxiosRequestConfig) {
-  const { selectedCompany } = useCompanyStore.getState();
+async function companyInterceptor(config: InternalAxiosRequestConfig) {
+  const companyId = await getCompanyId();
 
-  if (selectedCompany) {
-    config.headers['x-company-id'] = selectedCompany.id;
+  if (companyId) {
+    config.headers['x-company-id'] = companyId;
   }
 
   return config;
@@ -48,7 +41,6 @@ function companyInterceptor(config: InternalAxiosRequestConfig) {
 
 axiosInstance.interceptors.request.use(authInterceptor);
 axiosInstance.interceptors.request.use(companyInterceptor);
-client.instance.interceptors.request.use(companyInterceptor);
 
 export default axiosInstance;
 

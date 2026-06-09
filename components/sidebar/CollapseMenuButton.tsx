@@ -19,6 +19,7 @@ import { cn } from '@/lib/utils';
 import { DropdownMenuArrow } from '@radix-ui/react-dropdown-menu';
 import { SidebarMenuItem, SidebarMenuSub, SidebarMenuSubButton, SidebarMenuSubItem } from '../ui/sidebar';
 import { LeafItem } from './LeafItem';
+import { LinkStatusIndicator } from './LinkStatusIndicator';
 
 type Submenu = {
   href: string;
@@ -104,6 +105,7 @@ export function CollapseMenuButton({
                                 <Link href={href}>
                                   <Dot size={18} />
                                   <span className={cn('max-w-[170px] truncate')}>{label}</span>
+                                  <LinkStatusIndicator />
                                 </Link>
                               </SidebarMenuSubButton>
                             </SidebarMenuSubItem>
@@ -122,6 +124,7 @@ export function CollapseMenuButton({
                   <DropdownMenuItem key={index} asChild>
                     <Link className="cursor-pointer" href={href}>
                       <p className="max-w-[180px] truncate">{label}</p>
+                      <LinkStatusIndicator />
                     </Link>
                   </DropdownMenuItem>
                 ))}

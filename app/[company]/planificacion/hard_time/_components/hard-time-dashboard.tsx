@@ -27,6 +27,7 @@ import { IntervalDialog } from './hard-time-dashboard/interval-dialog';
 import { ComplianceDialog } from './hard-time-dashboard/compliance-dialog';
 import { HardTimeImportDialog } from './hard-time-import-dialog';
 import { InstallDialog } from './install-dialog';
+import { useCancelInstallationRequest } from '@/actions/planificacion/hard_time/actions';
 import { AircraftComponentSlotResource, HardTimeIntervalResource } from '@api/types';
 
 export function HardTimeDashboard() {
@@ -80,6 +81,7 @@ export function HardTimeDashboard() {
   });
 
   const workOrders = workOrdersResponse?.data ?? [];
+  const cancelRequestMutation = useCancelInstallationRequest();
   const averages = selectedAircraft?.last_average_metric ?? null;
   const installingComponentPartNumber =
     selectedComponentDetail?.part_number ??
@@ -116,6 +118,15 @@ export function HardTimeDashboard() {
     setIntervalTargetComponent(component);
     setEditingInterval(null);
     setIsIntervalDialogOpen(true);
+  };
+
+  const handleCancelRequest = (component: AircraftComponentSlotResource) => {
+    const requestId = component.pending_installation_request?.id;
+    if (!requestId) return;
+    cancelRequestMutation.mutate(
+      { path: { id: requestId }, body: { resolution_reason: 'Cancelado por planificación' } },
+      { onSuccess: () => setSelectedComponent(null) },
+    );
   };
 
   const openCreateComponent = (categoryCode: string | null = null) => {
@@ -217,6 +228,8 @@ export function HardTimeDashboard() {
                   onUninstallComponent={openUninstall}
                   onCreateIntervalForComponent={openCreateInterval}
                   onCreateComponentInAta={(code) => openCreateComponent(code)}
+                  onCancelRequest={handleCancelRequest}
+                  isCancellingRequest={cancelRequestMutation.isPending}
                 />
               )}
             </>

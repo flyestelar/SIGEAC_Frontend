@@ -8,6 +8,8 @@ import { cn } from '@/lib/utils';
 import { SidebarMenuButton } from '../ui/sidebar';
 import { motion } from 'motion/react';
 
+import { LinkStatusIndicator } from './LinkStatusIndicator';
+
 const AnimatedChevronDown = motion.create(ChevronDown);
 
 export function LeafItem({
@@ -50,6 +52,7 @@ export function LeafItem({
     <SidebarMenuButton {...rest} isActive={active} asChild className={buttonClassName}>
       <Link href={href} aria-current={active ? 'page' : undefined}>
         {content2}
+        <LinkStatusIndicator />
       </Link>
     </SidebarMenuButton>
   ) : (

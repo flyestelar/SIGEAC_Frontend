@@ -1,3 +1,4 @@
+import { useCompanySlug } from '@/stores/CompanyStore';
 import { DocumentGenerationMetadataResource, planificationWorkOrderDocumentDownload } from '@api/index';
 import {
   planificationWorkOrderDocumentQueuePdfMutation,
@@ -5,6 +6,7 @@ import {
   planificationWorkOrderDocumentStatusQueryKey,
   planificationWorkOrderTallySheetQueuePdfMutation,
 } from '@api/queries';
+import { useEcho } from '@laravel/echo-react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 export type DocumentType = 'work_order' | 'tally_sheet';
@@ -20,6 +22,24 @@ export type WorkOrderDocState = {
 
 export function useWorkOrderDocuments(orderNumber: string) {
   const queryClient = useQueryClient();
+  const companySlug = useCompanySlug();
+
+  /* ── Echo: real-time document status updates ── */
+  useEcho(
+    `order-documents.${orderNumber}.${companySlug}`,
+    'WorkOrderDocumentStatusChanged',
+    (payload) => {
+      if (!orderNumber) return;
+      const docType = payload.document_type;
+      queryClient.invalidateQueries({
+        queryKey: planificationWorkOrderDocumentStatusQueryKey({
+          path: { order_number: orderNumber, document_type: docType },
+        }),
+      });
+    },
+    [orderNumber, companySlug, queryClient],
+    'private',
+  );
 
   const workOrderStatusQuery = useQuery({
     ...planificationWorkOrderDocumentStatusOptions({
@@ -27,11 +47,7 @@ export function useWorkOrderDocuments(orderNumber: string) {
     }),
     enabled: Boolean(orderNumber),
     retry: false,
-    refetchInterval: (query) => {
-      const data = query.state.data?.data;
-      if (data?.status === 'completed' || data?.status === 'failed' || data?.status === 'not_generated') return false;
-      return 2000;
-    },
+    refetchInterval: false,
   });
 
   const tallySheetStatusQuery = useQuery({
@@ -40,11 +56,7 @@ export function useWorkOrderDocuments(orderNumber: string) {
     }),
     enabled: Boolean(orderNumber),
     retry: false,
-    refetchInterval: (query) => {
-      const data = query.state.data?.data;
-      if (data?.status === 'completed' || data?.status === 'failed' || data?.status === 'not_generated') return false;
-      return 2000;
-    },
+    refetchInterval: false,
   });
 
   const workOrderStatusError = workOrderStatusQuery.error

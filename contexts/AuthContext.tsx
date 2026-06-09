@@ -1,127 +1,58 @@
 'use client';
 
-import { default as axiosInstance } from '@/lib/axios';
-import { AxiosError } from 'axios';
-import { createCookie } from '@/lib/cookie';
-import { createSession, deleteSession } from '@/lib/session';
+import { AuthContext, useAuth } from '@/lib/auth/context';
+import { loginAction, logoutAction } from '@/lib/auth/login';
+import { USER_QUERY_KEY, userQueryOptions } from '@/lib/auth/queries';
 import { useCompanyStore } from '@/stores/CompanyStore';
-import { User } from '@/types';
-import { useMutation, UseMutationResult, useQueryClient } from '@tanstack/react-query';
+import { LoginData } from '@api/types';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
-import { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { ReactNode, useCallback, useMemo } from 'react';
 import { toast } from 'sonner';
-import { login } from '@api/sdk.gen';
-import { LoginData, LoginResponse } from '@api/types';
 
-interface AuthContextType {
-  user: User | null;
-  isAuthenticated: boolean;
-  loading: boolean;
-  error: string | null;
-  loginMutation: UseMutationResult<LoginResponse, Error, LoginData['body'], unknown>;
-  logout: () => Promise<void>;
-}
-
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
-export const AuthProvider = ({ children }: { children: ReactNode }) => {
+export function AuthProvider({ children }: { children: ReactNode }) {
   const queryClient = useQueryClient();
-  const router = useRouter();
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const reset = useCompanyStore((state) => state.reset);
+  const router = useRouter();
 
-  const isAuthenticated = !!user;
-
-  const fetchUser = async (): Promise<User | null> => {
-    try {
-      setIsLoading(true);
-      const { data } = await axiosInstance.get<User>('/user');
-      setUser(data);
-      setError(null);
-      return data;
-    } catch (err) {
-      setUser(null);
-      setError((err as any) || 'Error al cargar usuario');
-      return null;
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // Eliminamos el useQuery anterior y lo reemplazamos por una función directa
-  // que podemos llamar manualmente cuando necesitemos
-
-  useEffect(() => {
-    // Verificamos si hay token al cargar la aplicación
-    const checkAuth = async () => {
-      try {
-        setIsLoading(true);
-        // Aquí puedes verificar si existe el cookie de auth_token
-        // Si existe, hacemos el fetch del usuario
-        const token = document.cookie.includes('auth_token');
-        if (token) {
-          await fetchUser();
-        }
-      } catch (error) {
-        console.error('Error checking auth:', error);
-        setError('Error al verificar autenticación');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    checkAuth();
-  }, []);
+  const query = useQuery(userQueryOptions());
+  const user = query.data ?? null;
+  const isAuthenticated = !!query.data;
 
   const loginMutation = useMutation({
     mutationFn: async (credentials: LoginData['body']) => {
-      const { data } = await login({ body: credentials, throwOnError: true });
-
-      const token = data.token;
-      if (!token) throw new Error('No se recibió token de autenticación');
-
-      await createCookie('auth_token', token);
-      await createSession(data.userId);
-
-      return data;
+      const { success, error } = await loginAction(credentials);
+      if (!success) {
+        throw new Error(error || 'Error desconocido al iniciar sesión');
+      }
     },
     onSuccess: async () => {
-      // Después de login exitoso, hacemos fetch del usuario
-      await fetchUser();
-      queryClient.invalidateQueries({ queryKey: ['user'] });
       toast.success('¡Inicio correcto!', {
         description: 'Redirigiendo...',
         position: 'bottom-center',
       });
+      // Después de login exitoso, hacemos fetch del usuario
+      await query.refetch();
     },
     onError: (err) => {
-      const axiosError = err as AxiosError<{ message?: string }>;
-      const status = axiosError.response?.status;
-
-      const errorMessage =
-        status === 401
-          ? 'Credenciales incorrectas'
-          : axiosError.response?.data?.message || axiosError.message || 'Ocurrió un error inesperado';
-
-      setError(errorMessage);
+      const errorMessage = err.message || 'Ocurrió un error inesperado';
       toast.error('Error al iniciar sesión', { description: errorMessage, position: 'bottom-center' });
     },
   });
 
+  const error = query.error?.message || loginMutation.error?.message || null;
+  const loading = query.isLoading;
+
   const logout = useCallback(async () => {
     try {
-      setUser(null);
-      setError(null);
-      await deleteSession();
+      await logoutAction();
       reset();
       queryClient.clear();
-      router.push('/login');
-      router.refresh();
+      queryClient.setQueryData(USER_QUERY_KEY, null);
       toast.success('Sesión cerrada correctamente', {
         position: 'bottom-center',
       });
+      router.push('/login');
     } catch (err) {
       console.error('Error durante logout:', err);
       toast.error('Error al cerrar sesión', {
@@ -144,12 +75,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   );
 
   return <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>;
-};
+}
 
-export const useAuth = (): AuthContextType => {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth debe usarse dentro de un AuthProvider');
-  }
-  return context;
-};
+export { useAuth };

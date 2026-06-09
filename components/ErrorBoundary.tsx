@@ -61,7 +61,7 @@ export const ErrorFallback = ({ error, resetErrorBoundary }: FallbackProps) => (
         <Button
           onClick={resetErrorBoundary}
           className="bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white font-semibold px-6 py-2 rounded-lg shadow-lg transition-all duration-200 transform hover:scale-105"
-          >
+        >
           <RefreshCw className="w-4 h-4 mr-2" />
           Retry Flight
         </Button>
@@ -76,7 +76,9 @@ export const ErrorFallback = ({ error, resetErrorBoundary }: FallbackProps) => (
       {/* Additional help */}
       <div className="text-xs text-slate-500 space-y-1">
         <p>If the problem persists, contact your operations team.</p>
-        <p className="font-mono">Error ID: {Date.now().toString(36)}</p>
+        {typeof error === 'object' && error !== null && 'digest' in error && typeof error.digest === 'string' && (
+          <p className="font-mono">Error ID: {error.digest}</p>
+        )}
       </div>
     </div>
 

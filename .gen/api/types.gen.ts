@@ -1184,6 +1184,21 @@ export type NonRoutineTaskResource = {
 export type NonRoutineTaskStatus = 'OPEN' | 'IN_PROGRESS' | 'CLOSED';
 
 /**
+ * NotificationResource
+ */
+export type NotificationResource = {
+  id: string;
+  type: string;
+  data: unknown;
+  read_at: string | null;
+  created_at: string | null;
+  updated_at: string | null;
+  title: string | null;
+  message: string | null;
+  url: string | null;
+};
+
+/**
  * ObligatoryReport
  */
 export type ObligatoryReport = {
@@ -12736,7 +12751,9 @@ export type HardTimeInstallationHistoryByAircraftResponse =
 export type HardTimeInstallationRequestIndexData = {
   body?: never;
   path?: never;
-  query?: never;
+  query?: {
+    status?: string;
+  };
   url: '/install-requests';
 };
 
@@ -15357,6 +15374,251 @@ export type NonRoutineTasksUpdateResponses = {
 };
 
 export type NonRoutineTasksUpdateResponse = NonRoutineTasksUpdateResponses[keyof NonRoutineTasksUpdateResponses];
+
+export type NotificationIndexData = {
+  body?: never;
+  path?: never;
+  query?: {
+    page?: number;
+    per_page?: number;
+    mode?: 'all' | 'unread' | 'read';
+  };
+  url: '/notifications';
+};
+
+export type NotificationIndexErrors = {
+  /**
+   * Unauthenticated
+   */
+  401: {
+    /**
+     * Error overview.
+     */
+    message: string;
+  };
+  /**
+   * Validation error
+   */
+  422: {
+    /**
+     * Errors overview.
+     */
+    message: string;
+    /**
+     * A detailed description of each field that failed validation.
+     */
+    errors: {
+      [key: string]: Array<string>;
+    };
+  };
+};
+
+export type NotificationIndexError = NotificationIndexErrors[keyof NotificationIndexErrors];
+
+export type NotificationIndexResponses = {
+  /**
+   * Paginated set of `NotificationResource`
+   */
+  200: {
+    data: Array<NotificationResource>;
+    links: {
+      first: string | null;
+      last: string | null;
+      prev: string | null;
+      next: string | null;
+    };
+    meta: {
+      current_page: number;
+      from: number | null;
+      last_page: number;
+      /**
+       * Generated paginator links.
+       */
+      links: Array<{
+        url: string | null;
+        label: string;
+        active: boolean;
+      }>;
+      /**
+       * Base path for paginator generated URLs.
+       */
+      path: string | null;
+      /**
+       * Number of items shown per page.
+       */
+      per_page: number;
+      /**
+       * Number of the last item in the slice.
+       */
+      to: number | null;
+      /**
+       * Total number of items being paginated.
+       */
+      total: number;
+    };
+  };
+};
+
+export type NotificationIndexResponse = NotificationIndexResponses[keyof NotificationIndexResponses];
+
+export type NotificationUnreadData = {
+  body?: never;
+  path?: never;
+  query?: {
+    per_page?: number;
+  };
+  url: '/notifications/unread';
+};
+
+export type NotificationUnreadErrors = {
+  /**
+   * Unauthenticated
+   */
+  401: {
+    /**
+     * Error overview.
+     */
+    message: string;
+  };
+};
+
+export type NotificationUnreadError = NotificationUnreadErrors[keyof NotificationUnreadErrors];
+
+export type NotificationUnreadResponses = {
+  /**
+   * Paginated set of `NotificationResource`
+   */
+  200: {
+    data: Array<NotificationResource>;
+    links: {
+      first: string | null;
+      last: string | null;
+      prev: string | null;
+      next: string | null;
+    };
+    meta: {
+      current_page: number;
+      from: number | null;
+      last_page: number;
+      /**
+       * Generated paginator links.
+       */
+      links: Array<{
+        url: string | null;
+        label: string;
+        active: boolean;
+      }>;
+      /**
+       * Base path for paginator generated URLs.
+       */
+      path: string | null;
+      /**
+       * Number of items shown per page.
+       */
+      per_page: number;
+      /**
+       * Number of the last item in the slice.
+       */
+      to: number | null;
+      /**
+       * Total number of items being paginated.
+       */
+      total: number;
+    };
+  };
+};
+
+export type NotificationUnreadResponse = NotificationUnreadResponses[keyof NotificationUnreadResponses];
+
+export type NotificationUnreadCountData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: '/notifications/unread-count';
+};
+
+export type NotificationUnreadCountErrors = {
+  /**
+   * Unauthenticated
+   */
+  401: {
+    /**
+     * Error overview.
+     */
+    message: string;
+  };
+};
+
+export type NotificationUnreadCountError = NotificationUnreadCountErrors[keyof NotificationUnreadCountErrors];
+
+export type NotificationUnreadCountResponses = {
+  200: {
+    count: number;
+  };
+};
+
+export type NotificationUnreadCountResponse = NotificationUnreadCountResponses[keyof NotificationUnreadCountResponses];
+
+export type NotificationMarkAsReadData = {
+  body?: never;
+  path: {
+    id: string;
+  };
+  query?: never;
+  url: '/notifications/{id}/read';
+};
+
+export type NotificationMarkAsReadErrors = {
+  /**
+   * Unauthenticated
+   */
+  401: {
+    /**
+     * Error overview.
+     */
+    message: string;
+  };
+};
+
+export type NotificationMarkAsReadError = NotificationMarkAsReadErrors[keyof NotificationMarkAsReadErrors];
+
+export type NotificationMarkAsReadResponses = {
+  200: {
+    message: 'Notificación marcada como leída.';
+  };
+};
+
+export type NotificationMarkAsReadResponse = NotificationMarkAsReadResponses[keyof NotificationMarkAsReadResponses];
+
+export type NotificationMarkAllAsReadData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: '/notifications/read-all';
+};
+
+export type NotificationMarkAllAsReadErrors = {
+  /**
+   * Unauthenticated
+   */
+  401: {
+    /**
+     * Error overview.
+     */
+    message: string;
+  };
+};
+
+export type NotificationMarkAllAsReadError = NotificationMarkAllAsReadErrors[keyof NotificationMarkAllAsReadErrors];
+
+export type NotificationMarkAllAsReadResponses = {
+  200: {
+    message: 'Todas las notificaciones marcadas como leídas.';
+  };
+};
+
+export type NotificationMarkAllAsReadResponse =
+  NotificationMarkAllAsReadResponses[keyof NotificationMarkAllAsReadResponses];
 
 export type ObligatoryReportIndexData = {
   body?: never;

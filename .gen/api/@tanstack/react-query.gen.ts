@@ -342,6 +342,11 @@ import {
   nonRoutineTasksStore,
   nonRoutineTasksUpdate,
   nonRoutineTaskUpdateStatus,
+  notificationIndex,
+  notificationMarkAllAsRead,
+  notificationMarkAsRead,
+  notificationUnread,
+  notificationUnreadCount,
   obligatoryReportAcceptObligatoryReport,
   obligatoryReportDestroy,
   obligatoryReportGeneratePdfReport,
@@ -1556,6 +1561,21 @@ import type {
   NonRoutineTaskUpdateStatusData,
   NonRoutineTaskUpdateStatusError,
   NonRoutineTaskUpdateStatusResponse,
+  NotificationIndexData,
+  NotificationIndexError,
+  NotificationIndexResponse,
+  NotificationMarkAllAsReadData,
+  NotificationMarkAllAsReadError,
+  NotificationMarkAllAsReadResponse,
+  NotificationMarkAsReadData,
+  NotificationMarkAsReadError,
+  NotificationMarkAsReadResponse,
+  NotificationUnreadCountData,
+  NotificationUnreadCountError,
+  NotificationUnreadCountResponse,
+  NotificationUnreadData,
+  NotificationUnreadError,
+  NotificationUnreadResponse,
   ObligatoryReportAcceptObligatoryReportData,
   ObligatoryReportAcceptObligatoryReportError,
   ObligatoryReportAcceptObligatoryReportResponse,
@@ -10908,6 +10928,157 @@ export const nonRoutineTasksUpdateMutation = (
   > = {
     mutationFn: async (fnOptions) => {
       const { data } = await nonRoutineTasksUpdate({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+export const notificationIndexQueryKey = (options?: Options<NotificationIndexData>) =>
+  createQueryKey('notificationIndex', options);
+
+export const notificationIndexOptions = (options?: Options<NotificationIndexData>) =>
+  queryOptions<
+    NotificationIndexResponse,
+    AxiosError<NotificationIndexError>,
+    NotificationIndexResponse,
+    ReturnType<typeof notificationIndexQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await notificationIndex({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: notificationIndexQueryKey(options),
+  });
+
+export const notificationIndexInfiniteQueryKey = (
+  options?: Options<NotificationIndexData>,
+): QueryKey<Options<NotificationIndexData>> => createQueryKey('notificationIndex', options, true);
+
+export const notificationIndexInfiniteOptions = (options?: Options<NotificationIndexData>) =>
+  infiniteQueryOptions<
+    NotificationIndexResponse,
+    AxiosError<NotificationIndexError>,
+    InfiniteData<NotificationIndexResponse>,
+    QueryKey<Options<NotificationIndexData>>,
+    number | Pick<QueryKey<Options<NotificationIndexData>>[0], 'body' | 'headers' | 'path' | 'query'>
+  >(
+    // @ts-ignore
+    {
+      queryFn: async ({ pageParam, queryKey, signal }) => {
+        // @ts-ignore
+        const page: Pick<QueryKey<Options<NotificationIndexData>>[0], 'body' | 'headers' | 'path' | 'query'> =
+          typeof pageParam === 'object'
+            ? pageParam
+            : {
+                query: {
+                  page: pageParam,
+                },
+              };
+        const params = createInfiniteParams(queryKey, page);
+        const { data } = await notificationIndex({
+          ...options,
+          ...params,
+          signal,
+          throwOnError: true,
+        });
+        return data;
+      },
+      queryKey: notificationIndexInfiniteQueryKey(options),
+    },
+  );
+
+export const notificationUnreadQueryKey = (options?: Options<NotificationUnreadData>) =>
+  createQueryKey('notificationUnread', options);
+
+export const notificationUnreadOptions = (options?: Options<NotificationUnreadData>) =>
+  queryOptions<
+    NotificationUnreadResponse,
+    AxiosError<NotificationUnreadError>,
+    NotificationUnreadResponse,
+    ReturnType<typeof notificationUnreadQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await notificationUnread({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: notificationUnreadQueryKey(options),
+  });
+
+export const notificationUnreadCountQueryKey = (options?: Options<NotificationUnreadCountData>) =>
+  createQueryKey('notificationUnreadCount', options);
+
+export const notificationUnreadCountOptions = (options?: Options<NotificationUnreadCountData>) =>
+  queryOptions<
+    NotificationUnreadCountResponse,
+    AxiosError<NotificationUnreadCountError>,
+    NotificationUnreadCountResponse,
+    ReturnType<typeof notificationUnreadCountQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await notificationUnreadCount({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: notificationUnreadCountQueryKey(options),
+  });
+
+export const notificationMarkAsReadMutation = (
+  options?: Partial<Options<NotificationMarkAsReadData>>,
+): UseMutationOptions<
+  NotificationMarkAsReadResponse,
+  AxiosError<NotificationMarkAsReadError>,
+  Options<NotificationMarkAsReadData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    NotificationMarkAsReadResponse,
+    AxiosError<NotificationMarkAsReadError>,
+    Options<NotificationMarkAsReadData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await notificationMarkAsRead({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+export const notificationMarkAllAsReadMutation = (
+  options?: Partial<Options<NotificationMarkAllAsReadData>>,
+): UseMutationOptions<
+  NotificationMarkAllAsReadResponse,
+  AxiosError<NotificationMarkAllAsReadError>,
+  Options<NotificationMarkAllAsReadData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    NotificationMarkAllAsReadResponse,
+    AxiosError<NotificationMarkAllAsReadError>,
+    Options<NotificationMarkAllAsReadData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await notificationMarkAllAsRead({
         ...options,
         ...fnOptions,
         throwOnError: true,

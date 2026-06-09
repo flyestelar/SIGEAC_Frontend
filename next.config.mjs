@@ -1,4 +1,8 @@
- /** @type {import('next').NextConfig} */
+const storageBaseUrl = process.env.NEXT_PUBLIC_STORAGE_BASE_URL
+  ? new URL('/', process.env.NEXT_PUBLIC_STORAGE_BASE_URL)
+  : null;
+
+/** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: false,
   images: {
@@ -16,12 +20,30 @@ const nextConfig = {
         protocol: 'http',
         hostname: '127.0.0.1',
         port: '81',
-      }
+      },
+      ...(storageBaseUrl
+        ? [
+            {
+              protocol: storageBaseUrl.protocol.slice(0, -1), // Remove the trailing ':'
+              hostname: storageBaseUrl.hostname,
+              port: storageBaseUrl.port || undefined,
+            },
+          ]
+        : []),
     ],
   },
   typescript: {
-    ignoreBuildErrors: true
-  }
+    ignoreBuildErrors: true,
+  },
+  experimental: {
+    serverComponentsHmrCache: true,
+  },
+  logging: {
+    fetches: {
+      fullUrl: true,
+      hmrRefreshes: true,
+    },
+  },
 };
 
 export default nextConfig;

@@ -5,6 +5,10 @@ const PUBLIC_ROUTES = ['/', '/login'];
 export default function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
+  if (pathname.startsWith('/.well-known/')) {
+    return new NextResponse(null, { status: 404 });
+  }
+
   if (
     // Permitir rutas públicas
     PUBLIC_ROUTES.includes(pathname) ||
@@ -32,7 +36,5 @@ export default function proxy(req: NextRequest) {
 }
 
 export const config = {
-  matcher: [
-    '/((?!_next/static|_next/image|favicon.ico).*)',
-  ],
+  matcher: ['/((?!_next/static|_next/image|favicon.ico).*)'],
 };
