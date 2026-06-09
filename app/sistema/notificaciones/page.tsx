@@ -8,9 +8,11 @@ import {
   useGetNotificationsInfinite,
   useGetUnreadNotificationsCount,
   useMarkAllAsRead,
+  useMarkAsRead,
 } from '@/hooks/sistema/useNotifications';
 import { Button } from '@/components/ui/button';
 import { formatTime, getNotificationInfo, statusIcon } from '@/lib/notification';
+import { useRouter } from 'next/navigation';
 
 type FilterTab = 'all' | 'unread' | 'read';
 
@@ -34,6 +36,8 @@ export default function NotificacionesPage() {
 
   const allNotifications = infiniteData?.pages.flatMap((page) => page.data) || [];
   const unreadCount = countData?.count ?? 0;
+  const router = useRouter();
+  const markAsRead = useMarkAsRead();
 
   return (
     <ContentLayout>
@@ -111,8 +115,23 @@ export default function NotificacionesPage() {
                 return (
                   <div
                     key={n.id}
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => {
+                      const url = n.url || '/sistema/notificaciones';
+                      router.push(url);
+                      if (!n.read_at) markAsRead.mutate({ path: { id: n.id } });
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        const url = n.url || '/sistema/notificaciones';
+                        router.push(url);
+                        if (!n.read_at) markAsRead.mutate({ path: { id: n.id } });
+                      }
+                    }}
                     className={cn(
-                      'rounded-lg border border-border/60 border-l-4 transition-colors hover:bg-muted/30',
+                      'cursor-pointer rounded-lg border border-border/60 border-l-4 transition-colors hover:bg-muted/30',
                       !n.read_at ? 'border-l-sky-500 bg-sky-500/[0.02]' : 'border-l-muted',
                     )}
                   >

@@ -3,11 +3,15 @@
 import { useAuth } from '@/contexts/AuthContext';
 import { useMarkAsRead } from '@/hooks/sistema/useNotifications';
 import { statusIcon } from '@/lib/notification';
-import { notificationUnreadCountQueryKey, notificationUnreadQueryKey } from '@api/queries';
+import {
+  notificationIndexInfiniteQueryKey,
+  notificationUnreadCountQueryKey,
+  notificationUnreadQueryKey,
+} from '@api/queries';
 import { useEchoNotification } from '@laravel/echo-react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
-import { useCallback, useEffect } from 'react';
+import { useCallback } from 'react';
 import { toast } from 'sonner';
 
 interface NotificationPayload {
@@ -88,6 +92,7 @@ function NotificationChannel({ userId }: { userId: string }) {
 
   const onNotification = useCallback(
     (payload: NotificationPayload) => {
+      queryClient.invalidateQueries({ queryKey: notificationIndexInfiniteQueryKey() });
       queryClient.invalidateQueries({ queryKey: notificationUnreadQueryKey() });
       queryClient.invalidateQueries({ queryKey: notificationUnreadCountQueryKey() });
 
