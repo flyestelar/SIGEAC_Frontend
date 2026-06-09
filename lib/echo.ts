@@ -1,10 +1,8 @@
+import './echo-events';
+
 import { configureEcho } from '@laravel/echo-react';
 import Pusher from 'pusher-js';
 import axiosInstance from './axios';
-
-declare module '@laravel/echo-react' {
-  interface Events {}
-}
 export function setupEchoReverb(token: string | null = null) {
   if (typeof window !== 'undefined') window.Pusher = Pusher;
 
