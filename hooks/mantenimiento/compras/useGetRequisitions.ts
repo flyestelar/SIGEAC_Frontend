@@ -10,7 +10,7 @@ const fetchRequisition = async (company?: string, location_id?: string): Promise
 
 export const useGetRequisition = (company?: string, location_id?: string) => {
   return useQuery<Requisition[]>({
-    queryKey: ["requisitions-orders"],
+    queryKey: ["requisitions-orders", company, location_id],
     queryFn: () => fetchRequisition(company, location_id),
     enabled: !!company && !!location_id
   });

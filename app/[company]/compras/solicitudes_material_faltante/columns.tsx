@@ -8,10 +8,25 @@ import RequisitionsDropdownActions from '@/components/dropdowns/mantenimiento/co
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { cn } from '@/lib/utils';
+import { useCompanyStore } from '@/stores/CompanyStore';
 import { Batch, Requisition } from '@/types';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import Link from 'next/link';
+
+const RequisitionOrderNumberCell = ({ orderNumber }: { orderNumber: string }) => {
+  const { selectedCompany } = useCompanyStore();
+  return (
+    <div className="flex justify-center">
+      <Link
+        href={`/${selectedCompany?.slug}/compras/solicitudes_material_faltante/${orderNumber}`}
+        className="text-center font-bold"
+      >
+        {orderNumber}
+      </Link>
+    </div>
+  );
+};
 
 // This type is used to define the shape of our data.
 // You can use a Zod schema here if you want.
@@ -43,18 +58,7 @@ export const columns: ColumnDef<Requisition>[] = [
     accessorKey: 'order_number',
     header: ({ column }) => <DataTableColumnHeader filter column={column} title="Nro. Req." />,
     meta: { title: 'Nro. Req.' }, // 👈 Agrega el título aquí
-    cell: ({ row }) => {
-      return (
-        <div className="flex justify-center">
-          <Link
-            href={`/estelar/compras/solicitudes_material_faltante/${row.original.order_number}`}
-            className="text-center font-bold"
-          >
-            {row.original.order_number}
-          </Link>
-        </div>
-      );
-    },
+    cell: ({ row }) => <RequisitionOrderNumberCell orderNumber={row.original.order_number} />,
   },
   {
     accessorKey: 'justification',
@@ -80,14 +84,16 @@ export const columns: ColumnDef<Requisition>[] = [
       const s = row.original.status?.toUpperCase().trim();
       const colorClass =
         s === 'APROBADO'
-          ? 'bg-green-500'
+          ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
           : s === 'RECHAZADO'
-            ? 'bg-red-500'
-            : 'bg-yellow-500'; // PROCESO, COTIZADO
+            ? 'border-red-500/30 bg-red-500/10 text-red-600 dark:text-red-400'
+            : 'border-amber-500/30 bg-amber-500/10 text-amber-600 dark:text-amber-400'; // PROCESO, COTIZADO
       return (
-        <Badge className={cn('flex justify-center', colorClass)}>
-          {row.original.status?.toUpperCase()}
-        </Badge>
+        <div className="flex justify-center">
+          <Badge variant="outline" className={cn('px-2.5 py-0.5 text-xs font-semibold', colorClass)}>
+            {row.original.status?.toUpperCase()}
+          </Badge>
+        </div>
       );
     },
   },

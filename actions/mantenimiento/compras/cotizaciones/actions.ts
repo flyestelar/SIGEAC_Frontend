@@ -20,6 +20,7 @@ interface CreateQuoteData {
   quote_date: Date;
   created_by: string;
   company: string;
+  status?: string;
 }
 
 export const useCreateQuote = () => {
@@ -45,6 +46,40 @@ export const useCreateQuote = () => {
   });
   return {
     createQuote: createMutation,
+  };
+};
+
+export const useUpdateQuote = () => {
+  const queryClient = useQueryClient();
+
+  const updateMutation = useMutation({
+    mutationFn: async ({
+      id,
+      data,
+      company,
+    }: {
+      id: number;
+      data: CreateQuoteData;
+      company: string;
+    }) => {
+      await axiosInstance.put(`/${company}/quote/${id}`, data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['quotes'] });
+      queryClient.invalidateQueries({ queryKey: ['quote'], exact: false });
+      toast.success('¡Actualizada!', {
+        description: `La cotización ha sido actualizada correctamente.`,
+      });
+    },
+    onError: (error) => {
+      toast.error('Oops!', {
+        description: 'No se pudo actualizar la cotización...',
+      });
+      console.log(error);
+    },
+  });
+  return {
+    updateQuote: updateMutation,
   };
 };
 
@@ -89,7 +124,7 @@ export const useDeleteQuote = () => {
 
   const deleteMutation = useMutation({
     mutationFn: async ({ id, company }: { id: number; company: string }) => {
-      await axiosInstance.post(`/delete-quote/${id}`, { company });
+      await axiosInstance.delete(`/${company}/delete-quote/${id}`);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['quotes'] });

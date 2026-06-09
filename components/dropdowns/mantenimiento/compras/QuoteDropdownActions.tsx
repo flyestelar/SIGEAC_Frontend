@@ -1,5 +1,9 @@
-import { useUpdateQuoteStatus } from "@/actions/mantenimiento/compras/cotizaciones/actions";
+import {
+  useDeleteQuote,
+  useUpdateQuoteStatus,
+} from "@/actions/mantenimiento/compras/cotizaciones/actions";
 import { useUpdateRequisitionStatus } from "@/actions/mantenimiento/compras/requisiciones/actions";
+import { CreateQuoteForm } from "@/components/forms/mantenimiento/compras/CreateQuoteForm";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,7 +18,9 @@ import {
   ClipboardX,
   EyeIcon,
   Loader2,
-  MoreHorizontal
+  MoreHorizontal,
+  Pencil,
+  Trash2,
 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Button } from "../../../ui/button";
@@ -30,13 +36,22 @@ import { useCreatePurchaseOrder } from "@/actions/mantenimiento/compras/ordenes_
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 
+const FULL_ACCESS_ROLES = ['SUPERUSER', 'ANALISTA_COMPRAS', 'JEFE_COMPRAS'];
+
 const QuoteDropdownActions = ({ quote }: { quote: Quote }) => {
   const { user } = useAuth();
   const { selectedCompany } = useCompanyStore();
 
   const [openReject, setOpenReject] = useState(false);
   const [openApprove, setOpenApprove] = useState(false);
+  const [openEdit, setOpenEdit] = useState(false);
+  const [openDelete, setOpenDelete] = useState(false);
   const [orderNumber, setOrderNumber] = useState("");
+
+  const userRoles = user?.roles?.map((r) => r.name) ?? [];
+  const isPrivileged = userRoles.some((r) => FULL_ACCESS_ROLES.includes(r));
+  const status = quote.status?.toUpperCase().trim();
+  const isEditable = isPrivileged && status !== "APROBADO" && status !== "RECHAZADA";
 
   // Group articles by vendor for multi-vendor PO creation
   const vendorGroups = useMemo(() => {
@@ -64,11 +79,24 @@ const QuoteDropdownActions = ({ quote }: { quote: Quote }) => {
   const { updateStatusQuote } = useUpdateQuoteStatus();
   const { updateStatusRequisition } = useUpdateRequisitionStatus();
   const { createPurchaseOrder } = useCreatePurchaseOrder();
+  const { deleteQuote } = useDeleteQuote();
 
   const isLoading =
     updateStatusQuote.isPending ||
     updateStatusRequisition.isPending ||
     createPurchaseOrder.isPending;
+
+  const handleDelete = async () => {
+    try {
+      await deleteQuote.mutateAsync({
+        id: Number(quote.id),
+        company: selectedCompany!.slug,
+      });
+      setOpenDelete(false);
+    } catch (error) {
+      console.error("Error eliminando cotización:", error);
+    }
+  };
 
   // ✅ RECHAZAR
   const handleReject = async (id: number) => {
@@ -187,6 +215,20 @@ const QuoteDropdownActions = ({ quote }: { quote: Quote }) => {
             </>
           )}
 
+          {isEditable && (
+            <>
+              <DropdownMenuItem onClick={() => setOpenEdit(true)}>
+                <Pencil className="size-5 text-blue-500 mr-2" />
+                Editar
+              </DropdownMenuItem>
+
+              <DropdownMenuItem onClick={() => setOpenDelete(true)}>
+                <Trash2 className="size-5 text-red-500 mr-2" />
+                Eliminar
+              </DropdownMenuItem>
+            </>
+          )}
+
           <DropdownMenuItem>
             <EyeIcon className="size-5 mr-2" />
             Ver detalle
@@ -274,6 +316,65 @@ const QuoteDropdownActions = ({ quote }: { quote: Quote }) => {
                 <Loader2 className="size-4 animate-spin" />
               ) : (
                 "Confirmar"
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* ✏️ EDITAR */}
+      <Dialog open={openEdit} onOpenChange={setOpenEdit}>
+        <DialogContent className="max-w-5xl max-h-[90vh] overflow-hidden p-0 gap-0">
+          <div className="border-b border-blue-500/20 bg-blue-500/5 px-5 py-4">
+            <div className="flex items-center gap-3">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded border border-blue-500/30 bg-blue-500/10">
+                <Pencil className="h-4 w-4 text-blue-500" />
+              </div>
+              <div>
+                <DialogTitle className="text-base font-semibold leading-tight">
+                  Editar Cotización
+                </DialogTitle>
+                <p className="mt-0.5 font-mono text-[11px] text-muted-foreground">
+                  {quote.quote_number}
+                </p>
+              </div>
+            </div>
+          </div>
+          <CreateQuoteForm
+            req={quote.requisition_order}
+            editQuote={quote}
+            onClose={() => setOpenEdit(false)}
+          />
+        </DialogContent>
+      </Dialog>
+
+      {/* 🗑️ ELIMINAR */}
+      <Dialog open={openDelete} onOpenChange={setOpenDelete}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="text-center text-2xl">
+              ¿Eliminar cotización?
+            </DialogTitle>
+            <DialogDescription className="text-center">
+              Esta acción no se puede deshacer. La cotización{" "}
+              <span className="font-mono font-semibold">{quote.quote_number}</span>{" "}
+              será eliminada permanentemente.
+            </DialogDescription>
+          </DialogHeader>
+
+          <DialogFooter className="flex gap-2">
+            <Button variant="outline" onClick={() => setOpenDelete(false)}>
+              Cancelar
+            </Button>
+            <Button
+              disabled={deleteQuote.isPending}
+              onClick={handleDelete}
+              variant="destructive"
+            >
+              {deleteQuote.isPending ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : (
+                "Eliminar"
               )}
             </Button>
           </DialogFooter>

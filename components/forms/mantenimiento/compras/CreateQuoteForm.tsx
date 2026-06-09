@@ -1,5 +1,5 @@
 'use client';
-import { useCreateQuote } from '@/actions/mantenimiento/compras/cotizaciones/actions';
+import { useCreateQuote, useUpdateQuote } from '@/actions/mantenimiento/compras/cotizaciones/actions';
 import { useUpdateRequisitionStatus } from '@/actions/mantenimiento/compras/requisiciones/actions';
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form';
@@ -9,7 +9,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useGetVendors } from '@/hooks/general/proveedores/useGetVendors';
 import { cn } from '@/lib/utils';
 import { useCompanyStore } from '@/stores/CompanyStore';
-import { Requisition } from '@/types';
+import { Quote, Requisition } from '@/types';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -48,12 +48,15 @@ export function CreateQuoteForm({
   initialData,
   onClose,
   req,
+  editQuote,
 }: {
   initialData?: any;
   onClose: () => void;
   req: Requisition;
+  editQuote?: Quote;
 }) {
   const { selectedCompany } = useCompanyStore();
+  const isEditMode = !!editQuote;
 
   const [openVendor, setOpenVendor] = useState(false);
   const [openVendorDialog, setOpenVendorDialog] = useState(false);
@@ -62,31 +65,44 @@ export function CreateQuoteForm({
 
   const { updateStatusRequisition } = useUpdateRequisitionStatus();
   const { createQuote } = useCreateQuote();
+  const { updateQuote } = useUpdateQuote();
   const { user } = useAuth();
 
-  const transformedArticles =
-    initialData?.articles?.flatMap((article: any) =>
-      article.batch_articles.map((batchArticle: any) => ({
-        part_number: batchArticle.part_number,
-        alt_part_number: batchArticle.alt_part_number || '',
-        quantity: batchArticle.quantity,
-        unit: batchArticle.unit ? batchArticle.unit.id.toString() : undefined,
-        unit_price: '',
-        condition: '',
-        vendor_id: '',
-        image: batchArticle.image,
-      })),
-    ) || [];
+  const transformedArticles = isEditMode
+    ? editQuote!.article_quote_order.map((a) => ({
+        part_number: a.article_part_number,
+        alt_part_number: '',
+        quantity: Number(a.quantity),
+        unit: a.unit?.id ? a.unit.id.toString() : undefined,
+        unit_price: a.unit_price?.toString() ?? '',
+        condition: a.condition ?? '',
+        vendor_id: a.vendor_id?.toString() ?? a.vendor?.id?.toString() ?? '',
+        image: a.image,
+      }))
+    : initialData?.articles?.flatMap((article: any) =>
+        article.batch_articles.map((batchArticle: any) => ({
+          part_number: batchArticle.part_number,
+          alt_part_number: batchArticle.alt_part_number || '',
+          quantity: batchArticle.quantity,
+          unit: batchArticle.unit ? batchArticle.unit.id.toString() : undefined,
+          unit_price: '',
+          condition: '',
+          vendor_id: '',
+          image: batchArticle.image,
+        })),
+      ) || [];
 
   // Track which articles had their vendor manually set by the user (form-only, not sent to API)
-  const vendorManuallySetRef = useRef<boolean[]>(transformedArticles.map(() => false));
+  // In edit mode, treat existing vendors as manually set so header-vendor changes don't clobber them.
+  const vendorManuallySetRef = useRef<boolean[]>(transformedArticles.map(() => isEditMode));
 
   const form = useForm<FormSchemaType>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
-      justification: initialData?.justification || '',
+      justification: editQuote?.justification ?? initialData?.justification ?? '',
       articles: transformedArticles,
-      vendor_id: '',
+      vendor_id: editQuote?.vendor_id?.toString() ?? editQuote?.vendor?.id?.toString() ?? '',
+      quote_date: editQuote?.quote_date ? new Date(editQuote.quote_date) : undefined,
     },
   });
 
@@ -141,15 +157,25 @@ export function CreateQuoteForm({
         vendor_id: Number(article.vendor_id),
       })),
     };
-    await createQuote.mutateAsync({ data: formattedData, company: selectedCompany!.slug });
-    await updateStatusRequisition.mutateAsync({
-      id: req.id,
-      data: {
-        status: 'COTIZADO',
-        updated_by: `${user?.first_name} ${user?.last_name}`,
-      },
-      company: selectedCompany!.slug,
-    });
+
+    if (isEditMode) {
+      await updateQuote.mutateAsync({
+        id: editQuote!.id,
+        // Preserve original status — backend overwrites with payload (null → status NULL bug)
+        data: { ...formattedData, status: editQuote!.status },
+        company: selectedCompany!.slug,
+      });
+    } else {
+      await createQuote.mutateAsync({ data: formattedData, company: selectedCompany!.slug });
+      await updateStatusRequisition.mutateAsync({
+        id: req.id,
+        data: {
+          status: 'COTIZADO',
+          updated_by: `${user?.first_name} ${user?.last_name}`,
+        },
+        company: selectedCompany!.slug,
+      });
+    }
     onClose();
   };
 
@@ -475,12 +501,18 @@ export function CreateQuoteForm({
                           <p className={fieldLabel}>Cant.</p>
                           <FormControl>
                             <Input
-                              disabled
-                              className="h-9 border-border/70 bg-muted/30 text-center text-sm font-semibold tabular-nums disabled:cursor-default disabled:opacity-100"
+                              className="h-9 border-border/70 bg-background text-center text-sm font-semibold tabular-nums"
                               type="number"
+                              min={1}
                               {...field}
+                              value={field.value ?? ''}
+                              onChange={(e) => {
+                                const v = e.target.value;
+                                field.onChange(v === '' ? '' : Number(v));
+                              }}
                             />
                           </FormControl>
+                          <FormMessage />
                         </FormItem>
                       )}
                     />
@@ -568,14 +600,16 @@ export function CreateQuoteForm({
           </Button>
           <Button
             size="sm"
-            disabled={createQuote.isPending || updateStatusRequisition.isPending}
+            disabled={createQuote.isPending || updateQuote.isPending || updateStatusRequisition.isPending}
             type="submit"
           >
-            {createQuote.isPending || updateStatusRequisition.isPending ? (
+            {createQuote.isPending || updateQuote.isPending || updateStatusRequisition.isPending ? (
               <>
                 <Loader2 className="mr-2 size-3.5 animate-spin" />
                 Procesando...
               </>
+            ) : isEditMode ? (
+              'Actualizar Cotizacion'
             ) : (
               'Crear Cotizacion'
             )}
