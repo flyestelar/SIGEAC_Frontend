@@ -4126,13 +4126,17 @@ export const companyIndex = <ThrowOnError extends boolean = false>(
  * Es necesatio usar el try catch ya que no se puede crear una base de datos mientras se este en una transacción
  */
 export const companyStore = <ThrowOnError extends boolean = false>(
-  options?: Options<CompanyStoreData, ThrowOnError>,
+  options: Options<CompanyStoreData, ThrowOnError>,
 ): RequestResult<CompanyStoreResponses, CompanyStoreErrors, ThrowOnError> =>
-  (options?.client ?? client).post<CompanyStoreResponses, CompanyStoreErrors, ThrowOnError>({
+  (options.client ?? client).post<CompanyStoreResponses, CompanyStoreErrors, ThrowOnError>({
     responseType: 'json',
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/company',
     ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    },
   });
 
 /**
@@ -5749,7 +5753,7 @@ export const hardTimeComplianceIndex = <ThrowOnError extends boolean = false>(
   (options.client ?? client).get<HardTimeComplianceIndexResponses, HardTimeComplianceIndexErrors, ThrowOnError>({
     responseType: 'json',
     security: [{ scheme: 'bearer', type: 'http' }],
-    url: '/hard-time-components/{componentId}/compliances',
+    url: '/hard-time-components/{aircraftPartId}/compliances',
     ...options,
   });
 
@@ -5765,7 +5769,7 @@ export const hardTimeComplianceStore = <ThrowOnError extends boolean = false>(
   (options.client ?? client).post<HardTimeComplianceStoreResponses, HardTimeComplianceStoreErrors, ThrowOnError>({
     responseType: 'json',
     security: [{ scheme: 'bearer', type: 'http' }],
-    url: '/hard-time-components/{componentId}/compliances',
+    url: '/hard-time-components/{aircraftPartId}/compliances',
     ...options,
     headers: {
       'Content-Type': 'application/json',

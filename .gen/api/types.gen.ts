@@ -38,6 +38,8 @@ export type Aircraft = {
   manufacturer_id: number | null;
   aircraft_type_id: number | null;
   inac: string;
+  registered_by_id: number | null;
+  updated_by_id: number | null;
 };
 
 /**
@@ -267,6 +269,8 @@ export type Analysis = {
   mitigation_plan_id: number | null;
   registered_by: string;
   updated_by: string | null;
+  registered_by_id: number | null;
+  updated_by_id: number | null;
 };
 
 /**
@@ -312,6 +316,8 @@ export type Article = {
   reception_date: string | null;
   zone_id: number | null;
   purchase_order_id: number | null;
+  registered_by_id: number | null;
+  updated_by_id: number | null;
 };
 
 /**
@@ -441,6 +447,8 @@ export type BankAccount = {
   company_id: number | null;
   registered_by: string | null;
   updated_by: string | null;
+  registered_by_id: number | null;
+  updated_by_id: number | null;
 };
 
 /**
@@ -459,6 +467,8 @@ export type Batch = {
   registered_by: string | null;
   updated_by: string | null;
   unit_id: number | null;
+  registered_by_id: number | null;
+  updated_by_id: number | null;
 };
 
 /**
@@ -520,6 +530,8 @@ export type Card = {
   bank_account_id: number;
   registered_by: string | null;
   updated_by: string | null;
+  registered_by_id: number | null;
+  updated_by_id: number | null;
 };
 
 /**
@@ -583,6 +595,8 @@ export type Company = {
   registered_by: string;
   updated_by: string | null;
   logo: string | null;
+  registered_by_id: number | null;
+  updated_by_id: number | null;
 };
 
 /**
@@ -615,6 +629,8 @@ export type Condition = {
   description: string | null;
   registered_by: string | null;
   updated_by: string | null;
+  registered_by_id: number | null;
+  updated_by_id: number | null;
 };
 
 /**
@@ -668,6 +684,8 @@ export type DangerIdentification = {
   voluntary_report_id: number | null;
   obligatory_report_id: number | null;
   sms_area_id: number | null;
+  registered_by_id: number | null;
+  updated_by_id: number | null;
 };
 
 /**
@@ -767,6 +785,8 @@ export type Employee = {
   location_id: number;
   registered_by: string;
   updated_by: string | null;
+  registered_by_id: number | null;
+  updated_by_id: number | null;
 };
 
 /**
@@ -823,6 +843,8 @@ export type Flight = {
   arrival_time: string | null;
   pilot: string | null;
   co_pilot: string | null;
+  registered_by_id: number | null;
+  updated_by_id: number | null;
 };
 
 /**
@@ -839,7 +861,9 @@ export type FlightResource = {
   departure_time: string | null;
   arrival_time: string | null;
   pilot: string | null;
+  pilot_employee?: Employee;
   co_pilot: string | null;
+  co_pilot_employee?: Employee;
   aircraft_id: number;
   aircraft?: Aircraft;
 };
@@ -896,9 +920,9 @@ export type HardTimeInstallationRequestResource = {
   component_cycles_at_install: number;
   status: string;
   resolved_at: string | null;
-  resolved_by: number | null;
+  resolved_by: string | null;
   resolution_reason: string | null;
-  requested_by: number;
+  requested_by: string;
   created_at: string | null;
   updated_at: string | null;
   aircraft_slot?: AircraftComponentSlotResource;
@@ -1009,6 +1033,8 @@ export type Location = {
   updated_by: string | null;
   created_at: string | null;
   updated_at: string | null;
+  registered_by_id: number | null;
+  updated_by_id: number | null;
 };
 
 /**
@@ -1100,6 +1126,8 @@ export type MitigationMeasure = {
   mitigation_plan_id: number;
   registered_by: string;
   updated_by: string | null;
+  registered_by_id: number | null;
+  updated_by_id: number | null;
 };
 
 /**
@@ -1157,6 +1185,8 @@ export type Module = {
   value: string;
   registered_by: string;
   updated_by: string | null;
+  registered_by_id: number | null;
+  updated_by_id: number | null;
 };
 
 /**
@@ -1184,6 +1214,11 @@ export type NonRoutineTaskResource = {
 export type NonRoutineTaskStatus = 'OPEN' | 'IN_PROGRESS' | 'CLOSED';
 
 /**
+ * NotificationIcon
+ */
+export type NotificationIcon = 'info' | 'success' | 'error' | 'warning' | 'progress';
+
+/**
  * NotificationResource
  */
 export type NotificationResource = {
@@ -1196,6 +1231,7 @@ export type NotificationResource = {
   title: string | null;
   message: string | null;
   url: string | null;
+  icon: NotificationIcon | null;
 };
 
 /**
@@ -1229,6 +1265,8 @@ export type ObligatoryReport = {
   sms_area_id: number | null;
   sms_finding_location_id: number | null;
   sms_station_id: number | null;
+  registered_by_id: number | null;
+  updated_by_id: number | null;
 };
 
 /**
@@ -1878,6 +1916,8 @@ export type Survey = {
   registered_by: string;
   updated_by: string | null;
   location_id: number;
+  registered_by_id: number | null;
+  updated_by_id: number | null;
 };
 
 /**
@@ -2306,6 +2346,8 @@ export type User = {
   created_at: string | null;
   updated_at: string | null;
   updated_by: string | null;
+  registered_by_id: number | null;
+  updated_by_id: number | null;
 };
 
 /**
@@ -2357,6 +2399,8 @@ export type VoluntaryReport = {
   sms_area_id: number | null;
   sms_finding_location_id: number | null;
   sms_station_id: number | null;
+  registered_by_id: number | null;
+  updated_by_id: number | null;
 };
 
 /**
@@ -8391,7 +8435,29 @@ export type CompanyIndexResponses = {
 export type CompanyIndexResponse = CompanyIndexResponses[keyof CompanyIndexResponses];
 
 export type CompanyStoreData = {
-  body?: never;
+  body: {
+    name: string;
+    description?: string | null;
+    rif: string;
+    cod_inac?: string | null;
+    fiscal_address?: string | null;
+    phone_number?: string | null;
+    alt_phone_number?: string | null;
+    cod_iata?: string | null;
+    cod_oaci?: string | null;
+    acronym?: string | null;
+    isOMAC: boolean;
+    modules: Array<number>;
+    locations: Array<{
+      /**
+       * Validación para cada ubicación
+       */
+      address: string;
+      type: string;
+      isMainBase: boolean;
+      cod_iata?: string | null;
+    }>;
+  };
   path?: never;
   query?: never;
   url: '/company';
@@ -8406,6 +8472,21 @@ export type CompanyStoreErrors = {
      * Error overview.
      */
     message: string;
+  };
+  /**
+   * Validation error
+   */
+  422: {
+    /**
+     * Errors overview.
+     */
+    message: string;
+    /**
+     * A detailed description of each field that failed validation.
+     */
+    errors: {
+      [key: string]: Array<string>;
+    };
   };
 };
 
@@ -8426,7 +8507,7 @@ export type CompanyStoreResponses = {
     | {
         success: boolean;
         data: null;
-        message: 'El módulo ya está asociado a la compañía';
+        message: 'Algunos módulos ya están asociados a la compañía';
       };
   /**
    * No content
@@ -11884,7 +11965,7 @@ export type FlightControlIndexErrors = {
 export type FlightControlIndexError = FlightControlIndexErrors[keyof FlightControlIndexErrors];
 
 export type FlightControlIndexResponses = {
-  200: Array<Flight>;
+  200: Array<unknown>;
 };
 
 export type FlightControlIndexResponse = FlightControlIndexResponses[keyof FlightControlIndexResponses];
@@ -12458,10 +12539,10 @@ export type HardTimeCategoryUpdateResponse = HardTimeCategoryUpdateResponses[key
 export type HardTimeComplianceIndexData = {
   body?: never;
   path: {
-    componentId: number;
+    aircraftPartId: number;
   };
   query?: never;
-  url: '/hard-time-components/{componentId}/compliances';
+  url: '/hard-time-components/{aircraftPartId}/compliances';
 };
 
 export type HardTimeComplianceIndexErrors = {
@@ -12501,10 +12582,10 @@ export type HardTimeComplianceIndexResponse = HardTimeComplianceIndexResponses[k
 export type HardTimeComplianceStoreData = {
   body: StoreComplianceRequest;
   path: {
-    componentId: number;
+    aircraftPartId: number;
   };
   query?: never;
-  url: '/hard-time-components/{componentId}/compliances';
+  url: '/hard-time-components/{aircraftPartId}/compliances';
 };
 
 export type HardTimeComplianceStoreErrors = {
@@ -23782,9 +23863,8 @@ export type WarehouseCompanyWithWarehouseError =
 export type WarehouseCompanyWithWarehouseResponses = {
   200: {
     company: {
-      id: string;
-      name: string;
-    };
+      [key: string]: unknown;
+    } | null;
   };
 };
 

@@ -2292,6 +2292,7 @@ export type {
   NonRoutineTaskUpdateStatusErrors,
   NonRoutineTaskUpdateStatusResponse,
   NonRoutineTaskUpdateStatusResponses,
+  NotificationIcon,
   NotificationIndexData,
   NotificationIndexError,
   NotificationIndexErrors,

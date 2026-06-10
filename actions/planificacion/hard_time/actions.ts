@@ -76,12 +76,12 @@ export const useUninstallHardTimeComponent = (componentId: number, aircraftId: n
   });
 };
 
-export const useRegisterHardTimeCompliance = (componentId: number, aircraftId: number | null) => {
+export const useRegisterHardTimeCompliance = (aircraftPartId: number, aircraftId: number | null) => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (data: StoreComplianceRequest) =>
       hardTimeComplianceStore({
-        path: { componentId },
+        path: { aircraftPartId },
         body: data,
         throwOnError: true,
       }).then((res) => res.data),
@@ -89,7 +89,7 @@ export const useRegisterHardTimeCompliance = (componentId: number, aircraftId: n
       queryClient.invalidateQueries({
         queryKey: aircraftComponentSlotIndexQueryKey({ query: { aircraft_id: aircraftId! } }),
       });
-      queryClient.invalidateQueries({ queryKey: aircraftComponentSlotShowQueryKey({ path: { id: componentId } }) });
+      queryClient.invalidateQueries({ queryKey: aircraftComponentSlotShowQueryKey({ path: { id: aircraftPartId } }) });
       toast.success('Cumplimiento registrado');
     },
     onError: () => toast.error('No se pudo registrar el cumplimiento'),
