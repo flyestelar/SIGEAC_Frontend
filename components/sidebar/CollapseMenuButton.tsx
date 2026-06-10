@@ -20,6 +20,7 @@ import { DropdownMenuArrow } from '@radix-ui/react-dropdown-menu';
 import { SidebarMenuItem, SidebarMenuSub, SidebarMenuSubButton, SidebarMenuSubItem } from '../ui/sidebar';
 import { LeafItem } from './LeafItem';
 import { LinkStatusIndicator } from './LinkStatusIndicator';
+import { memo } from 'react';
 
 type Submenu = {
   href: string;
@@ -38,7 +39,7 @@ interface CollapseMenuButtonProps {
   storageKey: string;
 }
 
-export function CollapseMenuButton({
+export const CollapseMenuButton = memo(function CollapseMenuButton({
   icon: Icon,
   label,
   active,
@@ -100,15 +101,13 @@ export function CollapseMenuButton({
                       <SidebarMenuSub className="gap-1 py-2">
                         {submenus.map(({ href, label, active: subMenuActive }, index) => {
                           return (
-                            <SidebarMenuSubItem key={index}>
-                              <SidebarMenuSubButton isActive={subMenuActive} className={buttonClassName} asChild>
-                                <Link href={href}>
-                                  <Dot size={18} />
-                                  <span className={cn('max-w-[170px] truncate')}>{label}</span>
-                                  <LinkStatusIndicator />
-                                </Link>
-                              </SidebarMenuSubButton>
-                            </SidebarMenuSubItem>
+                            <SidebarCollapseMenuSubItem
+                              key={index}
+                              active={subMenuActive}
+                              href={href}
+                              label={label}
+                              className={buttonClassName}
+                            />
                           );
                         })}
                       </SidebarMenuSub>
@@ -122,7 +121,7 @@ export function CollapseMenuButton({
                 <DropdownMenuSeparator />
                 {submenus.map(({ href, label }, index) => (
                   <DropdownMenuItem key={index} asChild>
-                    <Link className="cursor-pointer" href={href}>
+                    <Link href={href}>
                       <p className="max-w-[180px] truncate">{label}</p>
                       <LinkStatusIndicator />
                     </Link>
@@ -136,4 +135,28 @@ export function CollapseMenuButton({
       </DropdownMenu>
     </SidebarMenuItem>
   );
-}
+});
+
+const SidebarCollapseMenuSubItem = memo(function SidebarCollapseMenuSubItem({
+  href,
+  label,
+  active,
+  className,
+}: {
+  href: string;
+  label: string;
+  active: boolean;
+  className?: string;
+}) {
+  return (
+    <SidebarMenuSubItem key={href}>
+      <SidebarMenuSubButton isActive={active} className={className} asChild>
+        <Link href={href}>
+          <Dot size={18} />
+          <span className={cn('max-w-[170px] truncate')}>{label}</span>
+          <LinkStatusIndicator />
+        </Link>
+      </SidebarMenuSubButton>
+    </SidebarMenuSubItem>
+  );
+});

@@ -22,7 +22,15 @@ type MenuGroupProps = {
   pathname: string;
 };
 
-function GroupHeader({ label, collapsed, open }: { label?: string; collapsed: boolean; open?: boolean }) {
+const GroupHeader = memo(function GroupHeader({
+  label,
+  collapsed,
+  open,
+}: {
+  label?: string;
+  collapsed: boolean;
+  open?: boolean;
+}) {
   if (!label) return <div className="h-3" />;
 
   if (collapsed) {
@@ -50,7 +58,7 @@ function GroupHeader({ label, collapsed, open }: { label?: string; collapsed: bo
       <ChevronRight className={cn('ml-auto size-3 text-muted-foreground transition-transform', open && 'rotate-90')} />
     </div>
   );
-}
+});
 
 function MenuGroup({ groupLabel, menus, collapsed, isOpen, isMobile, pathname }: MenuGroupProps) {
   const setSectionOpen = useSidebarSectionsStore((state) => state.setSectionOpen);

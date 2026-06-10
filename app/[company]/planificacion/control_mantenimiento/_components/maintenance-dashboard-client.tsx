@@ -6,18 +6,12 @@ import { Button } from '@/components/ui/button';
 import { useGetMaintenanceAircrafts } from '@/hooks/planificacion/useGetMaintenanceAircrafts';
 import { Plus, Settings2 } from 'lucide-react';
 import Link from 'next/link';
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { useCallback, useDeferredValue, useMemo, useState } from 'react';
 import { AircraftSelector } from './aircraft-selector';
 import MaintenanceControlsSection from './maintenance-controls-section';
 
-export default function MaintenanceDashboardClient({
-  company,
-}: {
-  company: string;
-}) {
-  const router = useRouter();
-  const pathname = usePathname();
+export default function MaintenanceDashboardClient({ company }: { company: string }) {
   const searchParams = useSearchParams();
   const { data: aircraft = [], isLoading } = useGetMaintenanceAircrafts(company);
   const selectedAircraftId = useMemo(() => {
@@ -34,10 +28,10 @@ export default function MaintenanceDashboardClient({
     (id: number) => {
       const params = new URLSearchParams(searchParams);
       params.set('aircraft_id', id.toString());
-      router.push(`${pathname}?${params.toString()}`, { scroll: false });
+      window.history.replaceState(null, '', `?${params.toString()}`);
       setSelectedControlId(null);
     },
-    [pathname, router, searchParams],
+    [searchParams],
   );
 
   const deferredSelectedAircraftId = useDeferredValue(selectedAircraftId);
