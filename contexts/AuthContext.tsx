@@ -4,6 +4,7 @@ import { AuthContext, useAuth } from '@/lib/auth/context';
 import { loginAction, logoutAction } from '@/lib/auth/login';
 import { USER_QUERY_KEY, userQueryOptions } from '@/lib/auth/queries';
 import { useCompanyStore } from '@/stores/CompanyStore';
+import { logout as logoutApi } from '@api/sdk';
 import { LoginData } from '@api/types';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
@@ -23,6 +24,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     mutationFn: async (credentials: LoginData['body']) => {
       const { success, error } = await loginAction(credentials);
       if (!success) {
+        console.error('Login error:', error);
         throw new Error(error || 'Error desconocido al iniciar sesión');
       }
     },
@@ -45,7 +47,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = useCallback(async () => {
     try {
-      await logoutAction();
+      await Promise.all([logoutAction(), logoutApi()]);
       reset();
       queryClient.clear();
       queryClient.setQueryData(USER_QUERY_KEY, null);

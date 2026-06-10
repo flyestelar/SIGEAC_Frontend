@@ -2,7 +2,7 @@
 
 import { createCookie, deleteCookie } from '@/lib/cookie';
 import { createSession, deleteSession } from '@/lib/session';
-import { login } from '@api/sdk';
+import { login, logout } from '@api/sdk';
 import { LoginData } from '@api/types';
 import { redirect, RedirectType } from 'next/navigation';
 import { getCurrentUser } from './user';
@@ -17,8 +17,8 @@ export async function loginAction(credentials: LoginData['body']) {
   }
 
   if (error) {
-    console.error('Error during login:', error);
-    return { success: false, error: error.message };
+    console.error('Error during login:', error, status);
+    return { success: false, error: error.message, data: error };
   }
 
   const token = data.token;
@@ -31,8 +31,7 @@ export async function loginAction(credentials: LoginData['body']) {
 }
 
 export async function logoutAction() {
-  await deleteCookie(AUTH_TOKEN_COOKIE_NAME);
-  await deleteSession();
+  await Promise.all([deleteCookie(AUTH_TOKEN_COOKIE_NAME), deleteSession()]);
 }
 
 function isSafeRedirect(path: string): boolean {
