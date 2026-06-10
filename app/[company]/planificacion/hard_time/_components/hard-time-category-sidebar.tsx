@@ -144,28 +144,28 @@ export function HardTimeCategorySidebar({
   return (
     <div className="grid gap-4 lg:grid-cols-[300px_1fr]">
       <aside className="flex max-h-[calc(100vh-12rem)] flex-col overflow-hidden rounded-xl border border-border/60 bg-background">
-        <div className="space-y-3 border-b border-border/60 bg-muted/15 px-3 py-3">
+        <div className="space-y-3.5 border-b border-border/60 bg-muted/15 px-4 py-4">
           <div>
             <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Capítulos ATA</p>
-            <p className="mt-0.5 text-xs text-muted-foreground">
+            <p className="mt-1 text-xs text-muted-foreground">
               {entries.length} en total · {selectedCategory?.code ?? '—'}
             </p>
           </div>
 
           <div className="relative">
-            <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
               type="search"
               value={searchTerm}
               onChange={(event) => setSearchTerm(event.target.value)}
               placeholder="Buscar ATA o nombre"
-              className="h-8 pl-8 pr-8 text-xs"
+              className="h-9 pl-9 pr-9 text-sm"
             />
             {searchTerm && (
               <button
                 type="button"
                 onClick={() => setSearchTerm('')}
-                className="absolute right-1 top-1/2 flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-md text-muted-foreground hover:bg-muted/40 hover:text-foreground"
+                className="absolute right-1.5 top-1/2 flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted/40 hover:text-foreground"
                 aria-label="Limpiar búsqueda"
               >
                 <X className="h-3.5 w-3.5" />
@@ -194,7 +194,7 @@ export function HardTimeCategorySidebar({
                   <li key={entry.category.code}>
                     <button
                       type="button"
-                      className={`flex w-full items-start justify-between gap-2 rounded-lg border px-3 py-2 text-left transition-colors ${
+                      className={`flex w-full items-start justify-between gap-2 rounded-lg border px-3 py-2.5 text-left transition-colors ${
                         isActive
                           ? 'border-sky-500/40 bg-sky-500/[0.08]'
                           : 'border-transparent hover:border-border/60 hover:bg-muted/20'
@@ -203,7 +203,7 @@ export function HardTimeCategorySidebar({
                     >
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-1.5">
-                          <span className="font-mono text-xs font-semibold text-foreground">{entry.category.code}</span>
+                          <span className="font-mono text-sm font-semibold text-foreground">{entry.category.code}</span>
                           {entry.stats.overdue > 0 && (
                             <span className="inline-flex items-center gap-0.5 text-[10px] font-semibold text-red-600 dark:text-red-400">
                               <TriangleAlert className="h-2.5 w-2.5" />
@@ -217,7 +217,7 @@ export function HardTimeCategorySidebar({
                             </span>
                           )}
                         </div>
-                        <p className="mt-0.5 truncate text-xs text-muted-foreground">{entry.category.name}</p>
+                        <p className="mt-1 truncate text-xs text-muted-foreground">{entry.category.name}</p>
                       </div>
                       {entry.stats.total !== 0 && (
                         <Badge
@@ -316,7 +316,7 @@ export function HardTimeCategorySidebar({
                 )}
               </div>
             ) : (
-              <div className="grid gap-3 md:grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3">
+              <div className="grid gap-4 md:grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3">
                 {sortedComponents.map((component) => (
                   <HardTimeCard
                     key={component.id}
