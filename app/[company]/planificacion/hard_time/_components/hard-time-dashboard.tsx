@@ -294,7 +294,7 @@ export function HardTimeDashboard() {
       <ComplianceDialog
         open={isComplianceDialogOpen}
         onOpenChange={setIsComplianceDialogOpen}
-        componentId={selectedComponent?.id ?? null}
+        componentId={selectedComponent?.installed_part_id ?? null}
         aircraft={selectedAircraft}
         intervals={selectedComponentDetail?.installed_part?.intervals ?? []}
         workOrders={workOrders}
