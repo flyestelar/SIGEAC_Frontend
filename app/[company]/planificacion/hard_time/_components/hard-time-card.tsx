@@ -89,14 +89,15 @@ function SlotIdentity({
       >
         <MapPinned className={cn('h-4 w-4', isEmpty ? 'text-sky-600' : 'text-muted-foreground')} />
       </div>
-      <div className="flex min-w-0 items-baseline gap-2">
-        <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">Slot</p>
-        <span className="font-mono text-base font-semibold text-foreground">{position}</span>
+      <div className="flex min-w-0 flex-1 items-center justify-between gap-2">
+        <div className="flex min-w-0 items-baseline gap-2">
+          <p className="shrink-0 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">Slot</p>
+          <span className="truncate font-mono text-base font-semibold text-foreground">{position}</span>
+        </div>
         {ataChapter && (
-          <>
-            <span className="text-xs text-border">|</span>
-            <span className="font-mono text-xs text-muted-foreground">ATA {ataChapter}</span>
-          </>
+          <span className="shrink-0 whitespace-nowrap rounded border border-border/60 bg-muted/30 px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground">
+            ATA {ataChapter}
+          </span>
         )}
       </div>
     </div>
@@ -208,7 +209,7 @@ export function HardTimeCard({
           )}
 
           {/* Footer */}
-          <div className="flex items-center justify-between gap-3">
+          <div className="flex flex-wrap items-center justify-between gap-2">
             <Badge variant="outline" className="h-6 border-border/60 px-2.5 text-[11px] font-normal">
               {rawIntervalsCount} intervalo{rawIntervalsCount !== 1 && 's'}
             </Badge>
@@ -363,13 +364,13 @@ export function HardTimeCard({
         </div>
 
         {/* Actions footer */}
-        <div className="flex items-center justify-between gap-2 border-t border-border/40 px-4 py-3">
-          <div className="flex min-w-0 items-center gap-2.5">
+        <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2 border-t border-border/40 px-4 py-3">
+          <div className="flex min-w-0 flex-wrap items-center gap-x-2.5 gap-y-1">
             <Badge variant="outline" className="h-6 shrink-0 border-border/60 px-2.5 text-[11px] font-normal">
               {intervals.length} intervalo{intervals.length !== 1 && 's'}
             </Badge>
             {intervals.length > 0 && (
-              <div className="flex items-center gap-2 text-[11px] font-medium">
+              <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[11px] font-medium">
                 {statusCounts.OVERDUE > 0 && (
                   <span className="text-red-600 dark:text-red-400">
                     {statusCounts.OVERDUE} vencido{statusCounts.OVERDUE !== 1 && 's'}
@@ -388,7 +389,7 @@ export function HardTimeCard({
               </div>
             )}
           </div>
-          <div className="flex shrink-0 items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
+          <div className="ml-auto flex shrink-0 items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
             {canCreateInterval && (
               <Button
                 size="sm"

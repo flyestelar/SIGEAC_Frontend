@@ -142,7 +142,7 @@ export function HardTimeCategorySidebar({
   }, [selectedComponents, aircraftFlightHours, aircraftFlightCycles]);
 
   return (
-    <div className="grid gap-4 lg:grid-cols-[300px_1fr]">
+    <div className="grid gap-4 lg:grid-cols-[260px_1fr]">
       <aside className="flex max-h-[calc(100vh-12rem)] flex-col overflow-hidden rounded-xl border border-border/60 bg-background">
         <div className="space-y-3.5 border-b border-border/60 bg-muted/15 px-4 py-4">
           <div>
@@ -316,7 +316,7 @@ export function HardTimeCategorySidebar({
                 )}
               </div>
             ) : (
-              <div className="grid gap-4 md:grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3">
+              <div className="grid gap-4 md:grid-cols-1 min-[1500px]:grid-cols-2 min-[1900px]:grid-cols-3">
                 {sortedComponents.map((component) => (
                   <HardTimeCard
                     key={component.id}
