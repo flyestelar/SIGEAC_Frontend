@@ -1392,62 +1392,39 @@ export type PilotResource = {
 };
 
 /**
- * PlanificationAlertAircraftResource
- */
-export type PlanificationAlertAircraftResource = {
-  id: number;
-  acronym: unknown;
-  model: unknown;
-  serial: unknown;
-};
-
-/**
  * PlanificationAlertResource
  */
 export type PlanificationAlertResource = {
-  status: string;
+  id: string;
+  status: string | MaintenanceAlertStatus;
+  item_id: number;
   item_type: string;
   item_identifier: string;
-  description: unknown;
-  aircraft: PlanificationAlertAircraftResource;
-  governing_metric: string;
-  governing_date: unknown;
-  remaining_value: number | null;
-  remaining_unit: unknown;
-  projected_date: unknown;
-  source: PlanificationAlertSourceResource;
-};
-
-/**
- * PlanificationAlertSourceResource
- */
-export type PlanificationAlertSourceResource = {
-  maintenance_control_id: number | null;
-  last_execution_id: number | null;
-  hard_time_interval_id: number | null;
-  hard_time_installation_id: number | null;
-  aircraft_part_id: number | null;
-  directive_id: number | null;
-  applicability_id: number | null;
-  compliance_control_id: number | null;
-};
-
-/**
- * PlanificationAlertsIndexResource
- */
-export type PlanificationAlertsIndexResource = {
-  alerts: Array<PlanificationAlertResource>;
-  summary: PlanificationAlertsSummaryResource;
-};
-
-/**
- * PlanificationAlertsSummaryResource
- */
-export type PlanificationAlertsSummaryResource = {
-  OK: number;
-  WARNING: number;
-  OVERDUE: number;
-  total: number;
+  description: string | null;
+  aircraft?: Aircraft;
+  earliest_due_date: string;
+  earliest_due_metric: string | null;
+  progress: number | null;
+  metrics: {
+    flight_hours: {
+      due_date: string;
+      remaining: number | null;
+      total_interval: number | null;
+      progress: number | null;
+    };
+    flight_cycles: {
+      due_date: string;
+      remaining: number | null;
+      total_interval: number | null;
+      progress: number | null;
+    };
+    calendar: {
+      due_date: string;
+      remaining: number | null;
+      total_interval: number | null;
+      progress: number | null;
+    };
+  };
 };
 
 /**
@@ -11971,7 +11948,19 @@ export type FlightControlIndexResponses = {
 export type FlightControlIndexResponse = FlightControlIndexResponses[keyof FlightControlIndexResponses];
 
 export type FlightControlStoreData = {
-  body?: never;
+  body: {
+    flight_number: string;
+    origin: string;
+    destination: string;
+    flight_hours: number;
+    flight_cycles: number;
+    flight_date: string;
+    aircraft_id: number;
+    departure_time: string;
+    arrival_time: string;
+    pilot?: string | null;
+    co_pilot?: string | null;
+  };
   path: {
     company: string;
   };
@@ -11988,6 +11977,21 @@ export type FlightControlStoreErrors = {
      * Error overview.
      */
     message: string;
+  };
+  /**
+   * Validation error
+   */
+  422: {
+    /**
+     * Errors overview.
+     */
+    message: string;
+    /**
+     * A detailed description of each field that failed validation.
+     */
+    errors: {
+      [key: string]: Array<string>;
+    };
   };
 };
 
@@ -16609,6 +16613,8 @@ export type PlanificationAlertsIndexData = {
     aircraft_id?: number;
     item_type?: 'maintenance_control' | 'hard_time' | 'directive';
     status?: MaintenanceAlertStatus;
+    start_date?: string;
+    end_date?: string;
   };
   url: '/planification-alerts';
 };
@@ -16644,9 +16650,17 @@ export type PlanificationAlertsIndexError = PlanificationAlertsIndexErrors[keyof
 
 export type PlanificationAlertsIndexResponses = {
   /**
-   * `PlanificationAlertsIndexResource`
+   * Array of `PlanificationAlertResource`
    */
-  200: PlanificationAlertsIndexResource;
+  200: {
+    data: Array<PlanificationAlertResource>;
+    summary: {
+      overdue: number;
+      warning: number;
+      ok: number;
+      total: number;
+    };
+  };
 };
 
 export type PlanificationAlertsIndexResponse =

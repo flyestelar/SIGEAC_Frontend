@@ -1,12 +1,12 @@
 import { LoginForm } from '@/components/forms/ajustes/LoginForm';
 import { ThemeToggler } from '@/components/layout/ThemeToggler';
 import Logo from '@/components/misc/Logo';
-import { loginRedirect } from '@/lib/auth/login';
+import { LoginRedirect } from '@/lib/auth/redirects';
 
 async function Login(props: PageProps<'/login'>) {
   const searchParams = await props.searchParams;
   const from = searchParams.from?.toString();
-  await loginRedirect(from);
+  // await loginRedirect(from);
 
   return (
     <div className="h-dvh w-dvw">
@@ -27,6 +27,7 @@ async function Login(props: PageProps<'/login'>) {
               Por favor, inicie sesión con sus credenciales para ingresar.
             </p>
             <LoginForm />
+            <LoginRedirect from={from} />
           </div>
         </div>
       </div>

@@ -1,25 +1,24 @@
 'use client';
 
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { ContentLayout } from '@/components/layout/ContentLayout';
 import LoadingPage from '@/components/misc/LoadingPage';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useGetMaintenanceAircrafts } from '@/hooks/planificacion/useGetMaintenanceAircrafts';
 import {
-  PlanificationAlert,
   PlanificationAlertItemType,
   PlanificationAlertMetric,
   PlanificationAlertStatus,
-  PlanificationAlertsSummary,
   useGetPlanificationAlerts,
 } from '@/hooks/planificacion/useGetPlanificationAlerts';
-import { useGetMaintenanceAircrafts } from '@/hooks/planificacion/useGetMaintenanceAircrafts';
-import { useCompanyStore } from '@/stores/CompanyStore';
 import { cn } from '@/lib/utils';
+import { useCompanyStore } from '@/stores/CompanyStore';
+import { PlanificationAlertResource } from '@api/types';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import {
@@ -115,30 +114,31 @@ const GOVERNING_METRIC_CONFIG: Record<
   FC: { label: 'Flight Cycles', icon: Gauge },
 };
 
-const EMPTY_SUMMARY: PlanificationAlertsSummary = {
-  OK: 0,
-  WARNING: 0,
-  OVERDUE: 0,
-  total: 0,
-};
-
 function formatAlertDate(value: string | null) {
   if (!value) return 'Sin proyección';
 
   return format(new Date(`${value}T00:00:00`), 'dd MMM yyyy', { locale: es });
 }
 
-function formatRemainingValue(alert: PlanificationAlert) {
-  if (alert.remaining_value === null || alert.remaining_unit === null) {
+function formatRemainingValue(alert: PlanificationAlertResource) {
+  const metric_name = alert.earliest_due_metric;
+  const metric =
+    metric_name === 'CALENDAR'
+      ? alert.metrics.calendar
+      : metric_name === 'FH'
+        ? alert.metrics.flight_hours
+        : alert.metrics.flight_cycles;
+
+  if (metric.remaining === null) {
     return 'N/A';
   }
 
-  if (alert.remaining_unit === 'days') {
-    return `${alert.remaining_value} días`;
+  if (metric_name === 'CALENDAR') {
+    return `${metric.remaining} días`;
   }
 
-  const suffix = alert.remaining_unit === 'flight_hours' ? 'FH' : 'FC';
-  return `${alert.remaining_value.toFixed(2)} ${suffix}`;
+  const suffix = metric_name === 'FH' ? 'FH' : 'FC';
+  return `${metric.remaining.toFixed(2)} ${suffix}`;
 }
 
 function SummaryTile({
@@ -221,7 +221,7 @@ function TableSkeleton() {
   );
 }
 
-function AlertQueueTable({ alerts }: { alerts: PlanificationAlert[] }) {
+function AlertQueueTable({ alerts }: { alerts: PlanificationAlertResource[] }) {
   return (
     <div className="relative overflow-x-auto">
       <table className="w-full min-w-[1080px] border-separate border-spacing-0 text-sm">
@@ -246,26 +246,23 @@ function AlertQueueTable({ alerts }: { alerts: PlanificationAlert[] }) {
               Métrica determinante
             </th>
             <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
-              Fecha determinante
+              Fecha proyectada
             </th>
             <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
               Restante
-            </th>
-            <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
-              Fecha proyectada
             </th>
           </tr>
         </thead>
         <tbody>
           {alerts.map((alert) => {
-            const itemType = ITEM_TYPE_CONFIG[alert.item_type];
-            const metric = GOVERNING_METRIC_CONFIG[alert.governing_metric];
+            const itemType = ITEM_TYPE_CONFIG[alert.item_type as PlanificationAlertItemType];
+            const metric = GOVERNING_METRIC_CONFIG[alert.earliest_due_metric as PlanificationAlertMetric];
             const MetricIcon = metric.icon;
             const ItemTypeIcon = itemType.icon;
 
             return (
               <tr
-                key={`${alert.item_type}-${alert.item_identifier}-${alert.aircraft.id}`}
+                key={`${alert.item_type}-${alert.item_identifier}-${alert.aircraft?.id}`}
                 className={cn(
                   'border-b border-border/50 transition-colors hover:bg-muted/40',
                   alert.status === 'OVERDUE' && 'bg-red-500/[0.04] dark:bg-red-950/20',
@@ -284,11 +281,11 @@ function AlertQueueTable({ alerts }: { alerts: PlanificationAlert[] }) {
                   <div className="space-y-1">
                     <div className="flex items-center gap-2 font-mono text-sm font-semibold text-foreground">
                       <Plane className="h-3.5 w-3.5 text-muted-foreground" />
-                      {alert.aircraft.acronym ?? 'Sin sigla'}
+                      {alert.aircraft?.acronym ?? 'Sin sigla'}
                     </div>
                     <p className="text-xs text-muted-foreground">
-                      {alert.aircraft.model ?? 'Modelo no disponible'}
-                      {alert.aircraft.serial ? ` · S/N ${alert.aircraft.serial}` : ''}
+                      {alert.aircraft?.model ?? 'Modelo no disponible'}
+                      {alert.aircraft?.serial ? ` · S/N ${alert.aircraft?.serial}` : ''}
                     </p>
                   </div>
                 </td>
@@ -305,7 +302,7 @@ function AlertQueueTable({ alerts }: { alerts: PlanificationAlert[] }) {
                   </div>
                 </td>
                 <td className="px-4 py-3 align-top font-mono text-xs text-foreground whitespace-nowrap">
-                  {formatAlertDate(alert.governing_date)}
+                  {formatAlertDate(alert.earliest_due_date)}
                 </td>
                 <td className="px-4 py-3 align-top whitespace-nowrap">
                   <span
@@ -320,9 +317,6 @@ function AlertQueueTable({ alerts }: { alerts: PlanificationAlert[] }) {
                   >
                     {formatRemainingValue(alert)}
                   </span>
-                </td>
-                <td className="px-4 py-3 align-top font-mono text-xs text-foreground whitespace-nowrap">
-                  {alert.projected_date ? formatAlertDate(alert.projected_date) : 'Sin proyección'}
                 </td>
               </tr>
             );
@@ -348,17 +342,14 @@ export default function PlanificationAlertsDashboardPage() {
     isLoading: isAlertsLoading,
     isError,
     error,
-  } = useGetPlanificationAlerts(
-    {
-      aircraft_id: selectedAircraftId === 'all' ? undefined : selectedAircraftId,
-      item_type: itemTypeFilter === 'all' ? undefined : itemTypeFilter,
-      status: statusFilter === 'all' ? undefined : statusFilter,
-    },
-    !!selectedCompany?.slug,
-  );
+  } = useGetPlanificationAlerts({
+    aircraft_id: selectedAircraftId === 'all' ? undefined : selectedAircraftId,
+    item_type: itemTypeFilter === 'all' ? undefined : itemTypeFilter,
+    status: statusFilter === 'all' ? undefined : statusFilter,
+  });
 
-  const alertRows = useMemo(() => alertsResponse?.alerts ?? [], [alertsResponse]);
-  const summary = alertsResponse?.summary ?? EMPTY_SUMMARY;
+  const alertRows = useMemo(() => alertsResponse?.data ?? [], [alertsResponse]);
+  const summary = alertsResponse?.summary;
 
   const filteredRows = useMemo(() => {
     return alertRows.filter((row) => {
@@ -366,8 +357,8 @@ export default function PlanificationAlertsDashboardPage() {
         deferredQuery.length === 0 ||
         row.item_identifier.toLowerCase().includes(deferredQuery) ||
         row.description?.toLowerCase().includes(deferredQuery) ||
-        row.aircraft.acronym?.toLowerCase().includes(deferredQuery) ||
-        row.aircraft.serial?.toLowerCase().includes(deferredQuery);
+        row.aircraft?.acronym?.toLowerCase().includes(deferredQuery) ||
+        row.aircraft?.serial?.toLowerCase().includes(deferredQuery);
 
       return matchesSearch;
     });
@@ -412,19 +403,19 @@ export default function PlanificationAlertsDashboardPage() {
           <div className="grid gap-3 md:grid-cols-4">
             <SummaryTile
               status="OVERDUE"
-              value={summary.OVERDUE}
+              value={summary?.overdue ?? 0}
               active={statusFilter === 'OVERDUE'}
               onClick={() => setStatusFilter((prev) => (prev === 'OVERDUE' ? 'all' : 'OVERDUE'))}
             />
             <SummaryTile
               status="WARNING"
-              value={summary.WARNING}
+              value={summary?.warning ?? 0}
               active={statusFilter === 'WARNING'}
               onClick={() => setStatusFilter((prev) => (prev === 'WARNING' ? 'all' : 'WARNING'))}
             />
             <SummaryTile
               status="OK"
-              value={summary.OK}
+              value={summary?.ok ?? 0}
               active={statusFilter === 'OK'}
               onClick={() => setStatusFilter((prev) => (prev === 'OK' ? 'all' : 'OK'))}
             />
@@ -545,7 +536,7 @@ export default function PlanificationAlertsDashboardPage() {
                   <CardDescription>Orden: severidad, fecha, restante, aeronave.</CardDescription>
                 </div>
                 <Badge variant="outline" className="font-mono text-xs">
-                  {filteredRows.length} / {summary.total}
+                  {filteredRows.length} / {summary?.total ?? 0}
                 </Badge>
               </div>
             </CardHeader>

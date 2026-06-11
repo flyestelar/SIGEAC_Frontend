@@ -131,3 +131,12 @@
     @apply align-top;
   }
 }
+
+.sx__date-grid-day {
+  min-width: 0;
+  flex: 1;
+}
+
+.sx__date-grid-event {
+  min-width: 0;
+}
