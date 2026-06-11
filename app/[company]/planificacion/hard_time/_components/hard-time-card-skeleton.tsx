@@ -38,7 +38,7 @@ export function HardTimeCardSkeleton() {
 
 export function HardTimeCardSkeletonGrid({ count = 6 }: { count?: number }) {
   return (
-    <div className="grid gap-3 md:grid-cols-2 2xl:grid-cols-3">
+    <div className="grid gap-4 min-[1500px]:grid-cols-2 min-[1900px]:grid-cols-3">
       {Array.from({ length: count }).map((_, i) => (
         <HardTimeCardSkeleton key={i} />
       ))}

@@ -6,6 +6,22 @@ export const PlanificationMenuGroup: NavGroupMake = ({ companyPath }) => ({
   moduleValue: 'planification',
   menus: [
     {
+      href: companyPath('/planificacion/aeronaves'),
+      label: 'Aeronaves',
+      icon: Plane,
+      roles: ['ANALISTA_PLANIFICACION', 'JEFE_PLANIFICACION', 'SUPERUSER'],
+      submenus: [
+        {
+          href: companyPath('/planificacion/aeronaves'),
+          label: 'Gestión de Aeronaves',
+        },
+        {
+          href: companyPath('/planificacion/aeronaves/tipos'),
+          label: 'Gestión de Tipos de Aeronave',
+        },
+      ],
+    },
+    {
       href: companyPath('/planificacion/ordenes_trabajo'),
       label: 'Ordenes de Trabajo',
       icon: ClipboardCheck,
@@ -13,23 +29,9 @@ export const PlanificationMenuGroup: NavGroupMake = ({ companyPath }) => ({
       submenus: [],
     },
     {
-      href: companyPath('/planificacion/control_mantenimiento'),
-      label: 'Ctrl. de Mantenimiento',
-      icon: Wrench,
-      roles: ['ANALISTA_PLANIFICACION', 'JEFE_PLANIFICACION', 'SUPERUSER'],
-      submenus: [],
-    },
-    {
       href: companyPath('/planificacion/alertas'),
       label: 'Alertas de Vencimiento',
       icon: CalendarClock,
-      roles: ['ANALISTA_PLANIFICACION', 'JEFE_PLANIFICACION', 'SUPERUSER'],
-      submenus: [],
-    },
-    {
-      href: companyPath('/planificacion/hard_time'),
-      label: 'Ctrl. de Hard Time',
-      icon: Hourglass,
       roles: ['ANALISTA_PLANIFICACION', 'JEFE_PLANIFICACION', 'SUPERUSER'],
       submenus: [],
     },
@@ -50,20 +52,18 @@ export const PlanificationMenuGroup: NavGroupMake = ({ companyPath }) => ({
       ],
     },
     {
-      href: companyPath('/planificacion/aeronaves'),
-      label: 'Aeronaves',
-      icon: Plane,
+      href: companyPath('/planificacion/control_mantenimiento'),
+      label: 'Ctrl. de Mantenimiento',
+      icon: Wrench,
       roles: ['ANALISTA_PLANIFICACION', 'JEFE_PLANIFICACION', 'SUPERUSER'],
-      submenus: [
-        {
-          href: companyPath('/planificacion/aeronaves'),
-          label: 'Gestión de Aeronaves',
-        },
-        {
-          href: companyPath('/planificacion/aeronaves/tipos'),
-          label: 'Gestión de Tipos de Aeronave',
-        },
-      ],
+      submenus: [],
+    },
+    {
+      href: companyPath('/planificacion/hard_time'),
+      label: 'Ctrl. de Hard Time',
+      icon: Hourglass,
+      roles: ['ANALISTA_PLANIFICACION', 'JEFE_PLANIFICACION', 'SUPERUSER'],
+      submenus: [],
     },
     {
       href: companyPath('/planificacion/directivas'),
