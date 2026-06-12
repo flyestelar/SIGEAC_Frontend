@@ -11,8 +11,19 @@ export interface WorkOrderDocumentStatusPayload {
   [key: string]: unknown;
 }
 
+export interface RequisitionNotificationPayload {
+  id: string;
+  requisition_id: number | string;
+  title?: string;
+  message?: string;
+  url?: string;
+  icon?: string;
+  [key: string]: unknown;
+}
+
 declare module '@laravel/echo-react' {
   interface Events {
     WorkOrderDocumentStatusChanged: WorkOrderDocumentStatusPayload;
+    'requisition-notification-event': RequisitionNotificationPayload;
   }
 }

@@ -32,7 +32,7 @@ const fetchBatchesWithInWarehouseArticles = async ({
 export const useGetBatchesWithInWarehouseArticles = (category: string) => {
   const { selectedCompany, selectedStation } = useCompanyStore();
   return useQuery<BatchesWithArticles[], Error>({
-    queryKey: ['batches-in-warehouse', selectedCompany, selectedStation],
+    queryKey: ['batches-in-warehouse', selectedCompany, selectedStation, category],
     queryFn: () =>
       fetchBatchesWithInWarehouseArticles({
         company: selectedCompany?.slug ?? '',
