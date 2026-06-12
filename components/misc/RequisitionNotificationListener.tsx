@@ -3,7 +3,9 @@
 import { useAuth } from '@/contexts/AuthContext';
 import { statusIcon } from '@/lib/notification';
 import { RequisitionNotificationPayload } from '@/lib/echo-events';
+import { notificationIndexInfiniteQueryKey, notificationUnreadCountQueryKey, notificationUnreadQueryKey } from '@api/queries';
 import { useEcho } from '@laravel/echo-react';
+import { useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { useCallback } from 'react';
 import { toast } from 'sonner';
@@ -20,12 +22,22 @@ export function RequisitionNotificationListener() {
 
 function RequisitionNotificationChannel({ userId }: { userId: string }) {
   const router = useRouter();
+  const queryClient = useQueryClient();
+
+  const invalidateBell = useCallback(() => {
+    queryClient.invalidateQueries({ queryKey: notificationUnreadQueryKey() });
+    queryClient.invalidateQueries({ queryKey: notificationUnreadCountQueryKey() });
+    queryClient.invalidateQueries({ queryKey: notificationIndexInfiniteQueryKey() });
+  }, [queryClient]);
 
   const onNotification = useCallback(
     (payload: RequisitionNotificationPayload) => {
       const title = payload.title ?? 'Nueva requisición';
       const description = payload.message ?? '';
-      const url = payload.url ?? null;
+      const rawUrl = payload.url ?? null;
+      const url = rawUrl ? rawUrl.replace('/compras/requisiciones/', '/solicitudes_material_faltante/') : null;
+
+      invalidateBell();
 
       toast(title, {
         id: payload.id,
@@ -41,7 +53,7 @@ function RequisitionNotificationChannel({ userId }: { userId: string }) {
           : undefined,
       });
     },
-    [router],
+    [router, invalidateBell],
   );
 
   useEcho<RequisitionNotificationPayload>(
@@ -49,6 +61,14 @@ function RequisitionNotificationChannel({ userId }: { userId: string }) {
     '.requisition-notification-event',
     onNotification,
     [onNotification],
+    'private',
+  );
+
+  useEcho(
+    `notifications.${userId}`,
+    '.new-notification',
+    invalidateBell,
+    [invalidateBell],
     'private',
   );
 
