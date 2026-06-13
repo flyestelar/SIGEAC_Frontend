@@ -51,7 +51,8 @@ function NotificationChannel({ userId }: { userId: string }) {
     (payload: NotificationPayload) => {
       const title = payload.title ?? 'Notificación';
       const description = payload.message ?? payload.description ?? '';
-      const url = typeof payload.url === 'string' ? payload.url : '/sistema/notificaciones';
+      const rawUrl = typeof payload.url === 'string' ? payload.url : '/sistema/notificaciones';
+      const url = rawUrl.replace('/compras/requisiciones/', '/solicitudes_material_faltante/');
 
       toast(title, {
         id: payload.id,
