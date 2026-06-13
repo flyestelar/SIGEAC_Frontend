@@ -19,6 +19,7 @@ import {
 } from '@/hooks/planificacion/useGetPlanificationAlerts';
 import { useGetMaintenanceAircrafts } from '@/hooks/planificacion/useGetMaintenanceAircrafts';
 import { useCompanyStore } from '@/stores/CompanyStore';
+import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import {
@@ -140,23 +141,47 @@ function formatRemainingValue(alert: PlanificationAlert) {
   return `${alert.remaining_value.toFixed(2)} ${suffix}`;
 }
 
-function SummaryCard({ status, value }: { status: PlanificationAlertStatus; value: number }) {
+function SummaryTile({
+  status,
+  value,
+  active,
+  onClick,
+}: {
+  status: PlanificationAlertStatus;
+  value: number;
+  active: boolean;
+  onClick: () => void;
+}) {
   const config = LEVEL_CONFIG[status];
   const Icon = config.icon;
 
   return (
-    <Card className={`${config.cardBorder} ${config.cardBg}`}>
-      <CardHeader className="pb-2">
-        <CardTitle className={`flex items-center gap-2 text-sm ${config.iconText}`}>
-          <Icon className="h-4 w-4" />
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={active}
+      className={cn(
+        'group flex items-center gap-3 rounded-lg border bg-background p-4 text-left',
+        'transition-[background-color,border-color,transform] duration-150 ease-out active:scale-[0.99]',
+        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1',
+        active ? cn(config.cardBorder, config.cardBg) : 'border-border/60 hover:bg-muted/40',
+      )}
+    >
+      <span
+        className={cn(
+          'flex h-10 w-10 shrink-0 items-center justify-center rounded-md border bg-muted/30',
+          config.iconText,
+        )}
+      >
+        <Icon className="h-4 w-4" />
+      </span>
+      <span className="min-w-0">
+        <span className="block text-2xl font-bold leading-none tabular-nums">{value}</span>
+        <span className="mt-1 block text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
           {config.label}
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <p className="text-3xl font-bold tabular-nums">{value}</p>
-        <p className="text-xs text-muted-foreground">{config.helpText}</p>
-      </CardContent>
-    </Card>
+        </span>
+      </span>
+    </button>
   );
 }
 
@@ -164,15 +189,13 @@ function SummarySkeleton() {
   return (
     <div className="grid gap-3 md:grid-cols-4">
       {Array.from({ length: 4 }).map((_, index) => (
-        <Card key={index}>
-          <CardHeader className="pb-2">
-            <Skeleton className="h-4 w-24" />
-          </CardHeader>
-          <CardContent className="space-y-2">
-            <Skeleton className="h-8 w-16" />
-            <Skeleton className="h-3 w-28" />
-          </CardContent>
-        </Card>
+        <div key={index} className="flex items-center gap-3 rounded-lg border border-border/60 p-4">
+          <Skeleton className="h-10 w-10 rounded-md" />
+          <div className="space-y-2">
+            <Skeleton className="h-7 w-12" />
+            <Skeleton className="h-3 w-20" />
+          </div>
+        </div>
       ))}
     </div>
   );
@@ -203,7 +226,7 @@ function AlertQueueTable({ alerts }: { alerts: PlanificationAlert[] }) {
     <div className="relative overflow-x-auto">
       <table className="w-full min-w-[1080px] border-separate border-spacing-0 text-sm">
         <thead>
-          <tr className="border-b border-border/60">
+          <tr className="border-b border-border/60 [&>th]:sticky [&>th]:top-0 [&>th]:z-10 [&>th]:border-b [&>th]:border-border/60 [&>th]:bg-background">
             <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
               Estado
             </th>
@@ -243,7 +266,10 @@ function AlertQueueTable({ alerts }: { alerts: PlanificationAlert[] }) {
             return (
               <tr
                 key={`${alert.item_type}-${alert.item_identifier}-${alert.aircraft.id}`}
-                className="border-b border-border/50"
+                className={cn(
+                  'border-b border-border/50 transition-colors hover:bg-muted/40',
+                  alert.status === 'OVERDUE' && 'bg-red-500/[0.04] dark:bg-red-950/20',
+                )}
               >
                 <td className="px-4 py-3 align-top whitespace-nowrap">
                   <AlertBadge status={alert.status} size="small" />
@@ -281,7 +307,20 @@ function AlertQueueTable({ alerts }: { alerts: PlanificationAlert[] }) {
                 <td className="px-4 py-3 align-top font-mono text-xs text-foreground whitespace-nowrap">
                   {formatAlertDate(alert.governing_date)}
                 </td>
-                <td className="px-4 py-3 align-top font-mono text-xs text-foreground whitespace-nowrap">{formatRemainingValue(alert)}</td>
+                <td className="px-4 py-3 align-top whitespace-nowrap">
+                  <span
+                    className={cn(
+                      'font-mono text-sm font-semibold tabular-nums',
+                      alert.status === 'OVERDUE'
+                        ? 'text-red-600 dark:text-red-400'
+                        : alert.status === 'WARNING'
+                          ? 'text-amber-600 dark:text-amber-400'
+                          : 'text-foreground',
+                    )}
+                  >
+                    {formatRemainingValue(alert)}
+                  </span>
+                </td>
                 <td className="px-4 py-3 align-top font-mono text-xs text-foreground whitespace-nowrap">
                   {alert.projected_date ? formatAlertDate(alert.projected_date) : 'Sin proyección'}
                 </td>
@@ -345,25 +384,23 @@ export default function PlanificationAlertsDashboardPage() {
   return (
     <ContentLayout title="Alertas de Vencimiento">
       <main className="max-w-[2080px] space-y-5 p-4 lg:p-6">
-        <div className="rounded-2xl border border-border/60 bg-card/70 p-5 backdrop-blur-sm">
-          <div className="flex flex-wrap items-start justify-between gap-3">
-            <div>
-              <div className="flex items-center gap-2">
-                <Siren className="h-5 w-5 text-destructive" />
-                <h2 className="text-xl font-semibold text-foreground">Cola unificada de vencimientos</h2>
-              </div>
-              <p className="mt-1 text-sm text-muted-foreground">
-                Monitoreo operativo de controles, hard time y directivas en el orden priorizado por backend.
-              </p>
-              <Badge variant="outline" className="mt-2 border-primary/30 text-primary">
-                {selectedAircraftLabel}
-              </Badge>
+        <div className="flex flex-wrap items-start justify-between gap-3 rounded-lg border border-border/60 bg-background p-5">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <Siren className="h-5 w-5 text-destructive" />
+              <h2 className="text-lg font-semibold tracking-tight text-foreground">Cola unificada de vencimientos</h2>
             </div>
+            <p className="text-sm text-muted-foreground">Controles, hard time y directivas en orden de prioridad.</p>
+          </div>
 
-            <Button variant="outline" asChild>
+          <div className="flex items-center gap-3">
+            <Badge variant="outline" className="border-primary/30 font-medium text-primary">
+              {selectedAircraftLabel}
+            </Badge>
+            <Button variant="outline" size="sm" asChild>
               <Link href={`/${selectedCompany?.slug}/planificacion`}>
                 <ArrowLeft className="mr-2 h-4 w-4" />
-                Volver a planificación
+                Volver
               </Link>
             </Button>
           </div>
@@ -373,34 +410,56 @@ export default function PlanificationAlertsDashboardPage() {
           <SummarySkeleton />
         ) : (
           <div className="grid gap-3 md:grid-cols-4">
-            <SummaryCard status="OVERDUE" value={summary.OVERDUE} />
-            <SummaryCard status="WARNING" value={summary.WARNING} />
-            <SummaryCard status="OK" value={summary.OK} />
-            <Card className="border-border/60 bg-card/70">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm text-foreground">Total</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-3xl font-bold tabular-nums">{summary.total}</p>
-                <p className="text-xs text-muted-foreground">Items en la cola actual</p>
-              </CardContent>
-            </Card>
+            <SummaryTile
+              status="OVERDUE"
+              value={summary.OVERDUE}
+              active={statusFilter === 'OVERDUE'}
+              onClick={() => setStatusFilter((prev) => (prev === 'OVERDUE' ? 'all' : 'OVERDUE'))}
+            />
+            <SummaryTile
+              status="WARNING"
+              value={summary.WARNING}
+              active={statusFilter === 'WARNING'}
+              onClick={() => setStatusFilter((prev) => (prev === 'WARNING' ? 'all' : 'WARNING'))}
+            />
+            <SummaryTile
+              status="OK"
+              value={summary.OK}
+              active={statusFilter === 'OK'}
+              onClick={() => setStatusFilter((prev) => (prev === 'OK' ? 'all' : 'OK'))}
+            />
+            <button
+              type="button"
+              onClick={() => setStatusFilter('all')}
+              aria-pressed={statusFilter === 'all'}
+              className={cn(
+                'group flex items-center gap-3 rounded-lg border bg-background p-4 text-left',
+                'transition-[background-color,border-color,transform] duration-150 ease-out active:scale-[0.99]',
+                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1',
+                statusFilter === 'all' ? 'border-primary/30 bg-primary/5' : 'border-border/60 hover:bg-muted/40',
+              )}
+            >
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md border bg-muted/30 text-muted-foreground">
+                <Siren className="h-4 w-4" />
+              </span>
+              <span className="min-w-0">
+                <span className="block text-2xl font-bold leading-none tabular-nums">{summary.total}</span>
+                <span className="mt-1 block text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+                  Total
+                </span>
+              </span>
+            </button>
           </div>
         )}
 
-        <Card className="border-border/60">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base">Filtros</CardTitle>
-            <CardDescription>
-              Consulta backend por aeronave, tipo de ítem y severidad. La búsqueda de texto es local.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="grid gap-3 md:grid-cols-4">
+        <div className="flex flex-col gap-3 rounded-lg border border-border/60 bg-background p-3 lg:flex-row lg:items-center">
+          <div className="flex flex-1 flex-wrap gap-2">
             <Select
               value={selectedAircraftId === 'all' ? 'all' : String(selectedAircraftId)}
               onValueChange={(value) => setSelectedAircraftId(value === 'all' ? 'all' : Number(value))}
             >
-              <SelectTrigger>
+              <SelectTrigger className="h-9 w-full sm:w-[220px]">
+                <Plane className="h-3.5 w-3.5 text-muted-foreground" />
                 <SelectValue placeholder="Aeronave" />
               </SelectTrigger>
               <SelectContent>
@@ -417,7 +476,7 @@ export default function PlanificationAlertsDashboardPage() {
               value={itemTypeFilter}
               onValueChange={(value) => setItemTypeFilter(value as 'all' | PlanificationAlertItemType)}
             >
-              <SelectTrigger>
+              <SelectTrigger className="h-9 w-full sm:w-[200px]">
                 <SelectValue placeholder="Tipo de ítem" />
               </SelectTrigger>
               <SelectContent>
@@ -432,7 +491,7 @@ export default function PlanificationAlertsDashboardPage() {
               value={statusFilter}
               onValueChange={(value) => setStatusFilter(value as 'all' | PlanificationAlertStatus)}
             >
-              <SelectTrigger>
+              <SelectTrigger className="h-9 w-full sm:w-[160px]">
                 <SelectValue placeholder="Severidad" />
               </SelectTrigger>
               <SelectContent>
@@ -442,18 +501,18 @@ export default function PlanificationAlertsDashboardPage() {
                 <SelectItem value="OK">En tiempo</SelectItem>
               </SelectContent>
             </Select>
+          </div>
 
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                value={query}
-                onChange={(event) => setQuery(event.target.value)}
-                placeholder="Buscar identificador, descripción o aeronave"
-                className="pl-9"
-              />
-            </div>
-          </CardContent>
-        </Card>
+          <div className="relative lg:w-80">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder="Buscar identificador, descripción o aeronave"
+              className="h-9 pl-9"
+            />
+          </div>
+        </div>
 
         {isAlertsLoading ? (
           <TableSkeleton />
@@ -483,9 +542,7 @@ export default function PlanificationAlertsDashboardPage() {
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <div>
                   <CardTitle className="text-base">Cola priorizada</CardTitle>
-                  <CardDescription>
-                    Se respeta el orden entregado por backend: severidad, fecha, restante, aeronave e identificador.
-                  </CardDescription>
+                  <CardDescription>Orden: severidad, fecha, restante, aeronave.</CardDescription>
                 </div>
                 <Badge variant="outline" className="font-mono text-xs">
                   {filteredRows.length} / {summary.total}
