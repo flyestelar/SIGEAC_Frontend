@@ -5,14 +5,6 @@ import { keepPreviousData, useQuery } from '@tanstack/react-query';
 export type PlanificationAlertStatus = 'OK' | 'WARNING' | 'OVERDUE';
 export type PlanificationAlertItemType = 'maintenance_control' | 'hard_time' | 'directive';
 export type PlanificationAlertMetric = 'CALENDAR' | 'FH' | 'FC';
-export type PlanificationAlertRemainingUnit = 'days' | 'flight_hours' | 'flight_cycles';
-
-export interface PlanificationAlertAircraft {
-  id: number;
-  acronym: string | null;
-  model: string | null;
-  serial: string | null;
-}
 
 export const useGetPlanificationAlerts = (
   filters?: PlanificationAlertsIndexData['query'],

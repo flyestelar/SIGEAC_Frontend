@@ -108,7 +108,6 @@ export function AlertEventModal({ calendarEvent }: AlertEventModalProps) {
   const metric = alert.earliest_due_metric!;
   const MetricIcon = METRIC_ICONS[metric] ?? Calendar;
   const description = alert.description as string | null;
-  const projectedDate = alert.earliest_due_date;
 
   const earliestKey =
     alert.earliest_due_metric === 'CALENDAR'

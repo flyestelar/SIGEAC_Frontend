@@ -434,7 +434,7 @@ export default function PlanificationAlertsDashboardPage() {
                 <Siren className="h-4 w-4" />
               </span>
               <span className="min-w-0">
-                <span className="block text-2xl font-bold leading-none tabular-nums">{summary.total}</span>
+                <span className="block text-2xl font-bold leading-none tabular-nums">{summary?.total ?? 0}</span>
                 <span className="mt-1 block text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
                   Total
                 </span>
