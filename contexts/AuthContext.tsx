@@ -1,10 +1,12 @@
 'use client';
 
 import { AuthContext, useAuth } from '@/lib/auth/context';
-import { loginAction, logoutAction } from '@/lib/auth/login';
+import { logoutAction } from '@/lib/auth/login';
 import { USER_QUERY_KEY, userQueryOptions } from '@/lib/auth/queries';
+import { createCookie } from '@/lib/cookie';
+import { createSession } from '@/lib/session';
 import { useCompanyStore } from '@/stores/CompanyStore';
-import { logout as logoutApi } from '@api/sdk';
+import { login, logout as logoutApi } from '@api/sdk';
 import { LoginData } from '@api/types';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
@@ -77,6 +79,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 
   return <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>;
+}
+
+const AUTH_TOKEN_COOKIE_NAME = 'auth_token';
+export async function loginAction(credentials: LoginData['body']) {
+  const { error, data, status } = await login({ body: credentials });
+  console.log('Login response:', { data, error, status });
+  if (status === 401) {
+    return { success: false, error: 'Credenciales inválidas' };
+  }
+
+  if (error) {
+    console.error('Error during login:', error, status);
+    return { success: false, error: error.message, data: error };
+  }
+
+  const token = data.token;
+  if (!token) return { success: false, error: 'No se recibió token de autenticación' };
+
+  await createCookie(AUTH_TOKEN_COOKIE_NAME, token);
+  await createSession(data.userId);
+
+  return { success: true };
 }
 
 export { useAuth };
