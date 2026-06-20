@@ -52,7 +52,7 @@ const GroupHeader = memo(function GroupHeader({
   }
 
   return (
-    <div className="flex items-center gap-2 px-3">
+    <div className="flex items-center gap-2">
       <SidebarGroupLabel className="text-[10px] uppercase text-muted-foreground truncate">{label}</SidebarGroupLabel>
       <div className="h-px flex-1 bg-border" />
       <ChevronRight className={cn('ml-auto size-3 text-muted-foreground transition-transform', open && 'rotate-90')} />
