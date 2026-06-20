@@ -569,7 +569,7 @@ export type Company = {
     name: string;
     description: string;
     rif: string;
-    cod_inac: string;
+    cod_inac: string | null;
     fiscal_address: string;
     phone_number: string;
     alt_phone_number: string | null;
@@ -5563,6 +5563,7 @@ export type ArticleListData = {
         page?: number | null;
         per_page?: number | null;
         search?: string | null;
+        with_installed_part?: boolean | null;
     };
     url: '/articles';
 };

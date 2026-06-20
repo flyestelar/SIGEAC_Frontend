@@ -26,6 +26,10 @@ export const AlmacenMenuGroup: NavGroupMake = ({ companyPath }) => ({
       roles: ['ANALISTA_ALMACEN', 'JEFE_ALMACEN', 'SUPERUSER'],
       submenus: [
         {
+          href: companyPath('/almacen/componentes/montados'),
+          label: 'Montados',
+        },
+        {
           href: companyPath('/almacen/componentes/desmontados'),
           label: 'Desmontados',
         },
