@@ -1,6 +1,5 @@
 import { MitigationMeasure } from "@/types";
-import { Dialog } from "@radix-ui/react-dialog";
-import React from "react";
+import { Dialog } from "radix-ui";
 import {
   DialogContent,
   DialogDescription,
@@ -15,7 +14,7 @@ interface MitigationMeasuresListProps {
 
 const MitigationMeasureList = (props: MitigationMeasuresListProps) => {
   return (
-    <Dialog>
+    <Dialog.Root>
       <DialogTrigger>Open</DialogTrigger>
       <DialogContent>
         <DialogHeader>
@@ -32,7 +31,7 @@ const MitigationMeasureList = (props: MitigationMeasuresListProps) => {
           ))}
         </ul>
       </DialogContent>
-    </Dialog>
+    </Dialog.Root>
   );
 };
 

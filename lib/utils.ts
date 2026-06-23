@@ -1,12 +1,7 @@
 import { type ClassValue, clsx } from "clsx";
-import { addDays, format, Locale, parse, subDays } from "date-fns";
+import { addDays, format, Locale, parse } from "date-fns";
 import { twMerge } from "tailwind-merge";
 import { es } from "date-fns/locale";
-
-interface Period {
-  from: string | Date | undefined;
-  to: string | Date | undefined;
-}
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -17,29 +12,6 @@ export const generateSlug = (name: string) => {
     .toLowerCase()
     .replace(/\s+/g, "-") // Reemplazar espacios con "-"
     .replace(/[^\w-]/g, ""); // Remover caracteres especiales excepto "-"
-};
-
-
-import { DateRange } from "react-day-picker";
-
-export const formatDateRangeUpdate = (range: DateRange) => {
-  if (!range?.from && !range?.to) {
-    return "Filtrado de fechas";
-  }
-
-  if (range.from && !range.to) {
-    return `Desde ${format(range.from, "MMM dd, yyyy")}`;
-  }
-
-  if (!range.from && range.to) {
-    return `Hasta ${format(range.to, "MMM dd, yyyy")}`;
-  }
-
-  if (range.from && range.to) {
-    return `${format(range.from, "MMM dd, yyyy")} - ${format(range.to, "MMM dd, yyyy")}`;
-  }
-
-  return "Filtrado de fechas";
 };
 
 export const formatDateRange = (

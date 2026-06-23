@@ -15,7 +15,7 @@ import { useState } from "react";
 import { DateRange } from "react-day-picker";
 import { ChevronDown } from "lucide-react";
 import { Calendar } from "../ui/calendar";
-import { PopoverClose } from "@radix-ui/react-popover";
+import { Popover as PopoverBase } from "radix-ui";
 
 interface Period {
   from: Date;
@@ -112,7 +112,7 @@ const DateFilter = () => {
           locale={es} // Pasa la localización en español
         />
         <div className="p-4 w-full flex items-center gap-x-2">
-          <PopoverClose asChild>
+          <PopoverBase.Close asChild>
             <Button
               onClick={onReset}
               disabled={!tempDate?.from || !tempDate?.to}
@@ -121,8 +121,8 @@ const DateFilter = () => {
             >
               Reiniciar
             </Button>
-          </PopoverClose>
-          <PopoverClose asChild>
+          </PopoverBase.Close>
+          <PopoverBase.Close asChild>
             <Button
               onClick={onApply}
               disabled={!tempDate?.from || !tempDate?.to}
@@ -130,7 +130,7 @@ const DateFilter = () => {
             >
               Aplicar
             </Button>
-          </PopoverClose>
+          </PopoverBase.Close>
         </div>
       </PopoverContent>
     </Popover>

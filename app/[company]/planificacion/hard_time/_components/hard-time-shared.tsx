@@ -2,11 +2,7 @@
 
 import { Badge } from '@/components/ui/badge';
 import { HardTimeAlertLevel, HardTimeIntervalWithMetrics, HardTimeMetric, HardTimeMetricType } from '@/types';
-import {
-  AircraftComponentSlotResource,
-  HardTimeInstallationResource,
-  HardTimeIntervalResource,
-} from '@api/types';
+import { AircraftComponentSlotResource, HardTimeInstallationResource, HardTimeIntervalResource } from '@api/types';
 import { differenceInDays } from 'date-fns';
 import { AlertTriangle, Calendar, Clock, RefreshCw, ShieldCheck, TriangleAlert } from 'lucide-react';
 
@@ -53,8 +49,6 @@ export const LEVEL_CONFIG: Record<
   },
 };
 
-export const LEVEL_PRIORITY: Record<HardTimeAlertLevel, number> = { OVERDUE: 0, WARNING: 1, OK: 2 };
-
 const ALERT_LABELS: Record<HardTimeAlertLevel, string> = {
   OVERDUE: 'Vencido',
   WARNING: 'Próximo',
@@ -83,7 +77,13 @@ export const METRIC_ICONS: Record<HardTimeMetricType, typeof Clock> = {
 
 // ── Shared components ─────────────────────────────────────────────────────────
 
-export function AlertBadge({ status, size = 'small' }: { status: HardTimeAlertLevel | null; size?: 'small' | 'medium' }) {
+export function AlertBadge({
+  status,
+  size = 'small',
+}: {
+  status: HardTimeAlertLevel | null;
+  size?: 'small' | 'medium';
+}) {
   const cfg = LEVEL_CONFIG[status ?? 'OK'];
   const sizeClasses = size === 'small' ? 'h-5 px-1.5 text-[10px]' : 'h-6 px-2 text-[11px]';
   return (

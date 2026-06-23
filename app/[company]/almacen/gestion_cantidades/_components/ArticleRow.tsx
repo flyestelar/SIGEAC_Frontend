@@ -31,7 +31,7 @@ export const ArticleRow = React.memo(
     // Usar todas las zonas disponibles del inventario - con validación estricta
     const allAvailableZones = React.useMemo(() => {
       // Inicializar array vacío por defecto
-      let zones = new Set<string>();
+      const zones = new Set<string>();
       
       // Solo procesar si availableZones es un array válido
       if (availableZones && Array.isArray(availableZones)) {

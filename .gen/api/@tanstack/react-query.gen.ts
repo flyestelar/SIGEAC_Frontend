@@ -1066,27 +1066,30 @@ const createInfiniteParams = <K extends Pick<QueryKey<Options>[0], 'body' | 'hea
 
 export const airworthinessDirectivesComplianceControlsInfiniteQueryKey = (options: Options<AirworthinessDirectivesComplianceControlsData>): QueryKey<Options<AirworthinessDirectivesComplianceControlsData>> => createQueryKey('airworthinessDirectivesComplianceControls', options, true);
 
-export const airworthinessDirectivesComplianceControlsInfiniteOptions = (options: Options<AirworthinessDirectivesComplianceControlsData>) => infiniteQueryOptions<AirworthinessDirectivesComplianceControlsResponse, AxiosError<AirworthinessDirectivesComplianceControlsError>, InfiniteData<AirworthinessDirectivesComplianceControlsResponse>, QueryKey<Options<AirworthinessDirectivesComplianceControlsData>>, number | Pick<QueryKey<Options<AirworthinessDirectivesComplianceControlsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
-// @ts-ignore
-{
-    queryFn: async ({ pageParam, queryKey, signal }) => {
-        // @ts-ignore
-        const page: Pick<QueryKey<Options<AirworthinessDirectivesComplianceControlsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
-            query: {
-                page: pageParam
-            }
-        };
-        const params = createInfiniteParams(queryKey, page);
-        const { data } = await airworthinessDirectivesComplianceControls({
-            ...options,
-            ...params,
-            signal,
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: airworthinessDirectivesComplianceControlsInfiniteQueryKey(options)
-});
+export const airworthinessDirectivesComplianceControlsInfiniteOptions = (options: Options<AirworthinessDirectivesComplianceControlsData>) => {
+    const opts = infiniteQueryOptions<AirworthinessDirectivesComplianceControlsResponse, AxiosError<AirworthinessDirectivesComplianceControlsError>, InfiniteData<AirworthinessDirectivesComplianceControlsResponse>, QueryKey<Options<AirworthinessDirectivesComplianceControlsData>>, number | Pick<QueryKey<Options<AirworthinessDirectivesComplianceControlsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+    // @ts-ignore
+    {
+        queryFn: async ({ pageParam, queryKey, signal }) => {
+            // @ts-ignore
+            const page: Pick<QueryKey<Options<AirworthinessDirectivesComplianceControlsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+                query: {
+                    page: pageParam
+                }
+            };
+            const params = createInfiniteParams(queryKey, page);
+            const { data } = await airworthinessDirectivesComplianceControls({
+                ...options,
+                ...params,
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: airworthinessDirectivesComplianceControlsInfiniteQueryKey(options)
+    });
+    return opts as Omit<typeof opts, 'initialData'>;
+};
 
 export const airworthinessDirectivesComplianceRecordsQueryKey = (options: Options<AirworthinessDirectivesComplianceRecordsData>) => createQueryKey('airworthinessDirectivesComplianceRecords', options);
 
@@ -1105,27 +1108,30 @@ export const airworthinessDirectivesComplianceRecordsOptions = (options: Options
 
 export const airworthinessDirectivesComplianceRecordsInfiniteQueryKey = (options: Options<AirworthinessDirectivesComplianceRecordsData>): QueryKey<Options<AirworthinessDirectivesComplianceRecordsData>> => createQueryKey('airworthinessDirectivesComplianceRecords', options, true);
 
-export const airworthinessDirectivesComplianceRecordsInfiniteOptions = (options: Options<AirworthinessDirectivesComplianceRecordsData>) => infiniteQueryOptions<AirworthinessDirectivesComplianceRecordsResponse, AxiosError<AirworthinessDirectivesComplianceRecordsError>, InfiniteData<AirworthinessDirectivesComplianceRecordsResponse>, QueryKey<Options<AirworthinessDirectivesComplianceRecordsData>>, number | Pick<QueryKey<Options<AirworthinessDirectivesComplianceRecordsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
-// @ts-ignore
-{
-    queryFn: async ({ pageParam, queryKey, signal }) => {
-        // @ts-ignore
-        const page: Pick<QueryKey<Options<AirworthinessDirectivesComplianceRecordsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
-            query: {
-                page: pageParam
-            }
-        };
-        const params = createInfiniteParams(queryKey, page);
-        const { data } = await airworthinessDirectivesComplianceRecords({
-            ...options,
-            ...params,
-            signal,
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: airworthinessDirectivesComplianceRecordsInfiniteQueryKey(options)
-});
+export const airworthinessDirectivesComplianceRecordsInfiniteOptions = (options: Options<AirworthinessDirectivesComplianceRecordsData>) => {
+    const opts = infiniteQueryOptions<AirworthinessDirectivesComplianceRecordsResponse, AxiosError<AirworthinessDirectivesComplianceRecordsError>, InfiniteData<AirworthinessDirectivesComplianceRecordsResponse>, QueryKey<Options<AirworthinessDirectivesComplianceRecordsData>>, number | Pick<QueryKey<Options<AirworthinessDirectivesComplianceRecordsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+    // @ts-ignore
+    {
+        queryFn: async ({ pageParam, queryKey, signal }) => {
+            // @ts-ignore
+            const page: Pick<QueryKey<Options<AirworthinessDirectivesComplianceRecordsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+                query: {
+                    page: pageParam
+                }
+            };
+            const params = createInfiniteParams(queryKey, page);
+            const { data } = await airworthinessDirectivesComplianceRecords({
+                ...options,
+                ...params,
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: airworthinessDirectivesComplianceRecordsInfiniteQueryKey(options)
+    });
+    return opts as Omit<typeof opts, 'initialData'>;
+};
 
 export const airworthinessDirectivesIndexQueryKey = (options?: Options<AirworthinessDirectivesIndexData>) => createQueryKey('airworthinessDirectivesIndex', options);
 
@@ -1150,27 +1156,30 @@ export const airworthinessDirectivesIndexInfiniteQueryKey = (options?: Options<A
 /**
  * Display a listing of the resource
  */
-export const airworthinessDirectivesIndexInfiniteOptions = (options?: Options<AirworthinessDirectivesIndexData>) => infiniteQueryOptions<AirworthinessDirectivesIndexResponse, AxiosError<AirworthinessDirectivesIndexError>, InfiniteData<AirworthinessDirectivesIndexResponse>, QueryKey<Options<AirworthinessDirectivesIndexData>>, number | Pick<QueryKey<Options<AirworthinessDirectivesIndexData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
-// @ts-ignore
-{
-    queryFn: async ({ pageParam, queryKey, signal }) => {
-        // @ts-ignore
-        const page: Pick<QueryKey<Options<AirworthinessDirectivesIndexData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
-            query: {
-                page: pageParam
-            }
-        };
-        const params = createInfiniteParams(queryKey, page);
-        const { data } = await airworthinessDirectivesIndex({
-            ...options,
-            ...params,
-            signal,
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: airworthinessDirectivesIndexInfiniteQueryKey(options)
-});
+export const airworthinessDirectivesIndexInfiniteOptions = (options?: Options<AirworthinessDirectivesIndexData>) => {
+    const opts = infiniteQueryOptions<AirworthinessDirectivesIndexResponse, AxiosError<AirworthinessDirectivesIndexError>, InfiniteData<AirworthinessDirectivesIndexResponse>, QueryKey<Options<AirworthinessDirectivesIndexData>>, number | Pick<QueryKey<Options<AirworthinessDirectivesIndexData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+    // @ts-ignore
+    {
+        queryFn: async ({ pageParam, queryKey, signal }) => {
+            // @ts-ignore
+            const page: Pick<QueryKey<Options<AirworthinessDirectivesIndexData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+                query: {
+                    page: pageParam
+                }
+            };
+            const params = createInfiniteParams(queryKey, page);
+            const { data } = await airworthinessDirectivesIndex({
+                ...options,
+                ...params,
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: airworthinessDirectivesIndexInfiniteQueryKey(options)
+    });
+    return opts as Omit<typeof opts, 'initialData'>;
+};
 
 /**
  * Store a newly created resource in storage
@@ -1476,27 +1485,30 @@ export const articleListOptions = (options?: Options<ArticleListData>) => queryO
 
 export const articleListInfiniteQueryKey = (options?: Options<ArticleListData>): QueryKey<Options<ArticleListData>> => createQueryKey('articleList', options, true);
 
-export const articleListInfiniteOptions = (options?: Options<ArticleListData>) => infiniteQueryOptions<ArticleListResponse, AxiosError<ArticleListError>, InfiniteData<ArticleListResponse>, QueryKey<Options<ArticleListData>>, number | null | Pick<QueryKey<Options<ArticleListData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
-// @ts-ignore
-{
-    queryFn: async ({ pageParam, queryKey, signal }) => {
-        // @ts-ignore
-        const page: Pick<QueryKey<Options<ArticleListData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
-            query: {
-                page: pageParam
-            }
-        };
-        const params = createInfiniteParams(queryKey, page);
-        const { data } = await articleList({
-            ...options,
-            ...params,
-            signal,
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: articleListInfiniteQueryKey(options)
-});
+export const articleListInfiniteOptions = (options?: Options<ArticleListData>) => {
+    const opts = infiniteQueryOptions<ArticleListResponse, AxiosError<ArticleListError>, InfiniteData<ArticleListResponse>, QueryKey<Options<ArticleListData>>, number | null | Pick<QueryKey<Options<ArticleListData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+    // @ts-ignore
+    {
+        queryFn: async ({ pageParam, queryKey, signal }) => {
+            // @ts-ignore
+            const page: Pick<QueryKey<Options<ArticleListData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+                query: {
+                    page: pageParam
+                }
+            };
+            const params = createInfiniteParams(queryKey, page);
+            const { data } = await articleList({
+                ...options,
+                ...params,
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: articleListInfiniteQueryKey(options)
+    });
+    return opts as Omit<typeof opts, 'initialData'>;
+};
 
 export const articleUpdateConsumableArticleQuantitiesAndZonesMutation = (options?: Partial<Options<ArticleUpdateConsumableArticleQuantitiesAndZonesData>>): UseMutationOptions<ArticleUpdateConsumableArticleQuantitiesAndZonesResponse, AxiosError<ArticleUpdateConsumableArticleQuantitiesAndZonesError>, Options<ArticleUpdateConsumableArticleQuantitiesAndZonesData>> => {
     const mutationOptions: UseMutationOptions<ArticleUpdateConsumableArticleQuantitiesAndZonesResponse, AxiosError<ArticleUpdateConsumableArticleQuantitiesAndZonesError>, Options<ArticleUpdateConsumableArticleQuantitiesAndZonesData>> = {
@@ -2112,27 +2124,30 @@ export const batchesPaginateInfiniteQueryKey = (options: Options<BatchesPaginate
  * Function Name: paginate(Request $request)
  * Docs: Paginated version of showByCategory with all query params and text search
  */
-export const batchesPaginateInfiniteOptions = (options: Options<BatchesPaginateData>) => infiniteQueryOptions<BatchesPaginateResponse, AxiosError<BatchesPaginateError>, InfiniteData<BatchesPaginateResponse>, QueryKey<Options<BatchesPaginateData>>, number | null | Pick<QueryKey<Options<BatchesPaginateData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
-// @ts-ignore
-{
-    queryFn: async ({ pageParam, queryKey, signal }) => {
-        // @ts-ignore
-        const page: Pick<QueryKey<Options<BatchesPaginateData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
-            query: {
-                page: pageParam
-            }
-        };
-        const params = createInfiniteParams(queryKey, page);
-        const { data } = await batchesPaginate({
-            ...options,
-            ...params,
-            signal,
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: batchesPaginateInfiniteQueryKey(options)
-});
+export const batchesPaginateInfiniteOptions = (options: Options<BatchesPaginateData>) => {
+    const opts = infiniteQueryOptions<BatchesPaginateResponse, AxiosError<BatchesPaginateError>, InfiniteData<BatchesPaginateResponse>, QueryKey<Options<BatchesPaginateData>>, number | null | Pick<QueryKey<Options<BatchesPaginateData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+    // @ts-ignore
+    {
+        queryFn: async ({ pageParam, queryKey, signal }) => {
+            // @ts-ignore
+            const page: Pick<QueryKey<Options<BatchesPaginateData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+                query: {
+                    page: pageParam
+                }
+            };
+            const params = createInfiniteParams(queryKey, page);
+            const { data } = await batchesPaginate({
+                ...options,
+                ...params,
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: batchesPaginateInfiniteQueryKey(options)
+    });
+    return opts as Omit<typeof opts, 'initialData'>;
+};
 
 /**
  * Method: Get
@@ -3984,27 +3999,30 @@ export const dispatchOrderShowItemsDispatchPaginatedInfiniteQueryKey = (options:
  * Method: Get
  * Docs: version paginada de showItemsDispatch con busqueda de texto
  */
-export const dispatchOrderShowItemsDispatchPaginatedInfiniteOptions = (options: Options<DispatchOrderShowItemsDispatchPaginatedData>) => infiniteQueryOptions<DispatchOrderShowItemsDispatchPaginatedResponse, AxiosError<DispatchOrderShowItemsDispatchPaginatedError>, InfiniteData<DispatchOrderShowItemsDispatchPaginatedResponse>, QueryKey<Options<DispatchOrderShowItemsDispatchPaginatedData>>, number | null | Pick<QueryKey<Options<DispatchOrderShowItemsDispatchPaginatedData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
-// @ts-ignore
-{
-    queryFn: async ({ pageParam, queryKey, signal }) => {
-        // @ts-ignore
-        const page: Pick<QueryKey<Options<DispatchOrderShowItemsDispatchPaginatedData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
-            query: {
-                page: pageParam
-            }
-        };
-        const params = createInfiniteParams(queryKey, page);
-        const { data } = await dispatchOrderShowItemsDispatchPaginated({
-            ...options,
-            ...params,
-            signal,
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: dispatchOrderShowItemsDispatchPaginatedInfiniteQueryKey(options)
-});
+export const dispatchOrderShowItemsDispatchPaginatedInfiniteOptions = (options: Options<DispatchOrderShowItemsDispatchPaginatedData>) => {
+    const opts = infiniteQueryOptions<DispatchOrderShowItemsDispatchPaginatedResponse, AxiosError<DispatchOrderShowItemsDispatchPaginatedError>, InfiniteData<DispatchOrderShowItemsDispatchPaginatedResponse>, QueryKey<Options<DispatchOrderShowItemsDispatchPaginatedData>>, number | null | Pick<QueryKey<Options<DispatchOrderShowItemsDispatchPaginatedData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+    // @ts-ignore
+    {
+        queryFn: async ({ pageParam, queryKey, signal }) => {
+            // @ts-ignore
+            const page: Pick<QueryKey<Options<DispatchOrderShowItemsDispatchPaginatedData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+                query: {
+                    page: pageParam
+                }
+            };
+            const params = createInfiniteParams(queryKey, page);
+            const { data } = await dispatchOrderShowItemsDispatchPaginated({
+                ...options,
+                ...params,
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: dispatchOrderShowItemsDispatchPaginatedInfiniteQueryKey(options)
+    });
+    return opts as Omit<typeof opts, 'initialData'>;
+};
 
 /**
  * Doc: Modifica el status de la salida
@@ -5031,27 +5049,30 @@ export const hardTimeIntervalCompliancesInfiniteQueryKey = (options: Options<Har
  * List paginated compliances for an interval.
  * GET /hard-time-intervals/{id}/compliances
  */
-export const hardTimeIntervalCompliancesInfiniteOptions = (options: Options<HardTimeIntervalCompliancesData>) => infiniteQueryOptions<HardTimeIntervalCompliancesResponse, AxiosError<HardTimeIntervalCompliancesError>, InfiniteData<HardTimeIntervalCompliancesResponse>, QueryKey<Options<HardTimeIntervalCompliancesData>>, number | Pick<QueryKey<Options<HardTimeIntervalCompliancesData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
-// @ts-ignore
-{
-    queryFn: async ({ pageParam, queryKey, signal }) => {
-        // @ts-ignore
-        const page: Pick<QueryKey<Options<HardTimeIntervalCompliancesData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
-            query: {
-                page: pageParam
-            }
-        };
-        const params = createInfiniteParams(queryKey, page);
-        const { data } = await hardTimeIntervalCompliances({
-            ...options,
-            ...params,
-            signal,
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: hardTimeIntervalCompliancesInfiniteQueryKey(options)
-});
+export const hardTimeIntervalCompliancesInfiniteOptions = (options: Options<HardTimeIntervalCompliancesData>) => {
+    const opts = infiniteQueryOptions<HardTimeIntervalCompliancesResponse, AxiosError<HardTimeIntervalCompliancesError>, InfiniteData<HardTimeIntervalCompliancesResponse>, QueryKey<Options<HardTimeIntervalCompliancesData>>, number | Pick<QueryKey<Options<HardTimeIntervalCompliancesData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+    // @ts-ignore
+    {
+        queryFn: async ({ pageParam, queryKey, signal }) => {
+            // @ts-ignore
+            const page: Pick<QueryKey<Options<HardTimeIntervalCompliancesData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+                query: {
+                    page: pageParam
+                }
+            };
+            const params = createInfiniteParams(queryKey, page);
+            const { data } = await hardTimeIntervalCompliances({
+                ...options,
+                ...params,
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: hardTimeIntervalCompliancesInfiniteQueryKey(options)
+    });
+    return opts as Omit<typeof opts, 'initialData'>;
+};
 
 export const hardTimeTraceabilityIndexQueryKey = (options?: Options<HardTimeTraceabilityIndexData>) => createQueryKey('hardTimeTraceabilityIndex', options);
 
@@ -5397,27 +5418,30 @@ export const maintenanceControlExecutionsIndexInfiniteQueryKey = (options?: Opti
 /**
  * Display a listing of the resource
  */
-export const maintenanceControlExecutionsIndexInfiniteOptions = (options?: Options<MaintenanceControlExecutionsIndexData>) => infiniteQueryOptions<MaintenanceControlExecutionsIndexResponse, AxiosError<MaintenanceControlExecutionsIndexError>, InfiniteData<MaintenanceControlExecutionsIndexResponse>, QueryKey<Options<MaintenanceControlExecutionsIndexData>>, number | null | Pick<QueryKey<Options<MaintenanceControlExecutionsIndexData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
-// @ts-ignore
-{
-    queryFn: async ({ pageParam, queryKey, signal }) => {
-        // @ts-ignore
-        const page: Pick<QueryKey<Options<MaintenanceControlExecutionsIndexData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
-            query: {
-                page: pageParam
-            }
-        };
-        const params = createInfiniteParams(queryKey, page);
-        const { data } = await maintenanceControlExecutionsIndex({
-            ...options,
-            ...params,
-            signal,
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: maintenanceControlExecutionsIndexInfiniteQueryKey(options)
-});
+export const maintenanceControlExecutionsIndexInfiniteOptions = (options?: Options<MaintenanceControlExecutionsIndexData>) => {
+    const opts = infiniteQueryOptions<MaintenanceControlExecutionsIndexResponse, AxiosError<MaintenanceControlExecutionsIndexError>, InfiniteData<MaintenanceControlExecutionsIndexResponse>, QueryKey<Options<MaintenanceControlExecutionsIndexData>>, number | null | Pick<QueryKey<Options<MaintenanceControlExecutionsIndexData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+    // @ts-ignore
+    {
+        queryFn: async ({ pageParam, queryKey, signal }) => {
+            // @ts-ignore
+            const page: Pick<QueryKey<Options<MaintenanceControlExecutionsIndexData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+                query: {
+                    page: pageParam
+                }
+            };
+            const params = createInfiniteParams(queryKey, page);
+            const { data } = await maintenanceControlExecutionsIndex({
+                ...options,
+                ...params,
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: maintenanceControlExecutionsIndexInfiniteQueryKey(options)
+    });
+    return opts as Omit<typeof opts, 'initialData'>;
+};
 
 export const maintenanceControlsDetailsQueryKey = (options: Options<MaintenanceControlsDetailsData>) => createQueryKey('maintenanceControlsDetails', options);
 
@@ -5947,27 +5971,30 @@ export const notificationIndexOptions = (options?: Options<NotificationIndexData
 
 export const notificationIndexInfiniteQueryKey = (options?: Options<NotificationIndexData>): QueryKey<Options<NotificationIndexData>> => createQueryKey('notificationIndex', options, true);
 
-export const notificationIndexInfiniteOptions = (options?: Options<NotificationIndexData>) => infiniteQueryOptions<NotificationIndexResponse, AxiosError<NotificationIndexError>, InfiniteData<NotificationIndexResponse>, QueryKey<Options<NotificationIndexData>>, number | Pick<QueryKey<Options<NotificationIndexData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
-// @ts-ignore
-{
-    queryFn: async ({ pageParam, queryKey, signal }) => {
-        // @ts-ignore
-        const page: Pick<QueryKey<Options<NotificationIndexData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
-            query: {
-                page: pageParam
-            }
-        };
-        const params = createInfiniteParams(queryKey, page);
-        const { data } = await notificationIndex({
-            ...options,
-            ...params,
-            signal,
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: notificationIndexInfiniteQueryKey(options)
-});
+export const notificationIndexInfiniteOptions = (options?: Options<NotificationIndexData>) => {
+    const opts = infiniteQueryOptions<NotificationIndexResponse, AxiosError<NotificationIndexError>, InfiniteData<NotificationIndexResponse>, QueryKey<Options<NotificationIndexData>>, number | Pick<QueryKey<Options<NotificationIndexData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+    // @ts-ignore
+    {
+        queryFn: async ({ pageParam, queryKey, signal }) => {
+            // @ts-ignore
+            const page: Pick<QueryKey<Options<NotificationIndexData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+                query: {
+                    page: pageParam
+                }
+            };
+            const params = createInfiniteParams(queryKey, page);
+            const { data } = await notificationIndex({
+                ...options,
+                ...params,
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: notificationIndexInfiniteQueryKey(options)
+    });
+    return opts as Omit<typeof opts, 'initialData'>;
+};
 
 export const notificationUnreadQueryKey = (options?: Options<NotificationUnreadData>) => createQueryKey('notificationUnread', options);
 
@@ -9768,27 +9795,30 @@ export const workOrdersIndexInfiniteQueryKey = (options?: Options<WorkOrdersInde
 /**
  * Display a listing of the resource
  */
-export const workOrdersIndexInfiniteOptions = (options?: Options<WorkOrdersIndexData>) => infiniteQueryOptions<WorkOrdersIndexResponse, AxiosError<WorkOrdersIndexError>, InfiniteData<WorkOrdersIndexResponse>, QueryKey<Options<WorkOrdersIndexData>>, number | null | Pick<QueryKey<Options<WorkOrdersIndexData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
-// @ts-ignore
-{
-    queryFn: async ({ pageParam, queryKey, signal }) => {
-        // @ts-ignore
-        const page: Pick<QueryKey<Options<WorkOrdersIndexData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
-            query: {
-                page: pageParam
-            }
-        };
-        const params = createInfiniteParams(queryKey, page);
-        const { data } = await workOrdersIndex({
-            ...options,
-            ...params,
-            signal,
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: workOrdersIndexInfiniteQueryKey(options)
-});
+export const workOrdersIndexInfiniteOptions = (options?: Options<WorkOrdersIndexData>) => {
+    const opts = infiniteQueryOptions<WorkOrdersIndexResponse, AxiosError<WorkOrdersIndexError>, InfiniteData<WorkOrdersIndexResponse>, QueryKey<Options<WorkOrdersIndexData>>, number | null | Pick<QueryKey<Options<WorkOrdersIndexData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+    // @ts-ignore
+    {
+        queryFn: async ({ pageParam, queryKey, signal }) => {
+            // @ts-ignore
+            const page: Pick<QueryKey<Options<WorkOrdersIndexData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+                query: {
+                    page: pageParam
+                }
+            };
+            const params = createInfiniteParams(queryKey, page);
+            const { data } = await workOrdersIndex({
+                ...options,
+                ...params,
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: workOrdersIndexInfiniteQueryKey(options)
+    });
+    return opts as Omit<typeof opts, 'initialData'>;
+};
 
 /**
  * Store a newly created resource in storage

@@ -1,19 +1,8 @@
-import { defineConfig, globalIgnores } from 'eslint/config';
+import js from '@eslint/js';
 import next from 'eslint-config-next';
 import nextCoreWebVitals from 'eslint-config-next/core-web-vitals';
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
-import js from '@eslint/js';
-import { FlatCompat } from '@eslint/eslintrc';
+import { defineConfig, globalIgnores } from 'eslint/config';
 import typescriptEslint from 'typescript-eslint';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const compat = new FlatCompat({
-  baseDirectory: __dirname,
-  recommendedConfig: js.configs.recommended,
-  allConfig: js.configs.all,
-});
 
 export default defineConfig([
   globalIgnores([
@@ -29,11 +18,10 @@ export default defineConfig([
     '**/*.spec.tsx',
     '**/*.test.ts',
     '**/*.test.tsx',
-    "components/ui/*"
-    
+    'components/ui/*',
   ]),
   {
-    extends: [next, nextCoreWebVitals, typescriptEslint.configs.recommended],
+    extends: [next, nextCoreWebVitals, js.configs.recommended, typescriptEslint.configs.recommended],
 
     rules: {
       '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],

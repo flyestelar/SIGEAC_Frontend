@@ -10,7 +10,7 @@ import {
   CommandList,
   CommandSeparator,
 } from '@/components/ui/command';
-import { NavGroup } from '@/lib/menu-list-2';
+import type { NavGroup } from '@/lib/menu-list';
 import Fuse from 'fuse.js';
 import { useRouter } from 'next/navigation';
 import { Fragment, memo, useCallback, useDeferredValue, useMemo, useState } from 'react';

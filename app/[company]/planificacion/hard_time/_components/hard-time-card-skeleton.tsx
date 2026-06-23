@@ -2,7 +2,7 @@
 
 import { Skeleton } from '@/components/ui/skeleton';
 
-export function HardTimeCardSkeleton() {
+function HardTimeCardSkeleton() {
   return (
     <div className="overflow-hidden rounded-xl border border-border/60 bg-background">
       <div className="space-y-2 px-4 py-3">

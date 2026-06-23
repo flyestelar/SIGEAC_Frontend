@@ -243,7 +243,7 @@ export function CreateSafetyBulletinForm({
                         defaultMonth={field.value}
                         onSelect={field.onChange}
                         disabled={false}
-                        initialFocus
+                        autoFocus
                         startMonth={new Date(1988, 0)}
                         endMonth={new Date(new Date().getFullYear() + 5, 11)}
                         components={{
@@ -251,9 +251,7 @@ export function CreateSafetyBulletinForm({
                             <select
                               {...props}
                               className="bg-popover text-popover-foreground"
-                            >
-                              {props.children}
-                            </select>
+                            />
                           ),
                         }}
                       />

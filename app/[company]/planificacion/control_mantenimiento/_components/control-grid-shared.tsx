@@ -5,7 +5,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { cn } from '@/lib/utils';
 import { useCompanyStore } from '@/stores/CompanyStore';
 import { MaintenanceControlResource } from '@api/types';
-import { TooltipPortal } from '@radix-ui/react-tooltip';
+import { Tooltip as TooltipBase } from 'radix-ui';
 import { cva } from 'class-variance-authority';
 import {
   AlertTriangle,
@@ -146,11 +146,11 @@ export function EnCursoBadge({ workOrderLabel }: { workOrderLabel?: string }) {
     <TooltipProvider>
       <Tooltip delayDuration={80}>
         <TooltipTrigger asChild>{badge}</TooltipTrigger>
-        <TooltipPortal>
-          <TooltipContent side="top" className="text-muted-foreground flex gap-2 items-center">
+        <TooltipBase.Portal>
+          <TooltipBase.Content side="top" className="text-muted-foreground flex gap-2 items-center">
             <ClipboardPenLine className="size-4" /> <strong>{workOrderLabel}</strong>
-          </TooltipContent>
-        </TooltipPortal>
+          </TooltipBase.Content>
+        </TooltipBase.Portal>
       </Tooltip>
     </TooltipProvider>
   );

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Survey, Question } from "@/types";
+import { Survey, SurveyQuestion } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -32,7 +32,7 @@ interface Props {
 }
 
 interface EditingState {
-    questionId: string | null;
+    questionId: number | null;
     isEditingSurveyInfo: boolean;
 }
 
@@ -230,7 +230,7 @@ export function SurveyQuestionsManager({ surveyData, onClose }: Props) {
         isEditingSurveyInfo: false,
     });
 
-    const [expandedQuestions, setExpandedQuestions] = useState<Set<string>>(new Set());
+    const [expandedQuestions, setExpandedQuestions] = useState<Set<number>>(new Set());
 
     // Survey info form state
     const [surveyTitle, setSurveyTitle] = useState(surveyData.title);
@@ -242,11 +242,11 @@ export function SurveyQuestionsManager({ surveyData, onClose }: Props) {
     const [questionType, setQuestionType] = useState<"SINGLE" | "MULTIPLE" | "OPEN">("SINGLE");
     const [questionRequired, setQuestionRequired] = useState(true);
     const [questionOptions, setQuestionOptions] = useState<
-        Array<{ text: string; is_correct: boolean; id?: string }>>(
+        Array<{ text: string; is_correct: boolean; id?: number }>>(
         [{ text: "", is_correct: false }]
     );
 
-    const toggleQuestion = (questionId: string) => {
+    const toggleQuestion = (questionId: number) => {
         const next = new Set(expandedQuestions);
         if (next.has(questionId)) next.delete(questionId);
         else next.add(questionId);
@@ -260,7 +260,7 @@ export function SurveyQuestionsManager({ surveyData, onClose }: Props) {
         setQuestionOptions([{ text: "", is_correct: false }]);
     };
 
-    const startEditQuestion = (question: Question) => {
+    const startEditQuestion = (question: SurveyQuestion) => {
         setEditing({ questionId: question.id, isEditingSurveyInfo: false });
         setQuestionText(question.text);
         setQuestionType(question.type as "SINGLE" | "MULTIPLE" | "OPEN");
@@ -283,7 +283,7 @@ export function SurveyQuestionsManager({ surveyData, onClose }: Props) {
         resetQuestionForm();
     };
 
-    const handleUpdateQuestion = async (questionId: string) => {
+    const handleUpdateQuestion = async (questionId: number) => {
         if (!selectedCompany || !selectedStation || isReadOnly) return;
         const filteredOptions =
             questionType !== "OPEN" ? questionOptions.filter((o) => o.text.trim() !== "") : [];
@@ -306,7 +306,7 @@ export function SurveyQuestionsManager({ surveyData, onClose }: Props) {
         }
     };
 
-    const handleDeleteQuestion = async (questionId: string) => {
+    const handleDeleteQuestion = async (questionId: number) => {
         if (!selectedCompany || !selectedStation || isReadOnly) return;
         if (confirm("¿Está seguro que desea eliminar esta pregunta?")) {
             try {

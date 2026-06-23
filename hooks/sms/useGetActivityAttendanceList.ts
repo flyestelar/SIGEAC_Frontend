@@ -9,7 +9,7 @@ interface EmployeeData {
 }
 interface AttendanceData {
   id: string;
-  attended: Boolean;
+  attended: boolean;
   employee_dni: string;
   sms_activity_id: string;
   employee: EmployeeData;

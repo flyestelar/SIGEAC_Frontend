@@ -1073,7 +1073,6 @@ export type MaintenanceControlResource = {
     interval_fh: number | null;
     interval_days: number | null;
     task_cards?: Array<TaskCardResource>;
-    aircrafts?: Array<AircraftResource>;
     aircraft_ids?: Array<number>;
     last_execution?: MaintenanceControlExecutionResource;
     last_execution_completed?: MaintenanceControlExecutionResource;

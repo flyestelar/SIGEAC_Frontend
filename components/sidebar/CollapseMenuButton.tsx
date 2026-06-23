@@ -16,7 +16,7 @@ import {
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useSidebarSectionsStore } from '@/stores/SidebarSectionsStore';
 import { cn } from '@/lib/utils';
-import { DropdownMenuArrow } from '@radix-ui/react-dropdown-menu';
+import { DropdownMenu as DropdownMenuBase } from 'radix-ui';
 import { SidebarMenuItem, SidebarMenuSub, SidebarMenuSubButton, SidebarMenuSubItem } from '../ui/sidebar';
 import { LeafItem } from './LeafItem';
 import { LinkStatusIndicator } from './LinkStatusIndicator';
@@ -127,7 +127,7 @@ export const CollapseMenuButton = memo(function CollapseMenuButton({
                     </Link>
                   </DropdownMenuItem>
                 ))}
-                <DropdownMenuArrow className="fill-border" />
+                <DropdownMenuBase.Arrow className="fill-border" />
               </DropdownMenuContent>
             )}
           </TooltipProvider>

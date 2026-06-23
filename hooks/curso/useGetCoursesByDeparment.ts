@@ -1,10 +1,10 @@
 import axiosInstance from "@/lib/axios";
-import { Course } from "@/types";
+import { CourseResource } from "@api/types";
 import { useQuery } from "@tanstack/react-query";
 
 const fetchCoursesByDepartment = async (
   company?: string
-): Promise<Course[]> => {
+): Promise<CourseResource[]> => {
   const { data } = await axiosInstance.get(
     `/general/${company}/courses-by-department`
   );
@@ -12,7 +12,7 @@ const fetchCoursesByDepartment = async (
 };
 
 export const useGetCoursesByDeparment = (company?: string) => {
-  return useQuery<Course[]>({
+  return useQuery<CourseResource[]>({
     queryKey: ["department-courses"],
     queryFn: () => fetchCoursesByDepartment(company),
     staleTime: 1000 * 60 * 5, // 5 minutos

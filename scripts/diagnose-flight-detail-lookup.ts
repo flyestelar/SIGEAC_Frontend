@@ -7,21 +7,8 @@
 // Ejecutar:  npm run diagnose:flight-detail
 // Sale con código 1 si cualquier caso falla.
 
+import type { FlightControl } from '../types/index.ts';
 import { findFlightById } from '../actions/planificacion/vuelos/flight-lookup.ts';
-
-type FlightControl = {
-  id: string | number;
-  flight_number?: string;
-  flight_date: string;
-  aircraft_operator: string;
-  origin: string;
-  destination: string;
-  departure_time: string;
-  arrival_time: string;
-  flight_hours: number;
-  flight_cycles: number;
-  aircraft: { id: number; acronym: string };
-};
 
 const aircraft = { id: 1, acronym: 'YV3320' } as FlightControl['aircraft'];
 
@@ -40,24 +27,24 @@ const fixtures: { name: string; flights: FlightControl[]; targetId: string }[] =
   {
     name: 'dos vuelos ETR199 en días distintos → abrir el segundo',
     flights: [
-      { id: '1', flight_number: 'ETR199', flight_date: '2026-06-01', ...baseFlight } as FlightControl,
-      { id: '2', flight_number: 'ETR199', flight_date: '2026-06-02', ...baseFlight } as FlightControl,
+      { id: '1', flight_number: 'ETR199', flight_date: '2026-06-01', ...baseFlight } as unknown as FlightControl,
+      { id: '2', flight_number: 'ETR199', flight_date: '2026-06-02', ...baseFlight } as unknown as FlightControl,
     ],
     targetId: '2',
   },
   {
     name: 'vuelo sin flight_number → debe ser navegable por id',
-    flights: [{ id: '3', flight_date: '2026-06-03', ...baseFlight } as FlightControl],
+    flights: [{ id: '3', flight_date: '2026-06-03', ...baseFlight } as unknown as FlightControl],
     targetId: '3',
   },
   {
     name: 'vuelo con número único (caso feliz)',
-    flights: [{ id: '4', flight_number: 'ETR200', flight_date: '2026-06-04', ...baseFlight } as FlightControl],
+    flights: [{ id: '4', flight_number: 'ETR200', flight_date: '2026-06-04', ...baseFlight } as unknown as FlightControl],
     targetId: '4',
   },
   {
     name: 'id como number (FlightControl.id puede llegar como number)',
-    flights: [{ id: 5 as unknown as string, flight_number: 'ETR201', flight_date: '2026-06-05', ...baseFlight } as FlightControl],
+    flights: [{ id: 5 as unknown as string, flight_number: 'ETR201', flight_date: '2026-06-05', ...baseFlight } as unknown as FlightControl],
     targetId: '5',
   },
 ];

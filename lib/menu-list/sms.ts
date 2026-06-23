@@ -1,4 +1,4 @@
-import { AreaChartIcon, Award, CalendarClock, ClipboardCheck, ClipboardPen, Settings, ShieldAlert } from 'lucide-react';
+import { AreaChartIcon, CalendarClock, ClipboardCheck, ClipboardPen, Settings, ShieldAlert } from 'lucide-react';
 import { NavGroupMake } from '../menu-list';
 
 export const SmsMenuGroup: NavGroupMake = ({ companyPath }) => ({
