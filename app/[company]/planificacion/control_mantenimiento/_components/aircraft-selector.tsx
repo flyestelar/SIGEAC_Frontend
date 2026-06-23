@@ -5,10 +5,10 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
+import { cn } from '@/lib/utils';
 import { AircraftResource } from '@api/types';
 import { Clock, Plane, RotateCcw, Search } from 'lucide-react';
 import { memo, useState } from 'react';
-import { cn } from '../_data/utils';
 
 interface AircraftSelectorProps {
   aircraft: AircraftResource[];

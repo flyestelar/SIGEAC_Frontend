@@ -7,9 +7,10 @@ import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { AircraftAverageMetric, MaintenanceControlResource } from '@api/types';
 import { BookOpen, ClipboardList, LayoutGrid, Table2 } from 'lucide-react';
 import { useMemo, useState } from 'react';
+import { computeMetrics, LEVEL_PRIORITY, worstStatus } from '../_data/utils';
 import { AircraftAverageSummaryCard } from './aircraft-average-summary-card';
 import { ControlCardView } from './control-card-view';
-import { ComputedControl, LEVEL_PRIORITY, computeMetrics, worstStatus } from './control-grid-shared';
+import { ComputedControl } from './control-grid-shared';
 import { ControlTableView } from './control-table-view';
 
 // ── Loading skeleton ───────────────────────────────────────────────────────────
@@ -53,11 +54,11 @@ function ControlGridSkeleton() {
 
 interface ControlGridProps {
   controls: MaintenanceControlResource[];
-  onSelectControl: (id: number | null) => void;
   averages: AircraftAverageMetric | null;
+  aircraftId: number | null;
 }
 
-export function ControlGrid({ controls, onSelectControl, averages }: ControlGridProps) {
+export function ControlGrid({ controls, averages, aircraftId }: ControlGridProps) {
   const [viewMode, setViewMode] = useState<'cards' | 'table'>('cards');
 
   const computedControls = useMemo<ComputedControl[]>(() => {
@@ -130,9 +131,9 @@ export function ControlGrid({ controls, onSelectControl, averages }: ControlGrid
         </div>
 
         {viewMode === 'table' ? (
-          <ControlTableView controls={sortedControls} onSelectControl={onSelectControl} averages={averages} />
+          <ControlTableView controls={sortedControls} averages={averages} />
         ) : (
-          <ControlCardView controls={sortedControls} onSelectControl={onSelectControl} averages={averages} />
+          <ControlCardView controls={sortedControls} averages={averages} aircraftId={aircraftId} />
         )}
       </div>
     </div>

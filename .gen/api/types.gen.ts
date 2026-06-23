@@ -1074,6 +1074,7 @@ export type MaintenanceControlResource = {
     interval_days: number | null;
     task_cards?: Array<TaskCardResource>;
     aircrafts?: Array<AircraftResource>;
+    aircraft_ids?: Array<number>;
     last_execution?: MaintenanceControlExecutionResource;
     last_execution_completed?: MaintenanceControlExecutionResource;
     created_at: string | null;
@@ -1457,6 +1458,23 @@ export type Renting = Array<string>;
  */
 export type ResolveHardTimeInstallationRequest = {
     resolution_reason?: string | null;
+};
+
+/**
+ * Role
+ */
+export type Role = {
+    id: number;
+    name: string;
+    guard_name: string;
+    created_at: string | null;
+    updated_at: string | null;
+    label: string | null;
+    registered_by: string | null;
+    updated_by: string | null;
+    registered_by_id: number | null;
+    updated_by_id: number | null;
+    company_id: number | null;
 };
 
 /**
@@ -2298,24 +2316,6 @@ export type UpdateVoluntaryReportRequest = {
 };
 
 /**
- * User
- */
-export type User = {
-    id: number;
-    first_name: string | null;
-    last_name: string | null;
-    email: string | null;
-    username: string;
-    isActive: string;
-    registered_by: string | null;
-    created_at: string | null;
-    updated_at: string | null;
-    updated_by: string | null;
-    registered_by_id: number | null;
-    updated_by_id: number | null;
-};
-
-/**
  * UserRequest
  */
 export type UserRequest = {
@@ -2323,6 +2323,20 @@ export type UserRequest = {
     last_name: string;
     username: string;
     email: string;
+};
+
+/**
+ * UserResource
+ */
+export type UserResource = {
+    id: number;
+    first_name: string | null;
+    last_name: string | null;
+    username: string;
+    email: string | null;
+    roles?: Array<Role>;
+    permissions?: Array<Permission>;
+    companies?: Array<Company>;
 };
 
 /**
@@ -5817,7 +5831,9 @@ export type ArticleUpdateResponses = {
 export type ArticleUpdateResponse = ArticleUpdateResponses[keyof ArticleUpdateResponses];
 
 export type ArticleUpdateArticleStatusData = {
-    body?: never;
+    body?: {
+        status?: string;
+    };
     path: {
         company: string;
         id: string;
@@ -14082,7 +14098,9 @@ export type MaintenanceControlsShowData = {
     path: {
         id: number;
     };
-    query?: never;
+    query?: {
+        aircraft_id?: number;
+    };
     url: '/maintenance-controls/{id}';
 };
 
@@ -14091,15 +14109,6 @@ export type MaintenanceControlsShowErrors = {
      * Unauthenticated
      */
     401: {
-        /**
-         * Error overview.
-         */
-        message: string;
-    };
-    /**
-     * Not found
-     */
-    404: {
         /**
          * Error overview.
          */
@@ -22443,7 +22452,7 @@ export type UsersIndexError = UsersIndexErrors[keyof UsersIndexErrors];
 export type UsersIndexResponses = {
     200: {
         status: 'OK';
-        users: Array<User>;
+        users: Array<UserResource>;
     };
 };
 

@@ -1,11 +1,13 @@
 'use client';
 
+import SectionHeader from '@/components/layout/SectionHeader';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { useCompanyStore } from '@/stores/CompanyStore';
-import { ArrowLeft, Edit } from 'lucide-react';
+import { AircraftResource } from '@api/types';
+import { Edit } from 'lucide-react';
 import Link from 'next/link';
+import { AircraftSelectField } from './aircraft-select-field';
 import {
   AlertBadge,
   ComputedControl,
@@ -17,42 +19,54 @@ import {
 
 // ── SelectedControlHeader ──────────────────────────────────────────────────────
 
-export function SelectedControlHeader({ computed, onBack }: { computed: ComputedControl; onBack: () => void }) {
+interface SelectedControlHeaderProps {
+  computed: ComputedControl;
+  onBack: () => void;
+  aircraft: AircraftResource[];
+  selectedAircraftId: number | null;
+  onSelectAircraft: (id: number) => void;
+}
+
+export function SelectedControlHeader({
+  computed,
+  onBack,
+  aircraft,
+  selectedAircraftId,
+  onSelectAircraft,
+}: SelectedControlHeaderProps) {
   const { selectedCompany } = useCompanyStore();
   const { control, metrics, status } = computed;
   const cfg = LEVEL_CONFIG[status];
   const LevelIcon = cfg.icon;
 
   return (
-    <div className="py-3">
-      <div className="flex items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <button
-            type="button"
-            onClick={onBack}
-            className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-border/60 bg-background/80 text-muted-foreground transition-colors hover:bg-muted/40 hover:text-foreground"
-          >
-            <ArrowLeft className="h-3.5 w-3.5" />
-          </button>
+    <div>
+      <SectionHeader
+        title={control.title}
+        subtitle={control.manual_reference}
+        titleIcon={
           <div className={`flex h-5 w-5 shrink-0 items-center justify-center rounded ${cfg.iconBg}`}>
             <LevelIcon className={`h-3 w-3 ${cfg.iconText}`} />
           </div>
-          <div>
-            <p className="text-sm font-semibold text-foreground">{control.title}</p>
-            <p className="font-mono text-[10px] text-muted-foreground">{control.manual_reference}</p>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-1.5">
-          {control.in_progress && <EnCursoBadge workOrderLabel={control.last_execution?.work_order?.order_number} />}
-          <AlertBadge status={status} size="small" />
-          <Button asChild variant="ghost" size="icon" className="h-6 w-6">
-            <Link href={`/${selectedCompany?.slug}/planificacion/control_mantenimiento/${control.id}/editar`}>
-              <Edit className="h-3 w-3" />
-            </Link>
-          </Button>
-        </div>
-      </div>
+        }
+        onBack={onBack}
+        actions={
+          <>
+            <AircraftSelectField
+              aircraft={aircraft}
+              selectedAircraftId={selectedAircraftId}
+              onSelectAircraft={onSelectAircraft}
+            />
+            {control.in_progress && <EnCursoBadge workOrderLabel={control.last_execution?.work_order?.order_number} />}
+            <AlertBadge status={status} size="small" />
+            <Button asChild variant="ghost" size="icon" className="h-6 w-6">
+              <Link href={`/${selectedCompany?.slug}/planificacion/control_mantenimiento/${control.id}/editar`}>
+                <Edit className="h-3 w-3" />
+              </Link>
+            </Button>
+          </>
+        }
+      />
 
       {metrics.length > 0 && (
         <div className="mt-3 flex flex-wrap items-center gap-3">

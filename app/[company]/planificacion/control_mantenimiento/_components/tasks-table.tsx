@@ -36,7 +36,7 @@ export function TasksTable({ tasks, controlName }: TasksTableProps) {
   }
 
   return (
-    <Card className="border-border/60 bg-card">
+    <Card className="border-border/60 bg-card flex-1 flex flex-col max-h-[calc(100vh-300px)]">
       <div className="flex items-center justify-between gap-3 border-b border-border/60 px-5 py-3">
         <div className="flex min-w-0 items-center gap-2">
           <ClipboardList className="h-3.5 w-3.5 shrink-0 text-primary" />
@@ -50,8 +50,8 @@ export function TasksTable({ tasks, controlName }: TasksTableProps) {
         </span>
       </div>
 
-      <CardContent className="px-0 pb-0">
-        <ScrollArea className="h-[calc(100vh-480px)]">
+      <CardContent className="px-0 pb-0 flex-1 flex flex-col min-h-0">
+        <ScrollArea className="h-full flex-1 flex flex-col">
           <Table>
             <TableHeader className="sticky top-0 z-10 bg-muted/60 backdrop-blur supports-[backdrop-filter]:bg-muted/50">
               <TableRow className="border-border/60 hover:bg-transparent">

@@ -18,7 +18,7 @@ export default function EditMaintenanceControlPage() {
   const { selectedCompany } = useCompanyStore();
   const controlId = params.id;
 
-  const { data: control, isLoading, error } = useGetMaintenanceControlById(controlId);
+  const { data: control, isLoading, error } = useGetMaintenanceControlById({ id: controlId });
   const updateMaintenanceControl = useUpdateMaintenanceControl();
 
   const handleSubmit = async (values: MaintenanceControlFormValues) => {
@@ -94,7 +94,7 @@ export default function EditMaintenanceControlPage() {
     description: control.data.description || '',
     manual_reference: control.data.manual_reference || '',
     interval: formatIntervalForForm(control.data),
-    aircraft_ids: control.data.aircrafts?.map((ac) => ac.id) || [],
+    aircraft_ids: control.data.aircraft_ids || [],
     tasks:
       control.data.task_cards?.map((tc) => ({
         ...tc,

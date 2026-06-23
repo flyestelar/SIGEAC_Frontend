@@ -2,15 +2,17 @@
 
 import {
   AlertBadge,
-  computeMetricEstimation,
-  computeMetrics,
   EnCursoBadge,
   LEVEL_CONFIG,
-  LEVEL_PRIORITY,
   METRIC_ICONS,
   METRIC_UNITS,
-  worstStatus,
 } from '@/app/[company]/planificacion/control_mantenimiento/_components/control-grid-shared';
+import {
+  computeMetricEstimation,
+  computeMetrics,
+  LEVEL_PRIORITY,
+  worstStatus,
+} from '@/app/[company]/planificacion/control_mantenimiento/_data/utils';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -36,20 +38,22 @@ export function MaintenanceControlsCard({ aircraftId, averages }: MaintenanceCon
     enabled: !!aircraftId,
   });
 
-  const computed = useMemo(() => {
-    const controls = (data?.data ?? []).filter((c) => c.aircrafts?.some((ac) => ac.id === aircraftId));
-    return controls
-      .map((control) => {
-        const metrics = computeMetrics(control);
-        return { control, metrics, status: worstStatus(metrics) };
-      })
-      .sort((a, b) => {
-        const byStatus = LEVEL_PRIORITY[a.status] - LEVEL_PRIORITY[b.status];
-        if (byStatus !== 0) return byStatus;
-        const maxPct = (m: typeof a) => Math.max(0, ...m.metrics.map((x) => x.percentage));
-        return maxPct(b) - maxPct(a);
-      });
-  }, [data, aircraftId]);
+  const computed = useMemo(
+    () =>
+      (data?.data ?? [])
+        .filter((c) => c.aircraft_ids?.includes(aircraftId))
+        .map((control) => {
+          const metrics = computeMetrics(control);
+          return { control, metrics, status: worstStatus(metrics) };
+        })
+        .sort((a, b) => {
+          const byStatus = LEVEL_PRIORITY[a.status] - LEVEL_PRIORITY[b.status];
+          if (byStatus !== 0) return byStatus;
+          const maxPct = (m: typeof a) => Math.max(0, ...m.metrics.map((x) => x.percentage));
+          return maxPct(b) - maxPct(a);
+        }),
+    [data, aircraftId],
+  );
 
   const overdue = computed.filter((c) => c.status === 'OVERDUE').length;
   const warning = computed.filter((c) => c.status === 'WARNING').length;

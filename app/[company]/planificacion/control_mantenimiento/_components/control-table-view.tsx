@@ -5,14 +5,16 @@ import { Card, CardContent } from '@/components/ui/card';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { AircraftAverageMetric } from '@api/types';
+import { useCompanyStore } from '@/stores/CompanyStore';
 import { differenceInCalendarDays, format } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { ComputedControl, computeMetricEstimation, EnCursoBadge } from './control-grid-shared';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { ComputedControl, EnCursoBadge } from './control-grid-shared';
+import { computeMetricEstimation } from '../_data/utils';
 
 interface ControlTableViewProps {
   averages: AircraftAverageMetric | null;
   controls: ComputedControl[];
-  onSelectControl: (id: number) => void;
 }
 
 function formatDate(value: string | Date | null | undefined) {
@@ -68,7 +70,11 @@ function getClosestEstimatedMetric(metrics: ComputedControl['metrics'], averages
   return estimated.reduce((closest, item) => (item.date < closest.date ? item : closest), estimated[0]);
 }
 
-export function ControlTableView({ averages, controls, onSelectControl }: ControlTableViewProps) {
+export function ControlTableView({ averages, controls }: ControlTableViewProps) {
+  const router = useRouter();
+  const { selectedCompany } = useCompanyStore();
+  const searchParams = useSearchParams();
+  const aircraftId = searchParams.get('aircraft_id');
   return (
     <Card className="border-border/60 bg-card overflow-hidden">
       <CardContent className="px-0 pb-0 pt-0">
@@ -160,7 +166,12 @@ export function ControlTableView({ averages, controls, onSelectControl }: Contro
                   <TableRow
                     key={control.id}
                     className="cursor-pointer border-border/50"
-                    onClick={() => onSelectControl(control.id)}
+                    onClick={() => {
+                      const href = aircraftId
+                        ? `/${selectedCompany?.slug}/planificacion/control_mantenimiento/${control.id}?aircraft_id=${aircraftId}`
+                        : `/${selectedCompany?.slug}/planificacion/control_mantenimiento/${control.id}`;
+                      router.push(href);
+                    }}
                   >
                     <TableCell className="pl-5">
                       <div className="space-y-1 min-w-28">

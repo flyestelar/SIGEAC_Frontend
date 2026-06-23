@@ -211,6 +211,7 @@ function EstimationRow({ metric }: { metric: EstimationMetric }) {
 // ── Panel ────────────────────────────────────────────────────
 
 export function EstimationsPanel({ control, aircraft }: EstimationsPanelProps) {
+  console.log(control)
   const metrics: EstimationMetric[] = [
     {
       key: 'fh',

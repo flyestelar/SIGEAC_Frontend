@@ -1,3 +1,4 @@
+"use client";
 import ProtectedRoute from '@/components/layout/ProtectedRoute';
 
 const ALLOWED_ROLES = ['ANALISTA_PLANIFICACION', 'JEFE_PLANIFICACION', 'SUPERUSER'];

@@ -29,7 +29,7 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
     <SidebarProvider className="isolate" open={isOpen} onOpenChange={setSidebarOpen}>
       <AppSidebar menuList={menuList} />
       <div className="flex-1 relative min-w-0">
-        <main className={cn('min-h-[calc(100vh_-_56px)]')}>
+        <main className='min-h-[calc(100vh_-_56px)] flex flex-col'>
           <Navbar menuList={menuList} />
           {children}
         </main>

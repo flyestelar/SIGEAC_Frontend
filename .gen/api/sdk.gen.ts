@@ -885,7 +885,11 @@ export const articleUpdateArticleStatus = <ThrowOnError extends boolean = false>
     responseType: 'json',
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/{company}/update-article-status/{id}',
-    ...options
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
 });
 
 /**

@@ -103,7 +103,7 @@ export function ControlSelector({ controls, selectedControlId, onSelectControl }
                     </Badge>
                     <Badge variant="outline" className="h-5 border-border/60 px-1.5 text-[10px] font-normal">
                       <Plane className="mr-0.5 h-2.5 w-2.5" />
-                      {control.aircrafts?.length}
+                      {control.aircraft_ids?.length}
                     </Badge>
                   </div>
                 </button>

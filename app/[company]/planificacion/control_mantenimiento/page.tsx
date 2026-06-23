@@ -7,7 +7,7 @@ import MaintenanceDashboardClient from './_components/maintenance-dashboard-clie
 async function MaintenanceDashboardPage({ params }: PageProps<'/[company]/planificacion/control_mantenimiento'>) {
   const { company } = await params;
   const queryClient = getQueryClient();
-  const user = await queryClient.ensureQueryData(userQueryOptions());
+  const user = await queryClient.ensureQueryData(userQueryOptions()).catch(() => null);
 
   if (user) {
     void queryClient.prefetchQuery(getMaintenanceAircraftsOptions(company));
