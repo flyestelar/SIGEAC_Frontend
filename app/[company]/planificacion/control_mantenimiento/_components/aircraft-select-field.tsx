@@ -79,7 +79,7 @@ export const AircraftSelectField = memo(function AircraftSelectField({
               </div>
             </>
           ) : (
-            <span className="text-xs text-muted-foreground">Seleccionar aeronave...</span>
+            <span className="text-xs text-muted-foreground ml-3">Seleccionar aeronave...</span>
           )}
         </span>
         <ChevronDown className="h-3.5 w-3.5 shrink-0 text-muted-foreground/50 transition-transform group-data-[state=open]/trigger:rotate-180" />
